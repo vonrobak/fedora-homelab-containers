@@ -1,0 +1,338 @@
+# Pre-Let's Encrypt & Remote Access Diagnostics
+Generated: on. 22. okt. 16:12:47 +0200 2025
+Host: fedora-htpc
+
+## 1. Domain & DNS Configuration
+---
+Domain ownership: no
+Hostinger registration: no
+Hostinger API token: no
+Public IP (detected): 62.249.184.112
+IP type: dynamic
+
+## 2. Network & Firewall Configuration
+---
+Current firewalld status:
+FedoraWorkstation (default, active)
+  target: default
+  ingress-priority: 0
+  egress-priority: 0
+  icmp-block-inversion: no
+  interfaces: enp3s0
+  sources: 
+  services: dhcpv6-client homelab-containers mdns samba samba-client ssh
+  ports: 8096/tcp 7359/udp 80/tcp 443/tcp
+  protocols: 
+  forward: no
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+
+Port forwarding configured: no
+CGNAT status: unknown
+
+## 3. Traefik Configuration Review
+---
+Current Traefik configuration:
+# Traefik Static Configuration v3.2
+# Domain: patriark.lokal
+
+api:
+  dashboard: true
+  insecure: true
+
+ping:
+  entryPoint: "traefik"
+
+log:
+  level: INFO
+
+entryPoints:
+  traefik:
+    address: ":8080"
+  
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/podman/podman.sock"
+    exposedByDefault: false
+    network: systemd-reverse_proxy
+
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+global:
+  sendAnonymousUsage: false
+
+Dynamic configuration files:
+total 8
+drwxr-xr-x. 1 patriark patriark  42 okt.  20 14:03 .
+drwxr-xr-x. 1 patriark patriark  64 okt.  20 15:39 ..
+-rw-r--r--. 1 patriark patriark 472 okt.  20 20:39 middleware.yml
+-rw-r--r--. 1 patriark patriark 338 okt.  20 14:03 tls.yml
+
+--- Content of middleware.yml ---
+# Middleware Configuration
+
+http:
+  middlewares:
+    security-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customResponseHeaders:
+          X-Robots-Tag: "none"
+    
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+    
+    compression:
+      compress: {}
+
+--- Content of tls.yml ---
+# TLS Configuration (Dynamic)
+
+tls:
+  certificates:
+    - certFile: /certs/lokal.crt
+      keyFile: /certs/lokal.key
+  
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+
+## 4. Authelia Security Configuration
+---
+Current Authelia configuration (full):
+---
+# Authelia Configuration - Working Version
+# Domain: patriark.lokal
+
+theme: 'dark'
+default_2fa_method: 'webauthn'
+
+server:
+  address: 'tcp://0.0.0.0:9091'
+
+log:
+  level: 'info'
+  format: 'text'
+
+identity_validation:
+  reset_password:
+    jwt_secret: 'file:///run/secrets/authelia_jwt_secret'
+
+totp:
+  disable: false
+  issuer: 'patriark.lokal'
+  algorithm: 'sha512'
+  digits: 6
+  period: 30
+  skew: 1
+
+webauthn:
+  disable: false
+  display_name: 'Patriark Homelab'
+  attestation_conveyance_preference: 'indirect'
+  timeout: '60s'
+  selection_criteria:
+    user_verification: 'preferred'
+
+authentication_backend:
+  password_reset:
+    disable: false
+  refresh_interval: '5m'
+  
+  file:
+    path: '/config/users_database.yml'
+    password:
+      algorithm: 'argon2'
+      argon2:
+        variant: 'argon2id'
+        iterations: 3
+        memory: 65536
+        parallelism: 4
+        key_length: 32
+        salt_length: 16
+
+access_control:
+  default_policy: 'deny'
+  
+  rules:
+    - domain:
+        - 'auth.patriark.lokal'
+      policy: 'bypass'
+    
+    - domain:
+        - 'traefik.patriark.lokal'
+        - 'jellyfin.patriark.lokal'
+        - 'nextcloud.patriark.lokal'
+        - 'vaultwarden.patriark.lokal'
+      policy: 'two_factor'
+
+session:
+  secret: 'file:///run/secrets/authelia_session_secret'
+  name: 'authelia_session'
+  same_site: 'lax'
+  inactivity: '5m'
+  expiration: '1h'
+  remember_me: '1M'
+  
+  cookies:
+    - domain: 'patriark.lokal'
+      authelia_url: 'https://auth.patriark.lokal'
+      default_redirection_url: 'https://jellyfin.patriark.lokal'
+  
+  redis:
+    host: 'authelia-redis'
+    port: 6379
+    password: '81f6a133b2eb3bf7275c88e2545679667218cbec5d7cf87b5769c73d02dcc90b'
+    database_index: 0
+    maximum_active_connections: 8
+    minimum_idle_connections: 0
+
+storage:
+  encryption_key: 'file:///run/secrets/authelia_storage_key'
+  local:
+    path: '/config/db.sqlite3'
+
+notifier:
+  disable_startup_check: false
+  filesystem:
+    filename: '/config/notifications.txt'
+
+regulation:
+  max_retries: 3
+  find_time: '2m'
+  ban_time: '5m'
+
+Authelia environment variables (keys only):
+AUTHELIA_SESSION_SECRET
+AUTHELIA_STORAGE_ENCRYPTION_KEY
+REDIS_PASSWORD
+RESET_PASSWORD_JWT_SECRET
+
+## 5. Certificate & ACME Configuration
+---
+Preferred ACME method: dns-01
+Automatic renewal: yes
+Let's Encrypt email: blyhode@hotmail.com
+Use staging certificates: yes
+
+## 6. Service Exposure Requirements
+---
+traefik.patriark.dev: public
+auth.patriark.dev: public
+jellyfin.patriark.dev: public
+nextcloud.patriark.dev: public
+
+## 7. WireGuard & VPN Configuration
+---
+WireGuard status: partial
+WireGuard subnet: 192.168.100.0/24
+WireGuard LAN access: no
+Access priority: both
+
+## 8. Current Authelia Issues
+---
+Login issue: when logging in on auth.patriark.lokal it routes to TOTP Sign-in. When signing in with TOTP it goes to the login site where username and password does not work. If browser window is closed and opened again, the user is logged in when going back to auth.patriark.lokal
+Loop timing: first
+Testing from same network: yes
+Affected browsers: Vivaldi and Firefox
+Tested in private mode: no
+
+## 9. Email/SMTP Requirements
+---
+SMTP available: no
+Wants SMTP recommendations: yes
+
+## 10. Security Posture & Risk Assessment
+---
+Brute force protection priority: 5
+DDoS protection priority: 4
+Privacy priority: 5
+Zero-trust priority: 4
+
+Public exposure comfort: yes
+Cloudflare proxy preference: undecided
+IDS interest: yes
+
+## 11. Backup & Recovery Strategy
+---
+Backup destination ready: yes
+Backup type: both
+Backup frequency: weekly
+Restore tested: yes
+
+## 12. Learning Goals & Timeline
+---
+Days available: 5
+Hours per day: 1-2
+Learning style: balanced
+Interest areas: certificates, security-hardening, monitoring, automation, networking
+
+## 13. System Technical Details
+---
+Podman networks:
+NETWORK ID    NAME                    DRIVER
+2f259bab93aa  podman                  bridge
+72ac489aa932  systemd-auth_services   bridge
+f891dad27177  systemd-media_services  bridge
+d795412b2b27  systemd-reverse_proxy   bridge
+e7b65d1416a9  web_services            bridge
+
+Active containers:
+NAMES           STATUS                 PORTS
+traefik         Up 44 hours            0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, 0.0.0.0:8080->8080/tcp
+jellyfin        Up 44 hours (healthy)  0.0.0.0:8096->8096/tcp, 0.0.0.0:7359->7359/udp
+authelia-redis  Up 43 hours            6379/tcp
+authelia        Up 42 hours (healthy)  9091/tcp
+
+Container inspect (Traefik):
+map[systemd-reverse_proxy:0xc0002425a0]
+
+Container inspect (Authelia):
+map[systemd-auth_services:0xc00069ad80 systemd-reverse_proxy:0xc00069b440]
+
+## 14. UDM Pro Configuration Details
+---
+UDM Pro rules available: yes
+VLAN security policies: yes
+UDM IDS/IPS: yes
+Dedicated VLAN interest: later
+
+## 15. Diagnostic Summary
+---
+System readiness assessment:
+- Domain: no
+- API access: no
+- Port forwarding: no
+- SMTP: no
+- Backup tested: yes
+
+Report saved to: /home/patriark/containers/docs/99-reports/pre-letsencrypt-diag-20251022-161247.txt
+

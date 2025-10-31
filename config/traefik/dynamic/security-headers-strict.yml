@@ -1,0 +1,36 @@
+# Strict Security Headers
+
+http:
+  middlewares:
+    security-headers-strict:
+      headers:
+        # Prevent clickjacking
+        frameDeny: true
+        
+        # XSS protection
+        browserXssFilter: true
+        
+        # MIME sniffing protection
+        contentTypeNosniff: true
+        
+        # HSTS - force HTTPS for 2 years
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 63072000  # 2 years
+        
+        # Referrer policy
+        referrerPolicy: "strict-origin-when-cross-origin"
+        
+        # Permissions policy
+        permissionsPolicy: "geolocation=(), microphone=(), camera=()"
+        
+        # Content Security Policy
+        contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';"
+        
+        # Custom headers
+        customResponseHeaders:
+          X-Robots-Tag: "noindex, nofollow"
+          X-Frame-Options: "DENY"
+          X-Content-Type-Options: "nosniff"
+          X-XSS-Protection: "1; mode=block"

@@ -1,0 +1,62 @@
+http:
+  routers:
+    # Root domain redirect
+    root-redirect:
+      rule: "Host(`patriark.org`)"
+      service: "tinyauth"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+      tls:
+        certResolver: letsencrypt
+
+    # Tinyauth portal
+    tinyauth-portal:
+      rule: "Host(`auth.patriark.org`)"
+      service: "tinyauth"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+      tls:
+        certResolver: letsencrypt
+
+    # Traefik Dashboard
+    traefik-dashboard:
+      rule: "Host(`traefik.patriark.org`)"
+      service: "api@internal"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+        - tinyauth@file
+      tls:
+        certResolver: letsencrypt
+
+    # Jellyfin
+    jellyfin-secure:
+      rule: "Host(`jellyfin.patriark.org`)"
+      service: "jellyfin"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+        - tinyauth@file
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    jellyfin:
+      loadBalancer:
+        servers:
+          - url: "http://jellyfin:8096"
+
+    tinyauth:
+      loadBalancer:
+        servers:
+          - url: "http://tinyauth:3000"

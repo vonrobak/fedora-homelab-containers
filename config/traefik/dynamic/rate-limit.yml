@@ -1,0 +1,24 @@
+# Rate Limiting Configuration
+
+http:
+  middlewares:
+    # Global rate limit - prevents brute force
+    global-rate-limit:
+      rateLimit:
+        average: 50
+        burst: 100
+        period: "1m"
+    
+    # Strict rate limit for auth endpoints
+    auth-rate-limit:
+      rateLimit:
+        average: 10
+        burst: 20
+        period: "1m"
+    
+    # API rate limit
+    api-rate-limit:
+      rateLimit:
+        average: 30
+        burst: 50
+        period: "1m"

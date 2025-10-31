@@ -1,0 +1,249 @@
+http:
+  middlewares:
+    # ═══════════════════════════════════════════════════════════
+    # CROWDSEC BOUNCER - Enhanced Configuration
+    # ═══════════════════════════════════════════════════════════
+    crowdsec-bouncer:
+      plugin:
+        crowdsec-bouncer-traefik-plugin:
+          # Core settings
+          enabled: true
+          logLevel: INFO
+          updateIntervalSeconds: 60  # Cache refresh interval
+          defaultDecisionSeconds: 60  # Default ban duration
+          
+          # LAPI Connection
+          crowdsecMode: live
+          crowdsecLapiScheme: http
+          crowdsecLapiHost: crowdsec:8080
+          crowdsecLapiKey: PMzGXoBZt1GkM0CV3nLC4c2VC01sR/PyV9d2VU5H7Gs
+          
+          # Forwarded headers (for correct IP detection behind proxies)
+          forwardedHeadersCustomName: X-Forwarded-For
+          clientTrustedIPs:          # Trust these IPs for X-Forwarded-For
+            - 10.89.2.0/24           # reverse_proxy network
+            - 10.89.3.0/24           # authentication network
+            - 10.89.1.0/24           # media services network
+            - 192.168.1.0/24         # Local network
+          
+          # Ban behavior
+          httpTimeoutSeconds: 10
+          crowdsecLapiTLSInsecureVerify: false
+
+    # ═══════════════════════════════════════════════════════════
+    # RATE LIMITING - Tiered approach
+    # ═══════════════════════════════════════════════════════════
+    
+    # Standard rate limit (most services)
+    rate-limit:
+      rateLimit:
+        average: 100      # 100 requests
+        burst: 50         # Allow bursts of 50
+        period: 1m        # Per minute
+        sourceCriterion:
+          ipStrategy:
+            depth: 1      # Use first IP in X-Forwarded-For
+    
+    # Strict rate limit (sensitive endpoints)
+    rate-limit-strict:
+      rateLimit:
+        average: 30       # More restrictive
+        burst: 10
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    # Very strict rate limit (auth endpoints)
+    rate-limit-auth:
+      rateLimit:
+        average: 10       # Very restrictive for login
+        burst: 5
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    # Generous rate limit (public APIs)
+    rate-limit-public:
+      rateLimit:
+        average: 200
+        burst: 100
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    # ═══════════════════════════════════════════════════════════
+    # AUTHENTICATION
+    # ═══════════════════════════════════════════════════════════
+    tinyauth:
+      forwardAuth:
+        address: "http://tinyauth:3000/api/auth/traefik"
+
+
+        # TLS configuration (for future HTTPS to auth service)
+        # tls:
+        #   ca: /path/to/ca.crt
+        #   cert: /path/to/cert.crt
+        #   key: /path/to/key.key
+        #   insecureSkipVerify: false
+
+    # ═══════════════════════════════════════════════════════════
+    # SECURITY HEADERS - Comprehensive
+    # ═══════════════════════════════════════════════════════════
+    security-headers:
+      headers:
+        # Basic security
+        frameDeny: false  # We'll use customFrameOptionsValue instead
+        customFrameOptionsValue: "SAMEORIGIN"
+        browserXssFilter: true
+        contentTypeNosniff: true
+        
+        # HSTS (HTTP Strict Transport Security)
+        stsSeconds: 31536000        # 1 year
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true        # Force even on HTTP
+        
+        # Content Security Policy (CSP)
+        contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self';"
+        
+        # Referrer Policy
+        referrerPolicy: "strict-origin-when-cross-origin"
+        
+        # Permissions Policy (formerly Feature Policy)
+        permissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+        
+        # Additional security headers
+        customResponseHeaders:
+          X-Content-Type-Options: "nosniff"
+          X-Frame-Options: "SAMEORIGIN"
+          X-XSS-Protection: "1; mode=block"
+          X-Robots-Tag: "none"  # Prevent indexing of internal services
+          Server: ""            # Hide server header
+          X-Powered-By: ""      # Hide powered-by header
+    
+    # Strict headers for admin panels
+    security-headers-strict:
+      headers:
+        frameDeny: true  # No iframes at all
+        browserXssFilter: true
+        contentTypeNosniff: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
+        referrerPolicy: "no-referrer"
+        permissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+        customResponseHeaders:
+          X-Robots-Tag: "noindex, nofollow"
+          Server: ""
+    
+    # Relaxed headers for public content
+    security-headers-public:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        # More permissive CSP for public content
+        contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:;"
+
+    # ═══════════════════════════════════════════════════════════
+    # IP WHITELISTING - For admin access
+    # ═══════════════════════════════════════════════════════════
+    admin-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - 192.168.1.0/24    # Local network
+          - 10.89.3.0/24      # authentication network
+          - 10.89.2.0/24      # Container network
+          - 192.168.100.0/24  # Wireguard VPN subnet
+        ipStrategy:
+          depth: 1            # Check X-Forwarded-For
+
+    # Trusted IPs only (for internal APIs)
+    internal-only:
+      ipWhiteList:
+        sourceRange:
+          - 10.89.2.0/24      # systemd podman reverse proxy network
+          - 10.89.3.0/24      # systemd podman authentication network (idle without members)
+          - 10.89.4.0/24      # systemd podman Monitoring network (not yet built)
+          - 10.89.5.0/24      # systemd podman database network (not yet built)
+          - 10.89.1.0/24      # systemd podman media services network (idle without members)
+          - 10.89.10.0/24     # systemd podman nextcloud network
+          - 10.89.20.0/24     # systemd podman unbuilt network for future use
+
+
+    # ═══════════════════════════════════════════════════════════
+    # PERFORMANCE OPTIMIZATIONS
+    # ═══════════════════════════════════════════════════════════
+    compression:
+      compress:
+        excludedContentTypes:
+          - text/event-stream  # Don't compress SSE
+        minResponseBodyBytes: 1024  # Only compress responses > 1KB
+
+    # ═══════════════════════════════════════════════════════════
+    # RELIABILITY PATTERNS
+    # ═══════════════════════════════════════════════════════════
+    
+    # Circuit breaker (prevents cascade failures)
+    circuit-breaker:
+      circuitBreaker:
+        expression: "NetworkErrorRatio() > 0.30"  # Open if >30% network errors
+        checkPeriod: 10s
+        fallbackDuration: 30s
+        recoveryDuration: 10s
+    
+    # Retry logic for transient failures
+    retry:
+      retry:
+        attempts: 3
+        initialInterval: 100ms
+
+    # ═══════════════════════════════════════════════════════════
+    # REDIRECT HANDLING
+    # ═══════════════════════════════════════════════════════════
+    
+    # HTTPS redirect
+    https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+        port: 443
+    
+    # WWW redirect (if you want www.patriark.org → patriark.org)
+    redirect-non-www:
+      redirectRegex:
+        regex: "^https://www\\.(.*)"
+        replacement: "https://${1}"
+        permanent: true
+
+    # ═══════════════════════════════════════════════════════════
+    # CUSTOM ERROR PAGES
+    # ═══════════════════════════════════════════════════════════
+    error-pages:
+      errors:
+        status:
+          - "403"
+          - "404"
+          - "500"
+          - "502"
+          - "503"
+        service: error-page-service
+        query: /{status}.html
+
+    # ═══════════════════════════════════════════════════════════
+    # BUFFERING (for large uploads)
+    # ═══════════════════════════════════════════════════════════
+    buffering:
+      buffering:
+        maxRequestBodyBytes: 10485760  # 10 MB
+        memRequestBodyBytes: 2097152   # 2 MB
+        maxResponseBodyBytes: 10485760  # 10 MB
+        memResponseBodyBytes: 2097152   # 2 MB
+        retryExpression: "IsNetworkError() && Attempts() < 3"

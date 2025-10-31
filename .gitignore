@@ -1,0 +1,75 @@
+# ============================================
+# Homelab Git Ignore - Comprehensive
+# ============================================
+
+# Sensitive Information
+*.key
+*.pem
+*.crt
+*secret*
+*password*
+*.env
+acme.json
+**/acme.json
+
+# SSL/TLS Certificates
+config/traefik/letsencrypt/
+**/letsencrypt/
+**/certificates/
+
+# Database Files (ALL databases are runtime data)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# CrowdSec Runtime Data
+data/crowdsec/db/
+data/crowdsec/*.db
+**/*.mmdb
+
+# Jellyfin Runtime Data
+config/jellyfin/data/
+config/jellyfin/metadata/
+config/jellyfin/cache/
+config/jellyfin/log/
+config/jellyfin/transcodes/
+config/jellyfin/transcoding-temp/
+
+# Large JSON reports (keep small ones)
+docs/99-reports/lastfm.json
+
+# Container Runtime
+*.pid
+*.sock
+
+# Cache & Temporary Files
+**/cache/
+**/temp/
+**/tmp/
+**/backups/
+**/data/
+*.tmp
+*.bak
+*.swp
+*~
+*.backup
+
+# Logs
+*.log
+**/logs/
+
+# OS Files
+.DS_Store
+Thumbs.db
+.directory
+
+# Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git backups
+.git.backup*

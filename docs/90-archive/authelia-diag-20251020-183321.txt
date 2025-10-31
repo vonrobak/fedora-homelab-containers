@@ -1,0 +1,118 @@
+# Authelia Diagnostics ma. 20. okt. 18:33:21 +0200 2025
+## Host
+Linux fedora-htpc 6.16.12-200.fc42.x86_64 #1 SMP PREEMPT_DYNAMIC Sun Oct 12 16:31:16 UTC 2025 x86_64 GNU/Linux
+podman version 5.6.2
+Enforcing
+
+## Paths
+BASE:      /home/patriark/containers
+CONF_DIR:  /home/patriark/containers/config/authelia
+CONF_FILE: /home/patriark/containers/config/authelia/configuration.yml
+ENV_FILE:  /home/patriark/containers/secrets/authelia.env
+
+## Directory listing of /home/patriark/containers/config/authelia
+total 8
+drwx------. 1 patriark patriark   80 okt.  20 16:56 .
+drwxr-xr-x. 1 patriark patriark  100 okt.  20 16:25 ..
+-rw-------. 1 patriark patriark 1217 okt.  20 18:18 configuration.yml
+drwxr-xr-x. 1 patriark patriark    0 okt.  20 16:25 users
+-rw-------. 1 patriark patriark  336 okt.  20 16:51 users_database.yml
+
+## First 120 lines of configuration.yml
+theme: 'dark'
+default_2fa_method: 'webauthn'
+
+server:
+  address: 'tcp://0.0.0.0:9091'
+
+log:
+  level: 'info'
+  format: 'text'
+
+# (Keep your other sections unchanged…)
+
+access_control:
+  default_policy: 'deny'
+  rules:
+    - domain: ['auth.patriark.lokal']
+      policy: 'bypass'
+    - domain: ['traefik.patriark.lokal']
+      policy: 'two_factor'
+    - domain: ['jellyfin.patriark.lokal']
+      policy: 'two_factor'
+    - domain: ['nextcloud.patriark.lokal']
+      policy: 'two_factor'
+
+session:
+  secret: '${AUTHELIA_SESSION_SECRET}'
+  name: 'authelia_session'
+  same_site: 'lax'
+  inactivity: '5m'
+  expiration: '1h'
+  remember_me: '1M'
+
+  cookies:
+    # LAN cookie (new local parent)
+    - domain: 'patriark.lokal'
+      authelia_url: 'https://auth.patriark.lokal'
+
+    # (Optional: add this later when public DNS is live)
+    # - domain: 'patriark.yourdomain.tld'
+    #   authelia_url: 'https://auth.patriark.yourdomain.tld'
+
+  redis:
+    host: 'authelia-redis'
+    port: 6379
+    password: '${REDIS_PASSWORD}'
+    database_index: 0
+
+identity_validation:
+  reset_password:
+    # See “JWT fix” below – this is the new location
+    jwt_secret: '${AUTHELIA_IDENTITY_VALIDATION__RESET_PASSWORD__JWT_SECRET}'
+
+
+
+## authelia.env (variable names + masked values)
+AUTHELIA_IDENTITY_VALIDATION__RESET_PASSWORD__JWT_SECRET     7e6a…d8fe
+AUTHELIA_SESSION_SECRET                                      cc82…edd7
+AUTHELIA_STORAGE_ENCRYPTION_KEY                              09c5…4a50
+REDIS_PASSWORD                                               81f6…c90b
+
+## Quick YAML sanity (grep-based)
+
+## DNS checks (LAN)
+auth.patriark.lokal: 192.168.1.70    auth.patriark.lokal
+jellyfin.patriark.lokal: 192.168.1.70    jellyfin.patriark.lokal
+traefik.patriark.lokal: 192.168.1.70    traefik.patriark.lokal
+jellyfin.lokal: 192.168.1.70    jellyfin.lokal
+traefik.lokal: 192.168.1.70    traefik.lokal
+patriark.lokal: 192.168.1.70    patriark.lokal
+fedora-htpc.lokal: 192.168.1.70    fedora-htpc.lokal
+
+## Validate config in official container
+Configuration parsed and loaded with errors:
+
+	 - authentication_backend: you must ensure either the 'file' or 'ldap' authentication backend is configured
+	 - storage: configuration for a 'local', 'mysql' or 'postgres' database must be provided
+	 - notifier: you must ensure either the 'smtp' or 'filesystem' notifier is configured
+
+Configuration parsed and loaded with warnings:
+
+	 - configuration environment variable not expected: AUTHELIA_IDENTITY_VALIDATION__RESET_PASSWORD__JWT_SECRET
+
+Error: configuration validation failed
+Usage:
+  authelia validate-config [flags]
+
+Examples:
+authelia validate-config
+authelia validate-config --config config.yml
+
+Flags:
+  -h, --help   help for validate-config
+
+Global Flags:
+  -c, --config strings                        configuration files or directories to load, for more information run 'authelia -h authelia config' (default [configuration.yml])
+      --config.experimental.filters strings   list of filters to apply to all configuration files, for more information run 'authelia -h authelia filters'
+
