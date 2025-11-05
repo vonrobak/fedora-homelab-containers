@@ -1,0 +1,10 @@
+# authorized_keys.lan (EXAMPLE)
+# Place ONLY the YubiKey-backed public keys intended for LAN access here.
+# Recommended to restrict by source subnet for defense-in-depth:
+#    from="192.168.1.0/24" sk-ssh-ed25519@openssh.com AAAA.... comment
+#
+# Replace the lines below with your real keys from yubikeys.pub (MacBook source of truth).
+# Example format (do not use these dummy keys in production):
+from="192.168.1.0/24" sk-ssh-ed25519@openssh.com AAAAC3NzaC1lZDI1NTE5AAAAIKEXAMPLEPLACEHOLDERKEY1 user@yk1
+from="192.168.1.0/24" sk-ssh-ed25519@openssh.com AAAAC3NzaC1lZDI1NTE5AAAAIKEXAMPLEPLACEHOLDERKEY2 user@yk2
+from="192.168.1.0/24" sk-ssh-ed25519@openssh.com AAAAC3NzaC1lZDI1NTE5AAAAIKEXAMPLEPLACEHOLDERKEY3 user@yk3

@@ -2,19 +2,37 @@
 
 A learning-focused homelab project documenting the journey of building a production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets.
 
-## Current Services
+**Milestone:** SSH infrastructure complete - Hardware-secured authentication operational (2025-11-05)
 
-- **Traefik** - Reverse proxy with CrowdSec integration
-- **Jellyfin** - Media server
-- **TinyAuth** - Authentication service
+## Systems
+
+| Host | Platform | Role | Storage |
+|------|----------|------|---------|
+| **fedora-htpc** | Fedora Workstation 42 | Services host | BTRFS (SSD + HDD pool) |
+| **fedora-jern** | Fedora Workstation 43 | Control center | Encrypted BTRFS with snapshots |
+| **raspberrypi** | Debian 12 (PiOS) | DNS / Pi-hole | SD card |
+| **MacBook Air** | macOS | Command center | Time Machine backups |
+
+## Services
+
+### Operational
+- **SSH** - Hardware-secured with YubiKey FIDO2 across all systems
+- **Pi-hole** - DNS and ad-blocking (raspberrypi)
+
+### Configured (fedora-htpc)
+- **Traefik** - Reverse proxy with Let's Encrypt SSL
+- **CrowdSec** - Threat intelligence and IP blocking
+- **Jellyfin** - Media streaming server
+- **TinyAuth** - Forward authentication service
 
 ## Architecture
 
-- Platform: Fedora Workstation 42
-- Container Runtime: Podman
-- Service Management: systemd quadlets
-- Reverse Proxy: Traefik with Let's Encrypt
-- Security: CrowdSec Bouncer, rate limiting
+- **Container Runtime:** Podman (rootless)
+- **Orchestration:** systemd quadlets
+- **Authentication:** YubiKey FIDO2 (3 keys, triple redundancy)
+- **Security:** Hardware-backed SSH, forward authentication, layered middleware
+- **Storage:** BTRFS with snapshots and RAID1 (planned)
+- **Networking:** Segmented Podman networks (reverse_proxy, media_services, database, auth_services)
 
 ## Documentation Structure
 
