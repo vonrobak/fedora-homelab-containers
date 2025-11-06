@@ -1,0 +1,168 @@
+# Prometheus Alert Rules
+# Critical: Immediate notification via ntfy.sh + email
+# Warning: Email only during waking hours (7am-11pm)
+
+groups:
+  - name: infrastructure_critical
+    interval: 30s
+    rules:
+      # Service availability
+      - alert: HostDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} on {{ $labels.instance }} is down"
+          description: "{{ $labels.job }} has been unreachable for more than 5 minutes."
+
+      # Disk space critical
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Root filesystem has less than 10% space available ({{ $value | humanizePercentage }})"
+
+      # Certificate expiry (7 days)
+      - alert: CertificateExpiringSoon
+        expr: (traefik_tls_certs_not_after - time()) / 86400 < 7
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "TLS certificate expires in less than 7 days"
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}"
+
+      # Prometheus itself is down
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus monitoring system is down"
+          description: "The Prometheus service has been down for more than 5 minutes."
+
+      # Alertmanager down
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alertmanager is down"
+          description: "Alertmanager has been unreachable for more than 10 minutes. No alerts will be delivered."
+
+  - name: infrastructure_warnings
+    interval: 1m
+    rules:
+      # Disk space warning
+      - alert: DiskSpaceWarning
+        expr: (node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space running low on {{ $labels.instance }}"
+          description: "Root filesystem has less than 20% space available ({{ $value | humanizePercentage }})."
+
+      # Memory pressure
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% ({{ $value | humanizePercentage }})."
+
+      # Certificate expiry warning (30 days)
+      - alert: CertificateExpiryWarning
+        expr: (traefik_tls_certs_not_after - time()) / 86400 < 30 and (traefik_tls_certs_not_after - time()) / 86400 >= 7
+        for: 24h
+        labels:
+          severity: warning
+        annotations:
+          summary: "TLS certificate expires in less than 30 days"
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}. Consider renewal."
+
+      # Container restarts
+      - alert: ContainerRestarting
+        expr: rate(container_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} is restarting frequently"
+          description: "Container has restarted {{ $value }} times in the last 15 minutes."
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% ({{ $value | humanize }}%) for more than 15 minutes."
+
+      # Filesystem will fill in 4 hours
+      - alert: FilesystemFillingUp
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"} > 0
+            and
+            predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[1h], 4*3600) < 0
+          )
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Filesystem is predicted to fill up"
+          description: "Filesystem on {{ $labels.instance }} is predicted to run out of space within 4 hours based on current growth rate."
+
+  - name: service_health
+    interval: 1m
+    rules:
+      # Traefik down
+      - alert: TraefikDown
+        expr: up{job="traefik"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Traefik reverse proxy is down"
+          description: "All services are likely inaccessible. Traefik has been down for more than 5 minutes."
+
+      # Grafana down
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Grafana dashboard is down"
+          description: "Grafana has been unreachable for more than 10 minutes."
+
+      # Loki down
+      - alert: LokiDown
+        expr: up{job="loki"} == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Loki log aggregation is down"
+          description: "Loki has been unreachable for more than 10 minutes. Log ingestion is stopped."
+
+      # Node exporter down
+      - alert: NodeExporterDown
+        expr: up{job="node_exporter"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node Exporter is down"
+          description: "System metrics collection has stopped. Node Exporter has been down for more than 5 minutes."

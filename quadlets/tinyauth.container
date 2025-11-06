@@ -1,0 +1,25 @@
+[Unit]
+Description=Tinyauth Authentication
+After=traefik.service
+
+[Container]
+Image=ghcr.io/steveiliop56/tinyauth:v4
+ContainerName=tinyauth
+Network=systemd-reverse_proxy
+Network=systemd-auth_services
+Environment=APP_URL=https://auth.patriark.org
+Environment=SECRET=8en5zX/GdM4Dtzz8kY+e1YE+iNUbG6bk8j+czuCQo+8=
+Environment=USERS=patriark:$$2a$$10$$w6lh8foduKkyedg9fNnXf.JmEqm6FR0zutxptOs57lyPVamuE6uWO
+Volume=%h/containers/data/tinyauth:/app/data:Z
+Label=traefik.enable=true
+Label=traefik.http.routers.tinyauth.rule=Host(`auth.patriark.org`)
+Label=traefik.http.routers.tinyauth.entrypoints=websecure
+Label=traefik.http.routers.tinyauth.tls=true
+Label=traefik.http.services.tinyauth.loadbalancer.server.port=3000
+Label=traefik.http.middlewares.tinyauth.forwardauth.address=http://tinyauth:3000/api/auth/traefik
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,45 @@
+[Unit]
+Description=Jellyfin Media Server
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/jellyfin/jellyfin:latest
+ContainerName=jellyfin
+HostName=jellyfin
+Network=systemd-reverse_proxy
+Network=systemd-media_services
+PublishPort=8096:8096
+PublishPort=7359:7359/udp
+AddDevice=/dev/dri/renderD128
+Environment=TZ=Europe/Oslo
+Environment=JELLYFIN_PublishedServerUrl=https://jellyfin.patriark.org
+Volume=%h/containers/config/jellyfin:/config:Z
+Volume=/mnt/btrfs-pool/subvol7-containers/jellyfin:/data:Z
+Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-cache:/cache:Z
+Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes:/config/transcodes:Z
+Volume=/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia:ro,Z
+Volume=/mnt/btrfs-pool/subvol5-music:/media/music:ro,Z
+DNS=192.168.1.69
+DNSSearch=lokal
+
+# Traefik labels (UPDATED DOMAIN - no authelia yet)
+Label=traefik.enable=true
+Label=traefik.http.routers.jellyfin.rule=Host(`jellyfin.patriark.org`)
+Label=traefik.http.routers.jellyfin.entrypoints=websecure
+Label=traefik.http.routers.jellyfin.tls=true
+Label=traefik.http.services.jellyfin.loadbalancer.server.port=8096
+Label=traefik.docker.network=systemd-reverse_proxy
+
+HealthCmd=curl -f http://localhost:8096/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+AutoUpdate=registry
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

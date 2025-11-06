@@ -1,0 +1,33 @@
+[Unit]
+Description=Traefik Reverse Proxy
+After=network-online.target reverse_proxy-network.service auth_services-network.service monitoring-network.service
+Wants=network-online.target
+Requires=reverse_proxy-network.service auth_services-network.service monitoring-network.service
+
+[Container]
+Image=docker.io/library/traefik:v3.2
+ContainerName=traefik
+HostName=traefik
+AutoUpdate=registry
+Network=systemd-reverse_proxy
+Network=systemd-auth_services
+Network=systemd-monitoring
+PublishPort=80:80
+PublishPort=443:443
+PublishPort=8080:8080
+Volume=%h/containers/config/traefik/traefik.yml:/etc/traefik/traefik.yml:ro,Z
+Volume=%h/containers/config/traefik/dynamic:/etc/traefik/dynamic:ro,Z
+Volume=%h/containers/config/traefik/letsencrypt:/letsencrypt:Z
+Volume=/run/user/%U/podman/podman.sock:/var/run/podman/podman.sock:ro
+Volume=%h/containers/scripts/traefik-entrypoint.sh:/traefik-entrypoint.sh:ro,Z
+Secret=crowdsec_api_key
+Entrypoint=/traefik-entrypoint.sh
+Exec=traefik
+SecurityLabelDisable=true
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

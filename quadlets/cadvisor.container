@@ -1,0 +1,39 @@
+[Unit]
+Description=cAdvisor - Container Metrics Exporter
+After=network-online.target monitoring-network.service
+Wants=network-online.target
+Requires=monitoring-network.service
+
+[Container]
+Image=gcr.io/cadvisor/cadvisor:v0.50.0
+ContainerName=cadvisor
+HostName=cadvisor
+Network=systemd-monitoring
+
+# cAdvisor needs access to host resources
+Volume=/:/rootfs:ro
+Volume=/run/user/1000/podman/podman.sock:/var/run/docker.sock:ro
+Volume=/sys:/sys:ro
+Volume=%h/.local/share/containers:/var/lib/containers:ro
+Volume=/dev/disk:/dev/disk:ro
+
+# Expose metrics on port 8080 (internal only)
+PublishPort=8080:8080
+
+# Required capabilities for cAdvisor
+AddCapability=SYS_ADMIN
+
+DNS=192.168.1.69
+
+# Health check
+HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

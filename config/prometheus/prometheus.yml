@@ -1,5 +1,5 @@
 # Prometheus Configuration for Homelab
-# Last Updated: 2025-11-05
+# Last Updated: 2025-11-06
 
 global:
   scrape_interval: 15s      # How often to scrape targets
@@ -8,16 +8,16 @@ global:
     cluster: 'homelab'
     environment: 'production'
 
-# Alertmanager configuration (for future use)
-# alerting:
-#   alertmanagers:
-#     - static_configs:
-#         - targets:
-#           - alertmanager:9093
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
 
 # Load alerting rules once and periodically evaluate them
-# rule_files:
-#   - "rules/*.yml"
+rule_files:
+  - "alerts/*.yml"
 
 # Scrape configurations
 scrape_configs:
@@ -53,10 +53,34 @@ scrape_configs:
           instance: 'fedora-htpc'
           service: 'traefik'
 
-  # CrowdSec monitoring (if metrics enabled)
-  # - job_name: 'crowdsec'
-  #   static_configs:
-  #     - targets: ['crowdsec:6060']
-  #       labels:
-  #         instance: 'fedora-htpc'
-  #         service: 'crowdsec'
+  # Alertmanager monitoring
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'alertmanager'
+
+  # Loki log aggregation
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'loki'
+
+  # Promtail log collector
+  - job_name: 'promtail'
+    static_configs:
+      - targets: ['promtail:9080']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'promtail'
+
+  # CrowdSec security monitoring
+  - job_name: 'crowdsec'
+    static_configs:
+      - targets: ['crowdsec:6060']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'crowdsec'

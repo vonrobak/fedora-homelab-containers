@@ -1,0 +1,25 @@
+[Unit]
+Description=CrowdSec Security Engine
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=ghcr.io/crowdsecurity/crowdsec:latest
+ContainerName=crowdsec
+AutoUpdate=registry
+Network=systemd-reverse_proxy
+
+# Volumes
+Volume=%h/containers/data/crowdsec/db:/var/lib/crowdsec/data:Z
+Volume=%h/containers/data/crowdsec/config:/etc/crowdsec:Z
+
+# Environment - Install Traefik collection
+Environment=COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve
+Environment=GID=1000
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

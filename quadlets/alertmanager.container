@@ -1,0 +1,50 @@
+[Unit]
+Description=Alertmanager - Alert Routing and Notification
+After=network-online.target monitoring-network.service
+Wants=network-online.target
+Requires=monitoring-network.service
+
+[Container]
+Image=quay.io/prometheus/alertmanager:latest
+ContainerName=alertmanager
+HostName=alertmanager
+Network=systemd-monitoring
+AutoUpdate=registry
+
+# Configuration and data
+Volume=%h/containers/config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro,Z
+Volume=%h/containers/data/alertmanager:/alertmanager:Z
+
+# SMTP password for email notifications
+Secret=smtp_password
+
+# Alertmanager ports
+PublishPort=9093:9093
+
+# Command arguments
+Exec=--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=info
+
+DNS=192.168.1.69
+
+# Health check
+HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:9093/-/healthy || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+# Traefik labels for web UI access
+Label=traefik.enable=true
+Label=traefik.http.routers.alertmanager-secure.rule=Host(`alertmanager.patriark.org`)
+Label=traefik.http.routers.alertmanager-secure.entrypoints=websecure
+Label=traefik.http.routers.alertmanager-secure.tls=true
+Label=traefik.http.routers.alertmanager-secure.tls.certresolver=letsencrypt
+Label=traefik.http.services.alertmanager.loadbalancer.server.port=9093
+# Apply security middleware
+Label=traefik.http.routers.alertmanager-secure.middlewares=crowdsec-bouncer@file,monitoring-api-whitelist@file,rate-limit@file,tinyauth@file,security-headers-strict@file
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

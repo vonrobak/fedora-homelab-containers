@@ -1,0 +1,74 @@
+# Alertmanager Configuration
+# Discord notifications via webhook relay
+
+global:
+  resolve_timeout: 5m
+
+# Time intervals for sleep hours suppression
+time_intervals:
+  - name: 'waking_hours'
+    time_intervals:
+      - times:
+          - start_time: '07:00'
+            end_time: '23:00'
+
+# Routing configuration
+route:
+  receiver: 'discord-default'
+  group_by: ['alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+  routes:
+    # Critical alerts: Discord for instant notifications
+    - match:
+        severity: critical
+      receiver: 'discord-critical'
+      repeat_interval: 1h
+
+    # Warnings: Discord during waking hours only (7am-11pm)
+    - match:
+        severity: warning
+      receiver: 'discord-warnings'
+      active_time_intervals:
+        - waking_hours
+
+# Receivers
+receivers:
+  # Critical alerts via Discord relay
+  - name: 'discord-critical'
+    webhook_configs:
+      - url: 'http://alert-discord-relay:9095/webhook'
+        send_resolved: true
+
+  # Warning alerts via Discord relay
+  - name: 'discord-warnings'
+    webhook_configs:
+      - url: 'http://alert-discord-relay:9095/webhook'
+        send_resolved: true
+
+  # Default receiver (fallback) - Discord
+  - name: 'discord-default'
+    webhook_configs:
+      - url: 'http://alert-discord-relay:9095/webhook'
+        send_resolved: true
+
+# Inhibition rules (prevent alert spam)
+inhibit_rules:
+  # If a host is down, don't alert on services running on that host
+  - source_match:
+      severity: 'critical'
+      alertname: 'HostDown'
+    target_match:
+      severity: 'warning'
+    equal: ['instance']
+
+  # If disk is critical, suppress disk warning
+  - source_match:
+      severity: 'critical'
+      alertname: 'DiskSpaceCritical'
+    target_match:
+      severity: 'warning'
+      alertname: 'DiskSpaceWarning'
+    equal: ['instance', 'mountpoint']
