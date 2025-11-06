@@ -1,0 +1,6 @@
+PID: 7011; Media Server (www.ui.com) build 5.1.48 - Terminator - (built for Debian-11-aarch64 on 2025-02-04T06:16:47.000)
+2025-06-01T02:08:13.284Z I node22  - workers pool `DnsResolve` is set to 2 concurrent workers [1] 
+2025-06-01T02:08:13.284Z I node22  - workers pool `Global` is set to 2 concurrent workers [2] 
+2025-06-01T02:08:13.284Z I node22  - workers pool `Misc` is set to 2 concurrent workers [2] 
+2025-06-01T02:08:13.284Z I node22  - workers pool `Read` is set to 2 concurrent workers [2] 
+2025-06-01T02:08:13.284Z I node22  - workers pool `Serve` is set to 120 concurrent workers [1] 

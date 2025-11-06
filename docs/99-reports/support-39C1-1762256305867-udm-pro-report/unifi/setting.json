@@ -1,0 +1,70 @@
+{
+  "site_settings" : [ {
+    "settings" : {
+      "guest_access" : {
+        "portal_customized_text_color" : "#232326",
+        "portal_customized_title" : "**dynamic-hidden** Guest WiFi",
+        "auth" : "none",
+        "redirect_https" : true,
+        "portal_enabled" : true,
+        "portal_customized_button_color" : "#006FFF",
+        "portal_customized" : false,
+        "portal_customized_languages" : [ "en" ],
+        "portal_customized_button_text" : "Login",
+        "portal_customized_button_text_color" : "#FFFFFF",
+        "portal_customized_welcome_text" : "Welcome to **dynamic-hidden** Guest WiFi Hotspot",
+        "portal_customized_bg_image_enabled" : false,
+        "portal_customized_success_text" : "Welcome to **dynamic-hidden** Guest WiFi Hotspot",
+        "portal_use_hostname" : false,
+        "expire_number" : 8,
+        "portal_customized_link_color" : "#006FFF",
+        "portal_customized_box_radius" : 25,
+        "redirect_enabled" : false,
+        "portal_customized_logo_size" : 128,
+        "key" : "guest_access",
+        "portal_customized_bg_color" : "#005ED9",
+        "portal_customized_logo_position" : "center",
+        "expire_unit" : 60,
+        "restricted_subnet_3" : "10.0.0.0/8",
+        "restricted_subnet_2" : "172.16.0.0/12",
+        "restricted_subnet_1" : "192.168.0.0/16",
+        "portal_customized_box_opacity" : 100,
+        "ec_enabled" : true,
+        "portal_customized_bg_type" : "color",
+        "expire" : 480,
+        "portal_customized_box_text_color" : "#000000",
+        "site_id" : "670ef645dcd3cd3f6b0f40c2",
+        "template_engine" : "angular",
+        "redirect_to_https" : false,
+        "portal_customized_box_color" : "#FFFFFF",
+        "_id" : "670ef65bdcd3cd3f6b0f40cb",
+        "redirect_url" : "",
+        "portal_customized_authentication_text" : "Select Your authentication method"
+      },
+      "dashboard" : {
+        "site_id" : "670ef645dcd3cd3f6b0f40c2",
+        "layout_preference" : "auto",
+        "_id" : "670e9c64ccbc6216c544fcc3",
+        "key" : "dashboard"
+      }
+    },
+    "site_id" : "670ef645dcd3cd3f6b0f40c2",
+    "site_name" : "default"
+  } ],
+  "super_settings" : {
+    "super_mgmt" : {
+      "data_retention_time_in_hours_for_5minutes_scale" : 24,
+      "data_retention_time_in_hours_for_monthly_scale" : 8760,
+      "data_retention_time_in_hours_for_hourly_scale" : 168,
+      "data_retention_time_in_hours_for_daily_scale" : 2160,
+      "autobackup_enabled" : true,
+      "data_retention_setting_preference" : "auto",
+      "time_series_per_client_stats_enabled" : true,
+      "data_retention_time_in_hours_for_others" : 2160,
+      "data_retention_time_enabled" : true,
+      "live_updates" : "auto",
+      "autobackup_days" : 0,
+      "key" : "super_mgmt"
+    }
+  }
+}

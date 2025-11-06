@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "${0}")"/../JQ # include JQ helper scripts
+JQA "${1}" 'del(.versionDetail."services/stunnel")'
+JQA "${1}" 'del(.services.stunnel)'
+
+exit 0

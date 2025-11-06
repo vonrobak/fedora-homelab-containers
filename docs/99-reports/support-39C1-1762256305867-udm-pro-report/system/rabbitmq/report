@@ -1,0 +1,474 @@
+Reporting server status of node rabbitmq@localhost ...
+
+Status of node rabbitmq@localhost ...
+[1mRuntime[0m
+
+OS PID: 5713
+OS: Linux
+Uptime (seconds): 9279075
+Is under maintenance?: false
+RabbitMQ version: 3.8.9
+Node name: rabbitmq@localhost
+Erlang configuration: Erlang/OTP 23 [erts-11.1.8] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:64]
+Erlang processes: 315 used, 65536 limit
+Scheduler run queue: 1
+Cluster heartbeat timeout (net_ticktime): 60
+
+[1mPlugins[0m
+
+Enabled plugin file: /etc/rabbitmq/enabled_plugins
+Enabled plugins:
+
+
+[1mData directory[0m
+
+Node data directory: /var/lib/rabbitmq/mnesia/rabbitmq@localhost
+Raft data directory: /var/lib/rabbitmq/mnesia/rabbitmq@localhost/quorum/rabbitmq@localhost
+
+[1mConfig files[0m
+
+ * /etc/rabbitmq/conf.d/10-unifi.conf
+ * /etc/rabbitmq/conf.d/default-user<FILTERED>
+
+[1mLog file(s)[0m
+
+ * /var/log/rabbitmq/rabbitmq@localhost.log
+ * /var/log/rabbitmq/rabbitmq@localhost_upgrade.log
+
+[1mAlarms[0m
+
+(none)
+
+[1mMemory[0m
+
+Total memory used: 0.0883 gb
+Calculation strategy: rss
+Memory high watermark setting: 0.25 of available memory, computed to: 1.0345 gb
+
+code: 0.0289 gb (32.48 %)
+other_proc: 0.0198 gb (22.29 %)
+other_system: 0.0133 gb (14.97 %)
+allocated_unused: 0.0113 gb (12.71 %)
+binary: 0.0056 gb (6.27 %)
+plugins: 0.0047 gb (5.34 %)
+other_ets: 0.0029 gb (3.25 %)
+atom: 0.0014 gb (1.54 %)
+connection_channels: 0.0002 gb (0.26 %)
+metrics: 0.0002 gb (0.23 %)
+connection_other: 0.0002 gb (0.2 %)
+queue_procs: 0.0002 gb (0.19 %)
+mnesia: 0.0001 gb (0.09 %)
+connection_readers: 0.0001 gb (0.08 %)
+quorum_ets: 0.0 gb (0.05 %)
+msg_index: 0.0 gb (0.03 %)
+connection_writers: 0.0 gb (0.01 %)
+mgmt_db: 0.0 gb (0.0 %)
+queue_slave_procs: 0.0 gb (0.0 %)
+quorum_queue_procs: 0.0 gb (0.0 %)
+reserved_unallocated: 0.0 gb (0.0 %)
+
+[1mFile Descriptors[0m
+
+Total: 4, limit: 65439
+Sockets: 2, limit: 58893
+
+[1mFree Disk Space[0m
+
+Low free disk space watermark: 0.05 gb
+Free disk space: 7.0695 gb
+
+[1mTotals[0m
+
+Connection count: 2
+Queue count: 2
+Virtual host count: 1
+
+[1mListeners[0m
+
+Interface: [::], port: 25672, protocol: clustering, purpose: inter-node and CLI tool communication
+Interface: 127.0.0.1, port: 5672, protocol: amqp, purpose: AMQP 0-9-1 and AMQP 1.0
+
+Cluster status of node rabbitmq@localhost ...
+[1mBasics[0m
+
+Cluster name: rabbitmq@patriarkatet-udm
+
+[1mDisk Nodes[0m
+
+rabbitmq@localhost
+
+[1mRunning Nodes[0m
+
+rabbitmq@localhost
+
+[1mVersions[0m
+
+rabbitmq@localhost: RabbitMQ 3.8.9 on Erlang 23.2.6
+
+[1mMaintenance status[0m
+
+Node: rabbitmq@localhost, status: not under maintenance
+
+[1mAlarms[0m
+
+(none)
+
+[1mNetwork Partitions[0m
+
+(none)
+
+[1mListeners[0m
+
+Node: rabbitmq@localhost, interface: [::], port: 25672, protocol: clustering, purpose: inter-node and CLI tool communication
+Node: rabbitmq@localhost, interface: 127.0.0.1, port: 5672, protocol: amqp, purpose: AMQP 0-9-1 and AMQP 1.0
+
+[1mFeature flags[0m
+
+Flag: implicit_default_bindings, state: disabled
+Flag: maintenance_mode_status, state: disabled
+Flag: quorum_queue, state: disabled
+Flag: virtual_host_metadata, state: disabled
+
+Application environment of node rabbitmq@localhost ...
+[{asn1,[]},
+ {aten,
+     [{detection_threshold,0.99},
+      {heartbeat_interval,100},
+      {poll_interval,5000},
+      {scaling_factor,1.5}]},
+ {compiler,[]},
+ {credentials_obfuscation,[{enabled,true}]},
+ {crypto,[{fips_mode,false},{rand_cache_size,896}]},
+ {cuttlefish,[]},
+ {gen_batch_server,[]},
+ {goldrush,[]},
+ {inets,[]},
+ {jsx,[]},
+ {kernel,
+     [{inet_default_connect_options,[{nodelay,true}]},
+      {inet_dist_listen_max,25672},
+      {inet_dist_listen_min,25672},
+      {inet_dist_use_interface,{127,0,0,1}},
+      {logger,
+          [{handler,default,logger_std_h,
+               #{config => #{type => standard_io},
+                 formatter =>
+                     {logger_formatter,
+                         #{legacy_header => true,single_line => false}}}}]},
+      {logger_level,notice},
+      {logger_sasl_compatible,false},
+      {shell_docs_ansi,auto},
+      {shutdown_func,{rabbit_prelaunch,shutdown_func}}]},
+ {lager,
+     [{async_threshold,20},
+      {async_threshold_window,5},
+      {colored,false},
+      {colors,
+          [{debug,"\e[0;38m"},
+           {info,"\e[1;37m"},
+           {notice,"\e[1;36m"},
+           {warning,"\e[1;33m"},
+           {error,"\e[1;31m"},
+           {critical,"\e[1;35m"},
+           {alert,"\e[1;44m"},
+           {emergency,"\e[1;41m"}]},
+      {crash_log,"log/crash.log"},
+      {crash_log_count,5},
+      {crash_log_date,"$D0"},
+      {crash_log_msg_size,65536},
+      {crash_log_rotator,lager_rotator_default},
+      {crash_log_size,10485760},
+      {error_logger_format_raw,true},
+      {error_logger_hwm,5000},
+      {error_logger_hwm_original,50},
+      {error_logger_redirect,true},
+      {extra_sinks,
+          [{error_logger_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_channel_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_connection_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_feature_flags_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_federation_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_ldap_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_mirroring_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_prelaunch_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_queue_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_ra_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_shovel_lager_event,
+               [{handlers,[{lager_forwarder_backend,[lager_event,info]}]},
+                {rabbit_handlers,
+                    [{lager_forwarder_backend,[lager_event,info]}]}]},
+           {rabbit_log_upgrade_lager_event,
+               [{handlers,
+                    [{lager_file_backend,
+                         [{date,[]},
+                          {file,
+                              "/var/log/rabbitmq/rabbitmq@localhost_upgrade.log"},
+                          {formatter_config,
+                              [date," ",time," ",color,"[",severity,"] ",
+                               {pid,[]},
+                               " ",message,"\n"]},
+                          {level,info},
+                          {size,0}]}]},
+                {rabbit_handlers,
+                    [{lager_file_backend,
+                         [{date,[]},
+                          {file,
+                              "/var/log/rabbitmq/rabbitmq@localhost_upgrade.log"},
+                          {formatter_config,
+                              [date," ",time," ",color,"[",severity,"] ",
+                               {pid,[]},
+                               " ",message,"\n"]},
+                          {level,info},
+                          {size,0}]}]}]}]},
+      {handlers,
+          [{lager_file_backend,
+               [{date,[]},
+                {file,"/var/log/rabbitmq/rabbitmq@localhost.log"},
+                {formatter_config,
+                    [date," ",time," ",color,"[",severity,"] ",
+                     {pid,[]},
+                     " ",message,"\n"]},
+                {level,debug},
+                {size,0}]}]},
+      {log_root,"/var/log/rabbitmq"},
+      {rabbit_handlers,
+          [{lager_file_backend,
+               [{date,[]},
+                {file,"/var/log/rabbitmq/rabbitmq@localhost.log"},
+                {formatter_config,
+                    [date," ",time," ",color,"[",severity,"] ",
+                     {pid,[]},
+                     " ",message,"\n"]},
+                {level,debug},
+                {size,0}]}]}]},
+ {mnesia,[{dir,"/var/lib/rabbitmq/mnesia/rabbitmq@localhost"}]},
+ {observer_cli,[{plugins,[]}]},
+ {os_mon,
+     [{start_cpu_sup,false},
+      {start_disksup,false},
+      {start_memsup,false},
+      {start_os_sup,false}]},
+ {public_key,[]},
+ {ra,[{data_dir,"/var/lib/rabbitmq/mnesia/rabbitmq@localhost/quorum"},
+      {logger_module,rabbit_log_ra_shim},
+      {wal_max_batch_size,4096},
+      {wal_max_size_bytes,536870912}]},
+ {rabbit,
+     [{auth_backends,[rabbit_auth_backend_internal]},
+      {auth_mechanisms,['PLAIN','AMQPLAIN']},
+      {autocluster,
+          [{peer_discovery_backend,rabbit_peer_discovery_classic_config}]},
+      {autoheal_state_transition_timeout,60000},
+      {background_gc_enabled,false},
+      {background_gc_target_interval,60000},
+      {backing_queue_module,rabbit_priority_queue},
+      {channel_max,2047},
+      {channel_operation_timeout,15000},
+      {channel_tick_interval,60000},
+      {cluster_keepalive_interval,10000},
+      {cluster_nodes,{[],disc}},
+      {cluster_partition_handling,ignore},
+      {collect_statistics,none},
+      {collect_statistics_interval,5000},
+      {config_entry_decoder,[{passphrase,<FILTERED>}]},
+      {connection_max,infinity},
+      {credit_flow_default_credit,{400,200}},
+      {default_consumer_prefetch,{false,0}},
+      {default_permissions,[<<".*">>,<<".*">>,<<".*">>]},
+      {default_user,<FILTERED>"ui">>},
+      {default_user<FILTERED>,[administrator]},
+      {default_vhost,<<"/">>},
+      {delegate_count,16},
+      {disk_free_limit,50000000},
+      {disk_monitor_failure_retries,10},
+      {disk_monitor_failure_retry_interval,120000},
+      {enabled_plugins_file,"/etc/rabbitmq/enabled_plugins"},
+      {feature_flags_file,
+          "/var/lib/rabbitmq/mnesia/rabbitmq@localhost-feature_flags"},
+      {fhc_read_buffering,false},
+      {fhc_write_buffering,true},
+      {frame_max,131072},
+      {halt_on_upgrade_failure,true},
+      {handshake_timeout,10000},
+      {heartbeat,60},
+      {lager_default_file,"/var/log/rabbitmq/rabbitmq@localhost.log"},
+      {lager_log_root,"/var/log/rabbitmq"},
+      {lager_upgrade_file,"/var/log/rabbitmq/rabbitmq@localhost_upgrade.log"},
+      {lazy_queue_explicit_gc_run_operation_threshold,1000},
+      {load_definitions,"/usr/share/rabbitmq/defs.json"},
+      {log,
+          [{file,[{file,"/var/log/rabbitmq/rabbitmq@localhost.log"}]},
+           {categories,
+               [{upgrade,
+                    [{file,
+                         "/var/log/rabbitmq/rabbitmq@localhost_upgrade.log"}]}]}]},
+      {loopback_user<FILTERED>,[<<"ui">>]},
+      {max_message_size,134217728},
+      {memory_monitor_interval,2500},
+      {mirroring_flow_control,true},
+      {mirroring_sync_batch_size,4096},
+      {mnesia_table_loading_retry_limit,10},
+      {mnesia_table_loading_retry_timeout,30000},
+      {msg_store_credit_disc_bound,{4000,800}},
+      {msg_store_file_size_limit,16777216},
+      {msg_store_index_module,rabbit_msg_store_ets_index},
+      {msg_store_io_batch_size,4096},
+      {msg_store_shutdown_timeout,600000},
+      {num_ssl_acceptors,10},
+      {num_tcp_acceptors,10},
+      {password<FILTERED>,rabbit_password<FILTERED>},
+      {plugins_dir,
+          "/usr/lib/rabbitmq/plugins:/usr/lib/rabbitmq/lib/rabbitmq_server-3.8.9/plugins"},
+      {plugins_expand_dir,
+          "/var/lib/rabbitmq/mnesia/rabbitmq@localhost-plugins-expand"},
+      {proxy_protocol,false},
+      {queue_explicit_gc_run_operation_threshold,1000},
+      {queue_index_embed_msgs_below,4096},
+      {queue_index_max_journal_entries,32768},
+      {quorum_cluster_size,5},
+      {quorum_commands_soft_limit,32},
+      {reverse_dns_lookups,false},
+      {server_properties,[]},
+      {ssl_allow_poodle_attack,false},
+      {ssl_apps,[asn1,crypto,public_key,<FILTERED>]},
+      {ssl_cert_login_from,distinguished_name},
+      {ssl_handshake_timeout,5000},
+      {ssl_listeners,[]},
+      {ssl_options,[]},
+      {tcp_listen_options,
+          [{backlog,128},
+           {nodelay,true},
+           {linger,{true,0}},
+           {exit_on_close,false}]},
+      {tcp_listeners,[{"127.0.0.1",5672}]},
+      {trace_vhosts,[]},
+      {vhost_restart_strategy,continue},
+      {vm_memory_calculation_strategy,rss},
+      {vm_memory_high_watermark,0.25},
+      {vm_memory_high_watermark_paging_ratio,0.5},
+      {writer_gc_threshold,1000000000}]},
+ {rabbit_common,[]},
+ {rabbitmq_prelaunch,[]},
+ {ranch,[]},
+ {recon,[]},
+ {sasl,[{errlog_type,error},{sasl_error_logger,false}]},
+ {ssl,[]},
+ {stdlib,[]},
+ {stdout_formatter,[]},
+ {syntax_tools,[]},
+ {sysmon_handler,
+     [{busy_dist_port,true},
+      {busy_port,false},
+      {gc_ms_limit,0},
+      {heap_word_limit,0},
+      {port_limit,100},
+      {process_limit,100},
+      {schedule_ms_limit,0}]},
+ {tools,[{file_util_search_methods,[{[],[]},{"ebin","esrc"},{"ebin","src"}]}]},
+ {xmerl,[]}]
+
+Listing connections ...
+pid	name	port	host	peer_port	peer_host	ssl	ssl_protocol	ssl_key<FILTERED>
+<rabbitmq@localhost.1752977266.18097.52>	127.0.0.1:54938 -> 127.0.0.1:5672	5672	127.0.0.1	54938	127.0.0.1	false								running	2	{0,9,1}	PLAIN	ui	/	60	131072	2047	[{"connection_name","rabbitConnectionFactory#2f8dfde4:0"},{"product","RabbitMQ"},{"copyright","Copyright (c) 2007-2023 Broadcom Inc. or its subsidiaries.."},{"capabilities",[{"exchange_exchange_bindings",true},{"connection.blocked",true},{"authentication_failure_close",true},{"basic.nack",true},{"publisher_confirms",true},{"consumer_cancel_notify",true}]},{"information","Licensed under the MPL. See https://www.rabbitmq.com/"},{"version","5.21.0"},{"platform","Java"}]	53630473	2133379	4046684889	4583831	0	1760410740830
+<rabbitmq@localhost.1752977266.5339.53>	127.0.0.1:49452 -> 127.0.0.1:5672	5672	127.0.0.1	49452	127.0.0.1	false								running	1	{0,9,1}	PLAIN	ui	/	1	131072	2047	[{"platform","golang"},{"capabilities",[{"connection.blocked",true},{"consumer_cancel_notify",true},{"basic.nack",true},{"publisher_confirms",true}]},{"product","AMQP 0.9.1 Client"},{"version","1.9.0"}]	3700311889	6228526	28087589	3510877	0	1760497306140
+
+Listing channels ...
+pid	connection	name	number	user<FILTERED>
+<rabbitmq@localhost.1752977266.5343.53>	<rabbitmq@localhost.1752977266.5339.53>	127.0.0.1:49452 -> 127.0.0.1:5672 (1)	1	ui	/	false	false	0	0	0	0	0	0	0
+<rabbitmq@localhost.1752977266.19943.65>	<rabbitmq@localhost.1752977266.18097.52>	127.0.0.1:54938 -> 127.0.0.1:5672 (72)	72	ui	/	false	false	1	0	0	0	0	250	0
+<rabbitmq@localhost.1752977266.20096.65>	<rabbitmq@localhost.1752977266.18097.52>	127.0.0.1:54938 -> 127.0.0.1:5672 (73)	73	ui	/	false	false	1	0	0	0	0	250	0
+
+Command line arguments of node rabbitmq@localhost ...
+[{root,["/usr/lib/erlang"]},
+ {progname,["erl"]},
+ {home,["/home/rabbitmq"]},
+ {pa,[[]]},
+ {noshell,[]},
+ {noinput,[]},
+ {boot,["start_sasl"]},
+ {kernel,["inet_dist_use_interface","{127,0,0,1}"]},
+ {lager,["crash_log","false"]},
+ {lager,["handlers","[]"]}]
+
+Listing RabbitMQ-specific environment variables defined on node rabbitmq@localhost...
+ADVANCED_CONFIG_FILE=/etc/rabbitmq/advanced.config
+CONFIG_FILE=/etc/rabbitmq/rabbitmq
+CONFIG_FILES=/etc/rabbitmq/conf.d
+ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
+MNESIA_BASE=/var/lib/rabbitmq/mnesia
+NODENAME=rabbitmq@localhost
+PLUGINS_DIR=/usr/lib/rabbitmq/plugins:/usr/lib/rabbitmq/lib/rabbitmq_server-3.8.9/plugins
+RABBITMQ_HOME=/usr/lib/rabbitmq/plugins:/usr/lib/rabbitmq/lib/rabbitmq_server-3.8.9
+RABBITMQ_NODE_IP_ADDRESS=127.0.0.1
+
+Timeout: 60.0 seconds ...
+Listing queues for vhost / ...
+name	durable	auto_delete	arguments	policy	pid	owner_pid	exclusive	exclusive_consumer_pid	exclusive_consumer_tag	messages_ready	messages_unacknowledged	messages	messages_ready_ram	messages_unacknowledged_ram	messages_ram	messages_persistent	message_bytes	message_bytes_ready	message_bytes_unacknowledged	message_bytes_ram	message_bytes_persistent	head_message_timestamp	disk_reads	disk_writes	consumers	consumer_utilisation	memory	slave_pids	synchronised_slave_pids	state	type
+unifi_flow_queue	true	false	[]		<rabbitmq@localhost.1752977266.668.0>		false			0	0	0	0	0	0	0	0	0	0	0	0		0	0	2	1.0	143888			running	classic
+ssl_inspection_queue	true	false	[]		<rabbitmq@localhost.1752977266.664.0>		false			0	0	0	0	0	0	0	0	0	0	0	0		0	0	0		34720			running	classic
+
+Listing exchanges for vhost / ...
+name	type	durable	auto_delete	internal	arguments	policy
+	direct	true	false	false	[]	
+amq.rabbitmq.trace	topic	true	false	true	[]	
+amq.direct	direct	true	false	false	[]	
+amq.headers	headers	true	false	false	[]	
+amq.topic	topic	true	false	false	[]	
+amq.fanout	fanout	true	false	false	[]	
+amq.match	headers	true	false	false	[]	
+unifi_flow_exchange	topic	true	false	false	[]	
+
+Listing bindings for vhost /...
+source_name	source_kind	destination_name	destination_kind	routing_key<FILTERED>
+	exchange	unifi_flow_queue	queue	unifi_flow_queue	[]
+	exchange	ssl_inspection_queue	queue	ssl_inspection_queue	[]
+unifi_flow_exchange	exchange	unifi_flow_queue	queue	flow_event	[]
+
+Listing permissions for vhost "/" ...
+user<FILTERED>
+ui	.*	.*	.*
+
+Listing policies for vhost "/" ...
+
+
+Listing global runtime parameters ...
+name	value
+cluster_name	"rabbitmq@patriarkatet-udm"
+internal_cluster_id	"rabbitmq-cluster-id-R2rHeXM2CNwkz2Yo_4-qBw"
+
+Listing runtime parameters for vhost "/" ...
+

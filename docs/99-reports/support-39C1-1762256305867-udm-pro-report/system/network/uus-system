@@ -1,0 +1,45 @@
+{
+ "analyticsEnabled": null,
+ "arp": {
+  "arpCacheSize": 262144,
+  "baseReachableTime": 600
+ },
+ "defaultGateway": [],
+ "dnsServers": [
+  {
+   "address": "148.122.16.253",
+   "interface": "eth8",
+   "priority": 0,
+   "type": "dynamic",
+   "version": "v4"
+  },
+  {
+   "address": "148.122.164.253",
+   "interface": "eth8",
+   "priority": 0,
+   "type": "dynamic",
+   "version": "v4"
+  },
+  {
+   "address": "1.1.1.1",
+   "interface": "lo",
+   "origin": null,
+   "priority": 1,
+   "type": "static",
+   "version": "v4"
+  }
+ ],
+ "domainName": "lokal",
+ "factoryDefault": false,
+ "fwReleaseChannel": "release",
+ "hostname": "patriarkatet-udm",
+ "timezone": "Europe/Oslo",
+ "user<FILTERED>": [
+  {
+   "aliases": [],
+   "readOnly": false,
+   "sshkey<FILTERED>": [],
+   "user<FILTERED>": "<FILTERED>"
+  }
+ ]
+}

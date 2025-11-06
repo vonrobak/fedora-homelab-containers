@@ -1,0 +1,161 @@
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 state UNKNOWN qlen 1000
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    4753987061 18594609 0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    4753987061 18594609 0       0       0       0       
+4: eth8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c9/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    271305872  3282474  0       0       0       3282473 
+    TX: bytes  packets  errors  dropped carrier collsns 
+    1816       15       0       0       0       0       
+6: switch0: <BROADCAST,MULTICAST,PROMISC,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9c05:d6ff:fe4a:39c2/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    728        7        0       0       0       0       
+15: eth0@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c1/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    952        10       0       0       0       0       
+16: eth1@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c2/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+17: eth2@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c3/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+18: eth3@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c4/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+19: eth4@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c5/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+20: eth5@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c6/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+21: eth6@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c7/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+22: eth7@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39c8/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+23: eth10.2@eth10: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 state LOWERLAYERDOWN qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39cb/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        6       0       0       0       
+24: eth10.3@eth10: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 state LOWERLAYERDOWN qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39cb/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        6       0       0       0       
+25: eth10.99@eth10: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 state LOWERLAYERDOWN qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39cb/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        6       0       0       0       
+26: switch0.1@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9c05:d6ff:fe4a:39c2/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+27: switch0.2@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9c05:d6ff:fe4a:39c2/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+28: switch0.3@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9c05:d6ff:fe4a:39c2/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+29: switch0.99@switch0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9c05:d6ff:fe4a:39c2/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    648        7        0       0       0       0       
+30: br0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39cb/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    4194129599 4234376  0       0       0       1761016 
+    TX: bytes  packets  errors  dropped carrier collsns 
+    276069651  792644   0       0       0       0       
+31: br2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39cb/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    1392491585 2054474  0       0       0       2054230 
+    TX: bytes  packets  errors  dropped carrier collsns 
+    1134767031 1430734  0       0       0       0       
+32: br3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39cb/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    1407800718 2181581  0       0       0       2181581 
+    TX: bytes  packets  errors  dropped carrier collsns 
+    1407801614 2181591  0       0       0       0       
+33: br99: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::9e05:d6ff:fe4a:39cb/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    744        8        0       0       0       0       
+34: honeypot0: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 state UNKNOWN qlen 1000
+    inet6 fe80::88e2:e8ff:fe22:331c/64 scope link 
+       valid_lft forever preferred_lft forever
+    RX: bytes  packets  errors  dropped missed  mcast   
+    0          0        0       0       0       0       
+    TX: bytes  packets  errors  dropped carrier collsns 
+    0          0        0       0       0       0       

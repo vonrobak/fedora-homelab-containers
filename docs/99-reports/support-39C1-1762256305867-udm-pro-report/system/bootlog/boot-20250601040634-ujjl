@@ -1,0 +1,70 @@
+sysid (ea15) detect, load ui-boot-udm
+
+Ubiquiti Debian OS initialization...
+Begin: Waiting device /dev/mtdblock5 ... done.
+Begin: Waiting device /dev/disk/by-partlabel/overlay ... 5 ...
+4 ...
+done.
+filesystem on the /dev/mtdblock5 is in a consistent state
+Begin: Mounting /dev/disk/by-partlabel/overlay to /mnt/.rwfs ... Recovering user<FILTERED>
+fsck.ext4 -pf /dev/disk/by-partlabel/overlay exits with 1
+filesystem on the /dev/disk/by-partlabel/overlay is in a consistent state
+done.
+Firmware update reboot
+Begin: Mounting /dev/disk/by-partlabel/root to /mnt/.boot ... Begin: Waiting device /dev/loop0 ... done.
+Checking rootfs.new ...
+Valid rootfs.new, replace current rootfs
+done.
+Curr FW version: UDMPRO.al324.v4.2.12.66adb93.250515.1327
+Prev FW version: UDMPRO.al324.v4.1.22.47ca036.250414.1649
+firmware update reboot
+Begin: Cleaning up overlay filesystem ... Begin: Mounting /dev/disk/by-partlabel/overlay to /mnt/.rwfs ... Recovering user<FILTERED>
+filesystem on the /dev/disk/by-partlabel/overlay is in a consistent state
+done.
+preserve files
+var/lib/systemd/timesync/clock
+cleanup dir /mnt/.rwfs/data
+Remove /mnt/.rwfs/data/bin
+Remove /mnt/.rwfs/data/sbin
+Remove /mnt/.rwfs/data/ini
+Remove /mnt/.rwfs/data/lib
+Remove /mnt/.rwfs/data/lib64
+Remove /mnt/.rwfs/data/usr
+Remove /mnt/.rwfs/data/etc/alternatives
+Remove /mnt/.rwfs/data/etc/apt/preferences.d/10-unsupported-app
+Remove /mnt/.rwfs/data/etc/ssh/sshd_config
+Remove /mnt/.rwfs/data/etc/default/earlyoom
+Remove /mnt/.rwfs/data/etc/default/kdump-tools
+Remove /mnt/.rwfs/data/etc/default/unifi
+Remove /mnt/.rwfs/data/etc/default/ubnt-dpkg-cache
+Remove /mnt/.rwfs/data/etc/default/ubnt-dpkg-support
+Remove /mnt/.rwfs/data/etc/default/ubnt-zram-swap
+Remove /mnt/.rwfs/data/etc/default/watchdog
+Remove /mnt/.rwfs/data/etc/watchdog.conf
+Remove /mnt/.rwfs/data/etc/init.d
+Remove /mnt/.rwfs/data/etc/sudoers.d
+Remove /mnt/.rwfs/data/etc/pam.d
+Remove /mnt/.rwfs/data/etc/sysctl.d
+Remove /mnt/.rwfs/data/etc/udev
+Remove /mnt/.rwfs/data/etc/syslog-ng/syslog-ng.conf
+Remove /mnt/.rwfs/data/etc/samba/smb.conf
+Remove /mnt/.rwfs/data/etc/samba/share.conf
+Remove /mnt/.rwfs/data/etc/nginx
+restore files
+var/lib/systemd/timesync/clock
+done.
+Begin: Mounting /dev/disk/by-partlabel/overlay to /mnt/.rwfs ... Recovering user<FILTERED>
+filesystem on the /dev/disk/by-partlabel/overlay is in a consistent state
+done.
+Begin: Setting up overlay filesystem ... Begin: Purifying /mnt/.rwfs/data ... done.
+done.
+Begin: Moving mountpoints to overlay filesystem ... done.
+Begin: Creating essential directories ... done.
+Begin: Mounting log ... Recovering log ...
+filesystem on the /dev/disk/by-partlabel/log is in a consistent state
+done.
+Begin: Mounting persistent ... Recovering persistent ...
+filesystem on the /dev/disk/by-partlabel/persistent is in a consistent state
+done.
+done.
+  checking machine ID...OK.

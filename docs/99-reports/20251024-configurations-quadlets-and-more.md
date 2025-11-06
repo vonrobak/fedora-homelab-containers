@@ -254,7 +254,7 @@ http:
           crowdsecMode: live
           crowdsecLapiScheme: http
           crowdsecLapiHost: crowdsec:8080
-          crowdsecLapiKey: PMzGXoBZt1GkM0CV3nLC4c2VC01sR/PyV9d2VU5H7Gs
+          crowdsecLapiKey: "{{ env "CROWDSEC_API_KEY" }}"
 ➜  ~ cat /home/patriark/containers/config/traefik/dynamic/rate-limit.yml 
 # Rate Limiting Configuration
 

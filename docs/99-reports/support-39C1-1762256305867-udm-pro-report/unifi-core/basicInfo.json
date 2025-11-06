@@ -1,0 +1,2485 @@
+{
+  "summary": {
+    "UniFi OS Version": "4.3.6",
+    "UniFi OS Release channel": "release",
+    "Applications": [
+      {
+        "name": "network",
+        "version": "9.5.21",
+        "state": "active",
+        "releaseChannel": "release"
+      },
+      {
+        "name": "protect",
+        "version": "",
+        "state": "inactive",
+        "releaseChannel": "release"
+      },
+      {
+        "name": "access",
+        "version": "",
+        "state": "inactive",
+        "releaseChannel": "release"
+      },
+      {
+        "name": "talk",
+        "version": "",
+        "state": "inactive",
+        "releaseChannel": "release"
+      },
+      {
+        "name": "connect",
+        "version": "",
+        "state": "inactive",
+        "releaseChannel": "release"
+      },
+      {
+        "name": "innerspace",
+        "version": "",
+        "state": "inactive",
+        "releaseChannel": "release"
+      },
+      {
+        "name": "apollo",
+        "version": "",
+        "state": "inactive",
+        "releaseChannel": "release"
+      }
+    ],
+    "CPU": {
+      "model": "unknown",
+      "currentload": 0.171,
+      "temperature": 44.8
+    },
+    "Memory": {
+      "free": 62232,
+      "total": 4040828,
+      "available": 1162312
+    },
+    "Storage": [
+      {
+        "id": 0,
+        "type": "emmc",
+        "mounted": true,
+        "mountPoint": "/",
+        "size": 9898135552,
+        "used": 2062532608,
+        "avail": 7310688256
+      },
+      {
+        "id": 1,
+        "type": "hdd",
+        "mounted": false,
+        "mountPoint": "/srv",
+        "size": null,
+        "used": null,
+        "avail": null,
+        "device": {
+          "mounted": false,
+          "model": null,
+          "serial": null,
+          "firmware": null,
+          "size": null,
+          "rpm": null,
+          "healthy": false,
+          "ataVersion": null,
+          "sataVersion": null
+        }
+      }
+    ]
+  },
+  "detail": {
+    "apps": [
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "network",
+        "type": "controller",
+        "port": 8081,
+        "ui": {
+          "baseUrl": "/network/",
+          "publicPath": "/app-assets/network/",
+          "cdnPublicPaths": [
+            "https://net-fe-static-assets.network-controller.svc.ui.com/release/9.5.21.0/unifi/"
+          ],
+          "prefetch": [
+            "react/js/swai.991bed81ac9dfc1c147e.js",
+            "react/js/dynamic.ufsdn.acac68fec419bcc8fa31.js",
+            "react/js/dynamic.appSwitcher.47e84e25c661e5f16a67.js",
+            "react/js/toast-provider.cdcddfd3da5ec6e2d9bf.js",
+            "react/js/react-app-wrapper.47bf0c6071e3e6d45c5c.js",
+            "react/js/controller-warnings.5211e4a3f4383a147127.js",
+            "react/js/webrtc-connection.ce85a66146b72bf38b3f.js",
+            "react/js/web-socket-manager.72c2bc1df1690770475c.js",
+            "react/js/ulteProAdoption.4bf805809474ffe69a20.js",
+            "react/js/app.0f22049453111c56a38d.js",
+            "react/js/radios.2631d175bba0abe12b27.js",
+            "react/js/swai-toasts.40bdadc41fc66456ed73.js",
+            "react/js/hybrid-toasts.bb67e21e77ed57db97c3.js",
+            "react/js/default-toasts.297c61807a4651d85ec6.js",
+            "react/js/isolated-hotspot-manager.9378090a85b7ac058923.js",
+            "react/js/network-server-header.9ea1e87ecb368d5c8b12.js",
+            "react/js/prefetcher.68fc7be149e594c6a1d1.js",
+            "react/js/legacy-interface-unsupported.1598d20178f8014bc17d.js",
+            "react/js/device-adoption-redirector.908c37d5b5e387b87216.js",
+            "react/js/search-tag-initiator.41beb44d93a415dfe095.js",
+            "react/js/deprecated-redirector.af349fe370022b2b5c87.js",
+            "react/js/swai-routes-injector.e9f3c75a318128091b6d.js",
+            "react/js/swai-etpro-adapter-injector.813d89b0ee27b6591884.js",
+            "react/js/swai-sso-user-settings-adapter-injector.e3f3b72823c54a2a547e.js",
+            "react/js/swai-wan-magic-adapter-injector.38732852f4fc06b98bca.js",
+            "react/js/wifiPerformance.4e3f37391af67c64a222.js",
+            "react/js/radiosPage.364cd9bccc8db6036c93.js",
+            "react/js/channelAi.ccc83275e1ab90fc535f.js",
+            "react/js/flows.f369a7c5efb37686b6ff.js",
+            "react/js/activity.f7b5c6e3ef70330d26f6.js",
+            "react/js/hotspot.bd354b74189a325f0481.js",
+            "react/js/insights.34965d2647e5349ba224.js",
+            "react/js/devices.bc1b63baae7b72496488.js",
+            "react/js/score.41a37cd6b72ef1ebb1f2.js",
+            "react/js/topology.a16f4dfc277844ac2776.js",
+            "react/js/clients.d8a1a02c6b2c33dd3129.js",
+            "react/js/ports.21fd35d4512058d927b5.js",
+            "react/js/logs.0adefae786a4dc57b31d.js",
+            "react/js/settings.0abb7322ee1a43b16dfa.js",
+            "react/js/adminPage.93ab85f3b89daff21141.js",
+            "react/js/innerspace.3916338920877c7ff9a6.js",
+            "react/js/hotspot-guests.65f06d3124b6c29ffbbf.js",
+            "react/js/hotspot-payments.8e9bcaa9620bce5fa043.js",
+            "react/js/hotspot-portal.d4a05281ce46aed3299a.js",
+            "react/js/hotspot-vouchers.16b6f8bb7a2272167350.js",
+            "react/js/analyzer.95596b0833b9828a8611.js",
+            "react/js/speedTests.efd51f08ddbb4e4e5851.js"
+          ],
+          "entrypoint": "hybrid-swai-9.5.21.0-g4d72f483d.js",
+          "swaiVersion": 3,
+          "apiPrefix": "/proxy/network/"
+        },
+        "required": true,
+        "updatable": true,
+        "state": "active",
+        "versionRaw": "9.5.21-31260-1",
+        "version": "9.5.21",
+        "isInstalled": true,
+        "isRunning": true,
+        "status": "ok",
+        "statusMessage": "",
+        "installState": "installed",
+        "unadoptedDevices": [],
+        "host": "127.0.0.1",
+        "protocol": "http",
+        "swaiVersion": 3,
+        "uiDir": "/usr/lib/unifi/webapps/ROOT/app-unifi",
+        "uiCdn": "https://net-fe-static-assets.network-controller.svc.ui.com/release/9.5.21.0/unifi",
+        "uiIndex": "hybrid-swai-9.5.21.0-g4d72f483d.js",
+        "uiVersion": "9.5.21.0",
+        "prefetch": [
+          "react/js/swai.991bed81ac9dfc1c147e.js",
+          "react/js/dynamic.ufsdn.acac68fec419bcc8fa31.js",
+          "react/js/dynamic.appSwitcher.47e84e25c661e5f16a67.js",
+          "react/js/toast-provider.cdcddfd3da5ec6e2d9bf.js",
+          "react/js/react-app-wrapper.47bf0c6071e3e6d45c5c.js",
+          "react/js/controller-warnings.5211e4a3f4383a147127.js",
+          "react/js/webrtc-connection.ce85a66146b72bf38b3f.js",
+          "react/js/web-socket-manager.72c2bc1df1690770475c.js",
+          "react/js/ulteProAdoption.4bf805809474ffe69a20.js",
+          "react/js/app.0f22049453111c56a38d.js",
+          "react/js/radios.2631d175bba0abe12b27.js",
+          "react/js/swai-toasts.40bdadc41fc66456ed73.js",
+          "react/js/hybrid-toasts.bb67e21e77ed57db97c3.js",
+          "react/js/default-toasts.297c61807a4651d85ec6.js",
+          "react/js/isolated-hotspot-manager.9378090a85b7ac058923.js",
+          "react/js/network-server-header.9ea1e87ecb368d5c8b12.js",
+          "react/js/prefetcher.68fc7be149e594c6a1d1.js",
+          "react/js/legacy-interface-unsupported.1598d20178f8014bc17d.js",
+          "react/js/device-adoption-redirector.908c37d5b5e387b87216.js",
+          "react/js/search-tag-initiator.41beb44d93a415dfe095.js",
+          "react/js/deprecated-redirector.af349fe370022b2b5c87.js",
+          "react/js/swai-routes-injector.e9f3c75a318128091b6d.js",
+          "react/js/swai-etpro-adapter-injector.813d89b0ee27b6591884.js",
+          "react/js/swai-sso-user-settings-adapter-injector.e3f3b72823c54a2a547e.js",
+          "react/js/swai-wan-magic-adapter-injector.38732852f4fc06b98bca.js",
+          "react/js/wifiPerformance.4e3f37391af67c64a222.js",
+          "react/js/radiosPage.364cd9bccc8db6036c93.js",
+          "react/js/channelAi.ccc83275e1ab90fc535f.js",
+          "react/js/flows.f369a7c5efb37686b6ff.js",
+          "react/js/activity.f7b5c6e3ef70330d26f6.js",
+          "react/js/hotspot.bd354b74189a325f0481.js",
+          "react/js/insights.34965d2647e5349ba224.js",
+          "react/js/devices.bc1b63baae7b72496488.js",
+          "react/js/score.41a37cd6b72ef1ebb1f2.js",
+          "react/js/topology.a16f4dfc277844ac2776.js",
+          "react/js/clients.d8a1a02c6b2c33dd3129.js",
+          "react/js/ports.21fd35d4512058d927b5.js",
+          "react/js/logs.0adefae786a4dc57b31d.js",
+          "react/js/settings.0abb7322ee1a43b16dfa.js",
+          "react/js/adminPage.93ab85f3b89daff21141.js",
+          "react/js/innerspace.3916338920877c7ff9a6.js",
+          "react/js/hotspot-guests.65f06d3124b6c29ffbbf.js",
+          "react/js/hotspot-payments.8e9bcaa9620bce5fa043.js",
+          "react/js/hotspot-portal.d4a05281ce46aed3299a.js",
+          "react/js/hotspot-vouchers.16b6f8bb7a2272167350.js",
+          "react/js/analyzer.95596b0833b9828a8611.js",
+          "react/js/speedTests.efd51f08ddbb4e4e5851.js"
+        ],
+        "integrationApis": [
+          {
+            "apiDocsLocation": "/proxy/network/api-docs/integration.json",
+            "name": "Integration",
+            "version": "0.1"
+          }
+        ],
+        "features": {
+          "alarmManager": true
+        },
+        "proxy": {
+          "ui": "/app-assets/network",
+          "api": "/proxy/network"
+        },
+        "initialDeviceListSynced": true,
+        "isConfigured": true,
+        "info": {
+          "timestamp": 1762256315790,
+          "startedAt": 1760410643548,
+          "udmConnected": true,
+          "isReadyForSetup": true,
+          "udmProvisionCompleted": true,
+          "cloudApplicationEventEndpoint": "/v2/api/cloud/application/event",
+          "apCount": 1,
+          "switchCount": 1,
+          "wifiExperienceScore": 99,
+          "wanStatus": "OK",
+          "health": {
+            "label": "excellent"
+          },
+          "network_status": {
+            "health": "excellent",
+            "historical_satisfaction": [
+              97,
+              97,
+              99,
+              100,
+              99,
+              100,
+              99,
+              99,
+              99,
+              98,
+              98,
+              98
+            ]
+          },
+          "clientCount": 13,
+          "wiredClients": 9,
+          "wirelessClients": 4,
+          "guestClients": 0,
+          "lastSpeedTest": {
+            "downloadSpeed": 942,
+            "ping": 10,
+            "runDate": 1761308208,
+            "uploadSpeed": 51
+          },
+          "portTable": [
+            {
+              "fullDuplex": false,
+              "ifname": "eth8",
+              "name": "Port 9",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 11475,
+              "throughputTx": 11636,
+              "type": "wan",
+              "up": false,
+              "usageRx": 12416903285,
+              "usageTx": 2189035939
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth0",
+              "name": "Port 1",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 752,
+              "throughputTx": 1824,
+              "type": "lan",
+              "up": false,
+              "usageRx": 6779731,
+              "usageTx": 67804630
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth1",
+              "name": "Port 2 HTPC",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 13503,
+              "throughputTx": 216032,
+              "type": "lan",
+              "up": false,
+              "usageRx": 1015305199.5,
+              "usageTx": 1141094775
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth5",
+              "name": "Port 6",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 0,
+              "throughputTx": 354,
+              "type": "lan",
+              "up": false,
+              "usageRx": 8474850.5,
+              "usageTx": 35988338.5
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth6",
+              "name": "Port 7",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 439,
+              "throughputTx": 726,
+              "type": "lan",
+              "up": false,
+              "usageRx": 205878421,
+              "usageTx": 9603083849
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth7",
+              "name": "Port 8",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 23346,
+              "throughputTx": 45211,
+              "type": "lan",
+              "up": false,
+              "usageRx": 1104358068,
+              "usageTx": 2114981596.5
+            }
+          ],
+          "gatewayConfigVersion": "c5ca3ca18f9fd532",
+          "teleportEnabled": true,
+          "teleportSupported": true,
+          "throughput": 23111,
+          "isMagicSiteToSiteVpnConfigured": false
+        },
+        "handledRequirements": {},
+        "controllerStatus": "READY",
+        "updateProgress": 100
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "protect",
+        "type": "controller",
+        "port": 7080,
+        "ui": {
+          "baseUrl": "/protect/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "access",
+        "type": "controller",
+        "port": 12080,
+        "ui": {
+          "baseUrl": "/access/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "talk",
+        "type": "controller",
+        "port": 30080,
+        "ui": {
+          "baseUrl": "/talk/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "connect",
+        "type": "controller",
+        "port": 18080,
+        "ui": {
+          "baseUrl": "/connect/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "innerspace",
+        "type": "controller",
+        "port": 17080,
+        "ui": {
+          "baseUrl": "/innerspace/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "apollo",
+        "type": "controller",
+        "port": 19880,
+        "ui": {
+          "baseUrl": "/apollo/"
+        },
+        "hidden": true,
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "type": "app",
+        "host": "127.0.0.1",
+        "protocol": "http",
+        "port": 9080,
+        "swaiVersion": 2,
+        "uiDir": "/usr/lib/ulp-go/swai",
+        "uiCdn": "https://cdn.pkg.svc.ui.com/unifi-ulp-ui/1.11.21-3602-bf45f50191",
+        "uiIndex": "index.1.11.21-3602.js",
+        "uiVersion": "1.11.21-3602",
+        "uiIcon": "icon.png",
+        "isInstalled": true,
+        "isConfigured": true,
+        "isRunning": true,
+        "version": "1.11.21+5282",
+        "prefetch": [
+          "114.f17c3878.chunk.js",
+          "46.beac2895.chunk.js",
+          "808.b74a4465.chunk.js",
+          "94.9b0b90ac.chunk.js",
+          "981.3688c927.chunk.js",
+          "982.b0268d71.chunk.js",
+          "DoorAccess.f8d36d9e.chunk.js",
+          "PasswordStrong.5e2f4111.chunk.js",
+          "credentials.21e5c62e.chunk.js",
+          "uid-agent.bc8e3610.chunk.js",
+          "index.1.11.21-3602.js"
+        ],
+        "flags": [
+          "skipConnectionBlocker",
+          "supportUserPanel",
+          "isIdentityStandard",
+          "isIdentityEnterprise",
+          "unifiedAdminsUsersPage"
+        ],
+        "features": {
+          "apiIntegration": true,
+          "assignmentFlags": true,
+          "driveUIComponentForUserConsolidation": true,
+          "fetchServiceStatusFromAccess": true,
+          "identityCertificateDistribution": true,
+          "supportAPIGetUcsUpdateConfig": true,
+          "supportAPIKeysMigration": true,
+          "supportFeatures": true,
+          "upgradeUcs": true,
+          "userConsolidation": true,
+          "userConsolidationViaGlobalFunc": true
+        },
+        "name": "users",
+        "proxy": {
+          "ui": "/app-assets/users",
+          "api": "/proxy/users"
+        },
+        "ui": {
+          "baseUrl": "/users/",
+          "publicPath": "/app-assets/users/",
+          "cdnPublicPaths": [
+            "https://cdn.pkg.svc.ui.com/unifi-ulp-ui/1.11.21-3602-bf45f50191/"
+          ],
+          "prefetch": [
+            "114.f17c3878.chunk.js",
+            "46.beac2895.chunk.js",
+            "808.b74a4465.chunk.js",
+            "94.9b0b90ac.chunk.js",
+            "981.3688c927.chunk.js",
+            "982.b0268d71.chunk.js",
+            "DoorAccess.f8d36d9e.chunk.js",
+            "PasswordStrong.5e2f4111.chunk.js",
+            "credentials.21e5c62e.chunk.js",
+            "uid-agent.bc8e3610.chunk.js",
+            "index.1.11.21-3602.js"
+          ],
+          "entrypoint": "index.1.11.21-3602.js",
+          "swaiVersion": 2,
+          "apiPrefix": "/proxy/users/",
+          "flags": [
+            "skipConnectionBlocker",
+            "supportUserPanel",
+            "isIdentityStandard",
+            "isIdentityEnterprise",
+            "unifiedAdminsUsersPage"
+          ]
+        },
+        "info": {
+          "users": {
+            "owners": 1,
+            "superAdmins": 0,
+            "limitedAdmins": 0,
+            "users": 0
+          }
+        },
+        "identityFeatures": {
+          "ucs": true,
+          "ucsAgent": true,
+          "ucsRemoteAccessViaUOS": true,
+          "standard": true,
+          "unifiedAdminsUsersPage": true,
+          "hostingIdentityHubScore": 145
+        },
+        "identityState": {
+          "standardActivated": false,
+          "enterpriseActivated": false,
+          "organizationManaged": false,
+          "migrationNeeded": false,
+          "usersOrAdminsExist": false,
+          "migrationStatus": "",
+          "migrationStatusMessage": "",
+          "ucsActivated": false,
+          "ucsAgentActivated": false,
+          "ucsVersion": "1.2.1+2151",
+          "ucsAgentVersion": "1.2.1+411",
+          "ucsSetuped": false
+        },
+        "controllerStatus": "READY"
+      },
+      {
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "name": "talk-relay"
+      },
+      {
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "name": "drive"
+      },
+      {
+        "state": "inactive",
+        "versionRaw": "1.60.7+3249",
+        "version": "1.60.7+3249",
+        "isInstalled": true,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "installed",
+        "name": "uid-agent"
+      }
+    ],
+    "userPref": {
+      "disabled": [],
+      "unhidden": [],
+      "updateSchedules": {}
+    },
+    "settings": {
+      "isSetup": true,
+      "location": {
+        "lat": 61.4579792,
+        "long": 8.9714013,
+        "radius": 200,
+        "text": "Tessanden, Innlandet, Norway"
+      },
+      "name": "patriarkatet-udm",
+      "timezone": "Europe/Oslo",
+      "sendDiagnostics": "anonymous",
+      "autoBackupEnabled": true,
+      "internetRequired": true,
+      "lcmSettings": {
+        "enabled": true,
+        "color": "0139FF",
+        "brightness": 80
+      },
+      "ledSettings": {
+        "enabled": true
+      },
+      "ustorage": {
+        "targetSettings": {
+          "hotspare": false,
+          "raid": "raid5",
+          "isConfigured": false
+        }
+      },
+      "setup_device_id": "d9eaf835-750a-4e41-a4e3-c490beb369a7",
+      "anonymous_network_application_id": "25d30387-7b14-4596-b74e-a80b68a0245c",
+      "setupType": "ios",
+      "setupDuration": null,
+      "country": 578,
+      "isInternalUser": false,
+      "nightMode": {
+        "onMinute": 1320,
+        "offMinute": 480
+      },
+      "emailServiceProvider": "ui"
+    },
+    "firmware": {
+      "latest": {
+        "channel": "release",
+        "created": "2025-07-16T19:54:03Z",
+        "file_size": 908392934,
+        "id": "e98a53a1-ecf1-4186-88bd-3773b40bdc7b",
+        "md5": "6b0bc581f9b25ec2bfef30e358083f32",
+        "sha256_checksum": "3d81a709c9ef5c3f49c5b99e8666fab3aff5335b1587e87aa09ad6d8705edc3a",
+        "platform": "UDMPRO",
+        "product": "unifi-dream",
+        "updated": "2025-07-16T19:57:40Z",
+        "tags": {
+          "ubnt_version": "UDMPRO.al324.v4.3.6.fb6f502.250705.2119"
+        },
+        "version": "v4.3.6+fb6f502",
+        "version_major": 4,
+        "version_minor": 3,
+        "version_patch": 6,
+        "version_build": "fb6f502",
+        "_links": {
+          "self": {
+            "href": "https://fw-update.ui.com/api/firmware/e98a53a1-ecf1-4186-88bd-3773b40bdc7b"
+          },
+          "data": {
+            "href": "https://fw-download.ubnt.com/data/unifi-dream/5669-UDMPRO-4.3.6-e98a53a1-ecf1-4186-88bd-3773b40bdc7b.bin"
+          },
+          "upload": [
+            {
+              "name": "data",
+              "href": "https://fw-update.ui.com/api/firmware/e98a53a1-ecf1-4186-88bd-3773b40bdc7b/data"
+            },
+            {
+              "name": "changelog",
+              "href": "https://fw-update.ui.com/api/firmware/e98a53a1-ecf1-4186-88bd-3773b40bdc7b/changelog"
+            }
+          ]
+        },
+        "cachedAt": 1762228591370,
+        "timestamp": 1762256225715
+      },
+      "latestByChannel": {
+        "release": {
+          "channel": "release",
+          "created": "2025-07-16T19:54:03Z",
+          "file_size": 908392934,
+          "id": "e98a53a1-ecf1-4186-88bd-3773b40bdc7b",
+          "md5": "6b0bc581f9b25ec2bfef30e358083f32",
+          "sha256_checksum": "3d81a709c9ef5c3f49c5b99e8666fab3aff5335b1587e87aa09ad6d8705edc3a",
+          "platform": "UDMPRO",
+          "product": "unifi-dream",
+          "updated": "2025-07-16T19:57:40Z",
+          "tags": {
+            "ubnt_version": "UDMPRO.al324.v4.3.6.fb6f502.250705.2119"
+          },
+          "version": "v4.3.6+fb6f502",
+          "version_major": 4,
+          "version_minor": 3,
+          "version_patch": 6,
+          "version_build": "fb6f502",
+          "_links": {
+            "self": {
+              "href": "https://fw-update.ui.com/api/firmware/e98a53a1-ecf1-4186-88bd-3773b40bdc7b"
+            },
+            "data": {
+              "href": "https://fw-download.ubnt.com/data/unifi-dream/5669-UDMPRO-4.3.6-e98a53a1-ecf1-4186-88bd-3773b40bdc7b.bin"
+            },
+            "upload": [
+              {
+                "name": "data",
+                "href": "https://fw-update.ui.com/api/firmware/e98a53a1-ecf1-4186-88bd-3773b40bdc7b/data"
+              },
+              {
+                "name": "changelog",
+                "href": "https://fw-update.ui.com/api/firmware/e98a53a1-ecf1-4186-88bd-3773b40bdc7b/changelog"
+              }
+            ]
+          },
+          "cachedAt": 1762228591370,
+          "timestamp": 1762256225715
+        }
+      },
+      "progress": {
+        "state": "done",
+        "url": "https://fw-download.ubnt.com/data/unifi-dream/5669-UDMPRO-4.3.6-e98a53a1-ecf1-4186-88bd-3773b40bdc7b.bin",
+        "filePath": "/data/unifi-core/firmware/fwupdate.bin",
+        "progress": 100
+      },
+      "channels": [
+        "release"
+      ],
+      "releaseChannel": "release",
+      "update": {
+        "state": "NOT_STARTED",
+        "failedReason": "NONE"
+      },
+      "updatedFrom": null,
+      "autoUpdate": {
+        "schedule": {
+          "frequency": "daily",
+          "hour": 4,
+          "day": 0
+        },
+        "includeApplications": true,
+        "preferencesPrompt": null
+      },
+      "unvrFlashStorageMigrationState": null,
+      "lastUpdateContext": null,
+      "schedule": null
+    },
+    "controllers": [
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "network",
+        "type": "controller",
+        "port": 8081,
+        "ui": {
+          "baseUrl": "/network/",
+          "publicPath": "/app-assets/network/",
+          "cdnPublicPaths": [
+            "https://net-fe-static-assets.network-controller.svc.ui.com/release/9.5.21.0/unifi/"
+          ],
+          "prefetch": [
+            "react/js/swai.991bed81ac9dfc1c147e.js",
+            "react/js/dynamic.ufsdn.acac68fec419bcc8fa31.js",
+            "react/js/dynamic.appSwitcher.47e84e25c661e5f16a67.js",
+            "react/js/toast-provider.cdcddfd3da5ec6e2d9bf.js",
+            "react/js/react-app-wrapper.47bf0c6071e3e6d45c5c.js",
+            "react/js/controller-warnings.5211e4a3f4383a147127.js",
+            "react/js/webrtc-connection.ce85a66146b72bf38b3f.js",
+            "react/js/web-socket-manager.72c2bc1df1690770475c.js",
+            "react/js/ulteProAdoption.4bf805809474ffe69a20.js",
+            "react/js/app.0f22049453111c56a38d.js",
+            "react/js/radios.2631d175bba0abe12b27.js",
+            "react/js/swai-toasts.40bdadc41fc66456ed73.js",
+            "react/js/hybrid-toasts.bb67e21e77ed57db97c3.js",
+            "react/js/default-toasts.297c61807a4651d85ec6.js",
+            "react/js/isolated-hotspot-manager.9378090a85b7ac058923.js",
+            "react/js/network-server-header.9ea1e87ecb368d5c8b12.js",
+            "react/js/prefetcher.68fc7be149e594c6a1d1.js",
+            "react/js/legacy-interface-unsupported.1598d20178f8014bc17d.js",
+            "react/js/device-adoption-redirector.908c37d5b5e387b87216.js",
+            "react/js/search-tag-initiator.41beb44d93a415dfe095.js",
+            "react/js/deprecated-redirector.af349fe370022b2b5c87.js",
+            "react/js/swai-routes-injector.e9f3c75a318128091b6d.js",
+            "react/js/swai-etpro-adapter-injector.813d89b0ee27b6591884.js",
+            "react/js/swai-sso-user-settings-adapter-injector.e3f3b72823c54a2a547e.js",
+            "react/js/swai-wan-magic-adapter-injector.38732852f4fc06b98bca.js",
+            "react/js/wifiPerformance.4e3f37391af67c64a222.js",
+            "react/js/radiosPage.364cd9bccc8db6036c93.js",
+            "react/js/channelAi.ccc83275e1ab90fc535f.js",
+            "react/js/flows.f369a7c5efb37686b6ff.js",
+            "react/js/activity.f7b5c6e3ef70330d26f6.js",
+            "react/js/hotspot.bd354b74189a325f0481.js",
+            "react/js/insights.34965d2647e5349ba224.js",
+            "react/js/devices.bc1b63baae7b72496488.js",
+            "react/js/score.41a37cd6b72ef1ebb1f2.js",
+            "react/js/topology.a16f4dfc277844ac2776.js",
+            "react/js/clients.d8a1a02c6b2c33dd3129.js",
+            "react/js/ports.21fd35d4512058d927b5.js",
+            "react/js/logs.0adefae786a4dc57b31d.js",
+            "react/js/settings.0abb7322ee1a43b16dfa.js",
+            "react/js/adminPage.93ab85f3b89daff21141.js",
+            "react/js/innerspace.3916338920877c7ff9a6.js",
+            "react/js/hotspot-guests.65f06d3124b6c29ffbbf.js",
+            "react/js/hotspot-payments.8e9bcaa9620bce5fa043.js",
+            "react/js/hotspot-portal.d4a05281ce46aed3299a.js",
+            "react/js/hotspot-vouchers.16b6f8bb7a2272167350.js",
+            "react/js/analyzer.95596b0833b9828a8611.js",
+            "react/js/speedTests.efd51f08ddbb4e4e5851.js"
+          ],
+          "entrypoint": "hybrid-swai-9.5.21.0-g4d72f483d.js",
+          "swaiVersion": 3,
+          "apiPrefix": "/proxy/network/"
+        },
+        "required": true,
+        "updatable": true,
+        "state": "active",
+        "versionRaw": "9.5.21-31260-1",
+        "version": "9.5.21",
+        "isInstalled": true,
+        "isRunning": true,
+        "status": "ok",
+        "statusMessage": "",
+        "installState": "installed",
+        "unadoptedDevices": [],
+        "host": "127.0.0.1",
+        "protocol": "http",
+        "swaiVersion": 3,
+        "uiDir": "/usr/lib/unifi/webapps/ROOT/app-unifi",
+        "uiCdn": "https://net-fe-static-assets.network-controller.svc.ui.com/release/9.5.21.0/unifi",
+        "uiIndex": "hybrid-swai-9.5.21.0-g4d72f483d.js",
+        "uiVersion": "9.5.21.0",
+        "prefetch": [
+          "react/js/swai.991bed81ac9dfc1c147e.js",
+          "react/js/dynamic.ufsdn.acac68fec419bcc8fa31.js",
+          "react/js/dynamic.appSwitcher.47e84e25c661e5f16a67.js",
+          "react/js/toast-provider.cdcddfd3da5ec6e2d9bf.js",
+          "react/js/react-app-wrapper.47bf0c6071e3e6d45c5c.js",
+          "react/js/controller-warnings.5211e4a3f4383a147127.js",
+          "react/js/webrtc-connection.ce85a66146b72bf38b3f.js",
+          "react/js/web-socket-manager.72c2bc1df1690770475c.js",
+          "react/js/ulteProAdoption.4bf805809474ffe69a20.js",
+          "react/js/app.0f22049453111c56a38d.js",
+          "react/js/radios.2631d175bba0abe12b27.js",
+          "react/js/swai-toasts.40bdadc41fc66456ed73.js",
+          "react/js/hybrid-toasts.bb67e21e77ed57db97c3.js",
+          "react/js/default-toasts.297c61807a4651d85ec6.js",
+          "react/js/isolated-hotspot-manager.9378090a85b7ac058923.js",
+          "react/js/network-server-header.9ea1e87ecb368d5c8b12.js",
+          "react/js/prefetcher.68fc7be149e594c6a1d1.js",
+          "react/js/legacy-interface-unsupported.1598d20178f8014bc17d.js",
+          "react/js/device-adoption-redirector.908c37d5b5e387b87216.js",
+          "react/js/search-tag-initiator.41beb44d93a415dfe095.js",
+          "react/js/deprecated-redirector.af349fe370022b2b5c87.js",
+          "react/js/swai-routes-injector.e9f3c75a318128091b6d.js",
+          "react/js/swai-etpro-adapter-injector.813d89b0ee27b6591884.js",
+          "react/js/swai-sso-user-settings-adapter-injector.e3f3b72823c54a2a547e.js",
+          "react/js/swai-wan-magic-adapter-injector.38732852f4fc06b98bca.js",
+          "react/js/wifiPerformance.4e3f37391af67c64a222.js",
+          "react/js/radiosPage.364cd9bccc8db6036c93.js",
+          "react/js/channelAi.ccc83275e1ab90fc535f.js",
+          "react/js/flows.f369a7c5efb37686b6ff.js",
+          "react/js/activity.f7b5c6e3ef70330d26f6.js",
+          "react/js/hotspot.bd354b74189a325f0481.js",
+          "react/js/insights.34965d2647e5349ba224.js",
+          "react/js/devices.bc1b63baae7b72496488.js",
+          "react/js/score.41a37cd6b72ef1ebb1f2.js",
+          "react/js/topology.a16f4dfc277844ac2776.js",
+          "react/js/clients.d8a1a02c6b2c33dd3129.js",
+          "react/js/ports.21fd35d4512058d927b5.js",
+          "react/js/logs.0adefae786a4dc57b31d.js",
+          "react/js/settings.0abb7322ee1a43b16dfa.js",
+          "react/js/adminPage.93ab85f3b89daff21141.js",
+          "react/js/innerspace.3916338920877c7ff9a6.js",
+          "react/js/hotspot-guests.65f06d3124b6c29ffbbf.js",
+          "react/js/hotspot-payments.8e9bcaa9620bce5fa043.js",
+          "react/js/hotspot-portal.d4a05281ce46aed3299a.js",
+          "react/js/hotspot-vouchers.16b6f8bb7a2272167350.js",
+          "react/js/analyzer.95596b0833b9828a8611.js",
+          "react/js/speedTests.efd51f08ddbb4e4e5851.js"
+        ],
+        "integrationApis": [
+          {
+            "apiDocsLocation": "/proxy/network/api-docs/integration.json",
+            "name": "Integration",
+            "version": "0.1"
+          }
+        ],
+        "features": {
+          "alarmManager": true
+        },
+        "proxy": {
+          "ui": "/app-assets/network",
+          "api": "/proxy/network"
+        },
+        "initialDeviceListSynced": true,
+        "isConfigured": true,
+        "info": {
+          "timestamp": 1762256315790,
+          "startedAt": 1760410643548,
+          "udmConnected": true,
+          "isReadyForSetup": true,
+          "udmProvisionCompleted": true,
+          "cloudApplicationEventEndpoint": "/v2/api/cloud/application/event",
+          "apCount": 1,
+          "switchCount": 1,
+          "wifiExperienceScore": 99,
+          "wanStatus": "OK",
+          "health": {
+            "label": "excellent"
+          },
+          "network_status": {
+            "health": "excellent",
+            "historical_satisfaction": [
+              97,
+              97,
+              99,
+              100,
+              99,
+              100,
+              99,
+              99,
+              99,
+              98,
+              98,
+              98
+            ]
+          },
+          "clientCount": 13,
+          "wiredClients": 9,
+          "wirelessClients": 4,
+          "guestClients": 0,
+          "lastSpeedTest": {
+            "downloadSpeed": 942,
+            "ping": 10,
+            "runDate": 1761308208,
+            "uploadSpeed": 51
+          },
+          "portTable": [
+            {
+              "fullDuplex": false,
+              "ifname": "eth8",
+              "name": "Port 9",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 11475,
+              "throughputTx": 11636,
+              "type": "wan",
+              "up": false,
+              "usageRx": 12416903285,
+              "usageTx": 2189035939
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth0",
+              "name": "Port 1",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 752,
+              "throughputTx": 1824,
+              "type": "lan",
+              "up": false,
+              "usageRx": 6779731,
+              "usageTx": 67804630
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth1",
+              "name": "Port 2 HTPC",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 13503,
+              "throughputTx": 216032,
+              "type": "lan",
+              "up": false,
+              "usageRx": 1015305199.5,
+              "usageTx": 1141094775
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth5",
+              "name": "Port 6",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 0,
+              "throughputTx": 354,
+              "type": "lan",
+              "up": false,
+              "usageRx": 8474850.5,
+              "usageTx": 35988338.5
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth6",
+              "name": "Port 7",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 439,
+              "throughputTx": 726,
+              "type": "lan",
+              "up": false,
+              "usageRx": 205878421,
+              "usageTx": 9603083849
+            },
+            {
+              "fullDuplex": false,
+              "ifname": "eth7",
+              "name": "Port 8",
+              "poeCaps": 0,
+              "poePower": 0,
+              "speed": 0,
+              "throughputRx": 23346,
+              "throughputTx": 45211,
+              "type": "lan",
+              "up": false,
+              "usageRx": 1104358068,
+              "usageTx": 2114981596.5
+            }
+          ],
+          "gatewayConfigVersion": "c5ca3ca18f9fd532",
+          "teleportEnabled": true,
+          "teleportSupported": true,
+          "throughput": 23111,
+          "isMagicSiteToSiteVpnConfigured": false
+        },
+        "handledRequirements": {},
+        "controllerStatus": "READY",
+        "updateProgress": 100
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "protect",
+        "type": "controller",
+        "port": 7080,
+        "ui": {
+          "baseUrl": "/protect/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "access",
+        "type": "controller",
+        "port": 12080,
+        "ui": {
+          "baseUrl": "/access/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "talk",
+        "type": "controller",
+        "port": 30080,
+        "ui": {
+          "baseUrl": "/talk/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "connect",
+        "type": "controller",
+        "port": 18080,
+        "ui": {
+          "baseUrl": "/connect/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "innerspace",
+        "type": "controller",
+        "port": 17080,
+        "ui": {
+          "baseUrl": "/innerspace/"
+        },
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      },
+      {
+        "releaseChannel": "release",
+        "updateAvailable": null,
+        "name": "apollo",
+        "type": "controller",
+        "port": 19880,
+        "ui": {
+          "baseUrl": "/apollo/"
+        },
+        "hidden": true,
+        "updatable": true,
+        "state": "inactive",
+        "version": "",
+        "isInstalled": false,
+        "isRunning": false,
+        "status": "offline",
+        "statusMessage": "",
+        "installState": "uninstalled",
+        "unadoptedDevices": []
+      }
+    ],
+    "system": {
+      "info": {
+        "deviceId": "9C05D64A39C10000000007EE315F000000000858E4820000000065BDFE6B:1630262811",
+        "features": {
+          "adoptDevices": true,
+          "autoDetectPreviousSubnet": true,
+          "cloudBackup": true,
+          "cpuInfo": true,
+          "hasFirewall": true,
+          "hasGateway": true,
+          "hasLCM": true,
+          "hasUdapi": true,
+          "setupConfigUFN": true,
+          "sharedTokens": true,
+          "speedTest": true,
+          "ssh": true,
+          "storage": {
+            "canFormat": true,
+            "canSetHotspare": false,
+            "hasRemovableStorage": true
+          },
+          "systoolAnonId": true,
+          "systoolSupportDump": true,
+          "UFNSetsHostname": true,
+          "uidService": true,
+          "waitForUFN": true,
+          "coLocated": {
+            "shadow": true,
+            "primary": true
+          }
+        },
+        "firmwareDownload": {
+          "progress": 100,
+          "state": "done"
+        },
+        "hardware": {
+          "debianCodename": "bullseye",
+          "sysid": 59925,
+          "name": "UniFi Dream Machine Pro",
+          "shortname": "UDMPRO",
+          "subtype": "",
+          "reboot": "30",
+          "upgrade": "310",
+          "cpu.id": "411fd073-00000000",
+          "uuid": "344092aa-acda-5aff-9873-9c4ccda42216",
+          "bom": "113-00723-23",
+          "hwrev": 185111,
+          "mac": "9C05D64A39C1",
+          "serialno": "9c05d64a39c1",
+          "qrid": "RQAamk",
+          "firmwareVersion": "4.3.6"
+        },
+        "hostname": "patriarkatet-udm",
+        "ip": "62.249.184.112",
+        "latestUpdate": null,
+        "latestUpdateCheck": 1762256225715,
+        "ledStatus": null,
+        "mac": "9C05D64A39C1",
+        "memory": {
+          "free": 62232,
+          "total": 4040828,
+          "available": 1162312
+        },
+        "network": {
+          "interfaces": {
+            "eth8": [
+              {
+                "address": "62.249.184.112",
+                "netmask": "255.255.255.0",
+                "family": "IPv4",
+                "mac": "9c:05:d6:4a:39:c9",
+                "internal": false,
+                "cidr": "62.249.184.112/24"
+              },
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c9",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c9",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c9/64",
+                "scopeid": 4
+              }
+            ],
+            "br0": [
+              {
+                "address": "192.168.1.1",
+                "netmask": "255.255.255.0",
+                "family": "IPv4",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "192.168.1.1/24"
+              },
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39cb",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+                "scopeid": 30
+              }
+            ],
+            "br2": [
+              {
+                "address": "192.168.2.1",
+                "netmask": "255.255.255.0",
+                "family": "IPv4",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "192.168.2.1/24"
+              },
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39cb",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+                "scopeid": 31
+              }
+            ],
+            "br3": [
+              {
+                "address": "192.168.3.1",
+                "netmask": "255.255.255.0",
+                "family": "IPv4",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "192.168.3.1/24"
+              },
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39cb",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+                "scopeid": 32
+              }
+            ],
+            "br99": [
+              {
+                "address": "192.168.99.1",
+                "netmask": "255.255.255.0",
+                "family": "IPv4",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "192.168.99.1/24"
+              },
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39cb",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:cb",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+                "scopeid": 33
+              }
+            ],
+            "honeypot0": [
+              {
+                "address": "192.168.1.2",
+                "netmask": "255.255.255.255",
+                "family": "IPv4",
+                "mac": "8a:e2:e8:22:33:1c",
+                "internal": false,
+                "cidr": "192.168.1.2/32"
+              },
+              {
+                "address": "fe80::88e2:e8ff:fe22:331c",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "8a:e2:e8:22:33:1c",
+                "internal": false,
+                "cidr": "fe80::88e2:e8ff:fe22:331c/64",
+                "scopeid": 34
+              }
+            ],
+            "wgsrv1": [
+              {
+                "address": "192.168.100.1",
+                "netmask": "255.255.255.0",
+                "family": "IPv4",
+                "mac": "00:00:00:00:00:00",
+                "internal": false,
+                "cidr": "192.168.100.1/24"
+              }
+            ],
+            "switch0": [
+              {
+                "address": "fe80::9c05:d6ff:fe4a:39c2",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9e:05:d6:4a:39:c2",
+                "internal": false,
+                "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+                "scopeid": 6
+              }
+            ],
+            "eth0": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c1",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c1",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c1/64",
+                "scopeid": 15
+              }
+            ],
+            "eth1": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c2",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c2",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c2/64",
+                "scopeid": 16
+              }
+            ],
+            "eth2": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c3",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c3",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c3/64",
+                "scopeid": 17
+              }
+            ],
+            "eth3": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c4",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c4",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c4/64",
+                "scopeid": 18
+              }
+            ],
+            "eth4": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c5",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c5",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c5/64",
+                "scopeid": 19
+              }
+            ],
+            "eth5": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c6",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c6",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c6/64",
+                "scopeid": 20
+              }
+            ],
+            "eth6": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c7",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c7",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c7/64",
+                "scopeid": 21
+              }
+            ],
+            "eth7": [
+              {
+                "address": "fe80::9e05:d6ff:fe4a:39c8",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9c:05:d6:4a:39:c8",
+                "internal": false,
+                "cidr": "fe80::9e05:d6ff:fe4a:39c8/64",
+                "scopeid": 22
+              }
+            ],
+            "switch0.1": [
+              {
+                "address": "fe80::9c05:d6ff:fe4a:39c2",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9e:05:d6:4a:39:c2",
+                "internal": false,
+                "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+                "scopeid": 26
+              }
+            ],
+            "switch0.2": [
+              {
+                "address": "fe80::9c05:d6ff:fe4a:39c2",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9e:05:d6:4a:39:c2",
+                "internal": false,
+                "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+                "scopeid": 27
+              }
+            ],
+            "switch0.3": [
+              {
+                "address": "fe80::9c05:d6ff:fe4a:39c2",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9e:05:d6:4a:39:c2",
+                "internal": false,
+                "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+                "scopeid": 28
+              }
+            ],
+            "switch0.99": [
+              {
+                "address": "fe80::9c05:d6ff:fe4a:39c2",
+                "netmask": "ffff:ffff:ffff:ffff::",
+                "family": "IPv6",
+                "mac": "9e:05:d6:4a:39:c2",
+                "internal": false,
+                "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+                "scopeid": 29
+              }
+            ]
+          },
+          "associatedInterfaces": {
+            "switch0": "switch0.1"
+          }
+        },
+        "now": 1762256314973,
+        "owner": {
+          "unique_id": "87a6ca4b-0f80-45f2-98fa-f4118226dd47",
+          "first_name": "UniFi",
+          "last_name": "User",
+          "alias": "",
+          "full_name": "UniFi User",
+          "email": "blyhode@hotmail.com",
+          "email_status": "VERIFIED",
+          "email_is_null": false,
+          "user_email": "blyhode@hotmail.com",
+          "phone": "",
+          "avatar_relative_path": "",
+          "avatar_rpath2": "",
+          "status": "ACTIVE",
+          "employee_number": "",
+          "create_time": 1729010531,
+          "login_time": 1761308147,
+          "extras": {},
+          "username": "",
+          "local_account_exist": false,
+          "password_revision": 0,
+          "sso_account": "blyhode@hotmail.com",
+          "sso_uuid": "33f55d70-51c7-4e21-88eb-b5018a03d5d3",
+          "sso_username": "vonrobak",
+          "sso_picture": "",
+          "uid_sso_id": "",
+          "uid_sso_account": "",
+          "uid_account_status": "",
+          "groups": [
+            {
+              "unique_id": "8ee4a103-e1fc-489f-bde7-c35f6c50c1eb",
+              "name": "patriarkatet-udm",
+              "up_id": "c147c646-8987-40cf-b8cf-cba4b1d61766",
+              "up_ids": [
+                "c147c646-8987-40cf-b8cf-cba4b1d61766"
+              ],
+              "system_name": "patriarkatet-udm",
+              "create_time": "2024-10-15T18:42:11+02:00"
+            }
+          ],
+          "roles": [
+            {
+              "unique_id": "dbc01163-c1b9-452f-b841-26edf6babca2",
+              "name": "Owner",
+              "system_role": true,
+              "level": 1,
+              "create_time": "2024-02-04T01:55:05+01:00",
+              "update_time": "2024-02-04T01:55:05+01:00",
+              "is_private": false
+            }
+          ],
+          "permissions": {
+            "access.management": [
+              "admin"
+            ],
+            "calculus.management": [
+              "admin"
+            ],
+            "connect.management": [
+              "admin"
+            ],
+            "drive.management": [
+              "admin"
+            ],
+            "innerspace.management": [
+              "admin"
+            ],
+            "led.management": [
+              "admin"
+            ],
+            "network.management": [
+              "admin"
+            ],
+            "olympus.management": [
+              "admin"
+            ],
+            "protect.management": [
+              "admin"
+            ],
+            "system.management.location": [
+              "admin"
+            ],
+            "system.management.user": [
+              "admin"
+            ],
+            "talk-relay.management": [
+              "admin"
+            ],
+            "talk.management": [
+              "admin"
+            ]
+          },
+          "scopes": [
+            "access.open_door:building",
+            "access.open_door:door",
+            "access.open_door:door_group",
+            "access.open_door:floor",
+            "access.open_door:location",
+            "adopt:access.device",
+            "assign:identity:camera",
+            "assign:identity:evstation",
+            "assign:identity:talk",
+            "assign:identity:vpn",
+            "assign:identity:wifi",
+            "assign:role",
+            "assign:role:admin",
+            "assign:role:viewer",
+            "assign:role_super_admin",
+            "cloud_access:controller",
+            "cloud_access:system",
+            "create:protect.bridge",
+            "create:protect.camera",
+            "create:protect.chime",
+            "create:protect.deviceGroup",
+            "create:protect.doorlock",
+            "create:protect.group",
+            "create:protect.light",
+            "create:protect.liveview",
+            "create:protect.schedule",
+            "create:protect.sensor",
+            "create:protect.user",
+            "create:protect.viewer",
+            "delete:access.device",
+            "delete:protect.bridge",
+            "delete:protect.camera",
+            "delete:protect.chime",
+            "delete:protect.deviceGroup",
+            "delete:protect.doorlock",
+            "delete:protect.group",
+            "delete:protect.legacyUFV",
+            "delete:protect.light",
+            "delete:protect.nvr",
+            "delete:protect.schedule",
+            "delete:protect.sensor",
+            "delete:protect.user",
+            "delete:protect.user:$",
+            "delete:protect.viewer",
+            "deletemedia:protect.camera",
+            "edit:access.device",
+            "edit:access.face",
+            "edit:access.license_plate",
+            "edit:access.nfc_card",
+            "edit:access.open_api",
+            "edit:access.pin_code",
+            "edit:access.policy",
+            "edit:access.schedule",
+            "edit:access.settings",
+            "edit:access.visitor",
+            "edit:access.wallet_nfc",
+            "edit:access:user",
+            "edit:api_key",
+            "edit:backup",
+            "edit:cloud_access",
+            "edit:controller:uid-agent",
+            "edit:directory:ldap-config",
+            "edit:directory:ldap-import",
+            "edit:directory:ldap-import-setting",
+            "edit:directory:oauth-config",
+            "edit:directory:oauth-import",
+            "edit:door_group",
+            "edit:export_log",
+            "edit:feedback",
+            "edit:group",
+            "edit:holiday",
+            "edit:holiday_timezone",
+            "edit:identity:credentials_settings",
+            "edit:identity:organization_info",
+            "edit:identity:services",
+            "edit:identity:settings",
+            "edit:identity:status",
+            "edit:identity:update",
+            "edit:location",
+            "edit:location_activity",
+            "edit:location_device",
+            "edit:location_policy",
+            "edit:notification",
+            "edit:os-settings:auto_update",
+            "edit:os-settings:backup",
+            "edit:os-settings:client_network",
+            "edit:os-settings:general",
+            "edit:os-settings:hotspare",
+            "edit:os-settings:notify",
+            "edit:os-settings:poweroff",
+            "edit:os-settings:raid",
+            "edit:os-settings:remote_access",
+            "edit:os-settings:reset",
+            "edit:os-settings:restart",
+            "edit:os-settings:send_diagnostics",
+            "edit:os-settings:ssh",
+            "edit:os-settings:support_file",
+            "edit:os-settings:transfer_owner",
+            "edit:os-settings:update_channel",
+            "edit:os-settings:update_install",
+            "edit:permission",
+            "edit:permission:admin",
+            "edit:permission:owner",
+            "edit:permission:super_admin",
+            "edit:permission:viewer",
+            "edit:preview",
+            "edit:role",
+            "edit:role:admin",
+            "edit:role:viewer",
+            "edit:settings",
+            "edit:sso",
+            "edit:system_info",
+            "edit:systemlog",
+            "edit:transfer_ownership",
+            "edit:unifi-os:user_group",
+            "edit:user",
+            "edit:user_credential",
+            "edit:user_timezone",
+            "identity:view:app:users",
+            "identity:view:controller:access",
+            "manage:controller",
+            "manage:controller:access",
+            "manage:controller:calculus",
+            "manage:controller:connect",
+            "manage:controller:drive",
+            "manage:controller:innerspace",
+            "manage:controller:led",
+            "manage:controller:network",
+            "manage:controller:olympus",
+            "manage:controller:protect",
+            "manage:controller:talk",
+            "manage:controller:talk-relay",
+            "notify:access",
+            "notify:led",
+            "notify:location",
+            "notify:network",
+            "notify:protect",
+            "notify:talk",
+            "notify:user",
+            "open:door",
+            "read:protect.bridge",
+            "read:protect.camera",
+            "read:protect.chime",
+            "read:protect.deviceGroup",
+            "read:protect.doorlock",
+            "read:protect.group",
+            "read:protect.legacyUFV",
+            "read:protect.light",
+            "read:protect.nvr",
+            "read:protect.schedule",
+            "read:protect.sensor",
+            "read:protect.user",
+            "read:protect.user:$",
+            "read:protect.viewer",
+            "readlive:protect.camera",
+            "readmedia:protect.camera",
+            "revoke:identity:credential",
+            "send:identity:email",
+            "systemlog:access",
+            "systemlog:connect",
+            "systemlog:location",
+            "systemlog:network",
+            "systemlog:system",
+            "systemlog:user",
+            "update:access.device",
+            "view:access.dashboard",
+            "view:access.device",
+            "view:access.face",
+            "view:access.license_plate",
+            "view:access.nfc_card",
+            "view:access.open_api",
+            "view:access.pin_code",
+            "view:access.policy",
+            "view:access.schedule",
+            "view:access.settings",
+            "view:access.systemlog",
+            "view:access.visitor",
+            "view:access.wallet_nfc",
+            "view:access:user",
+            "view:admin",
+            "view:api_key",
+            "view:app:locations",
+            "view:app:settings",
+            "view:app:uid-agent",
+            "view:app:users",
+            "view:backup",
+            "view:cloud_access",
+            "view:controller",
+            "view:controller:access",
+            "view:controller:apollo",
+            "view:controller:calculus",
+            "view:controller:connect",
+            "view:controller:drive",
+            "view:controller:innerspace",
+            "view:controller:led",
+            "view:controller:network",
+            "view:controller:olympus",
+            "view:controller:protect",
+            "view:controller:talk",
+            "view:controller:talk-relay",
+            "view:controller:uid-agent",
+            "view:directory:ldap-config",
+            "view:directory:ldap-import",
+            "view:directory:ldap-import-setting",
+            "view:directory:oauth-config",
+            "view:directory:oauth-import",
+            "view:door_group",
+            "view:group",
+            "view:holiday",
+            "view:holiday_timezone",
+            "view:identity:assignment_access",
+            "view:identity:assignment_camera",
+            "view:identity:assignment_evs",
+            "view:identity:assignment_light",
+            "view:identity:assignment_shade",
+            "view:identity:assignment_talk",
+            "view:identity:assignment_vpn",
+            "view:identity:assignment_wifi",
+            "view:identity:organization_info",
+            "view:identity:services",
+            "view:identity:settings",
+            "view:identity:update",
+            "view:location",
+            "view:location_activity",
+            "view:location_device",
+            "view:location_policy",
+            "view:notification",
+            "view:os-menu:about",
+            "view:os-menu:devices",
+            "view:os-menu:map",
+            "view:os-menu:notify-settings",
+            "view:os-menu:settings",
+            "view:os-menu:storage",
+            "view:os-menu:system-log",
+            "view:os-menu:user",
+            "view:os-settings:general",
+            "view:permission",
+            "view:permission:admin",
+            "view:permission:owner",
+            "view:permission:super_admin",
+            "view:permission:viewer",
+            "view:role",
+            "view:role:admin",
+            "view:role:viewer",
+            "view:settings",
+            "view:sso",
+            "view:system_info",
+            "view:systemlog",
+            "view:unifi-os:user",
+            "view:user",
+            "view:user_timezone",
+            "write:protect.bridge",
+            "write:protect.camera",
+            "write:protect.chime",
+            "write:protect.deviceGroup",
+            "write:protect.doorlock",
+            "write:protect.group",
+            "write:protect.legacyUFV",
+            "write:protect.light",
+            "write:protect.nvr",
+            "write:protect.schedule",
+            "write:protect.sensor",
+            "write:protect.user",
+            "write:protect.user:$",
+            "write:protect.viewer"
+          ],
+          "cloud_access_granted": true,
+          "only_local_account": false,
+          "update_time": 1761146247,
+          "avatar": null,
+          "nfc_display_id": "",
+          "nfc_card_type": "",
+          "nfc_card_status": "",
+          "org_user_id": "",
+          "role": "owner",
+          "roleId": "dbc01163-c1b9-452f-b841-26edf6babca2",
+          "id": "87a6ca4b-0f80-45f2-98fa-f4118226dd47",
+          "isOwner": true,
+          "isSuperAdmin": true,
+          "isMember": false,
+          "maskedEmail": "bl************@hotmail.com",
+          "accessMask": 106462,
+          "permissionMask": 16382,
+          "ucorePermission": {
+            "hasUpdateAndInstallPermission": true
+          }
+        },
+        "portStatus": [
+          {
+            "type": "LAN",
+            "id": "eth0",
+            "mac": "9c:05:d6:4a:39:c1",
+            "enabled": true,
+            "plugged": true,
+            "labelNumber": 1
+          },
+          {
+            "type": "LAN",
+            "id": "eth1",
+            "mac": "9c:05:d6:4a:39:c2",
+            "enabled": true,
+            "plugged": true,
+            "labelNumber": 2
+          },
+          {
+            "type": "LAN",
+            "id": "eth10",
+            "mac": "9c:05:d6:4a:39:cb",
+            "enabled": true,
+            "plugged": false,
+            "labelNumber": 11
+          },
+          {
+            "type": "LAN",
+            "id": "eth2",
+            "mac": "9c:05:d6:4a:39:c3",
+            "enabled": true,
+            "plugged": false,
+            "labelNumber": 3
+          },
+          {
+            "type": "LAN",
+            "id": "eth3",
+            "mac": "9c:05:d6:4a:39:c4",
+            "enabled": true,
+            "plugged": false,
+            "labelNumber": 4
+          },
+          {
+            "type": "LAN",
+            "id": "eth4",
+            "mac": "9c:05:d6:4a:39:c5",
+            "enabled": true,
+            "plugged": false,
+            "labelNumber": 5
+          },
+          {
+            "type": "LAN",
+            "id": "eth5",
+            "mac": "9c:05:d6:4a:39:c6",
+            "enabled": true,
+            "plugged": true,
+            "labelNumber": 6
+          },
+          {
+            "type": "LAN",
+            "id": "eth6",
+            "mac": "9c:05:d6:4a:39:c7",
+            "enabled": true,
+            "plugged": true,
+            "labelNumber": 7
+          },
+          {
+            "type": "LAN",
+            "id": "eth7",
+            "mac": "9c:05:d6:4a:39:c8",
+            "enabled": true,
+            "plugged": true,
+            "labelNumber": 8
+          },
+          {
+            "type": "WAN",
+            "id": "eth8",
+            "mac": "9c:05:d6:4a:39:c9",
+            "enabled": true,
+            "plugged": true,
+            "labelNumber": 9
+          },
+          {
+            "type": "WAN2",
+            "id": "eth9",
+            "mac": "9c:05:d6:4a:39:ca",
+            "enabled": true,
+            "plugged": false,
+            "labelNumber": 10
+          }
+        ],
+        "ports": {
+          "https": 443,
+          "grpc": 11051,
+          "ipc": 11081,
+          "stackable": 11082,
+          "consoleGroup": 11083
+        },
+        "ssh": false,
+        "storage": [
+          {
+            "id": 0,
+            "type": "emmc",
+            "mounted": true,
+            "mountPoint": "/",
+            "size": 9898135552,
+            "used": 2062532608,
+            "avail": 7310688256
+          },
+          {
+            "id": 1,
+            "type": "hdd",
+            "mounted": false,
+            "mountPoint": "/srv",
+            "size": null,
+            "used": null,
+            "avail": null,
+            "device": {
+              "mounted": false,
+              "model": null,
+              "serial": null,
+              "firmware": null,
+              "size": null,
+              "rpm": null,
+              "healthy": false,
+              "ataVersion": null,
+              "sataVersion": null
+            }
+          }
+        ],
+        "ucore_version": "4.3.82",
+        "updateSchedule": {
+          "frequency": "daily",
+          "hour": 4,
+          "day": 0
+        },
+        "uptime": 9279145.6,
+        "ustorage": {
+          "disks": [
+            {
+              "slot": 1,
+              "action": "none",
+              "state": "nodisk"
+            }
+          ],
+          "sdcards": [],
+          "space": [
+            {
+              "action": "none",
+              "device": "overlay",
+              "estimate": 0,
+              "health": "health",
+              "progress": null,
+              "raid": null,
+              "reasons": [],
+              "space_type": "root",
+              "total_bytes": 9898135552,
+              "used_bytes": 1137205248,
+              "resv_bytes": 524914688,
+              "error_count": 0
+            }
+          ]
+        },
+        "wans": [
+          {
+            "interface": "eth8",
+            "ipv4": "62.249.184.112",
+            "ipv6": "fe80::9e05:d6ff:fe4a:39c9",
+            "plugged": true,
+            "enabled": true,
+            "type": "WAN",
+            "port": 9,
+            "mac": "9c:05:d6:4a:39:c9"
+          },
+          {
+            "interface": "eth9",
+            "plugged": false,
+            "enabled": true,
+            "type": "WAN2",
+            "port": 10,
+            "mac": "9c:05:d6:4a:39:ca"
+          }
+        ],
+        "ispInfo": {
+          "name": "Telenor Norge",
+          "country": "Norway",
+          "city": "Oslo"
+        },
+        "lcmSettings": {
+          "enabled": true,
+          "color": "0139FF",
+          "brightness": 80
+        },
+        "ledSettings": {
+          "enabled": true
+        },
+        "nightMode": {
+          "onMinute": 1320,
+          "offMinute": 480
+        },
+        "cpu": {
+          "model": "unknown",
+          "currentload": 0.171,
+          "temperature": 44.8
+        },
+        "sfpAggregation": false,
+        "wakeOnLan": false,
+        "isLutronSystemDetected": false,
+        "sfpWanPorts": [
+          {
+            "associatedIfaceId": "eth9",
+            "portIdx": 10,
+            "autoNego": true,
+            "linkSpeed": "1000 FDX",
+            "linkSpeedSupportedValues": [
+              "autoneg",
+              "10000 FDX",
+              "1000 FDX"
+            ]
+          }
+        ],
+        "sfpWanPort": {
+          "associatedIfaceId": "eth9",
+          "portIdx": 10,
+          "autoNego": true,
+          "linkSpeed": "1000 FDX",
+          "linkSpeedSupportedValues": [
+            "autoneg",
+            "10000 FDX",
+            "1000 FDX"
+          ]
+        }
+      },
+      "hasInternet": true,
+      "hasInternetLastChanged": 1753307603381,
+      "deviceState": "setup",
+      "deviceErrorCode": null,
+      "deviceStateLastChanged": 1752977286,
+      "publicIp": "62.249.184.112",
+      "directConnectDomain": "9c05d64a39c107ee315f0858e482065bdfe6b.id.ui.direct",
+      "directRemoteConnectionState": {
+        "supported": false,
+        "enabled": false
+      },
+      "cloudConnected": true,
+      "isStarted": true,
+      "isStacked": false,
+      "ispInfo": {
+        "name": "Telenor Norge",
+        "country": "Norway",
+        "city": "Oslo"
+      },
+      "dnsIp": "148.122.16.253",
+      "networkApplicationReportIp": null,
+      "proxyConnectionCount": 1,
+      "activeUserSessions": true,
+      "certNotAfter": 0,
+      "internetStatusChecked": 1762256262649,
+      "isBezelAttached": false
+    },
+    "deviceStats": {
+      "total": 2,
+      "byApplication": {
+        "unifiOS": 1,
+        "network": 1
+      }
+    },
+    "deviceList": {
+      "unifiOS": [
+        {
+          "uniqueId": "9C05D64A39C1",
+          "mac": "9C05D64A39C1",
+          "ip": "62.249.184.112",
+          "name": "patriarkatet-udm",
+          "firmware": "4.3.6",
+          "status": "online",
+          "firmwareStatus": "upToDate",
+          "startupTime": 1752977169,
+          "isManaged": true,
+          "shortname": "UDMPRO",
+          "model": "UDM Pro",
+          "deviceId": "9C05D64A39C10000000007EE315F000000000858E4820000000065BDFE6B:1630262811",
+          "directConnectDomain": "9c05d64a39c107ee315f0858e482065bdfe6b.id.ui.direct",
+          "isConsole": true,
+          "consoleGroupRole": "UNADOPTED",
+          "source": "self",
+          "productLine": "network",
+          "images": {
+            "xs": "https://static.ui.com/fingerprint/ui/icons/a685746f-cd8f-4453-90c7-68a3ba9c1953_25x25.png",
+            "s": "https://static.ui.com/fingerprint/ui/icons/a685746f-cd8f-4453-90c7-68a3ba9c1953_51x51.png",
+            "m": "https://static.ui.com/fingerprint/ui/icons/a685746f-cd8f-4453-90c7-68a3ba9c1953_101x101.png",
+            "l": "https://static.ui.com/fingerprint/ui/icons/a685746f-cd8f-4453-90c7-68a3ba9c1953_129x129.png",
+            "xl": "https://static.ui.com/fingerprint/ui/icons/a685746f-cd8f-4453-90c7-68a3ba9c1953_257x257.png"
+          },
+          "imageData": {
+            "iconId": "a685746f-cd8f-4453-90c7-68a3ba9c1953",
+            "resolutions": [
+              [
+                25,
+                25
+              ],
+              [
+                32,
+                32
+              ],
+              [
+                51,
+                51
+              ],
+              [
+                64,
+                64
+              ],
+              [
+                101,
+                101
+              ],
+              [
+                128,
+                128
+              ],
+              [
+                129,
+                129
+              ],
+              [
+                256,
+                256
+              ],
+              [
+                257,
+                257
+              ],
+              [
+                512,
+                512
+              ],
+              [
+                1000,
+                1000
+              ]
+            ]
+          },
+          "metadata": {
+            "radios": {},
+            "deviceType": "udm"
+          },
+          "capabilities": [
+            "GATEWAY",
+            "SWITCH",
+            "NETWORK_APPLICATION",
+            "PROTECT_APPLICATION",
+            "CONTROLLER",
+            "APPLICATION_MODE",
+            "HAS_CLIENTS",
+            "SSL_INSPECTION",
+            "TRAFFIC_FLOWS_ALLOWED_TRAFFIC",
+            "SD_WAN_HUB"
+          ],
+          "uidb": {
+            "id": "1812513c-f8a1-41c1-a698-86ac70b8bd87",
+            "guid": "26816cf6-334b-4580-bc3f-f1b72ef5d93e",
+            "images": {
+              "default": "57ad929bdc48df6a5a6855fbb7cd8d18",
+              "nopadding": "52bd54e97d8b7985b262a94814f26d90",
+              "topology": "ecf578665ded4f14cf739c792bcbfd8f",
+              "mobile-connection": "7ff76992a2501b506330a722ab470fcb",
+              "mobile-internet-connected": "3e158fb281b6f2cbf3f830e53d97b589",
+              "mobile-no-internet": "26109bc1c764cda75815ba385c1a3ab1"
+            }
+          },
+          "interfaces": [
+            {
+              "mac": "9C05D64A39C9",
+              "ip": "62.249.184.112",
+              "type": "WAN",
+              "name": "eth8",
+              "plugged": true
+            },
+            {
+              "mac": "9C05D64A39CA",
+              "type": "WAN2",
+              "name": "eth9",
+              "plugged": false
+            }
+          ],
+          "customImages": []
+        }
+      ],
+      "network": [
+        {
+          "mac": "9C05D6A668D4",
+          "ip": "192.168.1.10",
+          "name": "Ubiquity Unifi Access Point u7 pro",
+          "status": "online",
+          "firmwareStatus": "upToDate",
+          "firmware": "8.2.17",
+          "startupTime": 1760662947,
+          "adoptionTime": 1729097860,
+          "model": "U7 Pro",
+          "shortname": "U7-Pro",
+          "isManaged": true,
+          "isConsole": false,
+          "metadata": {
+            "radios": {
+              "6e": {
+                "gain": 6,
+                "maxPower": 26,
+                "maxSpeedMegabitsPerSecond": 5765
+              },
+              "na": {
+                "gain": 3,
+                "maxPower": 26,
+                "maxSpeedMegabitsPerSecond": 4324
+              },
+              "ng": {
+                "gain": 5,
+                "maxPower": 22,
+                "maxSpeedMegabitsPerSecond": 688
+              }
+            },
+            "deviceType": "uap",
+            "site_id": "670ef645dcd3cd3f6b0f40c2",
+            "wifiExperience": 97,
+            "has2_4GHz": true,
+            "has5GHz": true,
+            "bssids": [
+              "9c:05:d6:a6:68:d6",
+              "9c:05:d6:a6:68:d7",
+              "9c:05:d6:a6:68:d5"
+            ]
+          },
+          "productLine": "network",
+          "images": {
+            "xs": "https://static.ui.com/fingerprint/ui/icons/83e2e098-562f-47e3-99fe-73d04a09fc5e_25x25.png",
+            "s": "https://static.ui.com/fingerprint/ui/icons/83e2e098-562f-47e3-99fe-73d04a09fc5e_51x51.png",
+            "m": "https://static.ui.com/fingerprint/ui/icons/83e2e098-562f-47e3-99fe-73d04a09fc5e_101x101.png",
+            "l": "https://static.ui.com/fingerprint/ui/icons/83e2e098-562f-47e3-99fe-73d04a09fc5e_129x129.png",
+            "xl": "https://static.ui.com/fingerprint/ui/icons/83e2e098-562f-47e3-99fe-73d04a09fc5e_257x257.png"
+          },
+          "imageData": {
+            "iconId": "83e2e098-562f-47e3-99fe-73d04a09fc5e",
+            "resolutions": [
+              [
+                25,
+                25
+              ],
+              [
+                32,
+                32
+              ],
+              [
+                51,
+                51
+              ],
+              [
+                64,
+                64
+              ],
+              [
+                101,
+                101
+              ],
+              [
+                128,
+                128
+              ],
+              [
+                129,
+                129
+              ],
+              [
+                256,
+                256
+              ],
+              [
+                257,
+                257
+              ],
+              [
+                512,
+                512
+              ],
+              [
+                1000,
+                1000
+              ]
+            ]
+          },
+          "capabilities": [
+            "ACCESS_POINT",
+            "HAS_CLIENTS",
+            "VPORT"
+          ],
+          "source": "network",
+          "uidb": {
+            "id": "fa3e6687-7eba-46ea-9539-51486184b584",
+            "guid": "cc5dfd33-f116-4256-8398-6d7bbf8bafd1",
+            "images": {
+              "default": "f06e3e23921f5a2082f2a7b08ac3bd2d",
+              "nopadding": "27aadf0b859cec10725643b1b4fbba62",
+              "topology": "82c87b6d101d91926bb88b4aab2cb8af"
+            }
+          },
+          "note": null,
+          "customImages": []
+        }
+      ]
+    },
+    "consoleGroupMembers": [],
+    "consoleGroupSelf": {
+      "role": "UNADOPTED",
+      "roleUpdatedAt": {},
+      "applications": {
+        "network": {
+          "owned": false,
+          "required": true,
+          "supported": true
+        },
+        "protect": {
+          "owned": false,
+          "required": false,
+          "supported": true
+        },
+        "access": {
+          "owned": false,
+          "required": false,
+          "supported": true
+        },
+        "talk": {
+          "owned": false,
+          "required": false,
+          "supported": true
+        },
+        "connect": {
+          "owned": false,
+          "required": false,
+          "supported": true
+        },
+        "innerspace": {
+          "owned": false,
+          "required": false,
+          "supported": true
+        },
+        "apollo": {
+          "owned": false,
+          "required": false,
+          "supported": true
+        }
+      },
+      "primaryCandidateConnected": false
+    },
+    "consoleGroupConnections": {
+      "incoming": [],
+      "outgoing": []
+    },
+    "cloudSettings": {
+      "ssoId": "33f55d70-51c7-4e21-88eb-b5018a03d5d3"
+    },
+    "supportFile": {
+      "state": "collected_from_applications",
+      "progress": 67,
+      "creators": [
+        "87a6ca4b-0f80-45f2-98fa-f4118226dd47"
+      ],
+      "createdAt": 1762256305835,
+      "estimatedTimeInSec": 350
+    },
+    "emailService": {
+      "provider": "ui"
+    }
+  }
+}

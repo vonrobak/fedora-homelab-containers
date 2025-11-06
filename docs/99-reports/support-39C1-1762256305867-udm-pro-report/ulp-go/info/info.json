@@ -1,0 +1,84 @@
+{
+  "code": 1,
+  "codeS": "SUCCESS",
+  "msg": "success",
+  "data": {
+    "is_setuped": true,
+    "owner": null,
+    "agent_service": null,
+    "uid_adopted": false,
+    "uid": null,
+    "remote_access_enabled": true,
+    "host": {
+      "device_type": "UDMPRO",
+      "hostname": "patr***-udm",
+      "mac": "9C05***39C1",
+      "is_cloud_console": false
+    },
+    "build": {
+      "version": "v1.11.21+5282",
+      "commit": "81aca4dcf451a82c25bec89f260c156ad69638a9",
+      "create_time": "2025-06-25 07:05:40"
+    },
+    "capabilities": [
+      "identity_standard",
+      "credential_for_driver",
+      "support_single_level_groups"
+    ],
+    "unifi_core_capabilities": [
+      "cache_busting",
+      "api_key"
+    ],
+    "unifi_network_capabilities": [
+      "identity_standard"
+    ],
+    "unifi_access_capabilities": [],
+    "unifi_connect_capabilities": [],
+    "unifi_talk_capabilities": [],
+    "unifi_protect_capabilities": [],
+    "unifi_drive_capabilities": [],
+    "support_services": [
+      "wire_guard_vpn",
+      "wifi",
+      "unifi_access",
+      "uid_agent",
+      "unifi_connect",
+      "unifi_protect",
+      "unifi_talk",
+      "identity_standard",
+      "gateway",
+      "ucs",
+      "ucs_agent"
+    ],
+    "support_standard": true,
+    "analytics_enabled": true,
+    "identity_standard_enabled": false,
+    "ucore_version": "4.3.82",
+    "access_version": "",
+    "connect_version": "",
+    "network_version": "9.5.21",
+    "used_identity_standard": false,
+    "start_at": "2025-07-20 10:07:48, 3 months ago",
+    "start_at_timstamp": 1752977268,
+    "cloud_connected": true,
+    "user_group_level": 1,
+    "console_role": {
+      "role": "UNADOPTED",
+      "takeover_active": false,
+      "network_failed_over": false
+    },
+    "features": [
+      "supportFeatures",
+      "userConsolidationViaGlobalFunc",
+      "identityCertificateDistribution",
+      "userConsolidation",
+      "assignmentFlags",
+      "fetchServiceStatusFromAccess",
+      "driveUIComponentForUserConsolidation",
+      "upgradeUcs",
+      "supportAPIGetUcsUpdateConfig",
+      "supportAPIKeysMigration",
+      "apiIntegration"
+    ]
+  }
+}

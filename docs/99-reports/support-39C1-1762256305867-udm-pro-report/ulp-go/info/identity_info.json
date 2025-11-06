@@ -1,0 +1,82 @@
+{
+  "code": 1,
+  "codeS": "SUCCESS",
+  "msg": "success",
+  "data": {
+    "anonymous_device_id": "f9f3***e3a8",
+    "standard_id": "",
+    "console_id": "9C05***2811",
+    "cloud_env": "ga",
+    "cloud_endpoint": "",
+    "backup_timestamp": 0,
+    "running": false,
+    "service_status": {
+      "identity": {
+        "enabled": false,
+        "running": false
+      },
+      "wifi": {
+        "is_installed": true,
+        "is_configured": true,
+        "running": true,
+        "assigned": false,
+        "updating": false,
+        "enabled": false,
+        "id": "",
+        "ssid": "UniFi Identity",
+        "deleted": true
+      },
+      "vpn": {
+        "is_installed": true,
+        "is_configured": true,
+        "running": true,
+        "assigned": false,
+        "updating": false,
+        "enabled": false,
+        "id": "",
+        "name": "patriarkatet-udm",
+        "deleted": true
+      },
+      "evstation": {
+        "is_installed": false,
+        "is_configured": false,
+        "running": false,
+        "assigned": false,
+        "updating": false,
+        "enabled": false
+      },
+      "access": {
+        "is_installed": false,
+        "is_configured": false,
+        "running": false,
+        "assigned": false,
+        "updating": false,
+        "enabled": false
+      },
+      "talk": {
+        "is_installed": false,
+        "is_configured": false,
+        "running": false,
+        "assigned": false,
+        "updating": false,
+        "enabled": false
+      },
+      "camera": {
+        "is_installed": false,
+        "is_configured": false,
+        "running": false,
+        "assigned": false,
+        "updating": false,
+        "enabled": false
+      },
+      "drive": {
+        "is_installed": false,
+        "is_configured": false,
+        "running": false,
+        "assigned": true,
+        "updating": false,
+        "enabled": false
+      }
+    }
+  }
+}

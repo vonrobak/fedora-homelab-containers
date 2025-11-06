@@ -1,0 +1,2 @@
+Will ping rabbitmq@localhost. This only checks if the OS process is running and registered with epmd. Timeout: 60000 ms.
+Ping succeeded

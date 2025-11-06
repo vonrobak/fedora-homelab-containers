@@ -1,0 +1,1 @@
+pci=pcie_bus_perf console=ttyS0,115200 net.ifnames=0 sysid=ea15 boot_carrier=4 root=

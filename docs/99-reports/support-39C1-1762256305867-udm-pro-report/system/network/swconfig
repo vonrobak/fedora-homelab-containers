@@ -1,0 +1,1181 @@
+Global attributes:
+	acl_table: ACL enabled
+
+#00 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4094
+
+#01 type 1 : ACTIVE
+PORTS_SRC: 0 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4094
+
+#02 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4094
+
+#03 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4093
+
+#04 type 1 : ACTIVE
+PORTS_SRC: 1 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4093
+
+#05 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4093
+
+#06 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4092
+
+#07 type 1 : ACTIVE
+PORTS_SRC: 2 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4092
+
+#08 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4092
+
+#09 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4091
+
+#10 type 1 : ACTIVE
+PORTS_SRC: 3 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4091
+
+#11 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4091
+
+#12 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4090
+
+#13 type 1 : ACTIVE
+PORTS_SRC: 4 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4090
+
+#14 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4090
+
+#15 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4089
+
+#16 type 1 : ACTIVE
+PORTS_SRC: 5 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4089
+
+#17 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4089
+
+#18 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4088
+
+#19 type 1 : ACTIVE
+PORTS_SRC: 6 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4088
+
+#20 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4088
+
+#21 type 1 : ACTIVE
+ETHER_TYPE: 0x88CC
+SVID: 4087
+
+#22 type 1 : ACTIVE
+PORTS_SRC: 7 
+PORT_DST: 9 
+ETHER_TYPE: 0x88B7
+SVID: 4087
+
+#23 type 1 : ACTIVE
+ETHER_TYPE: 0x8809
+SVID: 4087
+
+
+	acl_redirect: ???
+	acl_assign_vlan: ???
+	acl_permit_src_mac: ???
+	acl_deny_src_port: ???
+	enable_acl: 1
+	arl_age_time: 260
+	arl_table: 
+hash  port(0:18)      fid   vid  mac-address    ivl  efid
+028   -----1----       0     2  ec6260099f08     1     0
+2a8   ---------1       0     2  9c05d64a39cb     1     0
+2a9   1---------       0     1  e45f011e2ba9     1     0
+2f0   ------1---       0     1  10f920d33488     1     0
+6a8   ---------1       0     3  9c05d64a39cb     1     0
+6bc   ------1---       0     1  9c05d6a668d4     1     0
+6c8   ---------1       0    99  9c05d64a39cb     1     0
+754   -----1----       0     2  ecb5faac1942     1     0
+758   -----1----       0     2  ec626007ed48     1     0
+848   -------1--       0     1  6045cba17283     1     0
+884   ------1---       0     1  88665a836f43     1     0
+9ec   -1--------       0     1  d45d64506c84     1     0
+a80   ---------1       0     0  9c05d64a39c1     0     0
+a88   ---------1       0     0  9c05d64a39c3     0     0
+a8c   ---------1       0     0  9c05d64a39c2     0     0
+a90   ---------1       0     0  9c05d64a39c5     0     0
+a94   ---------1       0     0  9c05d64a39c4     0     0
+a95   -----1----       0     2  542aa2c6dfc0     1     0
+a98   ---------1       0     0  9c05d64a39c7     0     0
+a9c   ---------1       0     0  9c05d64a39c6     0     0
+aa4   ---------1       0     0  9c05d64a39c8     0     0
+c6c   ------1---       0     1  52adb6a8c9a7     1     0
+d9c   ------1---       0     1  18e7b05b242d     1     0
+ea8   ---------1       0     1  9c05d64a39cb     1     0
+f8c   -----1----       0     2  dc68eb0d7972     1     0
+
+fa0   -----1-1--                01005Eeffffa
+
+	igmp_snooping: 1
+	jumbo_frame: 1
+	mtu: 16383
+	trunk_hash_algo: Trunk hash algorithm: l2_l3
+	uext_arl_cache_age_time: 300
+Port 0:
+	mib: Port 0 MIB counters
+ifInOctets                          : 5021836100
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 0
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 30765191
+etherStatsDropEvents                : 0
+etherStatsOctets                    : 36580092341
+etherStatsUndersizePkts             : 20220096
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 30364341
+etherStatsPkts65to127Octets         : 47117013
+etherStatsPkts128to255Octets        : 25467316
+etherStatsPkts256to511Octets        : 12746051
+etherStatsPkts512to1023Octets       : 9644828
+etherStatsPkts1024toMaxOctets       : 8876682
+etherStatsMcastPkts                 : 71232608
+etherStatsBcastPkts                 : 18615312
+ifOutOctets                         : 31558256241
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 44
+ifOutUcastPkts                      : 33823216
+ifOutMulticastPkts                  : 71183904
+ifOutBrocastPkts                    : 18615090
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 0
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 4471
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 16397
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 32088
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 12517
+outIgmpSpecificQuery                : 0
+outMldReports                       : 128558
+outMldLeaves                        : 16102
+outMldGeneralQuery                  : 12567
+outMldSpecificQuery                 : 137
+inKnownMulticastPkts                : 0
+ifInMulticastPkts                   : 48704
+ifInBroadcastPkts                   : 222
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 1
+	link: port:0 link:up speed:1000baseT full-duplex txflow rxflow auto
+	uext_mib: 
+rx_byte                    5021836100
+tx_byte                   31558256113
+rx_total                     30814117
+tx_total                    123622208
+rx_bcast                          222
+tx_bcast                     18615090
+rx_mcast                        48704
+tx_mcast                     71183902
+rx_pause                            0
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                         44
+tx_dropped                          0
+rx_error                            0
+tx_error                            0
+rx_pps                              0
+tx_pps                              5
+rx_rate                           368
+tx_rate                          2856
+timestamp                   688921678
+
+Port 1:
+	mib: Port 1 MIB counters
+ifInOctets                          : 1760093836208
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 8
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 3169784874
+etherStatsDropEvents                : 8
+etherStatsOctets                    : 7498205419009
+etherStatsUndersizePkts             : 20025635
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 158359459
+etherStatsPkts65to127Octets         : 2600177374
+etherStatsPkts128to255Octets        : 278131325
+etherStatsPkts256to511Octets        : 200652378
+etherStatsPkts512to1023Octets       : 1223869764
+etherStatsPkts1024toMaxOctets       : 99048695
+etherStatsMcastPkts                 : 71641486
+etherStatsBcastPkts                 : 18481033
+ifOutOctets                         : 5738111592777
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 546
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 227
+ifOutUcastPkts                      : 1320357233
+ifOutMulticastPkts                  : 70275117
+ifOutBrocastPkts                    : 18383502
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 17
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 1046
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 39878
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 32013
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 12488
+outIgmpSpecificQuery                : 0
+outMldReports                       : 104920
+outMldLeaves                        : 16024
+outMldGeneralQuery                  : 12538
+outMldSpecificQuery                 : 137
+inKnownMulticastPkts                : 824468
+ifInMulticastPkts                   : 1366369
+ifInBroadcastPkts                   : 97531
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 1
+	link: port:1 link:up speed:1000baseT full-duplex txflow rxflow auto
+	uext_mib: 
+rx_byte                 1760093825160
+tx_byte                 5738111478118
+rx_total                   3171248705
+tx_total                   1409015728
+rx_bcast                        97531
+tx_bcast                     18383502
+rx_mcast                      1366369
+tx_mcast                     70275115
+rx_pause                            8
+tx_pause                          546
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                        235
+tx_dropped                          0
+rx_error                            8
+tx_error                            0
+rx_pps                             21
+tx_pps                             44
+rx_rate                         18800
+tx_rate                        316352
+timestamp                   688921708
+
+Port 2:
+	mib: Port 2 MIB counters
+ifInOctets                          : 0
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 0
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 0
+etherStatsDropEvents                : 0
+etherStatsOctets                    : 0
+etherStatsUndersizePkts             : 0
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 0
+etherStatsPkts65to127Octets         : 0
+etherStatsPkts128to255Octets        : 0
+etherStatsPkts256to511Octets        : 0
+etherStatsPkts512to1023Octets       : 0
+etherStatsPkts1024toMaxOctets       : 0
+etherStatsMcastPkts                 : 0
+etherStatsBcastPkts                 : 0
+ifOutOctets                         : 0
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 0
+ifOutUcastPkts                      : 0
+ifOutMulticastPkts                  : 0
+ifOutBrocastPkts                    : 0
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 0
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 0
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 0
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 0
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 0
+outIgmpSpecificQuery                : 0
+outMldReports                       : 0
+outMldLeaves                        : 0
+outMldGeneralQuery                  : 0
+outMldSpecificQuery                 : 0
+inKnownMulticastPkts                : 0
+ifInMulticastPkts                   : 0
+ifInBroadcastPkts                   : 0
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 1
+	link: port:2 link:down
+	uext_mib: 
+rx_byte                             0
+tx_byte                             0
+rx_total                            0
+tx_total                            0
+rx_bcast                            0
+tx_bcast                            0
+rx_mcast                            0
+tx_mcast                            0
+rx_pause                            0
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                          0
+tx_dropped                          0
+rx_error                            0
+tx_error                            0
+rx_pps                              0
+tx_pps                              0
+rx_rate                             0
+tx_rate                             0
+timestamp                   688920358
+
+Port 3:
+	mib: Port 3 MIB counters
+ifInOctets                          : 0
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 0
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 0
+etherStatsDropEvents                : 0
+etherStatsOctets                    : 0
+etherStatsUndersizePkts             : 0
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 0
+etherStatsPkts65to127Octets         : 0
+etherStatsPkts128to255Octets        : 0
+etherStatsPkts256to511Octets        : 0
+etherStatsPkts512to1023Octets       : 0
+etherStatsPkts1024toMaxOctets       : 0
+etherStatsMcastPkts                 : 0
+etherStatsBcastPkts                 : 0
+ifOutOctets                         : 0
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 0
+ifOutUcastPkts                      : 0
+ifOutMulticastPkts                  : 0
+ifOutBrocastPkts                    : 0
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 0
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 0
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 0
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 0
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 0
+outIgmpSpecificQuery                : 0
+outMldReports                       : 0
+outMldLeaves                        : 0
+outMldGeneralQuery                  : 0
+outMldSpecificQuery                 : 0
+inKnownMulticastPkts                : 0
+ifInMulticastPkts                   : 0
+ifInBroadcastPkts                   : 0
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 1
+	link: port:3 link:down
+	uext_mib: 
+rx_byte                             0
+tx_byte                             0
+rx_total                            0
+tx_total                            0
+rx_bcast                            0
+tx_bcast                            0
+rx_mcast                            0
+tx_mcast                            0
+rx_pause                            0
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                          0
+tx_dropped                          0
+rx_error                            0
+tx_error                            0
+rx_pps                              0
+tx_pps                              0
+rx_rate                             0
+tx_rate                             0
+timestamp                   688920388
+
+Port 4:
+	mib: Port 4 MIB counters
+ifInOctets                          : 0
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 0
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 0
+etherStatsDropEvents                : 0
+etherStatsOctets                    : 0
+etherStatsUndersizePkts             : 0
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 0
+etherStatsPkts65to127Octets         : 0
+etherStatsPkts128to255Octets        : 0
+etherStatsPkts256to511Octets        : 0
+etherStatsPkts512to1023Octets       : 0
+etherStatsPkts1024toMaxOctets       : 0
+etherStatsMcastPkts                 : 0
+etherStatsBcastPkts                 : 0
+ifOutOctets                         : 0
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 0
+ifOutUcastPkts                      : 0
+ifOutMulticastPkts                  : 0
+ifOutBrocastPkts                    : 0
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 0
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 0
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 0
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 0
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 0
+outIgmpSpecificQuery                : 0
+outMldReports                       : 0
+outMldLeaves                        : 0
+outMldGeneralQuery                  : 0
+outMldSpecificQuery                 : 0
+inKnownMulticastPkts                : 0
+ifInMulticastPkts                   : 0
+ifInBroadcastPkts                   : 0
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 1
+	link: port:4 link:down
+	uext_mib: 
+rx_byte                             0
+tx_byte                             0
+rx_total                            0
+tx_total                            0
+rx_bcast                            0
+tx_bcast                            0
+rx_mcast                            0
+tx_mcast                            0
+rx_pause                            0
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                          0
+tx_dropped                          0
+rx_error                            0
+tx_error                            0
+rx_pps                              0
+tx_pps                              0
+rx_rate                             0
+tx_rate                             0
+timestamp                   688920428
+
+Port 5:
+	mib: Port 5 MIB counters
+ifInOctets                          : 9842660932
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 24
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 32576435
+etherStatsDropEvents                : 24
+etherStatsOctets                    : 111681434992
+etherStatsUndersizePkts             : 13436489
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 19555058
+etherStatsPkts65to127Octets         : 36647807
+etherStatsPkts128to255Octets        : 9843578
+etherStatsPkts256to511Octets        : 12116824
+etherStatsPkts512to1023Octets       : 6167613
+etherStatsPkts1024toMaxOctets       : 65530231
+etherStatsMcastPkts                 : 40592135
+etherStatsBcastPkts                 : 11123438
+ifOutOctets                         : 101838774060
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 1350
+ifOutUcastPkts                      : 79005592
+ifOutMulticastPkts                  : 29320572
+ifOutBrocastPkts                    : 9464268
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 17
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 16
+inMldLeaves                         : 88
+inIgmpLeaves                        : 246
+inIgmpJoinsSuccess                  : 567951
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 29553
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 195
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 0
+outIgmpSpecificQuery                : 0
+outMldReports                       : 104
+outMldLeaves                        : 0
+outMldGeneralQuery                  : 0
+outMldSpecificQuery                 : 0
+inKnownMulticastPkts                : 5286240
+ifInMulticastPkts                   : 11271563
+ifInBroadcastPkts                   : 1659170
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 2
+	link: port:5 link:up speed:1000baseT full-duplex txflow rxflow auto
+	uext_mib: 
+rx_byte                    9842660378
+tx_byte                  101838773631
+rx_total                     45507164
+tx_total                    117790426
+rx_bcast                      1659170
+tx_bcast                      9464268
+rx_mcast                     11271561
+tx_mcast                     29320569
+rx_pause                           24
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                       1374
+tx_dropped                          0
+rx_error                           24
+tx_error                            0
+rx_pps                              4
+tx_pps                              0
+rx_rate                          6040
+tx_rate                             0
+timestamp                   688920468
+
+Port 6:
+	mib: Port 6 MIB counters
+ifInOctets                          : 197317983160
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 0
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 388912176
+etherStatsDropEvents                : 0
+etherStatsOctets                    : 2036240547798
+etherStatsUndersizePkts             : 20220109
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 43732944
+etherStatsPkts65to127Octets         : 339144585
+etherStatsPkts128to255Octets        : 43677924
+etherStatsPkts256to511Octets        : 56886244
+etherStatsPkts512to1023Octets       : 36871121
+etherStatsPkts1024toMaxOctets       : 1332989307
+etherStatsMcastPkts                 : 71229018
+etherStatsBcastPkts                 : 18615255
+ifOutOctets                         : 1838922564638
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 3290096
+ifOutUcastPkts                      : 1394765785
+ifOutMulticastPkts                  : 50477531
+ifOutBrocastPkts                    : 17766109
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 137
+inMldGeneralQuery                   : 12550
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 12502
+inMldLeaves                         : 15928
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 0
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 24
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 32080
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 16
+outIgmpSpecificQuery                : 0
+outMldReports                       : 144869
+outMldLeaves                        : 177
+outMldGeneralQuery                  : 17
+outMldSpecificQuery                 : 0
+inKnownMulticastPkts                : 440
+ifInMulticastPkts                   : 20751487
+ifInBroadcastPkts                   : 849146
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 1
+	link: port:6 link:up speed:1000baseT full-duplex auto
+	uext_mib: 
+rx_byte                  197317982874
+tx_byte                 1838922563853
+rx_total                    410512805
+tx_total                   1463009416
+rx_bcast                       849146
+tx_bcast                     17766108
+rx_mcast                     20751486
+tx_mcast                     50477525
+rx_pause                            0
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                    3290096
+tx_dropped                          0
+rx_error                            0
+tx_error                            0
+rx_pps                              0
+tx_pps                              0
+rx_rate                           368
+tx_rate                           368
+timestamp                   688920498
+
+Port 7:
+	mib: Port 7 MIB counters
+ifInOctets                          : 2236586445397
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 873096
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 1804962298
+etherStatsDropEvents                : 873096
+etherStatsOctets                    : 3452142996759
+etherStatsUndersizePkts             : 6794166
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 458900491
+etherStatsPkts65to127Octets         : 267268735
+etherStatsPkts128to255Octets        : 102589917
+etherStatsPkts256to511Octets        : 70839105
+etherStatsPkts512to1023Octets       : 100069260
+etherStatsPkts1024toMaxOctets       : 2231058376
+etherStatsMcastPkts                 : 34899205
+etherStatsBcastPkts                 : 8607742
+ifOutOctets                         : 1215556551362
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 612
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 0
+ifOutUcastPkts                      : 1389050805
+ifOutMulticastPkts                  : 29067833
+ifOutBrocastPkts                    : 5218541
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 72
+inIgmpLeaves                        : 60
+inIgmpJoinsSuccess                  : 15845
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 17745
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 10833
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 4425
+outIgmpSpecificQuery                : 0
+outMldReports                       : 43778
+outMldLeaves                        : 7546
+outMldGeneralQuery                  : 4469
+outMldSpecificQuery                 : 120
+inKnownMulticastPkts                : 16478
+ifInMulticastPkts                   : 5831372
+ifInBroadcastPkts                   : 3389201
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 1
+	link: port:7 link:up speed:1000baseT full-duplex txflow rxflow auto
+	uext_mib: 
+rx_byte                 2236586444954
+tx_byte                 1215556550202
+rx_total                   1814182865
+tx_total                   1423337166
+rx_bcast                      3389200
+tx_bcast                      5218541
+rx_mcast                      5831371
+tx_mcast                     29067824
+rx_pause                       873096
+tx_pause                          612
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                     873096
+tx_dropped                          0
+rx_error                       873096
+tx_error                            0
+rx_pps                              1
+tx_pps                              6
+rx_rate                           824
+tx_rate                          7288
+timestamp                   688920528
+
+Port 8:
+	mib: Port 8 MIB counters
+ifInOctets                          : 0
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 0
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 0
+etherStatsDropEvents                : 0
+etherStatsOctets                    : 0
+etherStatsUndersizePkts             : 0
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 0
+etherStatsPkts65to127Octets         : 0
+etherStatsPkts128to255Octets        : 0
+etherStatsPkts256to511Octets        : 0
+etherStatsPkts512to1023Octets       : 0
+etherStatsPkts1024toMaxOctets       : 0
+etherStatsMcastPkts                 : 0
+etherStatsBcastPkts                 : 0
+ifOutOctets                         : 0
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 0
+ifOutUcastPkts                      : 0
+ifOutMulticastPkts                  : 0
+ifOutBrocastPkts                    : 0
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 0
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 0
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 0
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 0
+outIgmpLeaves                       : 0
+outIgmpGeneralQuery                 : 0
+outIgmpSpecificQuery                : 0
+outMldReports                       : 0
+outMldLeaves                        : 0
+outMldGeneralQuery                  : 0
+outMldSpecificQuery                 : 0
+inKnownMulticastPkts                : 0
+ifInMulticastPkts                   : 0
+ifInBroadcastPkts                   : 0
+ifOutDiscards                       : 0
+
+	enable_vlan: 0
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 0
+	link: port:8 link:down
+	uext_mib: 
+rx_byte                             0
+tx_byte                             0
+rx_total                            0
+tx_total                            0
+rx_bcast                            0
+tx_bcast                            0
+rx_mcast                            0
+tx_mcast                            0
+rx_pause                            0
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                          0
+tx_dropped                          0
+rx_error                            0
+tx_error                            0
+rx_pps                              0
+tx_pps                              0
+rx_rate                             0
+tx_rate                             0
+timestamp                   688920558
+
+Port 9:
+	mib: Port 9 MIB counters
+ifInOctets                          : 7423353233303
+dot3StatsFCSErrors                  : 0
+dot3StatsSymbolErrors               : 0
+dot3InPauseFrames                   : 13320
+dot3ControlInUnknownOpcodes         : 0
+etherStatsFragments                 : 0
+etherStatsJabbers                   : 0
+ifInUcastPkts                       : 3112581335
+etherStatsDropEvents                : 13320
+etherStatsOctets                    : 10153508836019
+etherStatsUndersizePkts             : 409488234
+etherStatsOversizePkts              : 0
+etherStatsPkts64Octets              : 164510852
+etherStatsPkts65to127Octets         : 3149803079
+etherStatsPkts128to255Octets        : 351253926
+etherStatsPkts256to511Octets        : 307259085
+etherStatsPkts512to1023Octets       : 1332935170
+etherStatsPkts1024toMaxOctets       : 1800461032
+etherStatsMcastPkts                 : 85637030
+etherStatsBcastPkts                 : 18615520
+ifOutOctets                         : 2730155602904
+dot3StatsSingleCollisionFrames      : 0
+dot3StatsMultipleCollisionFrames    : 0
+dot3StatsDeferredTransmissions      : 0
+dot3StatsLateCollisions             : 0
+etherStatsCollisions                : 0
+dot3StatsExcessiveCollisions        : 0
+dot3OutPauseFrames                  : 0
+dot1dBasePortDelayExceededDiscards  : 0
+dot1dTpPortInDiscards               : 24674696
+ifOutUcastPkts                      : 3910199
+ifOutMulticastPkts                  : 38395104
+ifOutBrocastPkts                    : 5994860
+outOampduPkts                       : 0
+inOampduPkts                        : 0
+pktgenPkts                          : 0
+inMldChecksumError                  : 0
+inIgmpChecksumError                 : 0
+inMldSpecificQuery                  : 0
+inMldGeneralQuery                   : 0
+inIgmpSpecificQuery                 : 0
+inIgmpGeneralQuery                  : 0
+inMldLeaves                         : 0
+inIgmpLeaves                        : 0
+inIgmpJoinsSuccess                  : 32046
+inIgmpJoinsFail                     : 0
+inMldJoinsSuccess                   : 41710
+inMldJoinsFail                      : 0
+inReportSuppressionDrop             : 0
+inLeaveSuppressionDrop              : 0
+outIgmpReports                      : 589302
+outIgmpLeaves                       : 306
+outIgmpGeneralQuery                 : 12518
+outIgmpSpecificQuery                : 0
+outMldReports                       : 103570
+outMldLeaves                        : 16105
+outMldGeneralQuery                  : 12567
+outMldSpecificQuery                 : 137
+inKnownMulticastPkts                : 156
+ifInMulticastPkts                   : 47241926
+ifInBroadcastPkts                   : 12620660
+ifOutDiscards                       : 0
+
+	enable_vlan: 1
+	isolation: 
+	efid: 0
+	mirror: none
+	stmctl_mcast_rate: 0
+	stmctl_ucast_rate: 0
+	stmctl_bcast_rate: 0
+	egress_rate: 0
+	pvid: 0
+	link: port:9 link:up speed:1000baseT full-duplex 
+	uext_mib: 
+rx_byte                 7423353060344
+tx_byte                 2730155585589
+rx_total                   3172443723
+tx_total                     48300039
+rx_bcast                     12620660
+tx_bcast                      5994859
+rx_mcast                     47241920
+tx_mcast                     38395100
+rx_pause                        13320
+tx_pause                            0
+rx_jumbo                            0
+tx_jumbo                            0
+rx_dropped                   24688016
+tx_dropped                          0
+rx_error                        13320
+tx_error                            0
+rx_pps                             46
+tx_pps                             31
+rx_rate                        364560
+tx_rate                         30584
+timestamp                   688920588
+
+VLAN 1:
+	info: VLAN 1: Ports: '0 1 2 3 4 6 7 9t 
+	fid: 0
+	enable_ivl: 1
+	ports: 0 1 2 3 4 6 7 9t 
+VLAN 2:
+	info: VLAN 2: Ports: '0t 1t 2t 3t 4t 5 6t 7t 9t 
+	fid: 0
+	enable_ivl: 1
+	ports: 0t 1t 2t 3t 4t 5 6t 7t 9t 
+VLAN 3:
+	info: VLAN 3: Ports: '0t 1t 2t 3t 4t 5t 6t 7t 9t 
+	fid: 0
+	enable_ivl: 1
+	ports: 0t 1t 2t 3t 4t 5t 6t 7t 9t 
+VLAN 99:
+	info: VLAN 99: Ports: '0t 1t 2t 3t 4t 5t 6t 7t 9t 
+	fid: 0
+	enable_ivl: 1
+	ports: 0t 1t 2t 3t 4t 5t 6t 7t 9t 
+SVLAN 4087:
+	fid: 0
+	ports: 7 9t 
+SVLAN 4088:
+	fid: 0
+	ports: 6 9t 
+SVLAN 4089:
+	fid: 0
+	ports: 5 9t 
+SVLAN 4090:
+	fid: 0
+	ports: 4 9t 
+SVLAN 4091:
+	fid: 0
+	ports: 3 9t 
+SVLAN 4092:
+	fid: 0
+	ports: 2 9t 
+SVLAN 4093:
+	fid: 0
+	ports: 1 9t 
+SVLAN 4094:
+	fid: 0
+	ports: 0 9t 

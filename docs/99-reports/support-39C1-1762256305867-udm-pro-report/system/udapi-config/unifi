@@ -1,0 +1,46 @@
+# misc
+# unifi
+unifi.version=9.5.21
+unifi.anonymous_controller_id=25d30387-7b14-4596-b74e-a80b68a0245c
+unifi.anonymous_site_id=d75f82bf-f5d4-4ba2-9558-56ef0cab8e60
+unifi.reporterid=25d30387-7b14-4596-b74e-a80b68a0245c
+unifi.siteid=670ef645dcd3cd3f6b0f40c2
+unifi.idp=enabled
+unifi.mcip=239.254.127.63
+unifi.key=<FILTERED>
+unifi.feature.always_send_crash_logs=enabled
+unifi.cfgcap_info=0x7
+# mark
+mark.1.name=guest
+mark.1.bits=1
+mark.1.shift=24
+mark.1.location=skb
+mark.2.name=ipsec
+mark.2.bits=7
+mark.2.shift=25
+mark.2.location=skb
+mark.3.name=vapid
+mark.3.bits=5
+mark.3.shift=7
+mark.3.location=ubnt
+mark.4.name=associd
+mark.4.bits=7
+mark.4.shift=0
+mark.4.location=ubnt
+mark.5.name=udapi
+mark.5.bits=16
+mark.5.shift=0
+mark.5.location=skb
+# qos
+qos.status=disabled
+# ble scanner
+ble.status=enabled
+ble.mode=scanner
+# lcm
+lcm.sync=true
+# system
+system.analytics.status=disabled
+system.monitor.memory.threshold=70
+system.monitor.critical_memory.threshold=90
+# linkcheck echo server
+echo_server=ping.ui.com

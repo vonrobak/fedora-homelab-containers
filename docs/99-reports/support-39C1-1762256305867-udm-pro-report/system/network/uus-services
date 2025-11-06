@@ -1,0 +1,898 @@
+{
+ "arpInspection": {
+  "enabled": false,
+  "interfaces": [
+   {
+    "id": "dummy"
+   }
+  ]
+ },
+ "dhcpServers": [
+  {
+   "activeLeases": [
+    {
+     "address": "192.168.1.9",
+     "hostname": "",
+     "id": "01:d2:dc:ed:e4:d5:30",
+     "leaseExpiry": 1762320259,
+     "mac": "d2:dc:ed:e4:d5:30"
+    },
+    {
+     "address": "192.168.1.10",
+     "hostname": "UbiquityUnifiAccessPointu7pro.lokal",
+     "id": "01:9c:05:d6:a6:68:d4",
+     "leaseExpiry": 1762304716,
+     "mac": "9c:05:d6:a6:68:d4"
+    },
+    {
+     "address": "192.168.1.19",
+     "hostname": "",
+     "id": "01:ae:94:1f:02:00:87",
+     "leaseExpiry": 1762331162,
+     "mac": "ae:94:1f:02:00:87"
+    },
+    {
+     "address": "192.168.1.34",
+     "hostname": "Mac.lokal",
+     "id": "01:52:ad:b6:a8:c9:a7",
+     "leaseExpiry": 1762339174,
+     "mac": "52:ad:b6:a8:c9:a7"
+    },
+    {
+     "address": "192.168.1.69",
+     "hostname": "raspberrypi.lokal",
+     "id": "",
+     "leaseExpiry": 1762325878,
+     "mac": "e4:5f:01:1e:2b:a9"
+    },
+    {
+     "address": "192.168.1.70",
+     "hostname": "fedora-htpc.lokal",
+     "id": "",
+     "leaseExpiry": 1762340410,
+     "mac": "d4:5d:64:50:6c:84"
+    },
+    {
+     "address": "192.168.1.71",
+     "hostname": "JernWin.lokal",
+     "id": "",
+     "leaseExpiry": 1762331124,
+     "mac": "60:45:cb:a1:72:83"
+    },
+    {
+     "address": "192.168.1.101",
+     "hostname": "patriarkipadpro.lokal",
+     "id": "",
+     "leaseExpiry": 1762303034,
+     "mac": "88:66:5a:83:6f:43"
+    },
+    {
+     "address": "192.168.1.102",
+     "hostname": "Brubofonen.lokal",
+     "id": "",
+     "leaseExpiry": 1762340159,
+     "mac": "18:e7:b0:5b:24:2d"
+    }
+   ],
+   "conflictChecking": true,
+   "dnsServers": [
+    "192.168.1.69"
+   ],
+   "domain": "lokal",
+   "enabled": true,
+   "excludedFromLease": [],
+   "gatewayAddress": "192.168.1.1",
+   "interfaces": [
+    {
+     "id": "br0"
+    }
+   ],
+   "ipExclusion": true,
+   "ipVersion": "v4",
+   "ipv4Netmask": 24,
+   "ipv6Modes": [],
+   "leaseTime": 86400,
+   "name": "net_patriark_lan_br0_192-168-1-0-24",
+   "options": [],
+   "rangeStart": "192.168.1.6",
+   "rangeStop": "192.168.1.68",
+   "staticLeases": [
+    {
+     "addresses": [
+      "192.168.1.20"
+     ],
+     "id": "00:00:00:00:00:00"
+    },
+    {
+     "addresses": [
+      "192.168.1.70"
+     ],
+     "id": "d4:5d:64:50:6c:84"
+    },
+    {
+     "addresses": [
+      "192.168.1.71"
+     ],
+     "id": "60:45:cb:a1:72:83"
+    },
+    {
+     "addresses": [
+      "192.168.1.69"
+     ],
+     "id": "e4:5f:01:1e:2b:a9"
+    },
+    {
+     "addresses": [
+      "192.168.1.100"
+     ],
+     "id": "1a:e4:b8:e9:21:ec"
+    },
+    {
+     "addresses": [
+      "192.168.1.101"
+     ],
+     "id": "88:66:5a:83:6f:43"
+    },
+    {
+     "addresses": [
+      "192.168.1.102"
+     ],
+     "id": "18:e7:b0:5b:24:2d"
+    }
+   ]
+  },
+  {
+   "activeLeases": [
+    {
+     "address": "192.168.2.6",
+     "hostname": "",
+     "id": "",
+     "leaseExpiry": 1762342434,
+     "mac": "dc:68:eb:0d:79:72"
+    },
+    {
+     "address": "192.168.2.11",
+     "hostname": "",
+     "id": "01:ec:62:60:07:ed:48",
+     "leaseExpiry": 1762335763,
+     "mac": "ec:62:60:07:ed:48"
+    },
+    {
+     "address": "192.168.2.12",
+     "hostname": "",
+     "id": "01:68:9a:87:ff:bd:1e",
+     "leaseExpiry": 1762334827,
+     "mac": "68:9a:87:ff:bd:1e"
+    },
+    {
+     "address": "192.168.2.22",
+     "hostname": "Mill_Air_Purifier",
+     "id": "01:ec:62:60:09:9f:08",
+     "leaseExpiry": 1762335764,
+     "mac": "ec:62:60:09:9f:08"
+    },
+    {
+     "address": "192.168.2.37",
+     "hostname": "Mill-Sense-Air",
+     "id": "01:0c:b8:15:6a:a5:fc",
+     "leaseExpiry": 1762342392,
+     "mac": "0c:b8:15:6a:a5:fc"
+    },
+    {
+     "address": "192.168.2.45",
+     "hostname": "",
+     "id": "01:fe:c3:c3:14:91:82",
+     "leaseExpiry": 1762279082,
+     "mac": "fe:c3:c3:14:91:82"
+    },
+    {
+     "address": "192.168.2.60",
+     "hostname": "ecb5faac1942",
+     "id": "",
+     "leaseExpiry": 1762335399,
+     "mac": "ec:b5:fa:ac:19:42"
+    },
+    {
+     "address": "192.168.2.67",
+     "hostname": "",
+     "id": "01:54:2a:a2:c6:df:c0",
+     "leaseExpiry": 1762327960,
+     "mac": "54:2a:a2:c6:df:c0"
+    },
+    {
+     "address": "192.168.2.69",
+     "hostname": "",
+     "id": "",
+     "leaseExpiry": 1762330882,
+     "mac": "ac:9e:17:af:87:50"
+    }
+   ],
+   "conflictChecking": true,
+   "dnsServers": [
+    "192.168.1.69"
+   ],
+   "enabled": true,
+   "excludedFromLease": [],
+   "gatewayAddress": "192.168.2.1",
+   "interfaces": [
+    {
+     "id": "br2"
+    }
+   ],
+   "ipExclusion": true,
+   "ipVersion": "v4",
+   "ipv4Netmask": 24,
+   "ipv6Modes": [],
+   "leaseTime": 86400,
+   "name": "net_IoT_br2_192-168-2-0-24",
+   "options": [],
+   "rangeStart": "192.168.2.6",
+   "rangeStop": "192.168.2.68",
+   "staticLeases": [
+    {
+     "addresses": [
+      "192.168.2.69"
+     ],
+     "id": "ac:9e:17:af:87:50"
+    }
+   ]
+  },
+  {
+   "activeLeases": [],
+   "conflictChecking": true,
+   "dnsServers": [
+    "192.168.1.69"
+   ],
+   "enabled": true,
+   "excludedFromLease": [],
+   "gatewayAddress": "192.168.3.1",
+   "interfaces": [
+    {
+     "id": "br3"
+    }
+   ],
+   "ipExclusion": true,
+   "ipVersion": "v4",
+   "ipv4Netmask": 24,
+   "ipv6Modes": [],
+   "leaseTime": 86400,
+   "name": "net_NoT_br3_192-168-3-0-24",
+   "options": [],
+   "rangeStart": "192.168.3.6",
+   "rangeStop": "192.168.3.68",
+   "staticLeases": []
+  },
+  {
+   "activeLeases": [],
+   "conflictChecking": true,
+   "dnsServers": [
+    "192.168.99.1"
+   ],
+   "enabled": true,
+   "excludedFromLease": [],
+   "gatewayAddress": "192.168.99.1",
+   "interfaces": [
+    {
+     "id": "br99"
+    }
+   ],
+   "ipExclusion": true,
+   "ipVersion": "v4",
+   "ipv4Netmask": 24,
+   "ipv6Modes": [],
+   "leaseTime": 86400,
+   "name": "net_Gjester_br99_192-168-99-0-24",
+   "options": [],
+   "rangeStart": "192.168.99.6",
+   "rangeStop": "192.168.99.254",
+   "staticLeases": []
+  }
+ ],
+ "dnsForwarder": {
+  "cnameRecords": [],
+  "domainForwards": [],
+  "enabled": true,
+  "forwardBehavior": "allServers",
+  "hostRecords": [
+   {
+    "address": null,
+    "hostName": "unifi.lokal",
+    "registerNonQualified": true
+   },
+   {
+    "address": null,
+    "hostName": "setup.ui.com",
+    "registerNonQualified": false
+   },
+   {
+    "address": null,
+    "hostName": "patriarkatet-udm.lokal",
+    "registerNonQualified": true
+   },
+   {
+    "address": null,
+    "hostName": "9c05d64a39c107ee315f0858e482065bdfe6b.id.ui.direct",
+    "registerNonQualified": true
+   },
+   {
+    "address": null,
+    "hostName": "unifi.",
+    "registerNonQualified": false
+   },
+   {
+    "address": {
+     "address": "192.168.1.1",
+     "origin": null,
+     "version": "v4"
+    },
+    "hostName": "*.devices.wifiman.me",
+    "registerNonQualified": false
+   }
+  ],
+  "ipsets": [],
+  "listenInterfaces": [
+   {
+    "id": "br0"
+   },
+   {
+    "id": "br2"
+   },
+   {
+    "id": "br99"
+   },
+   {
+    "id": "br3"
+   }
+  ],
+  "mxRecords": [],
+  "nxdomainRecords": [],
+  "ptrRecords": [],
+  "srvRecords": [],
+  "txtRecords": []
+ },
+ "dpi": {
+  "dpiModule": {
+   "fingerprinting": {
+    "fingerbankAPItoken": "<FILTERED>",
+    "wifiListener": {
+     "address": "192.168.1.1",
+     "key": "<FILTERED>",
+     "port": 10101
+    }
+   }
+  },
+  "enabled": true,
+  "refreshInterval": 1
+ },
+ "geoipFiltering": {
+  "action": "block",
+  "allowLinkLocalAddressSpace": true,
+  "allowOwnAddressSpace": true,
+  "allowPrivateAddressSpace": true,
+  "allowSharedAddressSpace": true,
+  "allowedCustomSubnets": [],
+  "countryList": [
+   "KP",
+   "RU",
+   "IR",
+   "CN"
+  ],
+  "direction": "incoming",
+  "enableLogging": false,
+  "enabled": true,
+  "interfaces": [
+   {
+    "id": "eth9"
+   },
+   {
+    "id": "eth8"
+   }
+  ],
+  "ipVersion": "both"
+ },
+ "idsIps": {
+  "alien": true,
+  "alienLoggingEnabled": false,
+  "blockTime": 300,
+  "deviceID": "9c:05:d6:4a:39:c1",
+  "enabled": true,
+  "interfaces": [
+   "br0",
+   "br2"
+  ],
+  "mode": "pcap-l3-blocking-high",
+  "netAddresses": [],
+  "signature<FILTERED>": 24,
+  "signature<FILTERED>": [
+   {
+    "action": "block",
+    "category": "ATTACK_RESPONSE"
+   },
+   {
+    "action": "block",
+    "category": "BOTCC"
+   },
+   {
+    "action": "block",
+    "category": "CIARMY"
+   },
+   {
+    "action": "block",
+    "category": "COMPROMISED"
+   },
+   {
+    "action": "block",
+    "category": "DSHIELD"
+   },
+   {
+    "action": "block",
+    "category": "EXPLOIT"
+   },
+   {
+    "action": "block",
+    "category": "MALWARE"
+   },
+   {
+    "action": "block",
+    "category": "MOBILE_MALWARE"
+   },
+   {
+    "action": "block",
+    "category": "NETBIOS"
+   },
+   {
+    "action": "block",
+    "category": "RPC"
+   },
+   {
+    "action": "block",
+    "category": "SCAN"
+   },
+   {
+    "action": "block",
+    "category": "SHELLCODE"
+   },
+   {
+    "action": "block",
+    "category": "TELNET"
+   },
+   {
+    "action": "block",
+    "category": "TOR"
+   },
+   {
+    "action": "block",
+    "category": "WEB_SERVER"
+   },
+   {
+    "action": "block",
+    "category": "WORM"
+   }
+  ],
+  "sslInspectionEnabled": false,
+  "suppress": [],
+  "threatLoggingEnabled": false,
+  "token": "<FILTERED>",
+  "tor": true,
+  "torLoggingEnabled": false
+ },
+ "igmpSnooping": {
+  "enabled": true
+ },
+ "lldp": {
+  "enabled": true
+ },
+ "loopProtection": {
+  "enabled": false,
+  "portRecovery": null
+ },
+ "mdns": {
+  "enabled": true,
+  "interfaces": [
+   {
+    "id": "br0"
+   },
+   {
+    "id": "br2"
+   },
+   {
+    "id": "br3"
+   }
+  ],
+  "reflectFilter": [],
+  "reflectIPVersion": false,
+  "reflectMirror": false
+ },
+ "messageBroker": {
+  "enabled": true,
+  "extended": false,
+  "flowConfiguration": {
+   "eventState": [
+    "ipsIds",
+    "honeypot",
+    "tor",
+    "alien",
+    "contentFiltering",
+    "adBlocking",
+    "regionBlocking",
+    "trigger",
+    "conntrack",
+    "dnsQueries"
+   ]
+  },
+  "rabbitMq": {
+   "authentication": {
+    "password": "<FILTERED>",
+    "user<FILTERED>": "<FILTERED>"
+   },
+   "host": "127.0.0.1",
+   "port": 5672
+  },
+  "siteID": "670ef645dcd3cd3f6b0f40c2"
+ },
+ "ntpClient": {
+  "enabled": true,
+  "ntpServers": [
+   "0.ubnt.pool.ntp.org",
+   "1.ubnt.pool.ntp.org",
+   "2.ubnt.pool.ntp.org",
+   "3.ubnt.pool.ntp.org"
+  ]
+ },
+ "redirector": {
+  "enabled": true,
+  "instances": [
+   {
+    "devNames": [
+     "br99"
+    ],
+    "enabled": true,
+    "httpsEnabled": true,
+    "httpsURL": "http://192.168.1.1:8880/guest/s/default/",
+    "initialEC": true,
+    "redirectPattern": "http://192.168.1.1:8881",
+    "url": "http://192.168.1.1:8880/guest/s/default/"
+   }
+  ]
+ },
+ "systemLog": {
+  "enabled": false,
+  "port": 514
+ },
+ "unifiNetwork": {
+  "certificate": {
+   "crt": "MIIDfTCCAmWgAwIBAgIEZb7ghDANBgkqhkiG9w0BAQsFADBrMQswCQYDVQQGEwJVUzERMA8GA1UECAwITmV3IFlvcmsxETAPBgNVBAcMCE5ldyBZb3JrMRYwFAYDVQQKDA1VYmlxdWl0aSBJbmMuMQ4wDAYDVQQLDAVVbmlGaTEOMAwGA1UEAwwFVW5pRmkwHhcNMjQwMjA0MDA1NTMyWhcNMjYwNTA5MDA1NTMyWjBrMQswCQYDVQQGEwJVUzERMA8GA1UECAwITmV3IFlvcmsxETAPBgNVBAcMCE5ldyBZb3JrMRYwFAYDVQQKDA1VYmlxdWl0aSBJbmMuMQ4wDAYDVQQLDAVVbmlGaTEOMAwGA1UEAwwFVW5pRmkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC6QA9kFmYHbDbRM9t9UCyMs4mseUDunmxNgJ5E/Lr04LBKfPQXyct7UXDQXE/g0EPBc6Mq2lj/uQvT9EmBK1tT12woXLOUHUrawajFf3ahz+UegV4aVV6Gv8FAOqloVuFrehTHS4Nc6XETdbxzJoaZ+piRUZcu926b7XxXZIRlf9fTLF1t+MUBoBwIRYjfgHmbBSITP61jVqehx0+//9sBg4qAmtJDKZOEYdy8Oli+RAObvqHAx0/UxGeBeBNmulfmlhPH++vw8mqxGzX7ziMWp6N0nMeTQOTc/rfJWdhmazAL5Rbgo8upaX5MmgGB0J18ZvWL4EDQ7kFeFoaBOOedAgMBAAGjKTAnMBAGA1UdEQQJMAeCBVVuaUZpMBMGA1UdJQQMMAoGCCsGAQUFBwMBMA0GCSqGSIb3DQEBCwUAA4IBAQAW4eTpyifmMWy/B/25MUEThdgLbf9IA58LOXkLk/y8gcHvPheg4WnaaeN97RPspav6CKl+bHVzjaZGD/Jbe1DAHtMR2hbvP3GRxuFh3OumqNZsBOxrNExp5G298+PiRarARKzlv9d3SFQSVcgpgBy/5ZMAooxOXV4imDcbJT6SPVYZNELFihT/XEJnon6hZtZmocdxxB6zOOCxU7mw0Idwqp4WgijFCRi4g3rsUOCdF6NcSN2FV/2I0WetMQ6Ux0PXm6ZOC2QROCQdXBq+4PONyXTefSb+dZfUz9jp0HHYZGZtsPv/984L9EhDrI99W0nfXhzUHdV5/eca/nsKAxM2"
+  },
+  "controllerURL": "https://192.168.1.1:8443",
+  "enabled": true,
+  "informURL": "http://192.168.1.1:8080/inform",
+  "sitename": "default",
+  "status": "connected",
+  "uciAllowList": []
+ },
+ "utm": {
+  "deviceID": "9c:05:d6:4a:39:c1",
+  "dnsResolvRules": [],
+  "enabled": true,
+  "eventType": "alert",
+  "honeypot": [
+   {
+    "ipAddress": "192.168.1.2"
+   }
+  ],
+  "optIn": true,
+  "token": "<FILTERED>"
+ },
+ "wanFailover": {
+  "enabled": true,
+  "failoverGroups": [
+   {
+    "algorithm": "single",
+    "connectionResetTriggers": [
+     "onActivation",
+     "onConfiguration",
+     "onWanHealthBad"
+    ],
+    "id": 1,
+    "interfaces": [
+     "eth8"
+    ],
+    "metric": 1,
+    "status": {
+     "active": true,
+     "health": "good"
+    }
+   },
+   {
+    "algorithm": "single",
+    "connectionResetTriggers": [
+     "onActivation",
+     "onConfiguration",
+     "onWanHealthBad"
+    ],
+    "id": 2,
+    "interfaces": [
+     "eth9"
+    ],
+    "metric": 2,
+    "status": {
+     "active": false,
+     "health": "bad"
+    }
+   }
+  ],
+  "wanInterfaces": [
+   {
+    "interface": "eth8",
+    "metric": 1,
+    "monitorHealthThreshold": 50,
+    "monitors": [
+     {
+      "alert": {
+       "lossThreshold": 50,
+       "thresholdPolicy": "any"
+      },
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 8,
+      "interval": 3,
+      "payloadSize": 1,
+      "status": {
+       "availability": 100.0,
+       "latencyAverage": 7,
+       "latencyStdDev": 0,
+       "recordedTimePeriod": 60
+      },
+      "target": "ping.ui.com",
+      "timePeriod": 60,
+      "type": "icmp"
+     },
+     {
+      "alert": {
+       "latencyThreshold": 1500,
+       "lossThreshold": 100,
+       "thresholdPolicy": "any"
+      },
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "domain": "ui.com",
+      "id": 9,
+      "interval": 10,
+      "status": {
+       "availability": 100.0,
+       "latencyAverage": 8,
+       "latencyStdDev": 3,
+       "recordedTimePeriod": 30
+      },
+      "target": "1.1.1.1",
+      "timePeriod": 30,
+      "type": "dns"
+     },
+     {
+      "alert": {
+       "latencyThreshold": 1500,
+       "lossThreshold": 100,
+       "thresholdPolicy": "any"
+      },
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "domain": "ui.com",
+      "id": 10,
+      "interval": 10,
+      "status": {
+       "availability": 100.0,
+       "latencyAverage": 31,
+       "latencyStdDev": 4,
+       "recordedTimePeriod": 30
+      },
+      "target": "8.8.8.8",
+      "timePeriod": 30,
+      "type": "dns"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 11,
+      "interval": 60,
+      "payloadSize": 1,
+      "status": {
+       "availability": 100.0,
+       "latencyAverage": 8,
+       "latencyStdDev": 1,
+       "recordedTimePeriod": 86400
+      },
+      "target": "ping.ui.com",
+      "timePeriod": 86400,
+      "type": "icmp"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 12,
+      "interval": 10,
+      "payloadSize": 1,
+      "status": {
+       "availability": 100.0,
+       "latencyAverage": 11,
+       "latencyStdDev": 4,
+       "recordedTimePeriod": 30
+      },
+      "target": "www.microsoft.com",
+      "timePeriod": 30,
+      "type": "icmp"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 13,
+      "interval": 10,
+      "payloadSize": 1,
+      "status": {
+       "availability": 100.0,
+       "latencyAverage": 17,
+       "latencyStdDev": 3,
+       "recordedTimePeriod": 30
+      },
+      "target": "google.com",
+      "timePeriod": 30,
+      "type": "icmp"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 14,
+      "interval": 10,
+      "payloadSize": 1,
+      "status": {
+       "availability": 100.0,
+       "latencyAverage": 8,
+       "latencyStdDev": 0,
+       "recordedTimePeriod": 30
+      },
+      "target": "1.1.1.1",
+      "timePeriod": 30,
+      "type": "icmp"
+     }
+    ],
+    "routingTable": 201,
+    "status": {
+     "health": "good",
+     "primary": true,
+     "weight": 99
+    },
+    "weight": 99
+   },
+   {
+    "interface": "eth9",
+    "metric": 2,
+    "monitorHealthThreshold": 50,
+    "monitors": [
+     {
+      "alert": {
+       "lossThreshold": 50,
+       "thresholdPolicy": "any"
+      },
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 1,
+      "interval": 3,
+      "payloadSize": 1,
+      "target": "ping.ui.com",
+      "timePeriod": 60,
+      "type": "icmp"
+     },
+     {
+      "alert": {
+       "latencyThreshold": 1500,
+       "lossThreshold": 100,
+       "thresholdPolicy": "any"
+      },
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "domain": "ui.com",
+      "id": 2,
+      "interval": 10,
+      "target": "1.1.1.1",
+      "timePeriod": 30,
+      "type": "dns"
+     },
+     {
+      "alert": {
+       "latencyThreshold": 1500,
+       "lossThreshold": 100,
+       "thresholdPolicy": "any"
+      },
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "domain": "ui.com",
+      "id": 3,
+      "interval": 10,
+      "target": "8.8.8.8",
+      "timePeriod": 30,
+      "type": "dns"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 4,
+      "interval": 60,
+      "payloadSize": 1,
+      "target": "ping.ui.com",
+      "timePeriod": 86400,
+      "type": "icmp"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 5,
+      "interval": 10,
+      "payloadSize": 1,
+      "target": "www.microsoft.com",
+      "timePeriod": 30,
+      "type": "icmp"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 6,
+      "interval": 10,
+      "payloadSize": 1,
+      "target": "google.com",
+      "timePeriod": 30,
+      "type": "icmp"
+     },
+     {
+      "bindAddress": true,
+      "bindDomainResolution": true,
+      "bindInterface": true,
+      "bindRoutingTable": true,
+      "id": 7,
+      "interval": 10,
+      "payloadSize": 1,
+      "target": "1.1.1.1",
+      "timePeriod": 30,
+      "type": "icmp"
+     }
+    ],
+    "routingTable": 202,
+    "status": {
+     "health": "bad",
+     "primary": false,
+     "weight": 10
+    },
+    "weight": 10
+   }
+  ]
+ },
+ "wifiman": {
+  "enabled": true,
+  "port": 8900,
+  "token": "<FILTERED>"
+ }
+}

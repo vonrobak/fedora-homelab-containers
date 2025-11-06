@@ -1,0 +1,114 @@
+192.168.1.34 dev br0 lladdr 52:ad:b6:a8:c9:a7 ref 1 used 185/180/180 probes 1 REACHABLE
+192.168.2.12 dev br2 lladdr 68:9a:87:ff:bd:1e used 7893/7893/6987 probes 1 STALE
+192.168.2.6 dev br2 lladdr dc:68:eb:0d:79:72 ref 1 used 47/42/42 probes 1 REACHABLE
+192.168.2.11 dev br2 lladdr ec:62:60:07:ed:48 used 906/901/24 probes 1 STALE
+192.168.2.39 dev br2  used 2582105/2583311/2582101 probes 6 FAILED
+192.168.2.45 dev br2 lladdr fe:c3:c3:14:91:82 used 63643/63638/62938 probes 1 STALE
+192.168.1.101 dev br0 lladdr 88:66:5a:83:6f:43 ref 1 used 162/157/157 probes 1 REACHABLE
+192.168.1.102 dev br0 lladdr 18:e7:b0:5b:24:2d ref 1 used 57/57/57 probes 1 REACHABLE
+192.168.2.67 dev br2 lladdr 54:2a:a2:c6:df:c0 ref 1 used 60/55/55 probes 1 REACHABLE
+1.1.1.1 dev eth8  used 8948725/8948785/8948722 probes 6 FAILED
+62.249.184.1 dev eth8 lladdr 80:e0:1d:f7:7c:19 ref 1 used 139/6/138 probes 1 REACHABLE
+192.168.1.9 dev br0 lladdr d2:dc:ed:e4:d5:30 used 1164/1160/474 probes 1 STALE
+192.168.1.10 dev br0 lladdr 9c:05:d6:a6:68:d4 ref 1 used 1593208/7/1593206 probes 1 REACHABLE
+192.168.2.28 dev br2  used 2054698/4203047/2054698 probes 6 FAILED
+192.168.2.27 dev br2  used 174347/174794/174338 probes 3 FAILED
+192.168.2.22 dev br2 lladdr ec:62:60:09:9f:08 ref 1 used 81/76/76 probes 1 REACHABLE
+192.168.1.71 dev br0 lladdr 60:45:cb:a1:72:83 ref 1 used 392/387/387 probes 1 REACHABLE
+192.168.2.37 dev br2 lladdr 0c:b8:15:6a:a5:fc ref 1 used 329/328/328 probes 1 REACHABLE
+192.168.2.32 dev br2  used 261953/263155/261945 probes 3 FAILED
+192.168.1.26 dev br0  used 243216/244617/243213 probes 6 FAILED
+192.168.1.25 dev br0  used 5334433/5335633/5334425 probes 3 FAILED
+192.168.1.19 dev br0 lladdr ae:94:1f:02:00:87 used 7329/7326/6826 probes 1 STALE
+192.168.1.20 dev br0 lladdr 9c:05:d6:a6:68:d4 used 9277787/1593218/1592548 probes 6 STALE
+192.168.1.59 dev br0  used 4197315/4205308/4197311 probes 6 FAILED
+192.168.2.229 dev br2  used 3301918/6714207/3301918 probes 6 FAILED
+192.168.2.13 dev br2  used 1549351/1551460/1549348 probes 6 FAILED
+192.168.2.60 dev br2 lladdr ec:b5:fa:ac:19:42 ref 1 used 53/48/48 probes 1 REACHABLE
+192.168.1.70 dev br0 lladdr d4:5d:64:50:6c:84 ref 1 used 345/345/345 probes 1 REACHABLE
+192.168.1.69 dev br0 lladdr e4:5f:01:1e:2b:a9 ref 1 used 342/342/342 probes 1 REACHABLE
+192.168.2.47 dev br2 lladdr 8a:57:38:16:32:9c used 9263995/9263991/9263087 probes 1 STALE
+192.168.2.69 dev br2 lladdr ac:9e:17:af:87:50 used 2328/2323/1498 probes 1 STALE
+fe80::489:de5e:453e:72c6 dev br2 lladdr 66:8c:d8:71:5e:e1 used 7237269/7238465/7237265 probes 0 STALE
+fe80::562a:a2ff:fec6:dfc0 dev br2 lladdr 54:2a:a2:c6:df:c0 used 9272316/9273516/9272316 probes 0 STALE
+fe80::18f6:950d:a7b9:d312 dev br0 lladdr 18:e7:b0:5b:24:2d used 2554864/2556060/2554860 probes 0 STALE
+fe80::1c6d:6ee5:c498:cf7a dev br2 lladdr 66:8c:d8:71:5e:e1 used 3103428/3104624/3103424 probes 0 STALE
+fe80::803:c596:b6b2:bdff dev br2 lladdr ea:7c:cb:40:b8:70 used 2917546/2917546/2916990 probes 1 STALE
+fe80::cec:eab:1848:695e dev br2 lladdr fe:c3:c3:14:91:82 used 1517879/1519074/1517874 probes 0 STALE
+fe80::145f:2d7f:6e33:2188 dev br2 lladdr 52:6f:6f:e7:5d:36 used 5521965/5523160/5521960 probes 0 STALE
+fe80::8c4:47de:e043:b60b dev br0 lladdr 88:66:5a:83:6f:43 used 4202690/4203873/4202673 probes 0 STALE
+fe80::eeb5:faff:feac:1942 dev br2 lladdr ec:b5:fa:ac:19:42 used 9278026/9279226/9278026 probes 0 STALE
+fe80::141a:87fe:edc6:bf6e dev br2 lladdr f2:85:da:2e:7e:27 used 7247722/7248922/7247722 probes 0 STALE
+fe80::1458:8d93:b74:db9c dev br2 lladdr ea:7c:cb:40:b8:70 used 4659486/4659486/4658609 probes 1 STALE
+fe80::474:50ba:a90c:bd5f dev br0 lladdr 52:ad:b6:a8:c9:a7 used 3350270/3351465/3350265 probes 0 STALE
+fe80::479:8205:68e7:787c dev br0 lladdr ae:94:1f:02:00:87 used 6070377/6071573/6070373 probes 0 STALE
+fe80::cc4:f853:555c:708 dev br2 lladdr f2:85:da:2e:7e:27 used 1593489/1594684/1593484 probes 0 STALE
+fe80::402:7de9:7a8d:8205 dev br0 lladdr 52:ad:b6:a8:c9:a7 used 1959310/1960505/1959305 probes 0 STALE
+fe80::1f:22b7:2eaf:d948 dev br0 lladdr 18:e7:b0:5b:24:2d used 6355353/6356548/6355348 probes 0 STALE
+fe80::1021:baac:a49a:d551 dev br0 lladdr 52:ad:b6:a8:c9:a7 used 1959162/1960358/1959158 probes 0 STALE
+fe80::8f5:8979:6799:fe07 dev br0 lladdr 88:66:5a:83:6f:43 used 4659524/4660719/4659519 probes 0 STALE
+fe80::149d:f912:8d62:cc24 dev br0 lladdr ae:94:1f:02:00:87 used 9252684/9253880/9252680 probes 0 STALE
+fe80::43a:2443:df8d:8283 dev br0 lladdr 88:66:5a:83:6f:43 used 2054865/2056061/2054861 probes 0 STALE
+fe80::1cd4:7a41:8e4a:b888 dev br2 lladdr ea:7c:cb:40:b8:70 used 7861327/7861327/7860652 probes 1 STALE
+fe80::1468:2e2d:c343:1b1a dev br2 lladdr fe:c3:c3:14:91:82 used 4309039/4310234/4309034 probes 0 STALE
+fe80::1461:e4a4:2dd4:8c08 dev br0 lladdr 88:66:5a:83:6f:43 used 3347901/3349096/3347896 probes 0 STALE
+fe80::ad:338b:393c:6394 dev br2 lladdr 66:8c:d8:71:5e:e1 used 4484120/4484120/4483300 probes 1 STALE
+fe80::a026:d33e:dc2a:decf dev br0 lladdr d2:dc:ed:e4:d5:30 used 8128355/8129555/8128355 probes 0 STALE
+fe80::c7:7060:8a91:1b95 dev br0 lladdr 18:e7:b0:5b:24:2d used 3347684/3348880/3347680 probes 0 STALE
+fe80::18e9:51b0:fd8f:dd3f dev br2 lladdr 66:8c:d8:71:5e:e1 used 2130994/2132190/2130990 probes 0 STALE
+fe80::1ca0:d24b:61ac:baa4 dev br0 lladdr 88:66:5a:83:6f:43 used 7861869/7863069/7861869 probes 0 STALE
+fe80::1c3b:ee83:5920:d36a dev br2 lladdr 8a:57:38:16:32:9c used 9279099/9280294/9279094 probes 0 STALE
+fe80::104a:49ce:27bd:c0c dev br0 lladdr 52:ad:b6:a8:c9:a7 used 8900506/8901701/8900501 probes 0 STALE
+fe80::4e8:759:7377:e153 dev br0 lladdr 88:66:5a:83:6f:43 used 6291590/6292786/6291586 probes 0 STALE
+fe80::de:caa1:75b8:a94b dev br0 lladdr 18:e7:b0:5b:24:2d used 7312911/7314107/7312907 probes 0 STALE
+fe80::82e0:1dff:fef7:7c19 dev eth8 lladdr 80:e0:1d:f7:7c:19 router used 9279117/9279177/9279117 probes 0 STALE
+fe80::108a:2c59:4385:7af0 dev br0 lladdr 88:66:5a:83:6f:43 used 39701/40887/39687 probes 0 STALE
+fe80::18ef:b75:f9ac:d981 dev br2 lladdr ea:7c:cb:40:b8:70 used 1854235/1594686/1593486 probes 0 STALE
+fe80::18c2:1aa1:7770:f322 dev br0 lladdr 52:ad:b6:a8:c9:a7 used 4205258/4206454/4205254 probes 0 STALE
+fe80::1874:ddce:8c50:bcdd dev br0 lladdr 52:ad:b6:a8:c9:a7 used 6118893/6120084/6118884 probes 0 STALE
+fe80::ac:75c7:802c:a271 dev br0 lladdr 88:66:5a:83:6f:43 used 7863383/7864583/7863383 probes 0 STALE
+fe80::4d0:a21a:38fe:918e dev br0 lladdr 52:ad:b6:a8:c9:a7 used 7669584/7670780/7669580 probes 0 STALE
+fe80::1c32:40a6:61f3:9783 dev br0 lladdr 88:66:5a:83:6f:43 used 5024418/5025605/5024405 probes 0 STALE
+fe80::489:d17a:a218:6d85 dev br0 lladdr 1c:57:dc:45:7a:2e used 6118949/6120145/6118945 probes 0 STALE
+fe80::14d7:9776:fe32:82f9 dev br0 lladdr ae:94:1f:02:00:87 used 5334492/5335687/5334487 probes 0 STALE
+fe80::9e05:d6ff:fea6:68d4 dev br0 lladdr 9c:05:d6:a6:68:d4 used 9277462/9278662/9277462 probes 0 STALE
+fe80::1801:b328:741e:4527 dev br0 lladdr 18:e7:b0:5b:24:2d used 1552080/1552080/1551302 probes 1 STALE
+fe80::c:9f49:395e:7d66 dev br0 lladdr 88:66:5a:83:6f:43 used 1446602/1447797/1446597 probes 0 STALE
+fe80::cbb:ab7f:f497:b47a dev br0 lladdr ae:94:1f:02:00:87 used 4035093/4036288/4035088 probes 0 STALE
+fe80::18fc:2e14:b033:e00c dev br0 lladdr ae:94:1f:02:00:87 used 1695797/1696993/1695793 probes 0 STALE
+fe80::c63:83a4:ea25:163f dev br2 lladdr fe:c3:c3:14:91:82 used 8035132/8036327/8035127 probes 0 STALE
+fe80::1033:301b:aac2:81a0 dev br0 lladdr 88:66:5a:83:6f:43 used 8006562/8006562/8005819 probes 1 STALE
+fe80::18f9:5880:1965:714d dev br0 lladdr 52:ad:b6:a8:c9:a7 used 3350190/3351386/3350186 probes 0 STALE
+fe80::45b:8279:6f49:d1aa dev br0 lladdr 18:e7:b0:5b:24:2d used 4200640/4201835/4200635 probes 0 STALE
+fe80::405:1e7c:50df:12d2 dev br2 lladdr fe:c3:c3:14:91:82 used 5079842/5081038/5079838 probes 0 STALE
+fe80::1c08:8026:da89:54e0 dev br0 lladdr ae:94:1f:02:00:87 used 8686569/8687765/8686565 probes 0 STALE
+fe80::18c5:793:6d0b:79a2 dev br0 lladdr 88:66:5a:83:6f:43 used 1968328/1969524/1968324 probes 0 STALE
+fe80::86f:93b8:1e7f:b5ac dev br0 lladdr 18:e7:b0:5b:24:2d used 416473/417668/416468 probes 0 STALE
+fe80::10b7:c18:f3e2:d716 dev br2 lladdr fe:c3:c3:14:91:82 used 3348463/3349659/3348459 probes 0 STALE
+fe80::1098:93b7:9c46:136d dev br2 lladdr fe:c3:c3:14:91:82 used 211315/212511/211311 probes 0 STALE
+fe80::1045:551b:b009:c08e dev br2 lladdr ea:7c:cb:40:b8:70 used 6461202/6462397/6461197 probes 0 STALE
+fe80::4c6:67e2:9a02:76d8 dev br2 lladdr 66:8c:d8:71:5e:e1 used 3370788/3370788/3370171 probes 1 STALE
+fe80::106b:2a01:d97d:ae0b dev br0 lladdr 18:e7:b0:5b:24:2d used 6695626/6696821/6695621 probes 0 STALE
+fe80::411:1fd5:4510:738c dev br0 lladdr 52:ad:b6:a8:c9:a7 used 3350122/3351318/3350118 probes 0 STALE
+fe80::1419:ede8:262d:d3f6 dev br2 lladdr 66:8c:d8:71:5e:e1 used 416363/417559/416359 probes 0 STALE
+fe80::9861:53ff:fe89:e794 dev br0 lladdr 9a:61:53:89:e7:94 used 3891024/3892224/3891024 probes 0 STALE
+fe80::1c6f:8a12:e993:14ce dev br0 lladdr 1c:57:dc:45:7a:2e used 4205314/4206514/4205314 probes 0 STALE
+fe80::c74:8060:f841:5a63 dev br0 lladdr 1c:57:dc:45:7a:2e used 7669645/7670841/7669641 probes 0 STALE
+fe80::c6e:2e35:528c:9159 dev br0 lladdr 88:66:5a:83:6f:43 used 7399943/7401139/7399939 probes 0 STALE
+fe80::457:d8fe:f0b2:834c dev br0 lladdr ae:94:1f:02:00:87 used 1446531/1447726/1446526 probes 0 STALE
+fe80::22bf:65e7:29fc:4c9b dev br0 lladdr 60:45:cb:a1:72:83 used 8619627/8620826/8619626 probes 0 STALE
+fe80::29:dcd4:6db4:976d dev br0 lladdr 1c:57:dc:45:7a:2e used 7669706/7670902/7669702 probes 0 STALE
+fe80::18b5:6068:12b2:af17 dev br0 lladdr 18:e7:b0:5b:24:2d used 8004156/8004156/8003469 probes 1 STALE
+fe80::469:d1de:a9b7:c065 dev br2 lladdr 66:8c:d8:71:5e:e1 used 7654689/7619874/7618674 probes 3 STALE
+fe80::cb5:b440:55f7:6f2 dev br2 lladdr ea:7c:cb:40:b8:70 used 3369475/3369475/3368945 probes 1 STALE
+fe80::184d:e1f2:9339:24d dev br0 lladdr ae:94:1f:02:00:87 used 4571283/4572478/4571278 probes 0 STALE
+fe80::1041:3285:8b37:2836 dev br2 lladdr f2:85:da:2e:7e:27 used 9279102/9280298/9279098 probes 0 STALE
+fe80::4f8:bb5d:4b4a:cd75 dev br0 lladdr ae:94:1f:02:00:87 used 355922/357117/355917 probes 0 STALE
+fe80::1cdb:8724:169b:52e7 dev br0 lladdr 88:66:5a:83:6f:43 used 9151129/9152327/9151127 probes 0 STALE
+fe80::8b1:eb8b:650d:791d dev br0 lladdr 88:66:5a:83:6f:43 used 5026926/5028121/5026921 probes 0 STALE
+fe80::4f4:df3d:6718:7de6 dev br0 lladdr 1c:57:dc:45:7a:2e used 6119010/6120206/6119006 probes 0 STALE
+fe80::18ef:2f90:556f:2e29 dev br2 lladdr fe:c3:c3:14:91:82 used 5373650/5374845/5373645 probes 0 STALE
+fe80::1063:7f34:8592:6670 dev br2 lladdr 66:8c:d8:71:5e:e1 used 6623168/6624363/6623163 probes 0 STALE
+fe80::828:ccff:3261:f446 dev br0 lladdr 52:ad:b6:a8:c9:a7 used 1959232/1960427/1959227 probes 0 STALE
+fe80::426:e994:832b:8cc dev br2 lladdr ea:7c:cb:40:b8:70 used 6994755/6994755/6994036 probes 1 STALE
+fe80::1cf6:9dbb:6441:5d82 dev br0 lladdr 1c:57:dc:45:7a:2e used 4205374/4206569/4205369 probes 0 STALE

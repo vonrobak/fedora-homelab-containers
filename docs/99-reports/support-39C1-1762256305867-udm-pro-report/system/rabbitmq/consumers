@@ -1,0 +1,4 @@
+Listing consumers in vhost / ...
+queue_name	channel_pid	consumer_tag	ack_required	prefetch_count	active	arguments
+unifi_flow_queue	<rabbitmq@localhost.1752977266.20096.65>	amq.ctag-1bPHaKlI9Qd1s98NvEC9dA	true	250	true	[]
+unifi_flow_queue	<rabbitmq@localhost.1752977266.19943.65>	amq.ctag-0YWAub8YCJabbQiwHSVyJA	true	250	true	[]

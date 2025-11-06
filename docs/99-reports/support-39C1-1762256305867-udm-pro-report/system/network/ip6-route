@@ -1,0 +1,90 @@
+fe80::/64 dev switch0.1 proto kernel metric 256 pref medium
+fe80::/64 dev switch0.2 proto kernel metric 256 pref medium
+fe80::/64 dev switch0.3 proto kernel metric 256 pref medium
+fe80::/64 dev switch0.99 proto kernel metric 256 pref medium
+fe80::/64 dev eth7 proto kernel metric 256 pref medium
+fe80::/64 dev eth6 proto kernel metric 256 pref medium
+fe80::/64 dev eth5 proto kernel metric 256 pref medium
+fe80::/64 dev eth4 proto kernel metric 256 pref medium
+fe80::/64 dev eth3 proto kernel metric 256 pref medium
+fe80::/64 dev eth2 proto kernel metric 256 pref medium
+fe80::/64 dev eth1 proto kernel metric 256 pref medium
+fe80::/64 dev eth0 proto kernel metric 256 pref medium
+fe80::/64 dev switch0 proto kernel metric 256 pref medium
+fe80::/64 dev eth10.2 proto kernel metric 256 linkdown pref medium
+fe80::/64 dev eth10.3 proto kernel metric 256 linkdown pref medium
+fe80::/64 dev eth10.99 proto kernel metric 256 linkdown pref medium
+fe80::/64 dev br0 proto kernel metric 256 pref medium
+fe80::/64 dev br2 proto kernel metric 256 pref medium
+fe80::/64 dev br3 proto kernel metric 256 pref medium
+fe80::/64 dev br99 proto kernel metric 256 pref medium
+fe80::/64 dev eth8 proto kernel metric 256 pref medium
+fe80::/64 dev honeypot0 proto kernel metric 256 pref medium
+local ::1 dev lo table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth2 table local proto kernel metric 0 pref medium
+anycast fe80:: dev switch0.3 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth6 table local proto kernel metric 0 pref medium
+anycast fe80:: dev switch0.1 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth4 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth1 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth7 table local proto kernel metric 0 pref medium
+anycast fe80:: dev switch0 table local proto kernel metric 0 pref medium
+anycast fe80:: dev switch0.99 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth5 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth3 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth10.3 table local proto kernel metric 0 pref medium
+anycast fe80:: dev switch0.2 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth10.2 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth0 table local proto kernel metric 0 pref medium
+anycast fe80:: dev br0 table local proto kernel metric 0 pref medium
+anycast fe80:: dev br2 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth10.99 table local proto kernel metric 0 pref medium
+anycast fe80:: dev br3 table local proto kernel metric 0 pref medium
+anycast fe80:: dev br99 table local proto kernel metric 0 pref medium
+anycast fe80:: dev eth8 table local proto kernel metric 0 pref medium
+anycast fe80:: dev honeypot0 table local proto kernel metric 0 pref medium
+local fe80::88e2:e8ff:fe22:331c dev honeypot0 table local proto kernel metric 0 pref medium
+local fe80::9c05:d6ff:fe4a:39c2 dev switch0.3 table local proto kernel metric 0 pref medium
+local fe80::9c05:d6ff:fe4a:39c2 dev switch0.1 table local proto kernel metric 0 pref medium
+local fe80::9c05:d6ff:fe4a:39c2 dev switch0 table local proto kernel metric 0 pref medium
+local fe80::9c05:d6ff:fe4a:39c2 dev switch0.99 table local proto kernel metric 0 pref medium
+local fe80::9c05:d6ff:fe4a:39c2 dev switch0.2 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c1 dev eth0 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c2 dev eth1 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c3 dev eth2 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c4 dev eth3 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c5 dev eth4 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c6 dev eth5 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c7 dev eth6 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c8 dev eth7 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39c9 dev eth8 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39cb dev eth10.3 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39cb dev eth10.2 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39cb dev br0 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39cb dev br2 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39cb dev eth10.99 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39cb dev br3 table local proto kernel metric 0 pref medium
+local fe80::9e05:d6ff:fe4a:39cb dev br99 table local proto kernel metric 0 pref medium
+ff00::/8 dev switch0.1 table local metric 256 pref medium
+ff00::/8 dev switch0.2 table local metric 256 pref medium
+ff00::/8 dev switch0.3 table local metric 256 pref medium
+ff00::/8 dev switch0.99 table local metric 256 pref medium
+ff00::/8 dev eth7 table local metric 256 pref medium
+ff00::/8 dev eth6 table local metric 256 pref medium
+ff00::/8 dev eth5 table local metric 256 pref medium
+ff00::/8 dev eth4 table local metric 256 pref medium
+ff00::/8 dev eth3 table local metric 256 pref medium
+ff00::/8 dev eth2 table local metric 256 pref medium
+ff00::/8 dev eth1 table local metric 256 pref medium
+ff00::/8 dev eth0 table local metric 256 pref medium
+ff00::/8 dev switch0 table local metric 256 pref medium
+ff00::/8 dev eth10.2 table local metric 256 linkdown pref medium
+ff00::/8 dev eth10.3 table local metric 256 linkdown pref medium
+ff00::/8 dev eth10.99 table local metric 256 linkdown pref medium
+ff00::/8 dev br0 table local metric 256 pref medium
+ff00::/8 dev br2 table local metric 256 pref medium
+ff00::/8 dev br3 table local metric 256 pref medium
+ff00::/8 dev br99 table local metric 256 pref medium
+ff00::/8 dev eth8 table local metric 256 pref medium
+ff00::/8 dev honeypot0 table local metric 256 pref medium
+ff00::/8 dev wgsrv1 table local metric 256 pref medium

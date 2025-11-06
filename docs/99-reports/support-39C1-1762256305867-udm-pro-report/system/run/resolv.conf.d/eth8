@@ -1,0 +1,6 @@
+# Generated automatically by ubios-udapi-server
+search bb.online.no 
+
+# dynamic nameservers
+nameserver 148.122.16.253
+nameserver 148.122.164.253

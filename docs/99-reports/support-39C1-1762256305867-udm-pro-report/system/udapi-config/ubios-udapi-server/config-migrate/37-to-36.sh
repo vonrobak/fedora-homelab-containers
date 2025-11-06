@@ -1,0 +1,8 @@
+#!/bin/sh
+. "$(dirname "${0}")"/JQ # include JQ helper scripts
+JQA "${1}" '.version=36'
+
+# N/A - firewall has only allowed rules
+
+exit 0
+

@@ -1,0 +1,14 @@
+Filesystem                        1K-blocks    Used Available Use% Mounted on
+udev                                2015940       0   2015940   0% /dev
+tmpfs                                404084   23188    380896   6% /run
+/dev/disk/by-partlabel/root         1992552 1718196    153116  92% /boot/firmware
+/dev/loop0                           867072  867072         0 100% /mnt/.rofs
+/dev/disk/by-partlabel/overlay      9666148 2196524   6957012  24% /mnt/.rwfs
+overlayfs-root                      9666148 2196524   6957012  24% /
+/dev/disk/by-partlabel/log           996780  184488    743480  20% /var/log
+/dev/disk/by-partlabel/persistent   1992552  232080   1639232  13% /persistent
+tmpfs                               2020412      28   2020384   1% /dev/shm
+tmpfs                                  5120       0      5120   0% /run/lock
+tmpfs                               1010208     716   1009492   1% /tmp
+tmpfs                                 65536    1792     63744   3% /var/log/ulog
+tmpfs                                 65536    1324     64212   3% /var/opt/unifi/tmp

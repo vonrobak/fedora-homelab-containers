@@ -1,0 +1,114 @@
+goroutine profile: total 25
+4 @ 0x48290 0x58cac 0x2e6ec78 0x7a534
+#	0x2e6ec77	github.com/patrickmn/go-cache.(*janitor).Run+0x77	vendor/github.com/patrickmn/go-cache/cache.go:1079
+
+3 @ 0x48290 0x162e8 0x15e64 0x17ecd4 0x7a534
+#	0x17ecd3	gopkg.in/natefinch/lumberjack%2ev2.(*Logger).millRun+0x43	vendor/gopkg.in/natefinch/lumberjack.v2/lumberjack.go:379
+
+2 @ 0x48290 0x58cac 0x2e72818 0x7a534
+#	0x2e72817	github.com/panjf2000/ants/v2.(*Pool).purgeStaleWorkers+0xb7	vendor/github.com/panjf2000/ants/v2/pool.go:84
+
+2 @ 0x48290 0x58cac 0x2e72b38 0x7a534
+#	0x2e72b37	github.com/panjf2000/ants/v2.(*Pool).ticktock+0xf7	vendor/github.com/panjf2000/ants/v2/pool.go:127
+
+1 @ 0x1b3c4 0x767e0 0x258c4c 0x7a534
+#	0x767df		os/signal.signal_recv+0x2f	/usr/local/go/src/runtime/sigqueue.go:152
+#	0x258c4b	os/signal.loop+0x1b		/usr/local/go/src/os/signal/signal_unix.go:23
+
+1 @ 0x3da9c 0x73d94 0x2c19e64 0x2c19c80 0x2c171e8 0x2e9744c 0x2e96874 0x2e96ff0 0x2ea5890 0x77df78 0x77e0f0 0x72327c 0x389a88 0x84eb10 0x84f82c 0x727ca4 0x389a88 0x72babc 0x389a88 0x72b238 0x389a88 0x2ec8298 0x2ec5328 0x2ec5309 0x63b6dc 0x63b6bd 0x63a9bc 0x63a999 0x639bf0 0x639bd1 0x6399a0 0x639424
+#	0x73d93		runtime/pprof.runtime_goroutineProfileWithLabels+0x23						/usr/local/go/src/runtime/mprof.go:844
+#	0x2c19e63	runtime/pprof.writeRuntimeProfile+0xb3								/usr/local/go/src/runtime/pprof/pprof.go:734
+#	0x2c19c7f	runtime/pprof.writeGoroutine+0x4f								/usr/local/go/src/runtime/pprof/pprof.go:694
+#	0x2c171e7	runtime/pprof.(*Profile).WriteTo+0x147								/usr/local/go/src/runtime/pprof/pprof.go:329
+#	0x2e9744b	unifi-directory-be/coms/services/commands/supp.(*DumpSupportFilesCommand).dumpRoutine+0x5b	coms/services/commands/supp/dump.go:141
+#	0x2e96873	unifi-directory-be/coms/services/commands/supp.(*stepDumpSupportFiles).SafeDo+0x63		coms/services/commands/supp/dump.go:82
+#	0x2e96fef	unifi-directory-be/coms/services/commands/supp.(*DumpSupportFilesCommand).Run+0x61f		coms/services/commands/supp/dump.go:107
+#	0x2ea588f	unifi-directory-be/coms/services/controller.(*SystemController).DumpSupportFiles+0x21f		coms/services/controller/system.go:106
+#	0x77df77	unifi-directory-be/api/swagger/restapi/operations/ucore.SupportDumpHandlerFunc.Handle+0x37	api/swagger/restapi/operations/ucore/support_dump.go:22
+#	0x77e0ef	unifi-directory-be/api/swagger/restapi/operations/ucore.(*SupportDump).ServeHTTP+0x13f		api/swagger/restapi/operations/ucore/support_dump.go:56
+#	0x72327b	github.com/go-openapi/runtime/middleware.NewOperationExecutor.func1+0x5b			vendor/github.com/go-openapi/runtime/middleware/operation.go:28
+#	0x389a87	net/http.HandlerFunc.ServeHTTP+0x37								/usr/local/go/src/net/http/server.go:2122
+#	0x84eb0f	unifi-directory-be/api/swagger/restapi.(*cloudSigCheckHandler).ServeHTTP+0xbf			api/swagger/restapi/cloud_sig_check.go:41
+#	0x84f82b	unifi-directory-be/api/swagger/restapi.(*scopeCheckHandler).ServeHTTP+0x15b			api/swagger/restapi/scope_check.go:30
+#	0x727ca3	github.com/go-openapi/runtime/middleware.NewRouter.func1+0x1c3					vendor/github.com/go-openapi/runtime/middleware/router.go:78
+#	0x389a87	net/http.HandlerFunc.ServeHTTP+0x37								/usr/local/go/src/net/http/server.go:2122
+#	0x72babb	github.com/go-openapi/runtime/middleware.SwaggerUI.func1+0x1fb					vendor/github.com/go-openapi/runtime/middleware/swaggerui.go:95
+#	0x389a87	net/http.HandlerFunc.ServeHTTP+0x37								/usr/local/go/src/net/http/server.go:2122
+#	0x72b237	github.com/go-openapi/runtime/middleware.Spec.func1+0x167					vendor/github.com/go-openapi/runtime/middleware/spec.go:46
+#	0x389a87	net/http.HandlerFunc.ServeHTTP+0x37								/usr/local/go/src/net/http/server.go:2122
+#	0x2ec8297	unifi-directory-be/coms/http.NewServer.func1+0x67						coms/http/server.go:58
+#	0x2ec5327	github.com/gin-gonic/gin.(*Context).Next+0x87							vendor/github.com/gin-gonic/gin/context.go:174
+#	0x2ec5308	unifi-directory-be/coms/http.PanicHandler.func1+0x68						coms/http/metadata.go:43
+#	0x63b6db	github.com/gin-gonic/gin.(*Context).Next+0x7b							vendor/github.com/gin-gonic/gin/context.go:174
+#	0x63b6bc	github.com/gin-gonic/gin.CustomRecoveryWithWriter.func1+0x5c					vendor/github.com/gin-gonic/gin/recovery.go:102
+#	0x63a9bb	github.com/gin-gonic/gin.(*Context).Next+0xab							vendor/github.com/gin-gonic/gin/context.go:174
+#	0x63a998	github.com/gin-gonic/gin.LoggerWithConfig.func1+0x88						vendor/github.com/gin-gonic/gin/logger.go:240
+#	0x639bef	github.com/gin-gonic/gin.(*Context).Next+0x4f							vendor/github.com/gin-gonic/gin/context.go:174
+#	0x639bd0	github.com/gin-gonic/gin.serveError+0x30							vendor/github.com/gin-gonic/gin/gin.go:656
+#	0x63999f	github.com/gin-gonic/gin.(*Engine).handleHTTPRequest+0x3bf					vendor/github.com/gin-gonic/gin/gin.go:649
+#	0x639423	github.com/gin-gonic/gin.(*Engine).ServeHTTP+0x1e3						vendor/github.com/gin-gonic/gin/gin.go:576
+
+1 @ 0x48290 0x162e8 0x15e44 0x2cd23a0 0x2e0670 0x7a534
+#	0x2cd239f	unifi-directory-be/coms/services/service/idp_service/idp_service_impl.NewIdpService.func2+0xdf	coms/services/service/idp_service/idp_service_impl/service.go:84
+#	0x2e066f	unifi-directory-be/coms/helper.SafeGoroutine.func1+0x5f						coms/helper/goroutine.go:15
+
+1 @ 0x48290 0x162e8 0x15e44 0x2ea9540 0x7a534
+#	0x2ea953f	unifi-directory-be/coms/services/logger.(*LoggerServiceImpl).rotateRedirectStdOutputFileLoop.func1+0x6f	coms/services/logger/redirect_std.go:24
+
+1 @ 0x48290 0x162e8 0x15e44 0x2ecc2e4 0x7a534
+#	0x2ecc2e3	unifi-directory-be/coms.(*App).listenStopSignals.func1+0x33	coms/app.go:63
+
+1 @ 0x48290 0x162e8 0x15e44 0x852a94 0x2ecc0ec 0x2ecc071 0x2edb15c 0x2ecf9bc 0x2ecdb1c 0x2edb3c8 0x47e80 0x7a534
+#	0x852a93	unifi-directory-be/coms/pkg/app.(*EndlessMiddleware).Run+0x73	coms/pkg/app/endless.go:23
+#	0x2ecc0eb	unifi-directory-be/coms/pkg/app.Middlewares.Run+0x1db		coms/pkg/app/middleware.go:30
+#	0x2ecc070	unifi-directory-be/coms.(*App).Run+0x160			coms/app.go:43
+#	0x2edb15b	main.run+0x10b							main.go:31
+#	0x2ecf9bb	gopkg.in/urfave/cli%2ev1.HandleAction+0x6b			vendor/gopkg.in/urfave/cli.v1/app.go:490
+#	0x2ecdb1b	gopkg.in/urfave/cli%2ev1.(*App).Run+0x4fb			vendor/gopkg.in/urfave/cli.v1/app.go:264
+#	0x2edb3c7	main.main+0x207							main.go:50
+#	0x47e7f		runtime.main+0x1ff						/usr/local/go/src/runtime/proc.go:250
+
+1 @ 0x48290 0x40fe8 0x74260 0xe8908 0xe9c50 0xe9c41 0x1a1a58 0x1b3054 0x382e14 0x7a534
+#	0x7425f		internal/poll.runtime_pollWait+0x9f		/usr/local/go/src/runtime/netpoll.go:306
+#	0xe8907		internal/poll.(*pollDesc).wait+0x27		/usr/local/go/src/internal/poll/fd_poll_runtime.go:84
+#	0xe9c4f		internal/poll.(*pollDesc).waitRead+0x1ff	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+#	0xe9c40		internal/poll.(*FD).Read+0x1f0			/usr/local/go/src/internal/poll/fd_unix.go:167
+#	0x1a1a57	net.(*netFD).Read+0x27				/usr/local/go/src/net/fd_posix.go:55
+#	0x1b3053	net.(*conn).Read+0x33				/usr/local/go/src/net/net.go:183
+#	0x382e13	net/http.(*connReader).backgroundRead+0x43	/usr/local/go/src/net/http/server.go:674
+
+1 @ 0x48290 0x40fe8 0x74260 0xe8908 0xed390 0xed381 0x1a3678 0x1bbfe8 0x1bb1ac 0x38cf4c 0x38cc44 0x2ec8388 0x7a534
+#	0x7425f		internal/poll.runtime_pollWait+0x9f			/usr/local/go/src/runtime/netpoll.go:306
+#	0xe8907		internal/poll.(*pollDesc).wait+0x27			/usr/local/go/src/internal/poll/fd_poll_runtime.go:84
+#	0xed38f		internal/poll.(*pollDesc).waitRead+0x24f		/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+#	0xed380		internal/poll.(*FD).Accept+0x240			/usr/local/go/src/internal/poll/fd_unix.go:614
+#	0x1a3677	net.(*netFD).accept+0x27				/usr/local/go/src/net/fd_unix.go:172
+#	0x1bbfe7	net.(*TCPListener).accept+0x27				/usr/local/go/src/net/tcpsock_posix.go:148
+#	0x1bb1ab	net.(*TCPListener).Accept+0x2b				/usr/local/go/src/net/tcpsock.go:297
+#	0x38cf4b	net/http.(*Server).Serve+0x2cb				/usr/local/go/src/net/http/server.go:3059
+#	0x38cc43	net/http.(*Server).ListenAndServe+0x83			/usr/local/go/src/net/http/server.go:2988
+#	0x2ec8387	unifi-directory-be/coms/http.(*Server).Run.func1+0x27	coms/http/server.go:79
+
+1 @ 0x48290 0x58cac 0x1d5430 0x7a534
+#	0x1d542f	database/sql.(*DB).connectionCleaner+0x8f	/usr/local/go/src/database/sql/sql.go:1061
+
+1 @ 0x48290 0x58cac 0x1d5e70 0x7a534
+#	0x1d5e6f	database/sql.(*DB).connectionOpener+0x7f	/usr/local/go/src/database/sql/sql.go:1218
+
+1 @ 0x48290 0x58cac 0x2c0a6f8 0x7a534
+#	0x2c0a6f7	github.com/robfig/cron/v3.(*Cron).run+0x947	vendor/github.com/robfig/cron/v3/cron.go:263
+
+1 @ 0x48290 0x58cac 0x2dc1308 0x7a534
+#	0x2dc1307	go.opencensus.io/stats/view.(*worker).start+0x87	vendor/go.opencensus.io/stats/view/worker.go:292
+
+1 @ 0x48290 0x7636c 0x7634d 0x921fc 0x2ecafac 0x2ecad10 0x7a534
+#	0x7634c		sync.runtime_notifyListWait+0x12c			/usr/local/go/src/runtime/sema.go:527
+#	0x921fb		sync.(*Cond).Wait+0xcb					/usr/local/go/src/sync/cond.go:70
+#	0x2ecafab	github.com/boz/go-throttle.(*throttler).Next+0x8b	vendor/github.com/boz/go-throttle/throttle.go:116
+#	0x2ecad0f	github.com/boz/go-throttle.ThrottleFunc.func1+0x3f	vendor/github.com/boz/go-throttle/throttle.go:65
+
+1 @ 0x48290 0x77144 0x8399e4 0x2e0670 0x7a534
+#	0x77143		time.Sleep+0x113									/usr/local/go/src/runtime/time.go:195
+#	0x8399e3	unifi-directory-be/coms/services/service/cloud_service.NewCloudService.func1+0x43	coms/services/service/cloud_service/cloud_service.go:32
+#	0x2e066f	unifi-directory-be/coms/helper.SafeGoroutine.func1+0x5f					coms/helper/goroutine.go:15
+

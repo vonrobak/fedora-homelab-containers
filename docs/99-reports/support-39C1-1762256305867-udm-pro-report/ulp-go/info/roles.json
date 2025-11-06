@@ -1,0 +1,61 @@
+{
+  "code": 1,
+  "codeS": "SUCCESS",
+  "msg": "success",
+  "data": [
+    {
+      "unique_id": "d4e4***7b88",
+      "name": "Super Admin",
+      "system_role": true,
+      "system_key": "super_administrator",
+      "level": 2,
+      "create_time": "2024-02-04T01:55:05+01:00",
+      "update_time": "2024-02-04T01:55:05+01:00",
+      "is_private": false,
+      "users": [],
+      "users_count": 0,
+      "permissions": {
+        "access.management": [
+          "admin"
+        ],
+        "calculus.management": [
+          "admin"
+        ],
+        "connect.management": [
+          "admin"
+        ],
+        "drive.management": [
+          "admin"
+        ],
+        "innerspace.management": [
+          "admin"
+        ],
+        "led.management": [
+          "admin"
+        ],
+        "network.management": [
+          "admin"
+        ],
+        "olympus.management": [
+          "admin"
+        ],
+        "protect.management": [
+          "admin"
+        ],
+        "system.management.location": [
+          "admin"
+        ],
+        "system.management.user": [
+          "admin"
+        ],
+        "talk-relay.management": [
+          "admin"
+        ],
+        "talk.management": [
+          "admin"
+        ]
+      },
+      "resources": []
+    }
+  ]
+}

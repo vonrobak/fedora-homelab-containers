@@ -1,0 +1,193 @@
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.2 166512 10088 ?        Ss   Jul20  25:50 /sbin/init
+root           2  0.0  0.0      0     0 ?        S    Jul20   0:03 [kthreadd]
+root           3  0.0  0.0      0     0 ?        I<   Jul20   0:00 [rcu_gp]
+root           4  0.0  0.0      0     0 ?        I<   Jul20   0:00 [rcu_par_gp]
+root           6  0.0  0.0      0     0 ?        I<   Jul20   0:00 [kworker/0:0H-kblockd]
+root           8  0.0  0.0      0     0 ?        I<   Jul20   0:00 [mm_percpu_wq]
+root           9  0.0  0.0      0     0 ?        S    Jul20  41:52 [ksoftirqd/0]
+root          10  0.0  0.0      0     0 ?        I    Jul20  55:34 [rcu_sched]
+root          11  0.0  0.0      0     0 ?        I    Jul20   0:00 [rcu_bh]
+root          12  0.0  0.0      0     0 ?        S    Jul20   0:41 [migration/0]
+root          13  0.0  0.0      0     0 ?        S    Jul20   0:00 [cpuhp/0]
+root          14  0.0  0.0      0     0 ?        S    Jul20   0:00 [cpuhp/1]
+root          15  0.0  0.0      0     0 ?        S    Jul20   0:44 [migration/1]
+root          16  0.0  0.0      0     0 ?        S    Jul20  39:35 [ksoftirqd/1]
+root          18  0.0  0.0      0     0 ?        I<   Jul20   0:00 [kworker/1:0H-kblockd]
+root          19  0.0  0.0      0     0 ?        S    Jul20   0:00 [cpuhp/2]
+root          20  0.0  0.0      0     0 ?        S    Jul20   0:44 [migration/2]
+root          21  0.0  0.0      0     0 ?        S    Jul20  35:07 [ksoftirqd/2]
+root          23  0.0  0.0      0     0 ?        I<   Jul20   0:00 [kworker/2:0H-kblockd]
+root          24  0.0  0.0      0     0 ?        S    Jul20   0:00 [cpuhp/3]
+root          25  0.0  0.0      0     0 ?        S    Jul20   0:42 [migration/3]
+root          26  0.0  0.0      0     0 ?        S    Jul20  35:56 [ksoftirqd/3]
+root          28  0.0  0.0      0     0 ?        I<   Jul20   0:00 [kworker/3:0H-kblockd]
+root          29  0.0  0.0      0     0 ?        S    Jul20   0:00 [kdevtmpfs]
+root          30  0.0  0.0      0     0 ?        I<   Jul20   0:00 [netns]
+root          32  0.0  0.0      0     0 ?        S    Jul20   0:07 [khungtaskd]
+root          33  0.0  0.0      0     0 ?        S    Jul20   0:00 [oom_reaper]
+root          34  0.0  0.0      0     0 ?        I<   Jul20   0:00 [writeback]
+root          35  0.0  0.0      0     0 ?        S    Jul20   0:04 [kcompactd0]
+root          37  0.0  0.0      0     0 ?        I<   Jul20   0:00 [crypto]
+root          38  0.0  0.0      0     0 ?        I<   Jul20   0:00 [kblockd]
+root          39  0.0  0.0      0     0 ?        I<   Jul20   0:00 [ata_sff]
+root          40  0.0  0.0      0     0 ?        I<   Jul20   0:00 [md]
+root          41  0.0  0.0      0     0 ?        I<   Jul20   0:00 [edac-poller]
+root          42  0.0  0.0      0     0 ?        S    Jul20   0:00 [watchdogd]
+root          43  0.0  0.0      0     0 ?        I<   Jul20   0:00 [cfg80211]
+root          44  0.0  0.0      0     0 ?        S    Jul20   0:27 [kswapd0]
+root          81  0.0  0.0      0     0 ?        S    Jul20   0:00 [scsi_eh_0]
+root          82  0.0  0.0      0     0 ?        I<   Jul20   0:00 [scsi_tmf_0]
+root          83  0.0  0.0      0     0 ?        S    Jul20   0:00 [scsi_eh_1]
+root          84  0.0  0.0      0     0 ?        I<   Jul20   0:00 [scsi_tmf_1]
+root          85  0.0  0.0      0     0 ?        S    Jul20   0:00 [scsi_eh_2]
+root          86  0.0  0.0      0     0 ?        I<   Jul20   0:00 [scsi_tmf_2]
+root          87  0.0  0.0      0     0 ?        S    Jul20   0:00 [scsi_eh_3]
+root          88  0.0  0.0      0     0 ?        I<   Jul20   0:00 [scsi_tmf_3]
+root          92  0.0  0.0      0     0 ?        S    Jul20   0:00 [spi0]
+root          95  0.0  0.0      0     0 ?        I<   Jul20   0:00 [uext_wq]
+root          99  0.0  0.0      0     0 ?        I<   Jul20   0:00 [ipv6_addrconf]
+root         100  0.0  0.0      0     0 ?        S<   Jul20   0:00 [krfcommd]
+root         161  0.0  0.0      0     0 ?        S    Jul20   0:00 [scsi_eh_4]
+root         162  0.0  0.0      0     0 ?        I<   Jul20   0:00 [scsi_tmf_4]
+root         163  0.0  0.0      0     0 ?        D    Jul20  15:12 [usb-storage]
+root         197  0.0  0.0      0     0 ?        I<   Jul20   0:23 [kworker/0:1H-kblockd]
+root         199  0.0  0.0      0     0 ?        I<   Jul20   0:27 [kworker/2:1H-kblockd]
+root         201  0.0  0.0      0     0 ?        I<   Jul20   0:27 [kworker/1:1H-kblockd]
+root         202  0.0  0.0      0     0 ?        I<   Jul20   0:27 [kworker/3:1H-kblockd]
+root         237  0.0  0.0      0     0 ?        S    Jul20   0:00 [jbd2/boot3-8]
+root         238  0.0  0.0      0     0 ?        I<   Jul20   0:00 [ext4-rsv-conver]
+root         242  0.0  0.0      0     0 ?        D<   Jul20   0:03 [loop0]
+root         460  0.0  0.0      0     0 ?        D    Jul20   7:27 [jbd2/boot6-8]
+root         461  0.0  0.0      0     0 ?        I<   Jul20   0:00 [ext4-rsv-conver]
+root         490  0.0  0.0      0     0 ?        S    Jul20   1:46 [jbd2/boot4-8]
+root         491  0.0  0.0      0     0 ?        I<   Jul20   0:00 [ext4-rsv-conver]
+root         496  0.0  0.0      0     0 ?        S    Jul20   0:00 [jbd2/boot5-8]
+root         497  0.0  0.0      0     0 ?        I<   Jul20   0:00 [ext4-rsv-conver]
+root         539  0.0  0.4  51356 18116 ?        Ss   Jul20  53:28 /lib/systemd/systemd-journald
+root         571  0.0  0.0   5204  1516 ?        Ss   Jul20   0:00 /bin/ubnd
+root         573  0.0  0.1  18764  4052 ?        Ss   Jul20   0:07 /lib/systemd/systemd-udevd
+root         586  0.0  0.2  25476 10804 ?        Ss   Jul20  52:00 /usr/sbin/usdbd -j
+systemd+     594  0.0  0.1  17032  5280 ?        Ss   Jul20   1:33 /lib/systemd/systemd-networkd
+root         639  0.1  0.4 251404 19376 ?        Ssl  Jul20 242:50 /usr/sbin/uhwd -j
+root         645  0.1  0.8 798024 34176 ?        Ssl  Jul20 265:52 /usr/sbin/usd -j
+root         724  0.2  0.2 2050496 10000 ?       Ssl  Jul20 380:08 ustated
+systemd+    1337  0.0  0.1  88092  5964 ?        Ssl  Jul20   0:12 /lib/systemd/systemd-timesyncd
+message+    1355  0.0  0.1   8076  4100 ?        Ss   Jul20   9:19 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root        1363  0.0  0.0   1948   452 ?        S<Ls Jul20   7:52 /usr/bin/earlyoom -n -r 60 -M 256000 -s 10 -p --avoid (^|/)(ubios-udapi-ser|systemd-network)$
+root        1365  0.0  0.1  20828  7348 ?        Ss   Jul20   2:33 /usr/bin/linkcheck
+root        1376  0.0  0.2  28624 11636 ?        Ss   Jul20   0:00 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers
+root        1392  0.0  0.1  16768  5820 ttyS2    Ss+  Jul20   9:30 /sbin/rpsd
+root        1416  0.0  0.1  14224  6332 ?        Ss   Jul20   3:34 /lib/systemd/systemd-logind
+root        1433  0.9  0.1 392204  6356 ?        Ssl  Jul20 1404:30 /usr/bin/ulcmd
+root        1444  0.0  0.2  24124  9208 ?        Ss   Jul20 134:55 /sbin/utermd
+root        1661  0.0  0.0 275756  2288 ?        Ssl  Jul20  59:07 /usr/bin/lagd
+root        1725  0.0  0.0      0     0 ?        I<   Jul20   0:00 [kworker/u9:0-hci0]
+root        1726  0.0  0.0      0     0 ?        I<   Jul20   0:00 [kworker/u9:1-hci0]
+root        1727  0.0  0.0   2108    92 ?        S    Jul20   0:00 hciattach -s 115200 /dev/ttyS1 bcsp 115200
+root        1778  2.7  0.9 362528 39088 ?        S<sl Jul20 4258:36 /usr/bin/ubios-udapi-server -c /data/udapi-config/ubios-udapi-server/ubios-udapi-server.state --silent
+root        2501  0.0  0.0      0     0 ?        S    Jul20   0:04 [dns_thread]
+root        2521  0.1  0.9 461756 39284 ?        S<l  Jul20 170:35 /usr/sbin/dpi-flow-stats --config /run/dpi/dpi.cfg
+root        2751  0.4  0.4 1239704 18944 ?       S<l  Jul20 677:17 /usr/bin/ubnt-idsips-daemon
+root        2758  0.0  0.0   6204  1188 ?        S<   Jul20   0:00 /usr/sbin/snoopd switch0
+_lldpd      2762  0.0  0.0  18652  3408 ?        S<   Jul20   0:03 lldpd: monitor. 
+avahi       2768  0.0  0.0   7348  3312 ?        S<   Jul20  71:48 avahi-daemon: running [patriarkatet-udm.local]
+avahi       2774  0.0  0.0   6880    48 ?        S<   Jul20   0:00 avahi-daemon: chroot helper
+_lldpd      2787  0.0  0.0  18776  2156 ?        S<   Jul20   6:26 lldpd: no neighbor.
+root        3003  1.1  0.1 376104  6700 ?        S<l  Jul20 1716:16 /sbin/utmdaemon -C 1 -o 1
+root        3699  0.0  0.1 1970692 5708 ?        S<l  Jul20  13:16 /usr/bin/teleportd --port 8000 --syslog --client-setup /usr/share/ubios-udapi-server/teleport/client-setup.sh --iface-setup /usr/share/ubios-udapi-server/teleport/iface-setup.sh --daemon-bootup /usr/share/ubios-udapi-server/teleport/daemon-bootup.sh
+root        3970  0.0  0.0      0     0 ?        I<   Jul20   0:00 [wg-crypt-wgsrv1]
+root        3974  0.0  0.1  22748  8004 ?        Ss   Jul20  49:15 /usr/bin/dns-cache-db
+root        4017  0.0  0.1  22524  6428 ?        Ss   Jul20  18:21 /usr/bin/udapi-bridge --watchdog --rest-api-port 1080 --rest-api-secure-port 0 --rest-api-interface lo
+root        4031  0.0  0.1 168424  7404 ?        S<l  Jul20   4:37 /usr/bin/redirector -c /run/redirector.cfg
+root        4080  0.0  0.2 172752 11896 ?        Ssl  Jul20  49:29 /usr/bin/udapi-bridge --watchdog --rest-api-port 1080 --rest-api-secure-port 0 --rest-api-interface lo
+nobody      4090  0.0  0.0   7800  3752 ?        S<   Jul20  15:22 /usr/sbin/dnsmasq --pid-file=/run/dnsmasq-main.pid --resolv-file=/run/resolv.conf.d/main --conf-file=/run/dnsmasq.dns.conf.d/main.conf --conf-dir=/run/dnsmasq.dhcp.conf.d/
+root        4092  0.0  0.0   7800  2684 ?        S<   Jul20   0:11 /usr/sbin/dnsmasq --pid-file=/run/dnsmasq-main.pid --resolv-file=/run/resolv.conf.d/main --conf-file=/run/dnsmasq.dns.conf.d/main.conf --conf-dir=/run/dnsmasq.dhcp.conf.d/
+root        4148  0.7  0.4 133416 18636 ?        Ss   Jul20 1174:35 /usr/bin/mcad
+epmd        5670  0.0  0.1   7988  4400 ?        Ss   Jul20   2:05 /usr/bin/epmd -systemd
+root        5677  0.0  0.3  20024 12808 ?        Ss   Jul20   0:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
+root        5692  0.0  1.1 407584 46548 ?        Ss   Jul20   6:15 /usr/sbin/syslog-ng -F --persist-file=/var/log/.syslog-ng.persist
+root        5705  0.0  0.4 695092 19752 ?        Ssl  Jul20   0:39 /usr/bin/uos-agent
+rabbitmq    5713  0.5  1.8 3215204 75688 ?       Ssl  Jul20 889:43 /usr/lib/erlang/erts-11.1.8/bin/beam.smp -W w -K true -A 64 -MBas ageffcbf -MHas ageffcbf -MBlmbcs 512 -MHlmbcs 512 -MMmcs 30 -P 1048576 -t 5000000 -stbt db -zdbbl 128000 -MBlmbcs 256 -MHlmbcs 256 -MMmcs 10 -zdbbl 64000 -P 65536 -- -root /usr/lib/erlang -progname erl -- -home /home/rabbitmq -- -pa  -noshell -noinput -s rabbit boot -boot start_sasl -kernel inet_dist_use_interface {127,0,0,1} -lager crash_log false -lager handlers []
+root        5727  0.0  0.0   2492  1432 tty1     Ss+  Jul20   0:00 /sbin/agetty -o -p -- \u --noclear tty1 linux
+root        5787  0.0  0.0   2124  1360 ttyS0    Ss+  Jul20   0:00 /sbin/agetty -o -p -- \u --keep-baud 115200,57600,38400,9600 ttyS0 xterm
+rabbitmq    5815  0.0  0.0   1936  1200 ?        Ss   Jul20   3:04 erl_child_setup 65536
+unifi       5907  0.0  0.0   3676  1296 ?        Ss   Jul20   0:00 /bin/bash -c if [ "true" = "true" ]; then DIR_PER_DB="--directoryperdb"; else DIR_PER_DB=""; fi; /usr/bin/mongod      --dbpath /data/unifi/data/db      $DIR_PER_DB      --bind_ip 127.0.0.1      --port 27117      --unixSocketPrefix /data/unifi/run      --logRotate reopen --logappend --logpath /data/unifi/logs/mongod.log      --pidfilepath /data/unifi/run/mongod.pid      --wiredTigerEngineConfigString=cache_size=192M      || /usr/sbin/unifi-mongo-service-helper handle-exit $?
+unifi       5909  0.5  8.1 1395876 328016 ?      Sl   Jul20 801:14 /usr/bin/mongod --dbpath /data/unifi/data/db --directoryperdb --bind_ip 127.0.0.1 --port 27117 --unixSocketPrefix /data/unifi/run --logRotate reopen --logappend --logpath /data/unifi/logs/mongod.log --pidfilepath /data/unifi/run/mongod.pid --wiredTigerEngineConfigString=cache_size=192M
+unifi       5911  0.0  0.0   3940  1900 ?        S    Jul20   1:05 /bin/bash /usr/sbin/unifi-mongo-service-helper watchdog
+postgres    5918  0.0  0.3 210636 14892 ?        Ss   Jul20  17:57 /usr/lib/postgresql/14/bin/postgres -D /data/postgresql/14/main/data -c config_file=/etc/postgresql/14/main/postgresql.conf
+postgres    5931  0.0  0.2 210764  9252 ?        Ss   Jul20   0:03 postgres: 14/main: checkpointer 
+postgres    5932  0.0  0.1 210636  5808 ?        Ss   Jul20   0:32 postgres: 14/main: background writer 
+postgres    5933  0.0  0.1 210636  4484 ?        Ss   Jul20   0:01 postgres: 14/main: walwriter 
+postgres    5934  0.0  0.1 211332  6524 ?        Ss   Jul20  10:18 postgres: 14/main: autovacuum launcher 
+postgres    5935  0.0  0.1  66236  4256 ?        Ss   Jul20  12:46 postgres: 14/main: stats collector 
+postgres    5936  0.0  0.1 211064  5428 ?        Ss   Jul20   0:03 postgres: 14/main: logical replication launcher 
+ucs-upd+    6091  0.0  0.2 723756  8936 ?        Sl   Jul20   6:33 /usr/sbin/unifi-identity-update-app --prop /usr/lib/unifi-identity-update/config.props
+unifi-d+    6134  0.0  0.7 832208 30704 ?        Sl   Jul20  78:30 /usr/sbin/unifi-directory-app --prop /usr/lib/unifi-directory/config.props
+rabbitmq    6154  0.0  0.0   2652   544 ?        Ss   Jul20   0:05 inet_gethost 4
+rabbitmq    6155  0.0  0.0   2792  1456 ?        S    Jul20   0:11 inet_gethost 4
+postgres    6158  0.0  0.3 217916 12952 ?        Ss   Jul20   0:00 postgres: 14/main: unifi-directory unifi-directory [local] idle
+ulp-go      6265  0.1  1.5 770356 62720 ?        Sl   Jul20 203:09 /usr/sbin/ulp-go-app --prop /usr/lib/ulp-go/config.props
+postgres    6275  0.0  0.3 214376 14568 ?        Ss   Jul20   0:00 postgres: 14/main: ulp-go ulp-go [local] idle
+postgres    6276  0.0  0.3 214036 15240 ?        Ss   Jul20   0:00 postgres: 14/main: ulp-go ulp-go-syslog [local] idle
+root        6529  2.4  4.6 15248552 187968 ?     Ssl  Jul20 3856:01 /usr/bin/node22 --expose-gc --max-old-space-size=300 --openssl-legacy-provider --no-network-family-autoselection --dns-result-order=ipv4first /usr/share/unifi-core/app/service.js
+root        6918  0.0  0.2 1235776 9460 ?        Ssl  Jul20  33:14 /usr/bin/ubnt_monitor
+root        7012  0.0  0.0   3684  1984 ?        Ss   Jul20   1:33 /usr/sbin/cron -f
+postgres 1033403  0.0  0.3 212604 15164 ?        Ss   Nov02   0:00 postgres: 14/main: unifi-core unifi-core 127.0.0.1(39714) idle
+postgres 1092725  0.0  0.5 214536 21316 ?        Ss   Jul21  15:01 postgres: 14/main: ulp-go ulp-go [local] idle
+postgres 1283590  0.0  0.5 214676 22540 ?        Ss   Oct14   3:19 postgres: 14/main: ulp-go ulp-go [local] idle
+unifi    1322320  1.0 19.5 4330124 791988 ?      Ssl  Oct14 328:33 /usr/bin/java -Dfile.encoding=UTF-8 -Djava.awt.headless=true -Dapple.awt.UIElement=true -Dunifi.core.enabled=true -Dunifi.mongodb.service.enabled=true -Dunifi.rmq.enabled=true -Dunifi.rmq.certificates= -Dunifi.external_disk.inserted=false -XX:+UseParallelGC -Xms128M -Xmx640M -Xss1024K -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=40 -XX:YoungGenerationSizeIncrement=15 -XX:TenuredGenerationSizeIncrement=15 -XX:AdaptiveSizeDecrementScaleFactor=3 -XX:-TieredCompilation -Dorg.xerial.snappy.tempdir=/usr/lib/unifi/run -XX:+ExitOnOutOfMemoryError -XX:+CrashOnOutOfMemoryError -XX:ErrorFile=/usr/lib/unifi/logs/unifi_crash.log -Xlog:gc:logs/gc.log:time:filecount=2,filesize=5M --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/sun.security.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED -jar /usr/lib/unifi/lib/ace.jar start
+nginx    1324093  0.0  0.3  20028 13800 ?        S    Oct14   0:04 nginx: worker process
+nginx    1324094  0.0  0.3  20028 13860 ?        S    Oct14   0:01 nginx: worker process
+nginx    1324095  0.0  0.3  20028 13864 ?        S    Oct14   0:03 nginx: worker process
+nginx    1324096  0.0  0.3  20028 14144 ?        S    Oct14   0:02 nginx: worker process
+nginx    1324097  0.0  0.2  20028  9612 ?        S    Oct14   0:06 nginx: cache manager process
+root     2110763  0.0  0.0  35088   708 ?        S<l  Nov03   0:05 /usr/bin/dpinger -f -i eth8-mon13-142.250.74.14-google.com -B 62.249.184.112 -I eth8 -m 0x001a0000 -s 10s -d 1 -t 30s -u /run/eth8-mon13-142.250.74.14-google.com.sock 142.250.74.14
+root     2407554  0.3  0.4 1243744 18700 ?       S<l  Oct15 114:02 /usr/bin/unifi-mq-broker --config /run/unifi-mq-broker.conf
+ulog     2407568  0.3  0.8  37440 32732 ?        S<s  Oct15  95:27 /usr/sbin/ulogd --daemon --uid ulog --pidfile /run/ulog/ulogd.pid
+root     2537774  0.0  0.1 708640  7752 ?        S<l  Oct23   0:13 /usr/bin/wifiman-proxy -port 8900 -token qFo3kUbDbRp4IrIwvi6hr6rNRSKvJi71CPFLRsQIrfND5RH8aZYFDUYcbbLiMx5b -sitename default -controllerURL https://192.168.1.1:8443
+root     2537775  0.0  0.0 274756  2048 ?        S<l  Oct23   0:02 /usr/bin/wifiman-speedtest
+postgres 2639409  0.0  0.3 212392 15112 ?        Ss   Oct03   0:00 postgres: 14/main: ulp-go ulp-go-syslog [local] idle
+postgres 3205000  0.0  0.3 212604 15308 ?        Ss   00:14   0:00 postgres: 14/main: unifi-core unifi-core 127.0.0.1(55882) idle
+root     3339961  0.5 11.9 843216 483376 ?       S<l  03:07   3:02 /usr/bin/suricata --pcap --pidfile /run/suricata.pid -c /usr/share/ubios-udapi-server/ips/config/suricata_ubios_high.yaml
+root     3629862  0.0  0.0      0     0 ?        I    09:31   0:03 [kworker/3:2-events_power_efficient]
+root     3696431  0.0  0.0      0     0 ?        I    11:00   0:00 [kworker/1:0]
+root     3698073  0.0  0.0      0     0 ?        I    11:02   0:01 [kworker/3:3-mm_percpu_wq]
+root     3732041  1.0  0.0      0     0 ?        D    11:35   0:38 [kworker/u8:4+flush-135:0]
+postgres 3758591  0.0  0.3 212392 15172 ?        Ss   12:07   0:00 postgres: 14/main: ulp-go ulp-go [local] idle
+postgres 3758865  0.0  0.3 212420 14064 ?        Ss   12:08   0:00 postgres: 14/main: unifi-directory unifi-directory [local] idle
+root     3760325  0.0  0.0      0     0 ?        I    12:10   0:00 [kworker/1:1-memcg_kmem_cache]
+root     3763746  0.7  0.0      0     0 ?        I    12:15   0:11 [kworker/u8:2-events_unbound]
+root     3768382  0.0  0.0      0     0 ?        I    12:20   0:00 [kworker/2:1-events]
+root     3768443  0.6  0.0      0     0 ?        D    12:20   0:07 [kworker/u8:0+flush-135:0]
+root     3768470  1.1  0.0      0     0 ?        I    12:20   0:12 [kworker/u8:3-flush-135:0]
+root     3769544  0.0  0.0      0     0 ?        I    12:21   0:00 [kworker/0:2-events]
+root     3774627  0.0  0.0      0     0 ?        I    12:28   0:00 [kworker/3:1-events]
+root     3775313  0.0  0.0      0     0 ?        I    12:29   0:00 [kworker/2:2-cgroup_destroy]
+root     3777306  0.0  0.0      0     0 ?        I    12:31   0:00 [kworker/0:0-events_power_efficient]
+root     3778197  0.8  0.0      0     0 ?        I    12:33   0:02 [kworker/u8:1-flush-135:0]
+root     3779927  0.0  0.0  35088   748 ?        S<l  12:34   0:00 /usr/bin/dpinger -f -i eth8-mon12-2.18.174.85-www.microsoft.com -B 62.249.184.112 -I eth8 -m 0x001a0000 -s 10s -d 1 -t 30s -u /run/eth8-mon12-2.18.174.85-www.microsoft.com.sock 2.18.174.85
+root     3782065  0.8  0.0      0     0 ?        I    12:35   0:01 [kworker/u8:5-events_unbound]
+root     3785382  0.0  0.0      0     0 ?        I    12:36   0:00 [kworker/3:0-events]
+root     3785413  0.0  0.0      0     0 ?        I    12:36   0:00 [kworker/0:1-mm_percpu_wq]
+unifi    3785612  0.0  0.0   1952   464 ?        S    12:36   0:00 sleep 120
+root     3789722  0.0  0.0      0     0 ?        I    12:38   0:00 [kworker/3:4]
+root     3790292  0.0  0.0      0     0 ?        I    12:38   0:00 [kworker/2:0-mm_percpu_wq]
+root     3790339  0.0  0.0      0     0 ?        I    12:38   0:00 [kworker/u8:6-events_unbound]
+ulp-go   3790357  0.0  0.0   2052   504 ?        S    12:38   0:00 /bin/sh -c sudo /usr/lib/ulp-go/scripts/dump-ucs-support-files.sh /data/unifi-core/supportFile/support-39C1-1762256305867/ulp-go/unifi-credential-server unifi-credential-server
+root     3790358  0.0  0.1   9472  4152 ?        S    12:38   0:00 sudo /usr/lib/ulp-go/scripts/dump-ucs-support-files.sh /data/unifi-core/supportFile/support-39C1-1762256305867/ulp-go/unifi-credential-server unifi-credential-server
+root     3790371  0.0  0.0   3536  2480 ?        S    12:38   0:00 /bin/bash /usr/lib/ulp-go/scripts/dump-ucs-support-files.sh /data/unifi-core/supportFile/support-39C1-1762256305867/ulp-go/unifi-credential-server unifi-credential-server
+root     3790376  0.0  0.0   3488  1632 ?        D    12:38   0:00 cp -r /data/unifi-credential-server/log/all-2025-07-04T20-36-08.010.log /data/unifi-credential-server/log/all-2025-07-06T10-26-08.019.log /data/unifi-credential-server/log/all-2025-07-08T00-31-08.003.log /data/unifi-credential-server/log/all-2025-07-09T14-11-08.002.log /data/unifi-credential-server/log/all.log /data/unifi-credential-server/log/analytics_report.json /data/unifi-credential-server/log/app.log /data/unifi-credential-server/log/cloud.log /data/unifi-credential-server/log/commands-2025-06-30T16-36-08.001.log /data/unifi-credential-server/log/commands-2025-07-06T22-41-08.004.log /data/unifi-credential-server/log/commands.log /data/unifi-credential-server/log/common_config.log /data/unifi-credential-server/log/credential.log /data/unifi-credential-server/log/db.log /data/unifi-credential-server/log/events.log /data/unifi-credential-server/log/http.log /data/unifi-credential-server/log/middleware-2025-07-07T05-56-08.001.log /data/unifi-credential-server/log/middleware.log /data/unifi-credential-server/log/middlewares.log /data/unifi-credential-server/log/migration.log /data/unifi-credential-server/log/service-2025-07-04T02-15-08.008.log /data/unifi-credential-server/log/service-2025-07-07T06-18-08.009.log /data/unifi-credential-server/log/service-2025-07-10T10-10-08.008.log /data/unifi-credential-server/log/service.log /data/unifi-credential-server/log/std.err.log /data/unifi-credential-server/log/std.log /data/unifi-credential-server/log/user-assets-log /data/unifi-credential-server/log/warning.log /data/unifi-credential-server/log/webrtc.log /data/unifi-core/supportFile/support-39C1-1762256305867/ulp-go/unifi-credential-server
+rabbitmq 3790380  0.0  0.3 1161976 12576 ?       Rsl  12:38   0:00 /usr/lib/erlang/erts-11.1.8/bin/beam.smp -- -root /usr/lib/erlang -progname erl -- -home /home/rabbitmq -- -boot no_dot_erlang -sname epmd-starter-383164226 -noshell -noinput -s erlang halt
+unifi    3790389  0.0  0.0   6436  2484 ?        R    12:38   0:00 ps aux
+root     3790392  0.0  0.0   2052   452 ?        S    12:38   0:00 /bin/sh -c mca-ctrl -t read-udapi-cache -s /interfaces | jq '     [.[] | select(.status.comment == "LAN" and .identification.id != "br0") | (.bridge.interfaces[]?.id, .identification.id)] as $list     | [.[] | select(.identification.id as $id | $list | index($id) | not)]'
+rabbitmq 3790393  0.0  0.0   1936   472 ?        Ss   12:38   0:00 erl_child_setup 65536
+root     3790394  0.0  0.1  20600  4128 ?        D    12:38   0:00 mca-ctrl -t read-udapi-cache -s /interfaces
+root     3790395  0.0  0.0   4544  2564 ?        S    12:38   0:00 jq      [.[] | select(.status.comment == "LAN" and .identification.id != "br0") | (.bridge.interfaces[]?.id, .identification.id)] as $list     | [.[] | select(.identification.id as $id | $list | index($id) | not)]
+root     4156138  0.0  0.0   1992  1592 ?        S<   Jul23   0:06 /usr/bin/busybox-legacy/udhcpc --foreground --interface eth8 --script /usr/share/ubios-udapi-server/ubios-udhcpc-script --decline-script /usr/share/ubios-udapi-server/ubios-udhcpc-decline-script -r 62.249.184.112
+nobody   4156146  0.0  0.0   7800  3576 ?        S<   Jul23   0:10 /usr/sbin/dnsmasq --pid-file=/run/dnsmasq-eth8.pid --resolv-file=/run/resolv.conf.d/eth8 --conf-file=/run/dnsmasq.dns.conf.d/eth8.conf
+root     4156251  0.0  0.0  35088   704 ?        S<l  Jul23   5:33 /usr/bin/dpinger -f -i eth8-mon14-1.1.1.1 -B 62.249.184.112 -I eth8 -m 0x001a0000 -s 10s -d 1 -t 30s -u /run/eth8-mon14-1.1.1.1.sock 1.1.1.1
+root     4156439  0.0  0.0  43284   700 ?        S<l  Jul23   8:43 /usr/bin/dpinger -f -i eth8-mon8-8.8.8.8-ping.ui.com -B 62.249.184.112 -I eth8 -m 0x001a0000 -s 3s -d 1 -t 60s -u /run/eth8-mon8-8.8.8.8-ping.ui.com.sock -L 50 -C /usr/bin/wan-failover-script 8.8.8.8
+root     4156445  0.0  0.0  43284   676 ?        S<l  Jul23   8:45 /usr/bin/dpinger -f -i eth8-mon8-1.1.1.1-ping.ui.com -B 62.249.184.112 -I eth8 -m 0x001a0000 -s 3s -d 1 -t 60s -u /run/eth8-mon8-1.1.1.1-ping.ui.com.sock -L 50 -C /usr/bin/wan-failover-script 1.1.1.1
+root     4156451  0.0  0.0  35088   660 ?        S<l  Jul23   7:16 /usr/bin/dpinger -f -i eth8-mon11-1.1.1.1-ping.ui.com -B 62.249.184.112 -I eth8 -m 0x001a0000 -s 60s -d 1 -t 86400s -u /run/eth8-mon11-1.1.1.1-ping.ui.com.sock 1.1.1.1
+root     4156452  0.0  0.0  35088   656 ?        S<l  Jul23   7:20 /usr/bin/dpinger -f -i eth8-mon11-8.8.8.8-ping.ui.com -B 62.249.184.112 -I eth8 -m 0x001a0000 -s 60s -d 1 -t 86400s -u /run/eth8-mon11-8.8.8.8-ping.ui.com.sock 8.8.8.8

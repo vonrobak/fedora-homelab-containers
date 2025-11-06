@@ -1,0 +1,112 @@
+br0
+ bridge id		8000.9c05d64a39cb
+ designated root	8000.9c05d64a39cb
+ root port		   0			path cost		   0
+ max age		  20.00			bridge max age		  20.00
+ hello time		   2.00			bridge hello time	   2.00
+ forward delay		  15.00			bridge forward delay	  15.00
+ ageing time		 300.00
+ hello timer		   0.00			tcn timer		   0.00
+ topology change timer	   0.00			gc timer		 121.15
+ flags			
+
+
+eth10 (1)
+ port id		8001			state		       disabled
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8001			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			
+
+switch0.1 (2)
+ port id		8002			state		     forwarding
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8002			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			
+br2
+ bridge id		8000.9c05d64a39cb
+ designated root	8000.9c05d64a39cb
+ root port		   0			path cost		   0
+ max age		  20.00			bridge max age		  20.00
+ hello time		   2.00			bridge hello time	   2.00
+ forward delay		  15.00			bridge forward delay	  15.00
+ ageing time		 300.00
+ hello timer		   0.00			tcn timer		   0.00
+ topology change timer	   0.00			gc timer		 230.42
+ flags			
+
+
+eth10.2 (1)
+ port id		8001			state		       disabled
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8001			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			
+
+switch0.2 (2)
+ port id		8002			state		     forwarding
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8002			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			
+br3
+ bridge id		8000.9c05d64a39cb
+ designated root	8000.9c05d64a39cb
+ root port		   0			path cost		   0
+ max age		  20.00			bridge max age		  20.00
+ hello time		   2.00			bridge hello time	   2.00
+ forward delay		  15.00			bridge forward delay	  15.00
+ ageing time		 300.00
+ hello timer		   0.00			tcn timer		   0.00
+ topology change timer	   0.00			gc timer		 168.29
+ flags			
+
+
+eth10.3 (1)
+ port id		8001			state		       disabled
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8001			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			
+
+switch0.3 (2)
+ port id		8002			state		     forwarding
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8002			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			
+br99
+ bridge id		8000.9c05d64a39cb
+ designated root	8000.9c05d64a39cb
+ root port		   0			path cost		   0
+ max age		  20.00			bridge max age		  20.00
+ hello time		   2.00			bridge hello time	   2.00
+ forward delay		  15.00			bridge forward delay	  15.00
+ ageing time		 300.00
+ hello timer		   0.00			tcn timer		   0.00
+ topology change timer	   0.00			gc timer		 168.28
+ flags			
+
+
+eth10.99 (1)
+ port id		8001			state		       disabled
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8001			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			
+
+switch0.99 (2)
+ port id		8002			state		     forwarding
+ designated root	8000.9c05d64a39cb	path cost		   4
+ designated bridge	8000.9c05d64a39cb	message age timer	   0.00
+ designated port	8002			forward delay timer	   0.00
+ designated cost	   0			hold timer		   0.00
+ flags			

@@ -1,0 +1,8 @@
+#!/bin/sh
+JQT()
+{
+    [ $# -lt 2 ] && echo "JQT (jq-Test)" && echo "Usage: JQT <filename> <jq filter>  [jq arg[,jq arg]...]" && exit 1
+    [ ! -f "${1}" ] && echo "${1} is not a file" && exit 1
+    cat "${1}" | jq -e "${2}" ${3-} > /dev/null
+}
+

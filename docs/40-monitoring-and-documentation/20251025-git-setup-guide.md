@@ -109,6 +109,7 @@ backups/
 *.backup
 *.bak
 *.old
+*.new
 
 # Database files (if large)
 *.db

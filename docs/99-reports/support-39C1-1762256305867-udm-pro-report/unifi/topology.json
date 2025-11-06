@@ -1,0 +1,225 @@
+{
+  "default" : {
+    "edges" : [ {
+      "channel" : 44,
+      "downlinkMac" : "18:e7:b0:5b:24:2d",
+      "essid" : "Patriarkatet",
+      "experienceScore" : 100,
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "protocol" : "ax",
+      "radioBand" : "na",
+      "type" : "WIRELESS",
+      "uplinkMac" : "9c:05:d6:a6:68:d4"
+    }, {
+      "downlinkMac" : "e4:5f:01:1e:2b:a9",
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 1
+    }, {
+      "downlinkMac" : "0c:b8:15:6a:a5:fc",
+      "networkId" : "6710d16d5f7432539a792c02",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 6
+    }, {
+      "downlinkMac" : "d4:5d:64:50:6c:84",
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 2
+    }, {
+      "channel" : 44,
+      "downlinkMac" : "88:66:5a:83:6f:43",
+      "essid" : "Patriarkatet",
+      "experienceScore" : 100,
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "protocol" : "ax",
+      "radioBand" : "na",
+      "type" : "WIRELESS",
+      "uplinkMac" : "9c:05:d6:a6:68:d4"
+    }, {
+      "downlinkMac" : "60:45:cb:a1:72:83",
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 8
+    }, {
+      "channel" : 44,
+      "downlinkMac" : "52:ad:b6:a8:c9:a7",
+      "essid" : "Patriarkatet",
+      "experienceScore" : 100,
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "protocol" : "ax",
+      "radioBand" : "na",
+      "type" : "WIRELESS",
+      "uplinkMac" : "9c:05:d6:a6:68:d4"
+    }, {
+      "downlinkMac" : "54:2a:a2:c6:df:c0",
+      "networkId" : "6710d16d5f7432539a792c02",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 6
+    }, {
+      "downlinkMac" : "ec:62:60:07:ed:48",
+      "networkId" : "6710d16d5f7432539a792c02",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 6
+    }, {
+      "channel" : 44,
+      "downlinkMac" : "d2:dc:ed:e4:d5:30",
+      "essid" : "Patriarkatet",
+      "experienceScore" : 97,
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "protocol" : "ax",
+      "radioBand" : "na",
+      "type" : "WIRELESS",
+      "uplinkMac" : "9c:05:d6:a6:68:d4"
+    }, {
+      "downlinkMac" : "dc:68:eb:0d:79:72",
+      "networkId" : "6710d16d5f7432539a792c02",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 6
+    }, {
+      "downlinkMac" : "9c:05:d6:a6:68:d4",
+      "duplex" : "FULL_DUPLEX",
+      "networkId" : "670ef65bdcd3cd3f6b0f40dc",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 7
+    }, {
+      "downlinkMac" : "ec:b5:fa:ac:19:42",
+      "networkId" : "6710d16d5f7432539a792c02",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 6
+    }, {
+      "downlinkMac" : "ec:62:60:09:9f:08",
+      "networkId" : "6710d16d5f7432539a792c02",
+      "rateMbps" : 1000,
+      "type" : "WIRED",
+      "uplinkMac" : "9c:05:d6:4a:39:c1",
+      "uplinkPortNumber" : 6
+    } ],
+    "has_unknown_switch" : true,
+    "vertices" : [ {
+      "allowedInVisualProgramming" : true,
+      "mac" : "60:45:cb:a1:72:83",
+      "name" : "fedora-jern 72:83",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "mac" : "ec:62:60:07:ed:48",
+      "name" : "Compact Pro luftrenser",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "default" : false,
+      "mac" : "9c:05:d6:4a:39:c1",
+      "model" : "UDMPRO",
+      "name" : "patriarkatet-udm",
+      "state" : 1,
+      "type" : "DEVICE"
+    }, {
+      "allowedInVisualProgramming" : true,
+      "mac" : "e4:5f:01:1e:2b:a9",
+      "name" : "raspberripi",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "mac" : "dc:68:eb:0d:79:72",
+      "name" : "Nintendo Switch 79:72",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "default" : false,
+      "mac" : "9c:05:d6:a6:68:d4",
+      "model" : "U7PRO",
+      "name" : "Ubiquity Unifi Access Point u7 pro",
+      "state" : 1,
+      "type" : "DEVICE",
+      "wifiRadios" : [ {
+        "channel" : 1,
+        "protocol" : "be",
+        "radioBand" : "ng"
+      }, {
+        "channel" : 44,
+        "protocol" : "be",
+        "radioBand" : "na"
+      }, {
+        "channel" : 37,
+        "protocol" : "be",
+        "radioBand" : "6e"
+      } ]
+    }, {
+      "allowedInVisualProgramming" : true,
+      "mac" : "d4:5d:64:50:6c:84",
+      "name" : "fedora-htpc 6c:84",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : true,
+      "mac" : "d2:dc:ed:e4:d5:30",
+      "name" : "Vive XR Elite",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : true,
+      "mac" : "18:e7:b0:5b:24:2d",
+      "name" : "brubofonen",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "mac" : "0c:b8:15:6a:a5:fc",
+      "name" : "Mill-Sense-Air a5:fc",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "mac" : "ec:62:60:09:9f:08",
+      "name" : "Mill Silent Pro luftrenser",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : true,
+      "mac" : "88:66:5a:83:6f:43",
+      "name" : "ipadpro",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : true,
+      "mac" : "52:ad:b6:a8:c9:a7",
+      "name" : "Mac c9:a7",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "mac" : "ec:b5:fa:ac:19:42",
+      "name" : "Hue Bridge gen 2",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    }, {
+      "allowedInVisualProgramming" : false,
+      "mac" : "54:2a:a2:c6:df:c0",
+      "name" : "Philips TV 65 Stue",
+      "type" : "CLIENT",
+      "unifiDevice" : false
+    } ]
+  }
+}

@@ -1,0 +1,16 @@
+NAME      MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+loop0       7:0    0 846.6M  1 loop /mnt/.rofs
+mtdblock0  31:0    0   1.8M  0 disk 
+mtdblock1  31:1    0    64K  0 disk 
+mtdblock2  31:2    0    64K  0 disk 
+mtdblock3  31:3    0    64K  1 disk 
+mtdblock4  31:4    0    64K  1 disk 
+mtdblock5  31:5    0     6M  0 disk 
+boot      135:0    1  14.6G  0 disk 
+|-boot1   135:1    1    64M  0 part 
+|-boot2   135:2    1    32M  0 part 
+|-boot3   135:3    1     2G  0 part /boot/firmware
+|-boot4   135:4    1     1G  0 part /var/log
+|-boot5   135:5    1     2G  0 part /persistent
+`-boot6   135:6    1   9.5G  0 part /mnt/.rwfs
+zram0     253:0    0   6.7G  0 disk [SWAP]

@@ -1,0 +1,1093 @@
+{
+ "capabilities": {
+  "device": {
+   "hasGlobalMTU": false,
+   "maxNetworks": 255,
+   "supportAnalytics": true,
+   "supportDeviceBackup": true,
+   "supportFastApply": true,
+   "supportFirmwareUpgrade": true,
+   "supportHardwareOffload": false,
+   "supportLiveUpdate": true,
+   "supportManagementConfig": false,
+   "supportManagementVLAN": false,
+   "supportedUdapiVersion": [
+    "1.0"
+   ]
+  },
+  "interfaces": [
+   {
+    "configurable": true,
+    "id": "br3",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "bridge"
+   },
+   {
+    "configurable": true,
+    "id": "br2",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "bridge"
+   },
+   {
+    "configurable": false,
+    "gre": true,
+    "id": "wgsrv1",
+    "ip6tnl": true,
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": false,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": false,
+    "supportReset": false,
+    "supportVLAN": false,
+    "type": "tunnel",
+    "vti": true
+   },
+   {
+    "configurable": true,
+    "id": "br0",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "bridge"
+   },
+   {
+    "configurable": true,
+    "id": "switch0.99",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "vlan"
+   },
+   {
+    "configurable": true,
+    "id": "switch0.2",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "vlan"
+   },
+   {
+    "configurable": true,
+    "id": "switch0.1",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "vlan"
+   },
+   {
+    "configurable": true,
+    "id": "eth10.99",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "vlan"
+   },
+   {
+    "configurable": true,
+    "id": "eth10.2",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "vlan"
+   },
+   {
+    "configurable": true,
+    "id": "eth6",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "lo",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "loopback"
+   },
+   {
+    "configurable": true,
+    "id": "eth9",
+    "media": "SFP-plus",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "1000-full",
+     "10000-full",
+     "autodetect"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "eth8",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "eth10",
+    "media": "SFP-plus",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "1000-full",
+     "10000-full",
+     "autodetect"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "switch0",
+    "maxVLAN": 4094,
+    "media": "GE",
+    "poeValues": [],
+    "ports": [
+     "eth0",
+     "eth1",
+     "eth2",
+     "eth3",
+     "eth4",
+     "eth5",
+     "eth6",
+     "eth7"
+    ],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "switch"
+   },
+   {
+    "configurable": true,
+    "id": "eth3",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "switch0.3",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "vlan"
+   },
+   {
+    "configurable": true,
+    "id": "eth5",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "eth0",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": false,
+    "gre": true,
+    "id": "gre0",
+    "ip6tnl": true,
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": false,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": false,
+    "supportReset": false,
+    "supportVLAN": false,
+    "type": "tunnel",
+    "vti": true
+   },
+   {
+    "configurable": true,
+    "id": "eth7",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "eth4",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": false,
+    "gre": true,
+    "id": "ip6tnl0",
+    "ip6tnl": true,
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": false,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": false,
+    "supportReset": false,
+    "supportVLAN": false,
+    "type": "tunnel",
+    "vti": true
+   },
+   {
+    "configurable": true,
+    "id": "br99",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "bridge"
+   },
+   {
+    "configurable": true,
+    "id": "eth2",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": false,
+    "id": "ifb0",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": false,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "eth10.3",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": true,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "vlan"
+   },
+   {
+    "configurable": false,
+    "id": "ifb1",
+    "poeValues": [],
+    "speedValues": [],
+    "supportBlock": false,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   },
+   {
+    "configurable": true,
+    "id": "eth1",
+    "media": "GE",
+    "poeValues": [],
+    "speedValues": [
+     "auto",
+     "10-half",
+     "10-full",
+     "100-half",
+     "100-full",
+     "1000-full"
+    ],
+    "supportBlock": true,
+    "supportCableTest": false,
+    "supportDelete": false,
+    "supportMirroring": {
+     "monitorSources": null,
+     "sourceDirection": null
+    },
+    "supportPOE": false,
+    "supportPPPoE": true,
+    "supportReset": false,
+    "supportVLAN": true,
+    "type": "ethernet"
+   }
+  ],
+  "qos": {
+   "firewall": {
+    "supported": true
+   }
+  },
+  "services": [
+   "BRIDGE_FIREWALL",
+   "FIREWALL",
+   "ROUTER_STATIC",
+   "QOS_FW",
+   "ROUTER_OSPF",
+   "ROUTER_ACCESS_LISTS",
+   "ROUTER_BGP",
+   "REDIRECTOR",
+   "ARP_INSPECTION",
+   "CLIENT_ISOLATION",
+   "DDNS",
+   "DHCP_SERVER",
+   "DNS_FORWARDER",
+   "DOH_PROXY",
+   "DPI",
+   "FLOW_ACCOUNTING",
+   "GEOIP_FILTERING",
+   "IDS_IPS",
+   "IGMP_PROXY",
+   "IGMP_SNOOPING",
+   "IP_ACCOUNTING",
+   "L2TP",
+   "LLDP",
+   "LOOP_PROTECTION",
+   "MDNS",
+   "MQ_BROKER",
+   "NTP",
+   "RADIUS_SERVER",
+   "SNMP_AGENT",
+   "STUNNEL",
+   "SUSPEND",
+   "SYSTEM_LOG",
+   "UID",
+   "UNIFI_NETWORK",
+   "UPNP",
+   "UTM",
+   "VRRP",
+   "WAN_FAILOVER",
+   "WIFIMAN",
+   "SSL_INSPECTION",
+   "DHCP_ROGUE_DETECTOR",
+   "WAN_MAGIC"
+  ],
+  "tools": [
+   "MAC_TABLE",
+   "WIFI_SCAN"
+  ],
+  "uas": false,
+  "vlanSwitching": {
+   "defaultVLAN": 1,
+   "supported": false
+  },
+  "vpn": {
+   "ipsec": {
+    "solutions": [
+     "strongSwan"
+    ],
+    "strongSwan": {
+     "reAuthMethods": [
+      "break-before-make",
+      "make-before-break"
+     ]
+    }
+   },
+   "openVPN": {
+    "authentication": [
+     "SHARED_KEY"
+    ],
+    "encryptionCiphers": [
+     {
+      "description": "128 bit key, <FILTERED> bit block",
+      "name": "AES-128-CBC"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-128-CFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-128-CFB1"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-128-CFB8"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-128-GCM"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-128-OFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block",
+      "name": "AES-192-CBC"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-192-CFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-192-CFB1"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-192-CFB8"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-192-GCM"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-192-OFB"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block",
+      "name": "AES-256-CBC"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-256-CFB"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-256-CFB1"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-256-CFB8"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-256-GCM"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "AES-256-OFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block",
+      "name": "ARIA-128-CBC"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-128-CFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-128-CFB1"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-128-CFB8"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-128-OFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block",
+      "name": "ARIA-192-CBC"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-192-CFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-192-CFB1"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-192-CFB8"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-192-OFB"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block",
+      "name": "ARIA-256-CBC"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-256-CFB"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-256-CFB1"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-256-CFB8"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "ARIA-256-OFB"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block (deprecated)",
+      "name": "BF-CBC"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block, TLS client/server mode only (deprecated)",
+      "name": "BF-CFB"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block, TLS client/server mode only (deprecated)",
+      "name": "BF-OFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block",
+      "name": "CAMELLIA-128-CBC"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-128-CFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-128-CFB1"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-128-CFB8"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-128-OFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block",
+      "name": "CAMELLIA-192-CBC"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-192-CFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-192-CFB1"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-192-CFB8"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-192-OFB"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block",
+      "name": "CAMELLIA-256-CBC"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-256-CFB"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-256-CFB1"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-256-CFB8"
+     },
+     {
+      "description": "256 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "CAMELLIA-256-OFB"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block (deprecated)",
+      "name": "CAST5-CBC"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block, TLS client/server mode only (deprecated)",
+      "name": "CAST5-CFB"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block, TLS client/server mode only (deprecated)",
+      "name": "CAST5-OFB"
+     },
+     {
+      "description": "256 bit key, <FILTERED> cipher, TLS client/server mode only",
+      "name": "CHACHA20-POLY1305"
+     },
+     {
+      "description": "64 bit key, <FILTERED> bit block (deprecated)",
+      "name": "DES-CBC"
+     },
+     {
+      "description": "64 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-CFB"
+     },
+     {
+      "description": "64 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-CFB1"
+     },
+     {
+      "description": "64 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-CFB8"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block (deprecated)",
+      "name": "DES-EDE-CBC"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-EDE-CFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-EDE-OFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block (deprecated)",
+      "name": "DES-EDE3-CBC"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-EDE3-CFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-EDE3-CFB1"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-EDE3-CFB8"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-EDE3-OFB"
+     },
+     {
+      "description": "64 bit key, <FILTERED> bit block, TLS client/server mode only (deprecated)",
+      "name": "DES-OFB"
+     },
+     {
+      "description": "192 bit key, <FILTERED> bit block (deprecated)",
+      "name": "DESX-CBC"
+     },
+     {
+      "description": "40 bit key <FILTERED> default, 64 bit block (deprecated)",
+      "name": "RC2-40-CBC"
+     },
+     {
+      "description": "64 bit key <FILTERED> default, 64 bit block (deprecated)",
+      "name": "RC2-64-CBC"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block (deprecated)",
+      "name": "RC2-CBC"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block, TLS client/server mode only (deprecated)",
+      "name": "RC2-CFB"
+     },
+     {
+      "description": "128 bit key <FILTERED> default, 64 bit block, TLS client/server mode only (deprecated)",
+      "name": "RC2-OFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block",
+      "name": "SEED-CBC"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "SEED-CFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "SEED-OFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block",
+      "name": "SM4-CBC"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "SM4-CFB"
+     },
+     {
+      "description": "128 bit key, <FILTERED> bit block, TLS client/server mode only",
+      "name": "SM4-OFB"
+     },
+     {
+      "description": "value to disable encryption",
+      "name": "none"
+     }
+    ],
+    "rawClient": true,
+    "supportRemoteDisconnect": true,
+    "supported": true
+   },
+   "teleport": {
+    "supported": true
+   },
+   "wireguardClient": {
+    "supported": true
+   },
+   "wireguardServer": {
+    "supported": true
+   },
+   "wireguardSiteToSite": {
+    "supported": true
+   }
+  },
+  "wanFailover": {
+   "groups": {
+    "randomBandwidth": {
+     "supportBalanceForwarded": false,
+     "supportBalanceLocal": false,
+     "supportStickyConnections": false,
+     "supported": false
+    },
+    "randomWeighted": {
+     "supportBalanceForwarded": true,
+     "supportBalanceLocal": true,
+     "supportStickyConnections": true,
+     "supported": true
+    },
+    "single": {
+     "supported": true
+    }
+   },
+   "monitors": [
+    "icmp"
+   ],
+   "supported": true
+  }
+ },
+ "errorCodes": [],
+ "identification": {
+  "family": "UniFi Dream Machine",
+  "firmware": "UDMPRO.al324.v4.3.6.fb6f502.250705.2119",
+  "firmwareVersion": "4.3.6",
+  "mac": "9c:05:d6:4a:39:c1",
+  "model": "UDM-Pro",
+  "product": "UniFi Dream Machine Pro",
+  "serverConfigurationVersion": {
+   "path": "/system/ubios/udm/configuration",
+   "version": 48,
+   "versionDetail": {
+    "bridge-firewall": 2,
+    "firewall/filter": 7,
+    "firewall/mangle": 8,
+    "firewall/nat": 10,
+    "firewall/pbr": 8,
+    "firewall/sets": 2,
+    "firewall/settings": 1,
+    "interfaces": 33,
+    "peripherals": 1,
+    "qos": 2,
+    "qos/ip": 2,
+    "routes/access-lists": 1,
+    "routes/bgp/raw": 1,
+    "routes/ospf": 6,
+    "routes/ospf/areas": 4,
+    "routes/ospf/interfaces": 4,
+    "routes/static": 3,
+    "services/arpInspection": 1,
+    "services/bleHTTPTransport": 1,
+    "services/clientIsolation": 1,
+    "services/ddns": 3,
+    "services/dhcpRogueDetector": 1,
+    "services/dhcpServers": 7,
+    "services/discoveryResponder": 2,
+    "services/dnsForwarder": 7,
+    "services/dohProxy": 8,
+    "services/dpi": 1,
+    "services/flowAccounting": 2,
+    "services/geoipFiltering": 2,
+    "services/idsIps": 7,
+    "services/igmpProxy": 1,
+    "services/igmpSnooping": 2,
+    "services/ipAccounting": 1,
+    "services/l2tpServer": 3,
+    "services/latencyMonitor": 1,
+    "services/lldp": 1,
+    "services/loopProtection": 1,
+    "services/mdns": 2,
+    "services/messageBroker": 3,
+    "services/ntpClient": 1,
+    "services/radius-profiles": 3,
+    "services/radiusServer": 8,
+    "services/redirector": 1,
+    "services/snmpAgent": 2,
+    "services/sshServer": 3,
+    "services/sslInspection": 2,
+    "services/stunnel": 1,
+    "services/suspend": 1,
+    "services/systemLog": 2,
+    "services/telnetServer": 1,
+    "services/uid": 1,
+    "services/unifiNetwork": 2,
+    "services/unms": 1,
+    "services/upnp": 2,
+    "services/utm": 5,
+    "services/vrrp": 7,
+    "services/wanFailover": 13,
+    "services/wanMagic": 1,
+    "services/webServer": 1,
+    "services/wifiman": 2,
+    "system": 7,
+    "system/user<FILTERED>": 1,
+    "vlans": 1,
+    "vpn/ipsec": 1,
+    "vpn/ipsec/site-to-site": 5,
+    "vpn/openvpn/peers": 6,
+    "vpn/openvpn/raws": 6,
+    "vpn/teleport": 1,
+    "vpn/wireguard/clients": 6,
+    "vpn/wireguard/servers": 5,
+    "vpn/wireguard/site-to-sites": 6
+   },
+   "versionFormat": "v2"
+  },
+  "serverVersion": "41.21.0-g05dafcd3a30f",
+  "subsystemID": "ea15"
+ }
+}

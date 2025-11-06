@@ -1,0 +1,10 @@
+{
+ "auto_update_schedule": {
+  "day": 5,
+  "frequency": "weekly",
+  "hour": 5
+ },
+ "org": null,
+ "ucs_adopted": false,
+ "ucs_id": ""
+}

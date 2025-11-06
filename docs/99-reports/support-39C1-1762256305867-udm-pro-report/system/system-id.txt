@@ -1,0 +1,13 @@
+board.sysid=0xea15
+board.name=UniFi Dream Machine Pro
+board.shortname=UDMPRO
+board.storename=UDM-Pro
+board.subtype=
+board.reboot=30
+board.upgrade=310
+board.cpu.id=411fd073-00000000
+board.uuid=344092aa-acda-5aff-9873-9c4ccda42216
+board.bom=113-00723-23
+board.hwrev=0x2d317
+board.serialno=9c05d64a39c1
+board.qrid=RQAamk

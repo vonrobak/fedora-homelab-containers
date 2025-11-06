@@ -114,7 +114,7 @@ BTRFS Pool (4.6TB free):
 **Quadlet:** `~/.config/containers/systemd/grafana.container`
 **Image:** `docker.io/grafana/grafana:11.3.1`
 **Access:** https://grafana.patriark.org
-**Authentication:** TinyAuth forward auth + local admin (qTR#k28w4$RPM3)
+**Authentication:** TinyAuth forward auth + local admin (password in ~/containers/secrets/grafana-admin-password)
 
 **Configuration Highlights:**
 - Auth proxy enabled for TinyAuth SSO integration
@@ -807,14 +807,14 @@ http:
 
 **Current Location:** `~/.config/containers/systemd/grafana.container`
 ```ini
-Environment=GF_SECURITY_ADMIN_PASSWORD=qTR#k28w4$RPM3
+Environment=GF_SECURITY_ADMIN_PASSWORD=<password from secrets file>
 ```
 
 **Better Approach:**
 
 ```bash
 # Store in secrets directory
-echo -n 'qTR#k28w4$RPM3' > ~/containers/secrets/grafana-admin-password
+echo -n '<your-secure-password>' > ~/containers/secrets/grafana-admin-password
 chmod 600 ~/containers/secrets/grafana-admin-password
 
 # Update grafana.container

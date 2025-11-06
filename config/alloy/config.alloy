@@ -1,0 +1,42 @@
+// Grafana Alloy Configuration for Homelab
+// Collects logs from systemd journal (includes all container logs)
+// Last Updated: 2025-11-05
+
+// Read logs from systemd journal
+loki.source.journal "systemd" {
+  forward_to = [loki.relabel.add_labels.receiver]
+  // Filter to only container logs from Podman
+  matches = "_SYSTEMD_UNIT=*.service"
+}
+
+// Add custom labels
+loki.relabel "add_labels" {
+  forward_to = [loki.write.local.receiver]
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "host"
+  }
+
+  rule {
+    source_labels = ["__journal_priority"]
+    target_label  = "level"
+  }
+}
+
+// Send logs to Loki
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+
+  external_labels = {
+    cluster = "homelab",
+    job     = "systemd-journal",
+  }
+}

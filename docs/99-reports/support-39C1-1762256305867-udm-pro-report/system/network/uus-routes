@@ -1,0 +1,119 @@
+{
+ "items": [
+  {
+   "destination": "192.168.2.0/24",
+   "nexthops": [
+    {
+     "inUse": true,
+     "interface": "br2",
+     "weight": 1
+    }
+   ],
+   "origin": "Kernel",
+   "scope": 253,
+   "type": "unicast"
+  },
+  {
+   "destination": "192.168.3.0/24",
+   "nexthops": [
+    {
+     "inUse": true,
+     "interface": "br3",
+     "weight": 1
+    }
+   ],
+   "origin": "Kernel",
+   "scope": 253,
+   "type": "unicast"
+  },
+  {
+   "destination": "192.168.99.0/24",
+   "nexthops": [
+    {
+     "inUse": true,
+     "interface": "br99",
+     "weight": 1
+    }
+   ],
+   "origin": "Kernel",
+   "scope": 253,
+   "type": "unicast"
+  },
+  {
+   "destination": "fe80::/64",
+   "distance": 256,
+   "nexthops": [
+    {
+     "inUse": true,
+     "interface": "honeypot0",
+     "weight": 1
+    }
+   ],
+   "origin": "Kernel",
+   "scope": 0,
+   "type": "unicast"
+  },
+  {
+   "destination": "0.0.0.0/0",
+   "nexthops": [
+    {
+     "inUse": true,
+     "weight": 1
+    }
+   ],
+   "origin": "PBR",
+   "scope": 0,
+   "table": 251,
+   "type": "blackhole"
+  },
+  {
+   "destination": "192.168.100.0/24",
+   "nexthops": [
+    {
+     "inUse": true,
+     "interface": "wgsrv1",
+     "weight": 1
+    }
+   ],
+   "origin": "Kernel",
+   "scope": 253,
+   "type": "unicast"
+  },
+  {
+   "destination": "62.249.184.0/24",
+   "nexthops": [
+    {
+     "inUse": true,
+     "interface": "eth8",
+     "weight": 1
+    }
+   ],
+   "origin": "Kernel",
+   "scope": 253,
+   "type": "unicast"
+  },
+  {
+   "destination": "0.0.0.0/0",
+   "distance": 200,
+   "nexthops": [
+    {
+     "gateway": "62.249.184.1",
+     "inUse": true,
+     "interface": "eth8",
+     "weight": 1
+    }
+   ],
+   "origin": "DHCP",
+   "scope": 0,
+   "table": 201,
+   "type": "unicast"
+  }
+ ],
+ "pagination": {
+  "count": 8,
+  "page": 1,
+  "pages": 1,
+  "total": 8,
+  "unavailable": 36
+ }
+}

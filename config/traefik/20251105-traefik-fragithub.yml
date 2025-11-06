@@ -1,0 +1,54 @@
+# Traefik Static Configuration v3.2
+# Domain: patriark.org
+
+api:
+  dashboard: true
+  insecure: false
+
+ping:
+  entryPoint: "traefik"
+
+log:
+  level: INFO
+
+entryPoints:
+  traefik:
+    address: ":8080"
+
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/podman/podman.sock"
+    exposedByDefault: false
+    network: systemd-reverse_proxy
+
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+global:
+  sendAnonymousUsage: false
+
+experimental:
+  plugins:
+    crowdsec-bouncer-traefik-plugin:
+      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      version: "v1.4.5"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: blyhode@hotmail.com
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web

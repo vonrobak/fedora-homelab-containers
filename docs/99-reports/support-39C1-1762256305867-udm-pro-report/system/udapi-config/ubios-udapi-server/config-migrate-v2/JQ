@@ -1,0 +1,10 @@
+#!/bin/sh
+# include all possible JQ helper scripts
+JQ_FILES="$(dirname "${0}")"/../JQ*
+for jq_file in ${JQ_FILES}
+do
+    if [ "$(basename "${jq_file}")" != "JQ" ]
+    then
+        . "${jq_file}"
+    fi
+done

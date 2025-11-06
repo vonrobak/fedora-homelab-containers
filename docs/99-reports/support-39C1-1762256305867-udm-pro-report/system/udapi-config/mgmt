@@ -1,0 +1,13 @@
+mgmt.is_default=false
+mgmt.led_enabled=true
+mgmt.cfgversion=c5ca3ca18f9fd532
+mgmt.cfgversion_effective=c5ca3ca18f9fd532
+mgmt.authkey=<FILTERED>
+mgmt.selfrun_guest_mode=pass
+mgmt.capability=notif,notif-assoc-stat
+mgmt.use_aes_gcm=true
+mgmt.report_crash=true
+mgmt.is_setup_completed=true
+mgmt.servers.1.url=http://127.0.0.1:8080/inform
+stun_url=stun://127.0.0.1/
+mgmt_url=https://127.0.0.1:8443/manage/site/default

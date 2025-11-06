@@ -1,0 +1,61 @@
+Module                  Size  Used by
+ebt_redirect           16384  2
+ebt_mark               16384  2
+ebt_pkttype            16384  4
+ebt_ip                 16384  16
+ebt_set                16384  4
+ebtable_nat            16384  1
+ebt_vlan               16384  3
+ebtable_broute         16384  1
+ebtables               28672  2 ebtable_nat,ebtable_broute
+nf_nat_tftp            16384  0
+nf_conntrack_tftp      16384  1 nf_nat_tftp
+nf_nat_pptp            16384  0
+nf_conntrack_pptp      16384  1 nf_nat_pptp
+nf_nat_h323            20480  0
+nf_conntrack_h323      49152  1 nf_nat_h323
+nf_nat_proto_gre       16384  1 nf_nat_pptp
+nf_conntrack_proto_gre    16384  1 nf_conntrack_pptp
+nf_nat_ftp             16384  0
+nf_conntrack_ftp       16384  1 nf_nat_ftp
+xt_dyn_random          16384  4
+xt_connmark            16384  12
+xt_geoip               16384  4
+xt_conntrack           16384  431
+nf_app                 16384  0
+t_miner                53248  1 nf_app
+ctr                    16384  2
+ghash_generic          16384  2
+gf128mul               16384  1 ghash_generic
+gcm                    20480  1
+tdts                  524288  1 t_miner
+tm_crypto              24576  1 tdts
+xt_dpi                 16384  0
+lzo                    16384  4
+lzo_compress           16384  1 lzo
+zram                   24576  1
+wireguard             139264  0
+ip6_udp_tunnel         16384  1 wireguard
+udp_tunnel             16384  1 wireguard
+ui_lcm                 16384  0
+ifb                    16384  0
+sch_htb                24576  0
+ppp_generic            40960  0
+slhc                   16384  1 ppp_generic
+ubnthal               139264  0
+ubnt_common            16384  1 ubnthal
+team_mode_roundrobin    16384  0
+team_mode_random       16384  0
+team_mode_loadbalance    16384  0
+team_mode_broadcast    16384  0
+team_mode_activebackup    16384  0
+team                   45056  5 team_mode_roundrobin,team_mode_loadbalance,team_mode_random,team_mode_broadcast,team_mode_activebackup
+sata_sil24             24576  0
+ansi_cprng             16384  0
+ramoops                28672  0
+reed_solomon           20480  1 ramoops
+squashfs               40960  1
+zstd_decompress        69632  1 squashfs
+xxhash                 16384  1 zstd_decompress
+loop                   28672  2
+ui_hdd_pwrctl          20480  0

@@ -1,0 +1,2278 @@
+[
+ {
+  "addresses": [
+   {
+    "cidr": "127.0.0.1/8",
+    "eui64": false,
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   },
+   {
+    "cidr": "::1/128",
+    "eui64": false,
+    "origin": null,
+    "type": "static",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "lo",
+   "mac": "9e:05:d6:4a:39:c1",
+   "type": "loopback"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentMTU": 65536,
+   "enabled": true,
+   "mtu": 65536,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 188261241552,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 134,
+    "rxPackets": 374832255,
+    "rxRate": 1800873,
+    "txBroadcast": 0,
+    "txBytes": 188261241552,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 134,
+    "txPackets": 374832255,
+    "txRate": 1800873
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "switch0",
+   "mac": "9e:05:d6:4a:39:c2",
+   "type": "switch"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 4164845,
+    "errors": 873128,
+    "poePower": 0.0,
+    "rxBroadcast": 5995270,
+    "rxBytes": 4208862762463,
+    "rxDropped": 4164845,
+    "rxErrors": 873128,
+    "rxFlowCtrl": 873128,
+    "rxJumbo": 0,
+    "rxMulticast": 39269495,
+    "rxPPS": 49,
+    "rxPackets": 5472265745,
+    "rxRate": 59808,
+    "txBroadcast": 69447510,
+    "txBytes": 8925987741073,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 1158,
+    "txJumbo": 0,
+    "txMulticast": 250324957,
+    "txPPS": 84,
+    "txPackets": 4536775103,
+    "txRate": 579752
+   },
+   "timestamp": 1762256327680
+  },
+  "switch": {
+   "ports": [
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth0"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 1,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      2,
+      3,
+      99
+     ]
+    },
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth1"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 1,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      2,
+      3,
+      99
+     ]
+    },
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth2"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 1,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      2,
+      3,
+      99
+     ]
+    },
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth3"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 1,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      2,
+      3,
+      99
+     ]
+    },
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth4"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 1,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      2,
+      3,
+      99
+     ]
+    },
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth5"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 2,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      3,
+      99
+     ]
+    },
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth6"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 1,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      2,
+      3,
+      99
+     ]
+    },
+    {
+     "egressRate": null,
+     "enabled": true,
+     "interface": {
+      "id": "eth7"
+     },
+     "isolated": false,
+     "mirrorPorts": [],
+     "portRestrict": {
+      "macAddressList": []
+     },
+     "pvid": 1,
+     "stormControl": {
+      "broadcastRate": null,
+      "multicastRate": null,
+      "unknownUnicastRate": null
+     },
+     "vid": [
+      2,
+      3,
+      99
+     ]
+    }
+   ],
+   "vlanEnabled": true
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c1/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth0",
+   "mac": "9c:05:d6:4a:39:c1",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": {
+    "receive": true,
+    "transmit": true
+   },
+   "currentMTU": 1500,
+   "currentSpeed": "1000-full",
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 44,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 222,
+    "rxBytes": 5021836100,
+    "rxDropped": 44,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 48704,
+    "rxPPS": 0,
+    "rxPackets": 30814117,
+    "rxRate": 0,
+    "txBroadcast": 18615090,
+    "txBytes": 31558256241,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 71183904,
+    "txPPS": 1,
+    "txPackets": 123622210,
+    "txRate": 664
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c2/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth1",
+   "mac": "9c:05:d6:4a:39:c2",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": {
+    "receive": true,
+    "transmit": true
+   },
+   "currentMTU": 1500,
+   "currentSpeed": "1000-full",
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 235,
+    "errors": 8,
+    "poePower": 0.0,
+    "rxBroadcast": 97531,
+    "rxBytes": 1760093836874,
+    "rxDropped": 235,
+    "rxErrors": 8,
+    "rxFlowCtrl": 8,
+    "rxJumbo": 0,
+    "rxMulticast": 1366369,
+    "rxPPS": 46,
+    "rxPackets": 3171248780,
+    "rxRate": 57840,
+    "txBroadcast": 18383502,
+    "txBytes": 5738111594772,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 546,
+    "txJumbo": 0,
+    "txMulticast": 70275117,
+    "txPPS": 79,
+    "txPackets": 1409015857,
+    "txRate": 576064
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   },
+   "sfp": {
+    "eeprom": false,
+    "fec": "none",
+    "los": true,
+    "present": false,
+    "txFault": true
+   }
+  },
+  "identification": {
+   "id": "eth10",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "sfp": {},
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPackets": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c3/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth2",
+   "mac": "9c:05:d6:4a:39:c3",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 0,
+    "rxPackets": 0,
+    "rxRate": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 0,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c4/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth3",
+   "mac": "9c:05:d6:4a:39:c4",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 0,
+    "rxPackets": 0,
+    "rxRate": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 0,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c5/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth4",
+   "mac": "9c:05:d6:4a:39:c5",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 0,
+    "rxPackets": 0,
+    "rxRate": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 0,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c6/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth5",
+   "mac": "9c:05:d6:4a:39:c6",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": {
+    "receive": true,
+    "transmit": true
+   },
+   "currentMTU": 1500,
+   "currentSpeed": "1000-full",
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 1374,
+    "errors": 24,
+    "poePower": 0.0,
+    "rxBroadcast": 1659170,
+    "rxBytes": 9842660932,
+    "rxDropped": 1374,
+    "rxErrors": 24,
+    "rxFlowCtrl": 24,
+    "rxJumbo": 0,
+    "rxMulticast": 11271563,
+    "rxPPS": 0,
+    "rxPackets": 45507168,
+    "rxRate": 0,
+    "txBroadcast": 9464268,
+    "txBytes": 101838774060,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 29320572,
+    "txPPS": 0,
+    "txPackets": 117790432,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c7/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth6",
+   "mac": "9c:05:d6:4a:39:c7",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": {
+    "receive": false,
+    "transmit": false
+   },
+   "currentMTU": 1500,
+   "currentSpeed": "1000-full",
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 3290096,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 849146,
+    "rxBytes": 197317983160,
+    "rxDropped": 3290096,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 20751487,
+    "rxPPS": 2,
+    "rxPackets": 410512809,
+    "rxRate": 1176,
+    "txBroadcast": 17766109,
+    "txBytes": 1838922564638,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 50477531,
+    "txPPS": 2,
+    "txPackets": 1463009425,
+    "txRate": 1744
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c8/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth7",
+   "mac": "9c:05:d6:4a:39:c8",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": {
+    "receive": true,
+    "transmit": true
+   },
+   "currentMTU": 1500,
+   "currentSpeed": "1000-full",
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 873096,
+    "errors": 873096,
+    "poePower": 0.0,
+    "rxBroadcast": 3389201,
+    "rxBytes": 2236586445397,
+    "rxDropped": 873096,
+    "rxErrors": 873096,
+    "rxFlowCtrl": 873096,
+    "rxJumbo": 0,
+    "rxMulticast": 5831372,
+    "rxPPS": 1,
+    "rxPackets": 1814182871,
+    "rxRate": 792,
+    "txBroadcast": 5218541,
+    "txBytes": 1215556551362,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 612,
+    "txJumbo": 0,
+    "txMulticast": 29067833,
+    "txPPS": 2,
+    "txPackets": 1423337179,
+    "txRate": 1280
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "62.249.184.112/24",
+    "eui64": false,
+    "origin": "dhcp",
+    "type": "dynamic",
+    "version": "v4"
+   },
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39c9/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": false
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "eth8",
+   "mac": "9c:05:d6:4a:39:c9",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "baseReachableTime": 30,
+   "comment": "WAN",
+   "currentEnabled": true,
+   "currentFlowControl": {
+    "receive": true,
+    "transmit": true
+   },
+   "currentMTU": 1500,
+   "currentSpeed": "1000-full",
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 1649052719122,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 10,
+    "rxPackets": 1719879892,
+    "rxRate": 6245,
+    "txBroadcast": 0,
+    "txBytes": 510897024442,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 7,
+    "txPackets": 1014687135,
+    "txRate": 3294
+   },
+   "timestamp": 1762256327680,
+   "wanStatus": "active"
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": null,
+    "eui64": false,
+    "origin": "dhcp",
+    "type": "dynamic",
+    "version": "v4"
+   }
+  ],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": false
+   },
+   "loopProtection": {
+    "enabled": false
+   },
+   "sfp": {
+    "eeprom": false,
+    "fec": "none",
+    "los": true,
+    "present": false,
+    "txFault": true
+   }
+  },
+  "identification": {
+   "id": "eth9",
+   "mac": "9c:05:d6:4a:39:ca",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "baseReachableTime": 30,
+   "comment": "WAN2",
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "sfp": {},
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPackets": 0
+   },
+   "timestamp": 1762256327680,
+   "wanStatus": "inactive"
+  }
+ },
+ {
+  "addresses": [],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "ifb0",
+   "mac": "de:16:69:ce:b1:b3",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": false,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPackets": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [],
+  "ethernet": {
+   "flowControl": {},
+   "lldp": {
+    "enabled": true
+   },
+   "loopProtection": {
+    "enabled": false
+   }
+  },
+  "identification": {
+   "id": "ifb1",
+   "mac": "36:a9:07:a0:e8:8d",
+   "type": "ethernet"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": false,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPackets": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [],
+  "identification": {
+   "id": "gre0",
+   "type": "tunnel"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": false,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPackets": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "tunnel": {
+   "id": 0,
+   "localAddress": {
+    "address": "0.0.0.0",
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   },
+   "mode": "gre",
+   "remoteAddress": {
+    "address": "0.0.0.0",
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   }
+  }
+ },
+ {
+  "addresses": [],
+  "identification": {
+   "id": "ip6tnl0",
+   "type": "tunnel"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": false,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPackets": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "tunnel": {
+   "id": 0,
+   "localAddress": {
+    "address": "::",
+    "source": "static"
+   },
+   "mode": "ip6tnl",
+   "remoteAddress": "::",
+   "remoteAddressFallbackMapping": []
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "192.168.100.1/24",
+    "eui64": false,
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   }
+  ],
+  "identification": {
+   "id": "wgsrv1",
+   "name": "wgsrv1",
+   "type": "tunnel"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentMTU": 1420,
+   "description": "patriarkat-wireguard",
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": true,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 0,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPackets": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "tunnel": {
+   "id": 1,
+   "mode": "generic"
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "eth10.2",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "vlan"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 746,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 7,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "vlan": {
+   "egressQoSMap": [],
+   "id": 2,
+   "ingressQoSMap": [],
+   "interface": {
+    "id": "eth10"
+   }
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "eth10.3",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "vlan"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 746,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 7,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "vlan": {
+   "egressQoSMap": [],
+   "id": 3,
+   "ingressQoSMap": [],
+   "interface": {
+    "id": "eth10"
+   }
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "eth10.99",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "vlan"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 746,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 7,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "vlan": {
+   "egressQoSMap": [],
+   "id": 99,
+   "ingressQoSMap": [],
+   "interface": {
+    "id": "eth10"
+   }
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "switch0.1",
+   "mac": "9e:05:d6:4a:39:c2",
+   "type": "vlan"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 7932,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 516590137129,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 35,
+    "rxPackets": 947198649,
+    "rxRate": 24233,
+    "txBroadcast": 0,
+    "txBytes": 1648309800201,
+    "txDropped": 7932,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 60,
+    "txPackets": 1653941181,
+    "txRate": 439202
+   },
+   "timestamp": 1762256327680
+  },
+  "vlan": {
+   "egressQoSMap": [],
+   "id": 1,
+   "ingressQoSMap": [],
+   "interface": {
+    "id": "switch0"
+   }
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "switch0.2",
+   "mac": "9e:05:d6:4a:39:c2",
+   "type": "vlan"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 1888807740,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 0,
+    "rxPackets": 10359135,
+    "rxRate": 0,
+    "txBroadcast": 0,
+    "txBytes": 19406891316,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 20027897,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "vlan": {
+   "egressQoSMap": [],
+   "id": 2,
+   "ingressQoSMap": [],
+   "interface": {
+    "id": "switch0"
+   }
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "switch0.3",
+   "mac": "9e:05:d6:4a:39:c2",
+   "type": "vlan"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 1979559014,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 5715440,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "vlan": {
+   "egressQoSMap": [],
+   "id": 3,
+   "ingressQoSMap": [],
+   "interface": {
+    "id": "switch0"
+   }
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "fe80::9c05:d6ff:fe4a:39c2/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "identification": {
+   "id": "switch0.99",
+   "mac": "9e:05:d6:4a:39:c2",
+   "type": "vlan"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 97381582,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 2076626,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  },
+  "vlan": {
+   "egressQoSMap": [],
+   "id": 99,
+   "ingressQoSMap": [],
+   "interface": {
+    "id": "switch0"
+   }
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "192.168.1.1/24",
+    "eui64": false,
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   },
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "bridge": {
+   "aging": 30000,
+   "forwardingDelay": 1500,
+   "helloTime": 200,
+   "id": 0,
+   "interfaces": [
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "eth10"
+    },
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "switch0.1"
+    }
+   ],
+   "maxAge": 2000,
+   "priority": 32768,
+   "stp": false,
+   "vif": null
+  },
+  "identification": {
+   "id": "br0",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "bridge"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "comment": "LAN",
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 516590136841,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 35,
+    "rxPackets": 947198645,
+    "rxRate": 24233,
+    "txBroadcast": 0,
+    "txBytes": 1648321426492,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 60,
+    "txPackets": 1653949106,
+    "txRate": 439202
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "192.168.2.1/24",
+    "eui64": false,
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   },
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "bridge": {
+   "aging": 30000,
+   "forwardingDelay": 1500,
+   "helloTime": 200,
+   "id": 2,
+   "interfaces": [
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "eth10.2"
+    },
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "switch0.2"
+    }
+   ],
+   "maxAge": 2000,
+   "priority": 32768,
+   "stp": false,
+   "vif": null
+  },
+  "identification": {
+   "id": "br2",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "bridge"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "comment": "LAN",
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 1888807740,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPPS": 0,
+    "rxPackets": 10359135,
+    "rxRate": 0,
+    "txBroadcast": 0,
+    "txBytes": 19406890570,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 20027890,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "192.168.3.1/24",
+    "eui64": false,
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   },
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "bridge": {
+   "aging": 30000,
+   "forwardingDelay": 1500,
+   "helloTime": 200,
+   "id": 3,
+   "interfaces": [
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "eth10.3"
+    },
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "switch0.3"
+    }
+   ],
+   "maxAge": 2000,
+   "priority": 32768,
+   "stp": false,
+   "vif": null
+  },
+  "identification": {
+   "id": "br3",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "bridge"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "comment": "LAN",
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 1979558268,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 5715433,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  }
+ },
+ {
+  "addresses": [
+   {
+    "cidr": "192.168.99.1/24",
+    "eui64": false,
+    "origin": null,
+    "type": "static",
+    "version": "v4"
+   },
+   {
+    "cidr": "fe80::9e05:d6ff:fe4a:39cb/64",
+    "eui64": false,
+    "origin": "linkLocal",
+    "type": "dynamic",
+    "version": "v6"
+   }
+  ],
+  "bridge": {
+   "aging": 30000,
+   "forwardingDelay": 1500,
+   "helloTime": 200,
+   "id": 99,
+   "interfaces": [
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "eth10.99"
+    },
+    {
+     "active": true,
+     "dynamic": false,
+     "id": "switch0.99"
+    }
+   ],
+   "maxAge": 2000,
+   "priority": 32768,
+   "stp": false,
+   "vif": null
+  },
+  "identification": {
+   "id": "br99",
+   "mac": "9c:05:d6:4a:39:cb",
+   "type": "bridge"
+  },
+  "ipv4": {
+   "cos": 0,
+   "dhcpOptions": []
+  },
+  "ipv6": {
+   "cos": 0,
+   "dhcp6Options": [],
+   "dhcp6PDStatus": []
+  },
+  "status": {
+   "arpProxy": false,
+   "comment": "LAN",
+   "currentEnabled": true,
+   "currentFlowControl": null,
+   "currentMTU": null,
+   "currentSpeed": null,
+   "enabled": true,
+   "mtu": 1500,
+   "plugged": false,
+   "speed": "auto",
+   "statistics": {
+    "dropped": 0,
+    "errors": 0,
+    "poePower": 0.0,
+    "rxBroadcast": 0,
+    "rxBytes": 0,
+    "rxDropped": 0,
+    "rxErrors": 0,
+    "rxFlowCtrl": 0,
+    "rxJumbo": 0,
+    "rxMulticast": 0,
+    "rxPackets": 0,
+    "txBroadcast": 0,
+    "txBytes": 97380836,
+    "txDropped": 0,
+    "txErrors": 0,
+    "txFlowCtrl": 0,
+    "txJumbo": 0,
+    "txMulticast": 0,
+    "txPPS": 0,
+    "txPackets": 2076619,
+    "txRate": 0
+   },
+   "timestamp": 1762256327680
+  }
+ }
+]

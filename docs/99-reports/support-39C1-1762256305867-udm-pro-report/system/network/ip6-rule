@@ -1,0 +1,9 @@
+0:	from all lookup local
+32000:	from all lookup main
+32500:	from all iif eth8 goto 32502
+32501:	from all fwmark 0x1a0000/0x7e0000 lookup 201.eth8
+32502:	from all iif eth9 goto 32504
+32503:	from all fwmark 0x1c0000/0x7e0000 lookup 202.eth9
+32504:	from fe80::9e05:d6ff:fe4a:39c9 lookup 201.eth8
+32765:	from all fwmark 0x10000/0x10000 lookup 251.blackhole
+32766:	from all lookup 201.eth8

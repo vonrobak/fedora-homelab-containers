@@ -1,0 +1,107 @@
+#!/bin/sh
+# helpers for reading board config
+
+# @brief Get named value delimited by '=' from the given file
+#
+# @param 1 - item name
+# @param 2 - file to get the value from
+get_named_value()
+{
+    sed -n "s/^${1}=//p" "${2}"
+}
+
+# @brief Get named value from ubnthal system.info
+#
+# @param 1 - item name
+get_ubnthal_system()
+{
+    local key="<FILTERED>{1}"
+    local ubnthal_system_file="/proc/ubnthal/system.info"
+
+    [ -f "${ubnthal_system_file}" ] && {
+        get_named_value "${key}" "<FILTERED>{ubnthal_system_file}"
+    }
+}
+
+# @brief Get a path to board config file
+#
+# @param 1 - board id
+get_board_config_path_by_board_id()
+{
+    local board_id="${1}"
+    local match="/usr/share/ubios-udapi-server/config-board/*-${board_id}.json"
+
+    # only one such file should exist, filtering just to be sure
+    ls ${match} | head -1
+}
+
+# @brief Get a path to board config file matching given config file.
+#        Supports both production and test environment.
+#
+# @param 1 - path to config file
+get_board_config_path()
+{
+    # First, look for the board-config in the same folder as our input config.
+    # We expect a file with the same name as input config plus "board-" prefix
+    # and without suffixes added by testing environment.
+    # This is meant to be a way to test this functionality
+    # without ubnthal or board-config file in known location.
+    # When there is no file matching these conditions, 
+    # it is assumed we are running in production environment.
+    local config_path="${1}"
+    local candidate
+
+    candidate="$(dirname "${config_path}")/board-$(basename "${config_path}")"
+    [ -f "${candidate}" ] && {
+        echo "${candidate}"
+        return 0
+    }
+
+    # cut last extension from the string
+    candidate="${candidate%.*}"
+    [ -f "${candidate}" ] && {
+        echo "${candidate}"
+        return 0
+    }
+
+    local board_id=$(get_ubnthal_system "systemid")
+    [ -z "${board_id}" ] && {
+        echo "Could not determine system board id." >&2
+        return 1
+    }
+
+    candidate=$(get_board_config_path_by_board_id "${board_id}")
+    [ -z "${candidate}" ] && {
+        echo "No matching board config for id[${board_id}]." >&2
+        return 2
+    }
+
+    [ -f "${candidate}" ] && {
+        echo "${candidate}"
+        return 0
+    }
+
+    echo "Board config path not found." >&2
+    return 3
+}
+
+# @brief Get board model for the current system.
+#        Supports both production and test environment.
+#
+# @param 1 - path to config file
+get_board_model()
+{
+    local config_path="${1}"
+    local board_config_path
+    board_config_path=$(get_board_config_path "${config_path}") || {
+        return ${?}
+    }
+
+    local model
+    model=$(jq -r '.identification.id' "${board_config_path}") || {
+        echo "Could not identify board model" >&2
+        return 10
+    }
+
+    echo "${model}"
+}

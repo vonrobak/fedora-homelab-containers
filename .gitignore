@@ -8,6 +8,9 @@
 *.crt
 *secret*
 *password*
+*api_key*
+*apiKey*
+*apikey*
 *.env
 acme.json
 **/acme.json
@@ -45,11 +48,11 @@ docs/99-reports/lastfm.json
 *.sock
 
 # Cache & Temporary Files
-**/cache/
-**/temp/
-**/tmp/
-**/backups/
-**/data/
+cache/*
+**temp/
+**tmp/
+backups/*
+data/*
 *.tmp
 *.bak
 *.swp
@@ -59,6 +62,10 @@ docs/99-reports/lastfm.json
 # Logs
 *.log
 **/logs/
+
+# Backup files (may contain old secrets)
+**/backup/
+**/*.bak
 
 # OS Files
 .DS_Store
