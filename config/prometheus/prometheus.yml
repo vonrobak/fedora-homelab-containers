@@ -1,0 +1,62 @@
+# Prometheus Configuration for Homelab
+# Last Updated: 2025-11-05
+
+global:
+  scrape_interval: 15s      # How often to scrape targets
+  evaluation_interval: 15s  # How often to evaluate rules
+  external_labels:
+    cluster: 'homelab'
+    environment: 'production'
+
+# Alertmanager configuration (for future use)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Load alerting rules once and periodically evaluate them
+# rule_files:
+#   - "rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself (self-monitoring)
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'prometheus'
+
+  # Node Exporter (system metrics)
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node_exporter:9100']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'node_exporter'
+
+  # Grafana monitoring
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'grafana'
+
+  # Traefik monitoring (if metrics enabled)
+  # - job_name: 'traefik'
+  #   static_configs:
+  #     - targets: ['traefik:8080']
+  #       labels:
+  #         instance: 'fedora-htpc'
+  #         service: 'traefik'
+
+  # CrowdSec monitoring (if metrics enabled)
+  # - job_name: 'crowdsec'
+  #   static_configs:
+  #     - targets: ['crowdsec:6060']
+  #       labels:
+  #         instance: 'fedora-htpc'
+  #         service: 'crowdsec'

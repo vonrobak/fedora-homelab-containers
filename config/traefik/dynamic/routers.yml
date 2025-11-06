@@ -46,6 +46,45 @@ http:
       middlewares:
         - crowdsec-bouncer
         - rate-limit
+        # - tinyauth@file  # Uncomment to enable authentication
+      tls:
+        certResolver: letsencrypt
+
+    # Grafana Monitoring Dashboard
+    grafana-secure:
+      rule: "Host(`grafana.patriark.org`)"
+      service: "grafana"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+        - tinyauth@file
+      tls:
+        certResolver: letsencrypt
+
+    # Prometheus Metrics Database
+    prometheus-secure:
+      rule: "Host(`prometheus.patriark.org`)"
+      service: "prometheus"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+        - tinyauth@file
+      tls:
+        certResolver: letsencrypt
+
+    # Loki Log Aggregation
+    loki-secure:
+      rule: "Host(`loki.patriark.org`)"
+      service: "loki"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
         - tinyauth@file
       tls:
         certResolver: letsencrypt
@@ -60,3 +99,18 @@ http:
       loadBalancer:
         servers:
           - url: "http://tinyauth:3000"
+
+    grafana:
+      loadBalancer:
+        servers:
+          - url: "http://grafana:3000"
+
+    prometheus:
+      loadBalancer:
+        servers:
+          - url: "http://prometheus:9090"
+
+    loki:
+      loadBalancer:
+        servers:
+          - url: "http://loki:3100"
