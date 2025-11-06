@@ -45,13 +45,13 @@ scrape_configs:
           instance: 'fedora-htpc'
           service: 'grafana'
 
-  # Traefik monitoring (if metrics enabled)
-  # - job_name: 'traefik'
-  #   static_configs:
-  #     - targets: ['traefik:8080']
-  #       labels:
-  #         instance: 'fedora-htpc'
-  #         service: 'traefik'
+  # Traefik monitoring (metrics enabled 2025-11-06)
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8080']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'traefik'
 
   # CrowdSec monitoring (if metrics enabled)
   # - job_name: 'crowdsec'

@@ -16,7 +16,7 @@ http:
           crowdsecMode: live
           crowdsecLapiScheme: http
           crowdsecLapiHost: crowdsec:8080
-          crowdsecLapiKey: *redacted*
+          crowdsecLapiKey: PMzGXoBZt1GkM0CV3nLC4c2VC01sR/PyV9d2VU5H7Gs
           
           # Forwarded headers (for correct IP detection behind proxies)
           forwardedHeadersCustomName: X-Forwarded-For
@@ -170,12 +170,21 @@ http:
       ipWhiteList:
         sourceRange:
           - 10.89.2.0/24      # systemd podman reverse proxy network
-          - 10.89.3.0/24      # systemd podman authentication network (idle without members)
-          - 10.89.4.0/24      # systemd podman Monitoring network (not yet built)
+          - 10.89.3.0/24      # systemd podman authentication network
+          - 10.89.4.0/24      # systemd podman monitoring network
           - 10.89.5.0/24      # systemd podman database network (not yet built)
-          - 10.89.1.0/24      # systemd podman media services network (idle without members)
+          - 10.89.1.0/24      # systemd podman media services network
           - 10.89.10.0/24     # systemd podman nextcloud network
           - 10.89.20.0/24     # systemd podman unbuilt network for future use
+
+    # Monitoring APIs - Restrict to LAN + VPN only
+    monitoring-api-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - 192.168.1.0/24    # Local network
+          - 192.168.100.0/24  # Wireguard VPN subnet
+        ipStrategy:
+          depth: 1            # Check X-Forwarded-For
 
 
     # ═══════════════════════════════════════════════════════════

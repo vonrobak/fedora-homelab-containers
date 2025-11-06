@@ -71,6 +71,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer
+        - monitoring-api-whitelist
         - rate-limit
         - tinyauth@file
       tls:
@@ -84,6 +85,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer
+        - monitoring-api-whitelist
         - rate-limit
         - tinyauth@file
       tls:

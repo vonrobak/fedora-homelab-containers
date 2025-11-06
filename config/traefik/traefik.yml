@@ -11,6 +11,19 @@ ping:
 log:
   level: INFO
 
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    entryPoint: traefik
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.0
+      - 3.0
+      - 10.0
+
 entryPoints:
   traefik:
     address: ":8080"
