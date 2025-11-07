@@ -15,6 +15,10 @@
 acme.json
 **/acme.json
 
+# Quadlets with hardcoded secrets (keep local, use templates)
+quadlets/tinyauth.container
+quadlets/grafana.container
+
 # SSL/TLS Certificates
 config/traefik/letsencrypt/
 **/letsencrypt/
