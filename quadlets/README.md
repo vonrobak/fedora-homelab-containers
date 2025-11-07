@@ -50,6 +50,31 @@ To deploy changes:
 - `auth_services.network` - Authentication services
 - `media_services.network` - Media services
 
+## Security & Secrets Management
+
+### Template Files (*.container.template)
+
+Some quadlets contain sensitive credentials and are **excluded from Git**:
+- `tinyauth.container` - Contains SECRET and USERS credentials
+- `grafana.container` - Contains admin password
+
+**For development/testing:**
+1. Copy the `.template` file: `cp tinyauth.container.template tinyauth.container`
+2. Edit the copy and replace placeholders with your credentials
+3. The actual `.container` file is gitignored and stays local
+
+**For production (Fedora server):**
+Use Podman secrets instead of hardcoded values:
+```bash
+# Create secret
+echo "your-secret-value" | podman secret create tinyauth_secret -
+
+# Reference in quadlet
+Secret=tinyauth_secret,type=env,target=SECRET
+```
+
+See `traefik.container`, `alertmanager.container`, and `alert-discord-relay.container` for examples of proper secrets usage.
+
 ## Documentation
 
 See `/home/patriark/containers/docs/` for detailed documentation on each service.
