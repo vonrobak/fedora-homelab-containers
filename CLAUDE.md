@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A learning-focused homelab project building production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets. Platform: Fedora Workstation 42.
 
-**Current Services:** Traefik (reverse proxy + CrowdSec), Jellyfin (media server), TinyAuth (authentication)
+**Current Services:** Traefik (reverse proxy + CrowdSec), Jellyfin (media server), TinyAuth (authentication), Prometheus/Grafana/Loki (monitoring), Alertmanager (alerting)
 
 ## Architecture
 
@@ -48,12 +48,12 @@ Backend Service
 ### Network Segmentation
 
 Services are isolated into logical networks:
-- `reverse_proxy` - Traefik and externally-accessible services
-- `media_services` - Jellyfin and media processing
-- `authentication` - TinyAuth
-- `database` - Data persistence
+- `systemd-reverse_proxy` - Traefik and externally-accessible services
+- `systemd-media_services` - Jellyfin and media processing
+- `systemd-auth_services` - TinyAuth, authentication services
+- `systemd-monitoring` - Prometheus, Grafana, Loki, Alertmanager, exporters
 
-Services join networks based on trust/access requirements.
+Services join networks based on trust/access requirements. Services can be on multiple networks.
 
 ### Traefik Configuration Structure
 
@@ -200,17 +200,54 @@ git push -u origin feature/your-feature
 
 ## Documentation Structure
 
-The `docs/` directory contains 61 markdown files organized chronologically:
+The `docs/` directory uses a **hybrid structure** combining topical reference with chronological learning logs.
+
+### Directory Organization
 
 - `00-foundation/` - Podman, networking, pods, quadlets fundamentals
-- `10-services/` - Service-specific guides (Jellyfin, Traefik)
-- `20-operations/` - Architecture decisions, storage, operational procedures
-- `30-security/` - TinyAuth implementation, security configurations
-- `40-monitoring-and-documentation/` - Monitoring setup, documentation index
-- `90-archive/` - Historical documentation
-- `99-reports/` - Generated diagnostic reports
+- `10-services/` - Service-specific guides and deployment logs
+- `20-operations/` - Operational procedures, architecture, backup strategy
+- `30-security/` - Security configurations, incidents, hardening
+- `40-monitoring-and-documentation/` - Monitoring stack, project state
+- `90-archive/` - Superseded documentation (with archival metadata)
+- `99-reports/` - Point-in-time system state snapshots
 
-Files are date-prefixed (YYYYMMDD) for chronological tracking.
+### Subdirectory Structure
+
+Each category directory contains:
+- **`guides/`** - Living reference documentation (updated in place, no date prefix)
+- **`journal/`** - Dated learning logs and progress reports (immutable, dated)
+- **`decisions/`** - Architecture Decision Records / ADRs (immutable, dated)
+
+### Document Types & Naming
+
+**Living Documents (guides/):**
+```
+<topic>.md
+Examples: jellyfin.md, backup-strategy.md, middleware-patterns.md
+```
+
+**Dated Documents (journal/, decisions/):**
+```
+YYYY-MM-DD-<description>.md
+Examples: 2025-11-07-monitoring-deployment.md
+```
+
+**Reports (99-reports/):**
+```
+YYYY-MM-DD-<type>-<description>.md
+Examples: 2025-11-07-system-state.md
+```
+
+### Documentation Policies
+
+1. **Guides are living** - Update in place when information changes
+2. **Journals are immutable** - Never edit after creation (append-only log)
+3. **ADRs are permanent** - Architecture decisions never edited, only superseded
+4. **Reports are snapshots** - Point-in-time system state, never updated
+5. **Archive with metadata** - Include archival reason and superseding document
+
+**Full guide:** See `docs/CONTRIBUTING.md` for detailed conventions and templates.
 
 ## Key Design Principles
 
