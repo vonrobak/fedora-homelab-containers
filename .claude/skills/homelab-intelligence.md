@@ -23,19 +23,20 @@ Execute the homelab intelligence script to collect current system state:
 
 ```bash
 cd ~/containers
-./scripts/homelab-intel.sh --json
+./scripts/homelab-intel.sh
 ```
+
+**Note:** Script always generates JSON report in `docs/99-reports/intel-<timestamp>.json`
 
 This will:
 - Check system basics (uptime, SELinux, kernel updates)
 - Analyze disk usage (system SSD and BTRFS pool)
-- Verify all services are running
-- Measure resource usage (CPU, memory, swap)
-- Check backup status
-- Verify SSL certificate validity
-- Test monitoring stack health (Prometheus, Grafana, Loki)
-- Assess network connectivity
-- Compare with previous run for trend analysis
+- Verify all critical services are running
+- Measure resource usage (memory, swap, load average)
+- Check backup status (local logs, external drive, BTRFS snapshots)
+- Verify SSL certificate validity (Let's Encrypt)
+- Test monitoring stack health (Prometheus, Grafana, Loki via container exec)
+- Assess network connectivity (internet reachability)
 
 ### Step 2: Analyze the Output
 
@@ -251,7 +252,8 @@ Keep responses concise but actionable. Always provide specific commands or file 
 
 ## Notes
 
-- Intelligence script saves state to `~/containers/data/.intel-state.json` for trend analysis
-- JSON reports saved to `~/containers/docs/99-reports/intel-*.json`
+- **v2.0 improvements:** Always generates JSON output, improved monitoring health checks via `podman exec`, better backup detection (3 locations), smarter swap threshold
+- JSON reports automatically saved to `~/containers/docs/99-reports/intel-<timestamp>.json`
 - Script is safe to run frequently (no side effects, read-only operations)
 - Health scoring algorithm: Start at 100, -20 for critical issues, -5 for warnings
+- Exit codes: 0=healthy, 1=warning, 2=critical (useful for automation)
