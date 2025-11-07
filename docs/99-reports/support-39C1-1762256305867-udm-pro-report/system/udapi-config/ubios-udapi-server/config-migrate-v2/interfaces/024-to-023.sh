@@ -1,8 +1,0 @@
-#!/bin/sh
-. "$(dirname "${0}")"/../JQ # include JQ helper scripts
-JQA "${1}" '.versionDetail.interfaces=23
-            |
-            del(.interfaces[]?.tunnel?.tunnelRecovery?)
-'
-
-exit 0

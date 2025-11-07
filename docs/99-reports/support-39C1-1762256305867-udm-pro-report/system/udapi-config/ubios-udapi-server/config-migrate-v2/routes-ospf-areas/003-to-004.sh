@@ -1,5 +1,0 @@
-#!/bin/sh
-. "$(dirname "${0}")"/../JQ # include JQ helper scripts
-JQA "${1}" '.versionDetail."routes/ospf/areas"=4'
-
-exit 0

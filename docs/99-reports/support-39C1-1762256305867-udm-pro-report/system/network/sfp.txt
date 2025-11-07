@@ -1,8 +1,0 @@
-eth9 data:
-exit: 1
-
-exit: 0
-eth10 data:
-exit: 1
-
-exit: 0

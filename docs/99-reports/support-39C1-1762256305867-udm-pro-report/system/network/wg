@@ -1,8 +1,0 @@
-interface: wgsrv1
-  public key: <FILTERED>=
-  private key: (<FILTERED>)
-  listening port: 51820
-
-peer: SBsFG0uqE2yG2o07jkKol/b2v9PCSdQHhQdfOQSoqXQ=
-  allowed ips: 192.168.100.2/32
-  forced handshake: every 10 seconds

@@ -1,5 +1,0 @@
-%YAML 1.1
----
-default-rule-path: /run/ips/rules
-rule-files:
- - suricata.ui_rules
