@@ -23,8 +23,8 @@
 - PostgreSQL infrastructure (not deployed - needed for future services)
 
 ### 📊 Resource Status
-- **System SSD**: 128GB (currently 94% full - needs monitoring)
-- **BTRFS Pool**: 10TB (plenty of space for expansion)
+- **System SSD**: 128GB (currently 50% full)
+- **BTRFS Pool**: 14TB (plenty of space for expansion)
 - **Memory**: ~1.5GB used by containers (headroom available)
 - **CPU**: Low utilization (transcoding spikes normal)
 

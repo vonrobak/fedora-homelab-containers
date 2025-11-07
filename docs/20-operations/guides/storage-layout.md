@@ -11,15 +11,15 @@
 - ~/containers/data
 - ~/containers/cache symlink to /mnt/btrfs-pool/subvol6-tmp/container-cache
 
-## Data Pool (10TB BTRFS - spinning hard drives with subvolumes)
-Devices: 1x2TB + 2x4TB (expanding with +4TB soon)
+## Data Pool (14TB BTRFS - spinning hard drives with subvolumes)
+Devices: 1x2TB + 3x4TB (planned substitution of 2TB drive with 4TB and setting up RAID5)
 
 ### Subvolumes in /mnt/btrfs-pool/subvol*-namelistedbelow
-1. docs         # Documents - intended for nextcloud
-2. pics         # Photos - intended for nextcloud
-3. opptak       # Phone Recordings - planned for Immich and Nextcloud
-4. multimedia   # Media files (Jellyfin source) - **consider READ-ONLY for containers** - might be available for nextcloud
-5. music        # Music files (Jellyfin source) - **consider READ-ONLY for containers** - might be available for nextcloud
+1. docs         # Documents - intended for nextcloud or other cloud option
+2. pics         # Photos - intended for nextcloud or other cloud option
+3. opptak       # Phone Recordings - planned for Immich and Nextcloud/other cloud option
+4. multimedia   # Media files (Jellyfin source) - **consider READ-ONLY for containers** - might be available for nextcloud/other cloud
+5. music        # Music files (Jellyfin source) - **consider READ-ONLY for containers** - might be available for nextcloud/other cloud
 6. tmp          # Temporary files / container cache
 7. containers   # Container persistent data on storage pool
 
