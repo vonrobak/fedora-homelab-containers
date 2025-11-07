@@ -1,7 +1,19 @@
+> **🗄️ ARCHIVED:** 2025-11-07
+>
+> **Reason:** Commands and scripts outdated, superseded by service-specific guides
+>
+> **Superseded by:** Service guides in `docs/10-services/guides/` (traefik.md, jellyfin.md, etc.)
+>
+> **Historical context:** Early quick reference created during week 2 to consolidate common commands. As services matured, each service got its own comprehensive guide with up-to-date commands, making this generic quick reference obsolete.
+>
+> **Value:** Shows what operations were most commonly needed during early deployment phase
+>
+> ---
+
 # Quick Reference: patriark.org Scripts
 
-**Domain:** patriark.org ✅ (not .dev)  
-**Scripts:** Updated for .org domain  
+**Domain:** patriark.org ✅ (not .dev)
+**Scripts:** Updated for .org domain
 **Status:** Ready to use
 
 ---

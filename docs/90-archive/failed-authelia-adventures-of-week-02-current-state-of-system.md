@@ -1,3 +1,17 @@
+> **🗄️ ARCHIVED:** 2025-11-07
+>
+> **Reason:** Failed Authelia deployment attempt - abandoned in favor of TinyAuth
+>
+> **Superseded by:** `docs/10-services/guides/tinyauth.md`
+>
+> **Historical context:** Week 2 of homelab build attempted to deploy Authelia for SSO with WebAuthn/YubiKey support. After several days of troubleshooting, discovered that WebAuthn requires valid TLS certificates (self-signed certs blocked by browsers). Rather than deploy Let's Encrypt before fully understanding the system, pragmatically chose TinyAuth as simpler authentication solution.
+>
+> **Value:** Important lesson - "Perfect is the enemy of good." Starting simple (TinyAuth) allowed progress while preserving option to upgrade to Authelia later with proper TLS infrastructure.
+>
+> **Related:** See also `week02-failed-authelia-but-tinyauth-goat.md` for the decision to pivot
+>
+> ---
+
 # Current System State Analysis - 2025-10-22
 
 ## 📊 What's Actually Working Right Now
