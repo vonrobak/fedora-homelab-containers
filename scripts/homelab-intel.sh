@@ -199,9 +199,19 @@ check_resource_usage() {
     fi
 
     # CPU (5-second average)
-    local cpu_idle
-    cpu_idle=$(mpstat 1 1 2>/dev/null | awk 'END {print int($NF)}' || echo "95")
-    local cpu_usage=$((100 - cpu_idle))
+    local cpu_idle cpu_usage
+    if command -v mpstat &>/dev/null; then
+        cpu_idle=$(mpstat 1 1 2>/dev/null | awk '/Average:/ {print int($NF)}')
+        if [[ -n "$cpu_idle" && "$cpu_idle" =~ ^[0-9]+$ ]]; then
+            cpu_usage=$((100 - cpu_idle))
+        else
+            cpu_usage=5  # Default fallback
+        fi
+    else
+        # Fallback: use top command
+        cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print int($2)}' | head -1)
+        [[ -z "$cpu_usage" || ! "$cpu_usage" =~ ^[0-9]+$ ]] && cpu_usage=5
+    fi
     METRICS[cpu_usage_percent]=$cpu_usage
 
     [[ "$QUIET_MODE" == "false" ]] && echo "CPU Usage (avg): ${cpu_usage}%"
@@ -222,7 +232,8 @@ check_backups() {
     log_section "Backup Status"
 
     # Check for recent external backup
-    local backup_dir="/run/media/${USER}/WD-18TB/.snapshots"
+    local current_user="${USER:-$(whoami)}"
+    local backup_dir="/run/media/${current_user}/WD-18TB/.snapshots"
     local last_backup_age=-1
 
     if [ -d "$backup_dir" ]; then
