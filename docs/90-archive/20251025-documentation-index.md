@@ -1,6 +1,18 @@
+> **🗄️ ARCHIVED:** 2025-11-07
+>
+> **Reason:** Index contained broken references to non-existent files and outdated structure
+>
+> **Superseded by:** `docs/README.md`
+>
+> **Historical context:** This was the first comprehensive documentation index created on Oct 25, 2025. However, it referenced files using old naming conventions (HOMELAB-ARCHITECTURE-DOCUMENTATION-rev2.md) that were never actually present in the repository structure. The hybrid documentation restructure (Nov 7) made this index completely obsolete.
+>
+> **Value:** Shows early documentation organization attempt and what information was considered important to index
+>
+> ---
+
 # Homelab Documentation Index
 
-**Last Updated:** October 25, 2025  
+**Last Updated:** October 25, 2025
 **Purpose:** Quick reference guide to navigate all homelab documentation
 
 ---

@@ -1,0 +1,678 @@
+###############################################################################
+# File: btrfs-balance-status.txt
+###############################################################################
+
+
+===== btrfs-balance-status =====
+$ btrfs balance status /mnt/btrfs-pool
+No balance found on '/mnt/btrfs-pool'
+
+###############################################################################
+# File: btrfs-device-stats.txt
+###############################################################################
+
+
+===== btrfs-device-stats =====
+$ btrfs device stats /mnt/btrfs-pool
+[/dev/sdb].write_io_errs    0
+[/dev/sdb].read_io_errs     0
+[/dev/sdb].flush_io_errs    0
+[/dev/sdb].corruption_errs  0
+[/dev/sdb].generation_errs  0
+[/dev/sdc].write_io_errs    0
+[/dev/sdc].read_io_errs     0
+[/dev/sdc].flush_io_errs    0
+[/dev/sdc].corruption_errs  0
+[/dev/sdc].generation_errs  0
+[/dev/sda].write_io_errs    0
+[/dev/sda].read_io_errs     0
+[/dev/sda].flush_io_errs    0
+[/dev/sda].corruption_errs  0
+[/dev/sda].generation_errs  0
+
+###############################################################################
+# File: btrfs-df-pool.txt
+###############################################################################
+
+
+===== btrfs-df-pool =====
+$ btrfs filesystem df /mnt/btrfs-pool
+Data, single: total=8.89TiB, used=8.21TiB
+System, RAID1: total=32.00MiB, used=1.12MiB
+Metadata, RAID1: total=11.00GiB, used=9.79GiB
+GlobalReserve, single: total=512.00MiB, used=0.00B
+
+###############################################################################
+# File: btrfs-filesystem-show.txt
+###############################################################################
+
+
+===== btrfs-filesystem-show =====
+$ btrfs filesystem show
+Label: 'fedora_localhost-live'  uuid: 0b396a34-REDACTED
+	Total devices 1 FS bytes used 88.16GiB
+	devid    1 size 117.66GiB used 117.65GiB path /dev/nvme0n1p3
+
+Label: 'htpc-btrfs-pool'  uuid: ac5ee56e-REDACTED
+	Total devices 3 FS bytes used 8.22TiB
+	devid    1 size 3.64TiB used 3.62TiB path /dev/sdb
+	devid    2 size 1.82TiB used 1.80TiB path /dev/sdc
+	devid    3 size 3.64TiB used 3.49TiB path /dev/sda
+
+###############################################################################
+# File: btrfs-qgroup-show.txt
+###############################################################################
+
+
+===== btrfs-qgroup-show =====
+$ sh -c btrfs qgroup show -reF '/mnt/btrfs-pool' | head -200
+For an overview of a given command use 'btrfs command --help'
+or 'btrfs [command...] --help --full' to print all available options.
+Any command name can be shortened as far as it stays unambiguous,
+however it is recommended to use full command names in scripts.
+All command groups have their manual page named 'btrfs-<group>'.
+usage: btrfs [global options] <group> [<group>...] <command> [options] [<args>]
+
+Global options:
+  --format <format> if supported, print subcommand output in that format (text, json)
+  -v|--verbose      increase verbosity of the subcommand
+  -q|--quiet        print only errors
+  --log <level>     set log level (default, info, verbose, debug, quiet)
+  --dry-run         if supported, do not do any active/changing actions
+
+Options for the main command only:
+  --help            print condensed help for all subcommands
+  --version         print version string and built-in features
+
+Command groups:
+  balance           balance data across devices, or change block groups using filters
+  device            manage and query devices in the filesystem
+  filesystem        overall filesystem tasks and information
+  inspect-internal  query various internal information
+  property          modify properties of filesystem objects
+  qgroup            manage quota groups
+  quota             manage filesystem quota settings
+  replace           replace a device in the filesystem
+  rescue            toolbox for specific rescue operations
+  scrub             verify checksums of data and metadata
+  subvolume         manage subvolumes: create, delete, list, etc
+
+Commands:
+  check             Check structural integrity of a filesystem (unmounted).
+  receive           Receive subvolumes from a stream
+  restore           Try to restore files from a damaged filesystem (unmounted)
+  send              Send the subvolume(s) to stdout.
+  help              Display help information
+  version           Display btrfs-progs version
+
+
+###############################################################################
+# File: btrfs-quota-show.txt
+###############################################################################
+
+
+===== btrfs-quota-show =====
+$ btrfs quota show /mnt/btrfs-pool
+btrfs quota: unknown token 'show'
+usage: btrfs quota <command> [options] <path>
+
+    btrfs quota enable <path>
+        Enable subvolume quota support for a filesystem.
+    btrfs quota disable <path>
+        Disable subvolume quota support for a filesystem.
+    btrfs quota rescan [-sw] <path>
+        Trash all qgroup numbers and scan the metadata again with the current config.
+
+manage filesystem quota settings
+
+###############################################################################
+# File: btrfs-scrub-status.txt
+###############################################################################
+
+
+===== btrfs-scrub-status =====
+$ btrfs scrub status /mnt/btrfs-pool
+UUID:             ac5ee56e-REDACTED
+Scrub started:    Fri May  9 23:25:07 2025
+Status:           finished
+Duration:         10:05:33
+Total to scrub:   8.23TiB
+Rate:             245.35MiB/s
+Error summary:    no errors found
+
+###############################################################################
+# File: btrfs-subvol-list-pool.txt
+###############################################################################
+
+
+===== btrfs-subvol-list-pool =====
+$ btrfs subvolume list -p /mnt/btrfs-pool
+ID 256 gen 93309 parent 5 top level 5 path btrfs-pool/subvol1-docs
+ID 257 gen 93364 parent 5 top level 5 path btrfs-pool/subvol2-pics
+ID 258 gen 93366 parent 5 top level 5 path btrfs-pool/subvol3-opptak
+ID 259 gen 93742 parent 5 top level 5 path btrfs-pool/subvol4-multimedia
+ID 260 gen 93742 parent 5 top level 5 path btrfs-pool/subvol5-music
+ID 261 gen 93758 parent 5 top level 5 path btrfs-pool/subvol6-tmp
+ID 262 gen 93400 parent 5 top level 5 path btrfs-pool/subvol7-containers
+
+###############################################################################
+# File: btrfs-subvol-list-root.txt
+###############################################################################
+
+
+===== btrfs-subvol-list-root =====
+$ btrfs subvolume list -p /
+ID 256 gen 3895015 parent 5 top level 5 path home
+ID 257 gen 3895015 parent 5 top level 5 path root
+ID 262 gen 3893763 parent 257 top level 257 path var/lib/machines
+ID 422 gen 3096599 parent 256 top level 256 path home/patriark/.snapshots/20241108-htpc-home
+ID 423 gen 3096601 parent 256 top level 256 path home/patriark/.snapshots/20241108-htpc-root
+ID 424 gen 3469572 parent 256 top level 256 path home/patriark/.snapshots/20250422-htpc-root
+ID 425 gen 3469574 parent 256 top level 256 path home/patriark/.snapshots/20250422-htpc-home
+ID 426 gen 3881689 parent 256 top level 256 path home/patriark/.snapshots/20251020-htpc-root
+ID 427 gen 3881690 parent 256 top level 256 path home/patriark/.snapshots/20251020-htpc-home
+ID 428 gen 3885190 parent 256 top level 256 path home/patriark/.snapshots/20251021-htpc-home
+ID 429 gen 3887271 parent 256 top level 256 path home/patriark/.snapshots/20251022-htpc-home
+ID 430 gen 3887753 parent 256 top level 256 path home/patriark/.snapshots/20251022-htpc-home-2
+ID 431 gen 3888417 parent 256 top level 256 path home/patriark/.snapshots/20251023-htpchome
+ID 432 gen 3890354 parent 256 top level 256 path home/patriark/.snapshots/20251023-htpc-home
+ID 433 gen 3890554 parent 256 top level 256 path home/patriark/.snapshots/20251023-htpc-root
+
+###############################################################################
+# File: btrfs-usage-pool.txt
+###############################################################################
+
+
+===== btrfs-usage-pool =====
+$ btrfs fi usage -T /mnt/btrfs-pool
+Overall:
+    Device size:		   9.10TiB
+    Device allocated:		   8.91TiB
+    Device unallocated:		 188.00GiB
+    Device missing:		     0.00B
+    Device slack:		     0.00B
+    Used:			   8.23TiB
+    Free (estimated):		 884.89GiB	(min: 790.89GiB)
+    Free (statfs, df):		 884.88GiB
+    Data ratio:			      1.00
+    Metadata ratio:		      2.00
+    Global reserve:		 512.00MiB	(used: 0.00B)
+    Multiple profiles:		        no
+
+            Data    Metadata System                            
+Id Path     single  RAID1    RAID1    Unallocated Total   Slack
+-- -------- ------- -------- -------- ----------- ------- -----
+ 1 /dev/sdb 3.61TiB 10.00GiB 32.00MiB    16.00GiB 3.64TiB     -
+ 2 /dev/sdc 1.80TiB  5.00GiB        -    16.00GiB 1.82TiB     -
+ 3 /dev/sda 3.48TiB  7.00GiB 32.00MiB   156.00GiB 3.64TiB     -
+-- -------- ------- -------- -------- ----------- ------- -----
+   Total    8.89TiB 11.00GiB 32.00MiB   188.00GiB 9.10TiB 0.00B
+   Used     8.21TiB  9.79GiB  1.12MiB                          
+
+###############################################################################
+# File: btrfs-usage-root.txt
+###############################################################################
+
+
+===== btrfs-usage-root =====
+$ btrfs fi usage -T /
+Overall:
+    Device size:		 117.66GiB
+    Device allocated:		 117.65GiB
+    Device unallocated:		   1.00MiB
+    Device missing:		     0.00B
+    Device slack:		     0.00B
+    Used:			  88.16GiB
+    Free (estimated):		  27.65GiB	(min: 27.65GiB)
+    Free (statfs, df):		  27.65GiB
+    Data ratio:			      1.00
+    Metadata ratio:		      1.00
+    Global reserve:		 276.39MiB	(used: 0.00B)
+    Multiple profiles:		        no
+
+                  Data      Metadata System                              
+Id Path           single    single   single   Unallocated Total     Slack
+-- -------------- --------- -------- -------- ----------- --------- -----
+ 1 /dev/nvme0n1p3 111.64GiB  6.01GiB  4.00MiB     1.00MiB 117.66GiB     -
+-- -------------- --------- -------- -------- ----------- --------- -----
+   Total          111.64GiB  6.01GiB  4.00MiB     1.00MiB 117.66GiB 0.00B
+   Used            83.99GiB  4.16GiB 16.00KiB                            
+
+###############################################################################
+# File: cryptsetup-status.txt
+###############################################################################
+
+
+===== cryptsetup-status =====
+$ sh -c for m in /dev/mapper/*; do echo '---' $m; cryptsetup status $m; done
+m: -c: line 1: syntax error near unexpected token `newline'
+m: -c: line 1: `for'
+
+###############################################################################
+# File: disks-blkid.txt
+###############################################################################
+
+
+===== disks-blkid =====
+$ blkid
+/dev/nvme0n1p3: LABEL="fedora_localhost-live" UUID="0b396a34-REDACTED" UUID_SUB="95d9a9c3-REDACTED" BLOCK_SIZE="4096" TYPE="btrfs" PARTUUID="f7645c15-REDACTED"
+/dev/nvme0n1p1: UUID="1205-D78D" BLOCK_SIZE="512" TYPE="vfat" PARTLABEL="EFI System Partition" PARTUUID="937dc377-REDACTED"
+/dev/nvme0n1p2: UUID="fe81363d-REDACTED" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="b399461f-REDACTED"
+/dev/sdd1: UUID="3085690d-REDACTED" TYPE="crypto_LUKS" PARTUUID="d3d1e9d9-REDACTED"
+/dev/sdb: LABEL="htpc-btrfs-pool" UUID="ac5ee56e-REDACTED" UUID_SUB="5fd1c6c2-REDACTED" BLOCK_SIZE="4096" TYPE="btrfs"
+/dev/sde: UUID="b6b38ff1-REDACTED" TYPE="crypto_LUKS"
+/dev/sdc: LABEL="htpc-btrfs-pool" UUID="ac5ee56e-REDACTED" UUID_SUB="8c654ac1-REDACTED" BLOCK_SIZE="4096" TYPE="btrfs"
+/dev/sda: LABEL="htpc-btrfs-pool" UUID="ac5ee56e-REDACTED" UUID_SUB="d023af00-REDACTED" BLOCK_SIZE="4096" TYPE="btrfs"
+/dev/zram0: LABEL="zram0" UUID="9a2ba55a-REDACTED" TYPE="swap"
+
+###############################################################################
+# File: disks-lsblk.txt
+###############################################################################
+
+
+===== disks-lsblk =====
+$ lsblk -o NAME,SIZE,TYPE,MOUNTPOINT,LABEL,UUID,FSTYPE
+NAME          SIZE TYPE MOUNTPOINT LABEL                 UUID                                 FSTYPE
+sda           3,6T disk            htpc-btrfs-pool       ac5ee56e-REDACTED btrfs
+sdb           3,6T disk /mnt       htpc-btrfs-pool       ac5ee56e-REDACTED btrfs
+sdc           1,8T disk            htpc-btrfs-pool       ac5ee56e-REDACTED btrfs
+sdd         931,5G disk                                                                       
+└─sdd1      870,8G part                                  3085690d-REDACTED crypto_LUKS
+sde          16,4T disk                                  b6b38ff1-REDACTED crypto_LUKS
+zram0           8G disk [SWAP]     zram0                 9a2ba55a-REDACTED swap
+nvme0n1     119,2G disk                                                                       
+├─nvme0n1p1   600M part /boot/efi                        1205-D78D                            vfat
+├─nvme0n1p2     1G part /boot                            fe81363d-REDACTED ext4
+└─nvme0n1p3 117,7G part /home      fedora_localhost-live 0b396a34-REDACTED btrfs
+
+###############################################################################
+# File: fstab.txt
+###############################################################################
+
+
+===== fstab =====
+$ sh -c grep -vE "^\s*#|^\s*$" /etc/fstab || true
+Usage: grep [OPTION]... PATTERNS [FILE]...
+Try 'grep --help' for more information.
+
+###############################################################################
+# File: host-basics.txt
+###############################################################################
+
+
+===== host-basics =====
+Hostname : fedora-htpc
+OS       : Fedora Linux 42 (Workstation Edition)
+Kernel   : 6.17.4-200.fc42.x86_64
+SELinux  : Enforcing
+Date UTC : 2025-10-25 09:35:17Z
+
+###############################################################################
+# File: mounts-all.txt
+###############################################################################
+
+
+===== mounts-all =====
+$ mount
+/dev/nvme0n1p3 on / type btrfs (rw,relatime,seclabel,compress=zstd:1,ssd,space_cache,subvolid=257,subvol=/root)
+devtmpfs on /dev type devtmpfs (rw,nosuid,seclabel,size=16062012k,nr_inodes=4015503,mode=755,inode64)
+tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev,seclabel,inode64)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,seclabel,gid=5,mode=620,ptmxmode=000)
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime,seclabel)
+securityfs on /sys/kernel/security type securityfs (rw,nosuid,nodev,noexec,relatime)
+cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,seclabel,nsdelegate,memory_recursiveprot)
+none on /sys/fs/pstore type pstore (rw,nosuid,nodev,noexec,relatime,seclabel)
+efivarfs on /sys/firmware/efi/efivars type efivarfs (rw,nosuid,nodev,noexec,relatime)
+bpf on /sys/fs/bpf type bpf (rw,nosuid,nodev,noexec,relatime,mode=700)
+configfs on /sys/kernel/config type configfs (rw,nosuid,nodev,noexec,relatime)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /run type tmpfs (rw,nosuid,nodev,seclabel,size=6439820k,nr_inodes=819200,mode=755,inode64)
+selinuxfs on /sys/fs/selinux type selinuxfs (rw,nosuid,noexec,relatime)
+systemd-1 on /proc/sys/fs/binfmt_misc type autofs (rw,relatime,fd=37,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=575)
+debugfs on /sys/kernel/debug type debugfs (rw,nosuid,nodev,noexec,relatime,seclabel)
+tracefs on /sys/kernel/tracing type tracefs (rw,nosuid,nodev,noexec,relatime,seclabel)
+hugetlbfs on /dev/hugepages type hugetlbfs (rw,nosuid,nodev,relatime,seclabel,pagesize=2M)
+mqueue on /dev/mqueue type mqueue (rw,nosuid,nodev,noexec,relatime,seclabel)
+tmpfs on /run/credentials/systemd-journald.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,seclabel,size=1024k,nr_inodes=1024,mode=700,inode64,noswap)
+fusectl on /sys/fs/fuse/connections type fusectl (rw,nosuid,nodev,noexec,relatime)
+/dev/nvme0n1p2 on /boot type ext4 (rw,relatime,seclabel)
+tmpfs on /tmp type tmpfs (rw,nosuid,nodev,seclabel,nr_inodes=1048576,inode64)
+/dev/nvme0n1p3 on /home type btrfs (rw,relatime,seclabel,compress=zstd:1,ssd,space_cache,subvolid=256,subvol=/home)
+/dev/nvme0n1p1 on /boot/efi type vfat (rw,relatime,fmask=0077,dmask=0077,codepage=437,iocharset=ascii,shortname=winnt,errors=remount-ro)
+/dev/sdb on /mnt type btrfs (rw,noatime,seclabel,compress=zstd:1,ssd,space_cache=v2,autodefrag,commit=120,subvolid=5,subvol=/)
+binfmt_misc on /proc/sys/fs/binfmt_misc type binfmt_misc (rw,nosuid,nodev,noexec,relatime)
+sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw,relatime)
+tmpfs on /run/user/1000 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=3219908k,nr_inodes=804977,mode=700,uid=1000,gid=1000,inode64)
+gvfsd-fuse on /run/user/1000/gvfs type fuse.gvfsd-fuse (rw,nosuid,nodev,relatime,user_id=1000,group_id=1000)
+portal on /run/user/1000/doc type fuse.portal (rw,nosuid,nodev,relatime,user_id=1000,group_id=1000)
+tmpfs on /run/user/0 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=3219908k,nr_inodes=804977,mode=700,inode64)
+
+
+###############################################################################
+# File: pool-sanity.txt
+###############################################################################
+
+
+===== pool-sanity =====
+Requested pool mount : /mnt/btrfs-pool
+Exists & is btrfs    : no
+
+###############################################################################
+# File: README.txt
+###############################################################################
+
+
+===== README =====
+Storage Survey (2025-10-25T09-35-17Z)
+
+This folder contains a snapshot of storage/network/container facts from the host.
+Sensitive identifiers (UUIDs) are lightly redacted. Review before sharing.
+
+Key:
+- pool mount path: /mnt/btrfs-pool
+- generated by: collect-storage-info.sh
+- run as user: root (uid=0), sudo=yes
+
+Files:
+- btrfs-*              → pool/system BTRFS state
+- mounts-* & fstab     → current mount options
+- disks-* & smart-*    → block devices + S.M.A.R.T. summaries
+- cryptsetup-*         → LUKS mapping status (no secrets)
+- podman-*             → running containers & networks
+- snapshots-*          → snapshot trees (where detectable)
+
+You can safely remove this folder after we reconcile documentation.
+
+###############################################################################
+# File: smart-nvme0.txt
+###############################################################################
+
+
+===== smart-nvme0 =====
+$ smartctl -A /dev/nvme0
+smartctl 7.5 2025-04-30 r5714 [x86_64-linux-6.17.4-200.fc42.x86_64] (local build)
+Copyright (C) 2002-25, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF SMART DATA SECTION ===
+SMART/Health Information (NVMe Log 0x02, NSID 0xffffffff)
+Critical Warning:                   0x00
+Temperature:                        36 Celsius
+Available Spare:                    100%
+Available Spare Threshold:          12%
+Percentage Used:                    56%
+Data Units Read:                    11 801 740 [6,04 TB]
+Data Units Written:                 89 297 124 [45,7 TB]
+Host Read Commands:                 178 891 171
+Host Write Commands:                1 307 921 986
+Controller Busy Time:               25 212
+Power Cycles:                       655
+Power On Hours:                     41 636
+Unsafe Shutdowns:                   11
+Media and Data Integrity Errors:    0
+Error Information Log Entries:      0
+Warning  Comp. Temperature Time:    0
+Critical Comp. Temperature Time:    0
+
+
+###############################################################################
+# File: smart-scan.txt
+###############################################################################
+
+
+===== smart-scan =====
+/dev/sda -d scsi # /dev/sda, SCSI device
+/dev/sdb -d scsi # /dev/sdb, SCSI device
+/dev/sdc -d scsi # /dev/sdc, SCSI device
+/dev/sdd -d sat # /dev/sdd [SAT], ATA device
+/dev/sde -d sat # /dev/sde [SAT], ATA device
+/dev/nvme0 -d nvme # /dev/nvme0, NVMe device
+
+###############################################################################
+# File: smart-sda.txt
+###############################################################################
+
+
+===== smart-sda =====
+$ smartctl -A /dev/sda
+smartctl 7.5 2025-04-30 r5714 [x86_64-linux-6.17.4-200.fc42.x86_64] (local build)
+Copyright (C) 2002-25, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF READ SMART DATA SECTION ===
+SMART Attributes Data Structure revision number: 10
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000f   114   099   006    Pre-fail  Always       -       80537168
+  3 Spin_Up_Time            0x0003   091   091   000    Pre-fail  Always       -       0
+  4 Start_Stop_Count        0x0032   083   083   020    Old_age   Always       -       17940
+  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x000f   075   060   030    Pre-fail  Always       -       38390363
+  9 Power_On_Hours          0x0032   066   066   000    Old_age   Always       -       30636
+ 10 Spin_Retry_Count        0x0013   100   100   097    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   097   097   020    Old_age   Always       -       3118
+184 End-to-End_Error        0x0032   100   100   099    Old_age   Always       -       0
+187 Reported_Uncorrect      0x0032   100   100   000    Old_age   Always       -       0
+188 Command_Timeout         0x0032   100   099   000    Old_age   Always       -       4295032833
+189 High_Fly_Writes         0x003a   100   100   000    Old_age   Always       -       0
+190 Airflow_Temperature_Cel 0x0022   059   044   045    Old_age   Always   In_the_past 41 (Min/Max 23/47 #1)
+191 G-Sense_Error_Rate      0x0032   100   100   000    Old_age   Always       -       0
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       41
+193 Load_Cycle_Count        0x0032   092   092   000    Old_age   Always       -       17976
+194 Temperature_Celsius     0x0022   041   056   000    Old_age   Always       -       41 (0 9 0 0 0)
+197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -       0
+199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
+
+
+###############################################################################
+# File: smart-sdb.txt
+###############################################################################
+
+
+===== smart-sdb =====
+$ smartctl -A /dev/sdb
+smartctl 7.5 2025-04-30 r5714 [x86_64-linux-6.17.4-200.fc42.x86_64] (local build)
+Copyright (C) 2002-25, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF READ SMART DATA SECTION ===
+SMART Attributes Data Structure revision number: 10
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000f   082   064   044    Pre-fail  Always       -       173561993
+  3 Spin_Up_Time            0x0003   093   093   000    Pre-fail  Always       -       0
+  4 Start_Stop_Count        0x0032   100   100   020    Old_age   Always       -       288
+  5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       8
+  7 Seek_Error_Rate         0x000f   091   060   045    Pre-fail  Always       -       1377979357
+  9 Power_On_Hours          0x0032   060   060   000    Old_age   Always       -       35643 (253 155 0)
+ 10 Spin_Retry_Count        0x0013   100   100   097    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   100   100   020    Old_age   Always       -       286
+184 End-to-End_Error        0x0032   100   100   099    Old_age   Always       -       0
+187 Reported_Uncorrect      0x0032   100   100   000    Old_age   Always       -       0
+188 Command_Timeout         0x0032   100   100   000    Old_age   Always       -       0 0 0
+189 High_Fly_Writes         0x003a   100   100   000    Old_age   Always       -       0
+190 Airflow_Temperature_Cel 0x0022   066   054   040    Old_age   Always       -       34 (Min/Max 22/40)
+191 G-Sense_Error_Rate      0x0032   100   100   000    Old_age   Always       -       0
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       1
+193 Load_Cycle_Count        0x0032   001   001   000    Old_age   Always       -       263699
+194 Temperature_Celsius     0x0022   034   046   000    Old_age   Always       -       34 (0 9 0 0 0)
+197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -       0
+199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
+240 Head_Flying_Hours       0x0000   100   253   000    Old_age   Offline      -       12053h+39m+32.029s
+241 Total_LBAs_Written      0x0000   100   253   000    Old_age   Offline      -       26576341428
+242 Total_LBAs_Read         0x0000   100   253   000    Old_age   Offline      -       80272103853
+
+
+###############################################################################
+# File: smart-sdc.txt
+###############################################################################
+
+
+===== smart-sdc =====
+$ smartctl -A /dev/sdc
+smartctl 7.5 2025-04-30 r5714 [x86_64-linux-6.17.4-200.fc42.x86_64] (local build)
+Copyright (C) 2002-25, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF READ SMART DATA SECTION ===
+SMART Attributes Data Structure revision number: 16
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x002f   200   200   051    Pre-fail  Always       -       1
+  3 Spin_Up_Time            0x0027   167   162   021    Pre-fail  Always       -       6625
+  4 Start_Stop_Count        0x0032   074   074   000    Old_age   Always       -       26826
+  5 Reallocated_Sector_Ct   0x0033   200   200   140    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x002e   200   200   000    Old_age   Always       -       0
+  9 Power_On_Hours          0x0032   001   001   000    Old_age   Always       -       94471
+ 10 Spin_Retry_Count        0x0032   100   100   000    Old_age   Always       -       0
+ 11 Calibration_Retry_Count 0x0032   100   100   000    Old_age   Always       -       0
+ 12 Power_Cycle_Count       0x0032   098   098   000    Old_age   Always       -       2806
+192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       64
+193 Load_Cycle_Count        0x0032   001   001   000    Old_age   Always       -       696262
+194 Temperature_Celsius     0x0022   114   099   000    Old_age   Always       -       36
+196 Reallocated_Event_Count 0x0032   200   200   000    Old_age   Always       -       0
+197 Current_Pending_Sector  0x0032   200   200   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0030   200   200   000    Old_age   Offline      -       0
+199 UDMA_CRC_Error_Count    0x0032   200   200   000    Old_age   Always       -       0
+200 Multi_Zone_Error_Rate   0x0008   200   200   000    Old_age   Offline      -       0
+
+
+###############################################################################
+# File: smart-sdd.txt
+###############################################################################
+
+
+===== smart-sdd =====
+$ smartctl -A /dev/sdd
+smartctl 7.5 2025-04-30 r5714 [x86_64-linux-6.17.4-200.fc42.x86_64] (local build)
+Copyright (C) 2002-25, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF READ SMART DATA SECTION ===
+SMART Attributes Data Structure revision number: 16
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x002f   100   100   051    Pre-fail  Always       -       0
+  2 Throughput_Performance  0x0026   252   252   000    Old_age   Always       -       0
+  3 Spin_Up_Time            0x0023   092   088   025    Pre-fail  Always       -       2615
+  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       521
+  5 Reallocated_Sector_Ct   0x0033   252   252   010    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x002e   252   252   051    Old_age   Always       -       0
+  8 Seek_Time_Performance   0x0024   252   252   015    Old_age   Offline      -       0
+  9 Power_On_Hours          0x0032   100   100   000    Old_age   Always       -       14362
+ 10 Spin_Retry_Count        0x0032   252   252   051    Old_age   Always       -       0
+ 11 Calibration_Retry_Count 0x0032   100   100   000    Old_age   Always       -       13
+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       170
+191 G-Sense_Error_Rate      0x0022   252   252   000    Old_age   Always       -       0
+192 Power-Off_Retract_Count 0x0022   100   100   000    Old_age   Always       -       29
+194 Temperature_Celsius     0x0002   064   056   000    Old_age   Always       -       31 (Min/Max 16/46)
+195 Hardware_ECC_Recovered  0x003a   100   100   000    Old_age   Always       -       0
+196 Reallocated_Event_Count 0x0032   252   252   000    Old_age   Always       -       0
+197 Current_Pending_Sector  0x0032   252   252   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0030   252   252   000    Old_age   Offline      -       0
+199 UDMA_CRC_Error_Count    0x0036   200   200   000    Old_age   Always       -       0
+200 Multi_Zone_Error_Rate   0x002a   100   100   000    Old_age   Always       -       20
+223 Load_Retry_Count        0x0032   100   100   000    Old_age   Always       -       13
+225 Load_Cycle_Count        0x0032   074   074   000    Old_age   Always       -       266831
+
+
+###############################################################################
+# File: smart-sde.txt
+###############################################################################
+
+
+===== smart-sde =====
+$ smartctl -A /dev/sde
+smartctl 7.5 2025-04-30 r5714 [x86_64-linux-6.17.4-200.fc42.x86_64] (local build)
+Copyright (C) 2002-25, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF READ SMART DATA SECTION ===
+SMART Attributes Data Structure revision number: 16
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000b   100   100   001    Pre-fail  Always       -       0
+  2 Throughput_Performance  0x0005   136   136   054    Pre-fail  Offline      -       96
+  3 Spin_Up_Time            0x0007   091   091   001    Pre-fail  Always       -       225 (Average 166)
+  4 Start_Stop_Count        0x0012   097   097   000    Old_age   Always       -       1503
+  5 Reallocated_Sector_Ct   0x0033   100   100   001    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x000b   100   100   001    Pre-fail  Always       -       0
+  8 Seek_Time_Performance   0x0005   140   140   020    Pre-fail  Offline      -       15
+  9 Power_On_Hours          0x0012   098   098   000    Old_age   Always       -       15927
+ 10 Spin_Retry_Count        0x0013   100   100   001    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   094   094   000    Old_age   Always       -       428
+ 22 Helium_Level            0x0023   100   100   025    Pre-fail  Always       -       100
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       4539
+193 Load_Cycle_Count        0x0012   100   100   000    Old_age   Always       -       4539
+194 Temperature_Celsius     0x0002   059   059   000    Old_age   Always       -       35 (Min/Max 15/53)
+196 Reallocated_Event_Count 0x0032   100   100   000    Old_age   Always       -       0
+197 Current_Pending_Sector  0x0022   100   100   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0008   100   100   000    Old_age   Offline      -       0
+199 UDMA_CRC_Error_Count    0x000a   100   100   000    Old_age   Always       -       0
+
+
+###############################################################################
+# File: snapshots-find-pool.txt
+###############################################################################
+
+
+===== snapshots-find-pool =====
+$ sh -c find '/mnt/btrfs-pool' -maxdepth 3 -type d -name '.snapshots' 2>/dev/null
+.
+./show-pod-status.sh
+./jellyfin-manage.sh
+./jellyfin-status.sh
+./deploy-jellyfin-with-traefik.sh
+./day06-success-check.sh
+./day07-summary.sh
+./homelab-diagnose.sh
+./pre-letsencrypt-diagnostics-20251022.sh
+./pre-letsencrypt-diagnostic.sh
+./critical-security-fixes-week2.sh
+./verify-security-fixes.sh
+./emergency-fix-week2.sh
+./fix-podman-secrets.sh
+./fix-redis.connection.sh
+./week02-faileda-authelia-adventures-document-current-state.sh
+./cloudflare-ddns.sh
+./security-audit.sh
+./emergency-rollback.sh
+./survey.sh
+./organize-docs.sh
+./90-archive
+./90-archive/setup-tinyauth.sh
+./90-archive/remove-authelia.sh
+./90-archive/configure-authelia-dual-domain-org.sh
+./90-archive/homelab-docs-refresh-v002.sh
+./90-archive/homelab-docs-refresh.sh
+./90-archive/create-authelia-secrets-fixed.sh
+./90-archive/deploy-secure-authelia.sh
+./90-archive/create-authelia-secrets.sh
+./90-archive/update-traefik-domains.sh
+./90-archive/cleanup-authelia.sh
+./90-archive/backup-day7-attempt1.sh
+./90-archive/authelia_nuke_jwt_warning.sh
+./90-archive/authelia_apply_fixes.sh
+./90-archive/authelia_diag.sh
+./90-archive/generate-authelia-secrets.sh
+./90-archive/deploy-traefik.sh
+./90-archive/demo-stack-status.sh
+./90-archive/day02-final-check.sh
+./collect-storage-info.sh
+./storage-survey-2025-10-25T09-35-17Z
+./storage-survey-2025-10-25T09-35-17Z/README.txt
+./storage-survey-2025-10-25T09-35-17Z/host-basics.txt
+./storage-survey-2025-10-25T09-35-17Z/disks-lsblk.txt
+./storage-survey-2025-10-25T09-35-17Z/disks-blkid.txt
+./storage-survey-2025-10-25T09-35-17Z/mounts-all.txt
+./storage-survey-2025-10-25T09-35-17Z/fstab.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-filesystem-show.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-usage-pool.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-df-pool.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-device-stats.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-balance-status.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-scrub-status.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-subvol-list-pool.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-usage-root.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-subvol-list-root.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-quota-show.txt
+./storage-survey-2025-10-25T09-35-17Z/btrfs-qgroup-show.txt
+./storage-survey-2025-10-25T09-35-17Z/snapshots-find-pool.txt
+
+
