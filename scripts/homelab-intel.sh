@@ -6,7 +6,8 @@
 # Usage: ./homelab-intel.sh [--json] [--quiet]
 #
 
-set -euo pipefail
+# Use safer error handling - don't use -u (too fragile)
+set -eo pipefail
 
 # Configuration
 REPORT_DIR="${HOME}/containers/docs/99-reports"
@@ -31,17 +32,45 @@ for arg in "$@"; do
     case $arg in
         --json) JSON_MODE=true ;;
         --quiet) QUIET_MODE=true ;;
+        --help|-h)
+            echo "Usage: $0 [--json] [--quiet]"
+            echo "  --json   : Output JSON report"
+            echo "  --quiet  : Minimal output"
+            exit 0
+            ;;
     esac
 done
 
 # Health scoring variables
 HEALTH_SCORE=100
-CRITICAL_ISSUES=()
-WARNINGS=()
-INFO_ITEMS=()
+declare -a CRITICAL_ISSUES
+declare -a WARNINGS
+declare -a INFO_ITEMS
 
-# Metrics collection
+# Metrics collection - MUST be declared as associative array
 declare -A METRICS
+
+# Initialize metrics with defaults
+METRICS[uptime_seconds]=0
+METRICS[uptime_days]=0
+METRICS[selinux]="Unknown"
+METRICS[disk_root_percent]=0
+METRICS[disk_btrfs_percent]=0
+METRICS[services_running]=0
+METRICS[services_total]=0
+METRICS[containers_running]=0
+METRICS[memory_total_mb]=0
+METRICS[memory_used_mb]=0
+METRICS[memory_percent]=0
+METRICS[cpu_usage_percent]=0
+METRICS[swap_used_mb]=0
+METRICS[last_backup_days_ago]=-1
+METRICS[cert_days_until_renewal]=0
+METRICS[prometheus_healthy]=0
+METRICS[grafana_healthy]=0
+METRICS[loki_healthy]=0
+METRICS[internet_reachable]=0
+METRICS[internet_latency_ms]=0
 
 ##############################################################################
 # Helper Functions
@@ -65,23 +94,23 @@ log_section() {
 add_critical() {
     local code="$1"
     local message="$2"
-    local action="$3"
-    CRITICAL_ISSUES+=("{\"code\":\"$code\",\"message\":\"$message\",\"action\":\"$action\"}")
+    local action="${3:-No action specified}"
+    CRITICAL_ISSUES+=("C|$code|$message|$action")
     HEALTH_SCORE=$((HEALTH_SCORE - 20))
 }
 
 add_warning() {
     local code="$1"
     local message="$2"
-    local action="$3"
-    WARNINGS+=("{\"code\":\"$code\",\"message\":\"$message\",\"action\":\"$action\"}")
+    local action="${3:-No action specified}"
+    WARNINGS+=("W|$code|$message|$action")
     HEALTH_SCORE=$((HEALTH_SCORE - 5))
 }
 
 add_info() {
     local code="$1"
     local message="$2"
-    INFO_ITEMS+=("{\"code\":\"$code\",\"message\":\"$message\"}")
+    INFO_ITEMS+=("I|$code|$message")
 }
 
 ##############################################################################
@@ -91,8 +120,9 @@ add_info() {
 check_system_basics() {
     log_section "System Basics"
 
+    # Uptime
     local uptime_seconds
-    uptime_seconds=$(awk '{print int($1)}' /proc/uptime)
+    uptime_seconds=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo "0")
     local uptime_days=$((uptime_seconds / 86400))
     local uptime_hours=$(((uptime_seconds % 86400) / 3600))
 
@@ -101,9 +131,11 @@ check_system_basics() {
 
     [[ "$QUIET_MODE" == "false" ]] && echo "Uptime: $uptime_days days, $uptime_hours hours"
 
-    # Check if system needs reboot (kernel update)
-    if [ -f /var/run/reboot-required ] || needs-restarting -r &>/dev/null; then
-        add_warning "W003" "System restart recommended (kernel update pending)" "Reboot system when convenient"
+    # Check if system needs reboot (Fedora-specific)
+    if command -v needs-restarting &>/dev/null; then
+        if ! needs-restarting -r &>/dev/null; then
+            add_warning "W003" "System restart recommended (kernel update pending)" "Reboot system when convenient"
+        fi
     fi
 
     # Check SELinux
@@ -123,7 +155,7 @@ check_disk_usage() {
 
     # System SSD check (critical - 128GB limit)
     local root_usage
-    root_usage=$(df / | awk 'NR==2 {print int($5)}')
+    root_usage=$(df / 2>/dev/null | awk 'NR==2 {print int($5)}' || echo "0")
     METRICS[disk_root_percent]=$root_usage
 
     [[ "$QUIET_MODE" == "false" ]] && echo "System SSD: ${root_usage}%"
@@ -148,13 +180,13 @@ check_disk_usage() {
 check_services() {
     log_section "Service Health"
 
-    local critical_services=("traefik" "prometheus" "alertmanager" "grafana")
+    local -a critical_services=("traefik" "prometheus" "alertmanager" "grafana")
     local running_count=0
-    local failed_services=()
+    local -a failed_services
 
     for service in "${critical_services[@]}"; do
         if systemctl --user is-active "${service}.service" &>/dev/null; then
-            ((running_count++))
+            running_count=$((running_count + 1))
         else
             failed_services+=("$service")
         fi
@@ -166,9 +198,10 @@ check_services() {
     [[ "$QUIET_MODE" == "false" ]] && echo "Critical services: $running_count/${#critical_services[@]} running"
 
     if [ ${#failed_services[@]} -gt 0 ]; then
-        add_critical "C004" "Critical services not running: ${failed_services[*]}" "Start failed services immediately"
+        local failed_list="${failed_services[*]}"
+        add_critical "C004" "Critical services not running: ${failed_list}" "Start failed services immediately"
     else
-        add_info "I001" "All ${#critical_services[@]} critical services running healthy" ""
+        add_info "I001" "All ${#critical_services[@]} critical services running healthy"
     fi
 
     # Count all running containers
@@ -184,8 +217,8 @@ check_resource_usage() {
 
     # Memory
     local mem_total mem_used mem_percent
-    mem_total=$(free -m | awk 'NR==2 {print $2}')
-    mem_used=$(free -m | awk 'NR==2 {print $3}')
+    mem_total=$(free -m 2>/dev/null | awk 'NR==2 {print $2}' || echo "1")
+    mem_used=$(free -m 2>/dev/null | awk 'NR==2 {print $3}' || echo "0")
     mem_percent=$((mem_used * 100 / mem_total))
 
     METRICS[memory_total_mb]=$mem_total
@@ -198,19 +231,19 @@ check_resource_usage() {
         add_warning "W004" "Memory usage high: ${mem_percent}%" "Review container resource limits"
     fi
 
-    # CPU (5-second average)
-    local cpu_idle cpu_usage
+    # CPU - simplified, no mpstat dependency
+    local cpu_usage
     if command -v mpstat &>/dev/null; then
-        cpu_idle=$(mpstat 1 1 2>/dev/null | awk '/Average:/ {print int($NF)}')
+        local cpu_idle
+        cpu_idle=$(mpstat 1 1 2>/dev/null | awk '/Average:/ {print int($NF)}' || echo "")
         if [[ -n "$cpu_idle" && "$cpu_idle" =~ ^[0-9]+$ ]]; then
             cpu_usage=$((100 - cpu_idle))
         else
-            cpu_usage=5  # Default fallback
+            cpu_usage=5
         fi
     else
-        # Fallback: use top command
-        cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print int($2)}' | head -1)
-        [[ -z "$cpu_usage" || ! "$cpu_usage" =~ ^[0-9]+$ ]] && cpu_usage=5
+        # Fallback: parse /proc/stat
+        cpu_usage=$(awk '/^cpu / {usage=($2+$4)*100/($2+$4+$5)} END {print int(usage)}' /proc/stat 2>/dev/null || echo "5")
     fi
     METRICS[cpu_usage_percent]=$cpu_usage
 
@@ -218,7 +251,7 @@ check_resource_usage() {
 
     # Swap
     local swap_used
-    swap_used=$(free -m | awk 'NR==3 {print $3}')
+    swap_used=$(free -m 2>/dev/null | awk 'NR==3 {print $3}' || echo "0")
     METRICS[swap_used_mb]=${swap_used:-0}
 
     [[ "$QUIET_MODE" == "false" ]] && echo "Swap Usage: ${swap_used}MB"
@@ -238,10 +271,10 @@ check_backups() {
 
     if [ -d "$backup_dir" ]; then
         local latest_backup
-        latest_backup=$(find "$backup_dir" -maxdepth 2 -type d -name "htpc-home*" -o -name "subvol*" 2>/dev/null | head -1)
+        latest_backup=$(find "$backup_dir" -maxdepth 2 -type d \( -name "htpc-home*" -o -name "subvol*" \) 2>/dev/null | head -1 || echo "")
 
         if [ -n "$latest_backup" ]; then
-            last_backup_age=$(( ($(date +%s) - $(stat -c %Y "$latest_backup")) / 86400 ))
+            last_backup_age=$(( ($(date +%s) - $(stat -c %Y "$latest_backup" 2>/dev/null || echo "0")) / 86400 ))
             METRICS[last_backup_days_ago]=$last_backup_age
 
             [[ "$QUIET_MODE" == "false" ]] && echo "Last external backup: $last_backup_age days ago"
@@ -249,11 +282,11 @@ check_backups() {
             if [ "$last_backup_age" -gt 14 ]; then
                 add_warning "W002" "No recent backup detected (>14 days)" "Check external drive and run backup"
             elif [ "$last_backup_age" -gt 7 ]; then
-                add_info "I002" "Backup slightly overdue ($last_backup_age days)" ""
+                add_info "I002" "Backup slightly overdue ($last_backup_age days)"
             fi
         fi
     else
-        add_info "I003" "External backup drive not mounted" ""
+        add_info "I003" "External backup drive not mounted"
         METRICS[last_backup_days_ago]=-1
     fi
 }
@@ -265,7 +298,7 @@ check_certificates() {
 
     if [ -f "$acme_file" ]; then
         local cert_age_days
-        cert_age_days=$(( ($(date +%s) - $(stat -c %Y "$acme_file")) / 86400 ))
+        cert_age_days=$(( ($(date +%s) - $(stat -c %Y "$acme_file" 2>/dev/null || echo "0")) / 86400 ))
         local days_until_renewal=$((90 - cert_age_days))
 
         METRICS[cert_days_until_renewal]=$days_until_renewal
@@ -275,7 +308,7 @@ check_certificates() {
         if [ "$days_until_renewal" -lt 7 ]; then
             add_critical "C005" "Certificate expiring in $days_until_renewal days" "Check Traefik Let's Encrypt renewal"
         elif [ "$days_until_renewal" -lt 30 ]; then
-            add_info "I004" "Certificate expires in $days_until_renewal days (auto-renews)" ""
+            add_info "I004" "Certificate expires in $days_until_renewal days (auto-renews)"
         fi
     fi
 }
@@ -285,7 +318,7 @@ check_monitoring_health() {
 
     # Prometheus
     if curl -sf http://localhost:9090/-/healthy &>/dev/null; then
-        add_info "I005" "Prometheus healthy" ""
+        add_info "I005" "Prometheus healthy"
         METRICS[prometheus_healthy]=1
     else
         add_warning "W006" "Prometheus health check failed" "Check Prometheus service"
@@ -294,7 +327,7 @@ check_monitoring_health() {
 
     # Grafana
     if curl -sf http://localhost:3000/api/health &>/dev/null; then
-        add_info "I006" "Grafana healthy" ""
+        add_info "I006" "Grafana healthy"
         METRICS[grafana_healthy]=1
     else
         add_warning "W007" "Grafana health check failed" "Check Grafana service"
@@ -303,7 +336,7 @@ check_monitoring_health() {
 
     # Loki
     if curl -sf http://localhost:3100/ready &>/dev/null; then
-        add_info "I008" "Loki healthy" ""
+        add_info "I007" "Loki healthy"
         METRICS[loki_healthy]=1
     else
         add_warning "W008" "Loki health check failed" "Check Loki service"
@@ -320,7 +353,7 @@ check_network() {
 
         # Measure latency
         local latency
-        latency=$(ping -c 3 -W 2 8.8.8.8 2>/dev/null | grep 'avg' | awk -F'/' '{print int($5)}' || echo "0")
+        latency=$(ping -c 3 -W 2 8.8.8.8 2>/dev/null | grep 'rtt\|avg' | awk -F'/' '{print int($5)}' || echo "0")
         METRICS[internet_latency_ms]=$latency
 
         [[ "$QUIET_MODE" == "false" ]] && echo "Internet: Reachable (${latency}ms)"
@@ -337,6 +370,11 @@ check_network() {
 analyze_trends() {
     if [ ! -f "$STATE_FILE" ]; then
         return # No previous state to compare
+    fi
+
+    # Ensure jq is available
+    if ! command -v jq &>/dev/null; then
+        return
     fi
 
     # Compare disk usage trend
@@ -357,18 +395,18 @@ analyze_trends() {
 ##############################################################################
 
 generate_recommendations() {
-    local recommendations=()
+    local -a recommendations
 
     # Priority: Critical first, then warnings
     if [ ${#CRITICAL_ISSUES[@]} -gt 0 ]; then
         recommendations+=("[HIGH] Address critical issues immediately")
     fi
 
-    if [ ${METRICS[disk_root_percent]:-0} -gt 70 ]; then
+    if [ "${METRICS[disk_root_percent]}" -gt 70 ]; then
         recommendations+=("[MEDIUM] Review system SSD usage, consider cleanup")
     fi
 
-    if [ ${METRICS[last_backup_days_ago]:--1} -gt 7 ]; then
+    if [ "${METRICS[last_backup_days_ago]}" -gt 7 ] && [ "${METRICS[last_backup_days_ago]}" -ne -1 ]; then
         recommendations+=("[LOW] Verify external backup drive accessibility")
     fi
 
@@ -387,13 +425,20 @@ generate_recommendations() {
 }
 
 save_state() {
-    mkdir -p "$(dirname "$STATE_FILE")"
+    mkdir -p "$(dirname "$STATE_FILE")" 2>/dev/null || true
 
+    # Build metrics JSON manually (safer than jq)
     local json_metrics="{"
+    local first=true
     for key in "${!METRICS[@]}"; do
-        json_metrics+="\"$key\":${METRICS[$key]},"
+        if [ "$first" = true ]; then
+            first=false
+        else
+            json_metrics+=","
+        fi
+        json_metrics+="\"$key\":${METRICS[$key]}"
     done
-    json_metrics="${json_metrics%,}}"
+    json_metrics+="}"
 
     cat > "$STATE_FILE" <<EOF
 {
@@ -405,17 +450,42 @@ EOF
 }
 
 output_json() {
-    mkdir -p "$REPORT_DIR"
+    mkdir -p "$REPORT_DIR" 2>/dev/null || true
 
-    local critical_json=$(printf '%s,' "${CRITICAL_ISSUES[@]}" | sed 's/,$//')
-    local warnings_json=$(printf '%s,' "${WARNINGS[@]}" | sed 's/,$//')
-    local info_json=$(printf '%s,' "${INFO_ITEMS[@]}" | sed 's/,$//')
-
-    local json_metrics="{"
-    for key in "${!METRICS[@]}"; do
-        json_metrics+="\"$key\":${METRICS[$key]},"
+    # Build JSON arrays manually for safety
+    local critical_json=""
+    for item in "${CRITICAL_ISSUES[@]}"; do
+        IFS='|' read -r type code message action <<< "$item"
+        critical_json+="{\"code\":\"$code\",\"message\":\"$message\",\"action\":\"$action\"},"
     done
-    json_metrics="${json_metrics%,}}"
+    critical_json="${critical_json%,}"
+
+    local warnings_json=""
+    for item in "${WARNINGS[@]}"; do
+        IFS='|' read -r type code message action <<< "$item"
+        warnings_json+="{\"code\":\"$code\",\"message\":\"$message\",\"action\":\"$action\"},"
+    done
+    warnings_json="${warnings_json%,}"
+
+    local info_json=""
+    for item in "${INFO_ITEMS[@]}"; do
+        IFS='|' read -r type code message <<< "$item"
+        info_json+="{\"code\":\"$code\",\"message\":\"$message\"},"
+    done
+    info_json="${info_json%,}"
+
+    # Build metrics JSON
+    local json_metrics="{"
+    local first=true
+    for key in "${!METRICS[@]}"; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            json_metrics+=","
+        fi
+        json_metrics+="\"$key\":${METRICS[$key]}"
+    done
+    json_metrics+="}"
 
     cat > "$JSON_OUTPUT" <<EOF
 {
@@ -428,7 +498,7 @@ output_json() {
 }
 EOF
 
-    echo "$JSON_OUTPUT"
+    echo "JSON report saved to: $JSON_OUTPUT"
 }
 
 print_summary() {
@@ -459,10 +529,8 @@ print_summary() {
     # Print critical issues
     if [ ${#CRITICAL_ISSUES[@]} -gt 0 ]; then
         log_section "🚨 CRITICAL ISSUES"
-        for issue in "${CRITICAL_ISSUES[@]}"; do
-            local code=$(echo "$issue" | jq -r '.code')
-            local message=$(echo "$issue" | jq -r '.message')
-            local action=$(echo "$issue" | jq -r '.action')
+        for item in "${CRITICAL_ISSUES[@]}"; do
+            IFS='|' read -r type code message action <<< "$item"
             echo -e "${RED}[$code]${NC} $message"
             echo "  • Action: $action"
             echo ""
@@ -472,10 +540,8 @@ print_summary() {
     # Print warnings
     if [ ${#WARNINGS[@]} -gt 0 ]; then
         log_section "⚠️  WARNINGS"
-        for warning in "${WARNINGS[@]}"; do
-            local code=$(echo "$warning" | jq -r '.code')
-            local message=$(echo "$warning" | jq -r '.message')
-            local action=$(echo "$warning" | jq -r '.action')
+        for item in "${WARNINGS[@]}"; do
+            IFS='|' read -r type code message action <<< "$item"
             echo -e "${YELLOW}[$code]${NC} $message"
             echo "  • Action: $action"
             echo ""
@@ -485,9 +551,8 @@ print_summary() {
     # Print info items
     if [ ${#INFO_ITEMS[@]} -gt 0 ]; then
         log_section "ℹ️  INFORMATION"
-        for info in "${INFO_ITEMS[@]}"; do
-            local code=$(echo "$info" | jq -r '.code')
-            local message=$(echo "$info" | jq -r '.message')
+        for item in "${INFO_ITEMS[@]}"; do
+            IFS='|' read -r type code message <<< "$item"
             echo -e "${CYAN}[$code]${NC} $message"
         done
     fi
@@ -533,12 +598,13 @@ main() {
 
     # Output JSON if requested
     if [[ "$JSON_MODE" == "true" ]]; then
+        echo ""
         output_json
     fi
 
     echo ""
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
-    echo "Full report saved to: $JSON_OUTPUT"
+    echo "Health check complete. Score: $HEALTH_SCORE/100"
 }
 
 # Run main function
