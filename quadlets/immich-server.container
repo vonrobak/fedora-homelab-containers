@@ -1,0 +1,57 @@
+[Unit]
+Description=Immich Server
+After=network-online.target photos-network.service postgresql-immich.service redis-immich.service
+Wants=network-online.target
+Requires=photos-network.service postgresql-immich.service redis-immich.service
+
+[Container]
+Image=ghcr.io/immich-app/immich-server:release
+ContainerName=immich-server
+AutoUpdate=registry
+
+# Networks (multiple - order matters for default route)
+Network=systemd-reverse_proxy
+Network=systemd-photos
+Network=systemd-monitoring
+
+# Environment - Database
+Environment=DB_HOSTNAME=postgresql-immich
+Environment=DB_USERNAME=immich
+Environment=DB_DATABASE_NAME=immich
+Secret=postgres-password,type=env,target=DB_PASSWORD
+
+# Environment - Redis
+Environment=REDIS_HOSTNAME=redis-immich
+Environment=REDIS_PORT=6379
+
+# Environment - Machine Learning
+Environment=IMMICH_MACHINE_LEARNING_URL=http://immich-ml:3003
+
+# Environment - Security
+Secret=immich-jwt-secret,type=env,target=JWT_SECRET
+
+# Environment - Upload
+Environment=UPLOAD_LOCATION=/usr/src/app/upload
+
+# Storage - Photo library on BTRFS pool
+Volume=/mnt/btrfs-pool/subvol3-opptak/immich:/usr/src/app/upload:Z
+
+# NEW: Mount library folder to a DIFFERENT container path (outside /usr/src/app/upload)
+Volume=/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media:ro,Z
+
+# Expose port for Traefik
+PublishPort=2283:2283
+
+# Health check
+HealthCmd=curl -f http://localhost:2283/api/server/ping || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=300s
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

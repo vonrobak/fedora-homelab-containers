@@ -1,0 +1,33 @@
+[Unit]
+Description=Immich Machine Learning
+After=network-online.target photos-network.service
+Wants=network-online.target
+Requires=photos-network.service
+
+[Container]
+Image=ghcr.io/immich-app/immich-machine-learning:release
+ContainerName=immich-ml
+AutoUpdate=registry
+
+# Network (isolated - only on photos network)
+Network=systemd-photos
+
+# Storage - ML model cache on BTRFS pool
+Volume=/mnt/btrfs-pool/subvol7-containers/immich-ml-cache:/cache:Z
+
+# Environment
+Environment=MACHINE_LEARNING_CACHE_FOLDER=/cache
+
+# Health check
+HealthCmd=curl -f http://localhost:3003/ping || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=600s
+
+[Service]
+Restart=always
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=default.target

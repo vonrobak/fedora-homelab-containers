@@ -45,8 +45,34 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer
-        - rate-limit
+        - rate-limit-public
         # - tinyauth@file  # Uncomment to enable authentication
+      tls:
+        certResolver: letsencrypt
+
+    # Immich - Static Assets (bypass auth for /_app/ JavaScript/CSS)
+    immich-assets:
+      rule: "Host(`photos.patriark.org`) && PathPrefix(`/_app/`)"
+      service: "immich"
+      entryPoints:
+        - websecure
+      priority: 100  # Higher priority = evaluated first
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+      tls:
+        certResolver: letsencrypt
+
+    # Immich - Main Application (with auth)
+    immich-secure:
+      rule: "Host(`photos.patriark.org`)"
+      service: "immich"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+        - tinyauth@file
       tls:
         certResolver: letsencrypt
 
@@ -101,6 +127,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://tinyauth:3000"
+
+    immich:
+      loadBalancer:
+        servers:
+          - url: "http://immich-server:2283"
 
     grafana:
       loadBalancer:

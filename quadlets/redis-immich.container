@@ -1,0 +1,29 @@
+[Unit]
+Description=Redis for Immich
+After=network-online.target photos-network.service
+Wants=network-online.target
+Requires=photos-network.service
+
+[Container]
+Image=docker.io/valkey/valkey:8
+ContainerName=redis-immich
+AutoUpdate=registry
+
+# Network
+Network=systemd-photos
+
+# Storage (BTRFS pool with NOCOW for persistence)
+Volume=/mnt/btrfs-pool/subvol7-containers/redis-immich:/data:Z
+
+# Health check
+HealthCmd=valkey-cli ping
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
