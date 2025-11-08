@@ -72,7 +72,7 @@ http:
       middlewares:
         - crowdsec-bouncer
         - rate-limit
-        - tinyauth@file
+ #      - tinyauth@file
       tls:
         certResolver: letsencrypt
 
