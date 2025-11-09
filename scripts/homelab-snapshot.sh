@@ -842,8 +842,8 @@ collect_health_check_validation() {
             # Extract the actual command being tested
             if [ "$cmd_type" = "CMD-SHELL" ]; then
                 local full_cmd=$(echo "$health_cmd" | jq -r '.[1]' 2>/dev/null || echo "")
-                # Try to extract the main binary (curl, wget, python, etc.)
-                cmd_binary=$(echo "$full_cmd" | grep -oE '(curl|wget|nc|python|python3|node|java|psql|redis-cli)' | head -1 || echo "")
+                # Try to extract the main binary (curl, wget, python, redis-cli, valkey-cli, etc.)
+                cmd_binary=$(echo "$full_cmd" | grep -oE '(curl|wget|nc|python|python3|node|java|psql|redis-cli|valkey-cli)' | head -1 || echo "")
 
                 if [ -n "$cmd_binary" ]; then
                     # Test if the binary exists in the container (with 2s timeout to avoid hangs)
@@ -991,13 +991,22 @@ EOF
     done < <(podman ps --format '{{.Names}}' 2>/dev/null)
 
     # Recommendation 2: Services without memory limits
+    # Check systemd quadlet files for MemoryMax (not podman HostConfig which is always 0 for systemd-managed containers)
     while IFS= read -r container_name; do
-        local memory_limit=$(podman inspect "$container_name" --format '{{.HostConfig.Memory}}' 2>/dev/null || echo 0)
+        # Check if this is a critical service
+        case "$container_name" in
+            prometheus|grafana|loki|postgresql*|immich*|jellyfin)
+                # Check if quadlet file has MemoryMax configured
+                local quadlet_file="$HOME/.config/containers/systemd/${container_name}.container"
+                local has_memory_limit=false
 
-        if [ "$memory_limit" = "0" ]; then
-            # Check if this is a critical service
-            case "$container_name" in
-                prometheus|grafana|loki|postgresql*|immich*|jellyfin)
+                if [ -f "$quadlet_file" ]; then
+                    if grep -q '^MemoryMax=' "$quadlet_file" 2>/dev/null; then
+                        has_memory_limit=true
+                    fi
+                fi
+
+                if [ "$has_memory_limit" = false ]; then
                     [ "$first" = false ] && echo ","
 
                     local suggested_limit="1G"
@@ -1020,9 +1029,9 @@ EOF
 EOF
                     first=false
                     rec_count=$((rec_count + 1))
-                    ;;
-            esac
-        fi
+                fi
+                ;;
+        esac
     done < <(podman ps --format '{{.Names}}' 2>/dev/null)
 
     # Recommendation 3: Configuration drift (configured but not running)
@@ -1073,7 +1082,7 @@ EOF
 
 main() {
     echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" >&2
-    echo -e "${BLUE}        HOMELAB SNAPSHOT TOOL v1.2${NC}" >&2
+    echo -e "${BLUE}        HOMELAB SNAPSHOT TOOL v1.3${NC}" >&2
     echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" >&2
     echo "" >&2
 
