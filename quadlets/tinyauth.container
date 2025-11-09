@@ -15,19 +15,11 @@ Network=systemd-auth_services
 
 # ⚠️  REPLACE THESE PLACEHOLDERS BEFORE DEPLOYMENT ⚠️
 Environment=APP_URL=https://auth.patriark.org
-Environment=SECRET=REPLACE_WITH_YOUR_SECRET_KEY
-Environment=USERS=REPLACE_WITH_USERNAME:BCRYPT_HASH
+Environment=SECRET=#this-is-a-placeholder
+Environment=USERS=#this-is-another-placeholder
 
 # Storage
 Volume=%h/containers/data/tinyauth:/app/data:Z
-
-# Traefik Labels
-Label=traefik.enable=true
-Label=traefik.http.routers.tinyauth.rule=Host(`auth.patriark.org`)
-Label=traefik.http.routers.tinyauth.entrypoints=websecure
-Label=traefik.http.routers.tinyauth.tls=true
-Label=traefik.http.services.tinyauth.loadbalancer.server.port=3000
-Label=traefik.http.middlewares.tinyauth.forwardauth.address=http://tinyauth:3000/api/auth/traefik
 
 # Health check - validates web server is responding (checks login page)
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
