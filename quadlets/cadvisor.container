@@ -35,5 +35,8 @@ HealthRetries=3
 Restart=on-failure
 TimeoutStartSec=60
 
+# Resource Limits
+MemoryMax=256M
+
 [Install]
 WantedBy=default.target
