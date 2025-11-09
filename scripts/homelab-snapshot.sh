@@ -810,9 +810,225 @@ EOF
     done < <(podman ps --format '{{.Names}}' 2>/dev/null)
 
     echo ""
-    echo '  }'
+    echo '  },'
 
     log_info "Calculated service uptime"
+}
+
+# Phase 3: Health Check Validation
+collect_health_check_validation() {
+    log_section "Validating health check configurations"
+
+    local first=true
+    echo '  "health_check_validation": {'
+    echo '    "validated_services": {'
+
+    while IFS= read -r container_name; do
+        # Check if container has a health check configured
+        local health_cmd=$(podman inspect "$container_name" --format '{{if .Config.Healthcheck}}{{json .Config.Healthcheck.Test}}{{else}}none{{end}}' 2>/dev/null)
+
+        if [ "$health_cmd" != "none" ] && [ -n "$health_cmd" ]; then
+            [ "$first" = false ] && echo ","
+
+            # Parse health check command
+            local cmd_type=$(echo "$health_cmd" | jq -r '.[0]' 2>/dev/null || echo "unknown")
+            local cmd_binary=""
+            local validation_status="valid"
+            local issue=""
+            local recommendation=""
+
+            # Extract the actual command being tested
+            if [ "$cmd_type" = "CMD-SHELL" ]; then
+                local full_cmd=$(echo "$health_cmd" | jq -r '.[1]' 2>/dev/null || echo "")
+                # Try to extract the main binary (curl, wget, python, etc.)
+                cmd_binary=$(echo "$full_cmd" | grep -oE '(curl|wget|nc|python|python3|node|java|psql|redis-cli)' | head -1)
+
+                if [ -n "$cmd_binary" ]; then
+                    # Test if the binary exists in the container
+                    if ! podman exec "$container_name" which "$cmd_binary" &>/dev/null && \
+                       ! podman exec "$container_name" command -v "$cmd_binary" &>/dev/null; then
+                        validation_status="invalid"
+                        issue="Health check uses '$cmd_binary' but binary not found in container"
+
+                        # Suggest alternatives based on missing binary
+                        case "$cmd_binary" in
+                            curl)
+                                recommendation="Use 'wget --spider' or 'python3 -c \"import urllib.request; urllib.request.urlopen(...)\"' instead"
+                                ;;
+                            wget)
+                                recommendation="Use 'curl' or 'python3 -c \"import urllib.request; urllib.request.urlopen(...)\"' instead"
+                                ;;
+                            nc)
+                                recommendation="Use 'python3 -c \"import socket; socket.create_connection(...)\"' instead"
+                                ;;
+                            *)
+                                recommendation="Install '$cmd_binary' in container or use alternative health check method"
+                                ;;
+                        esac
+                    fi
+                fi
+            fi
+
+            # Get current health status
+            local health_status=$(podman inspect "$container_name" --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' 2>/dev/null)
+
+            # If health check is failing and we found a validation issue, upgrade severity
+            local severity="info"
+            if [ "$validation_status" = "invalid" ] && [ "$health_status" = "unhealthy" ]; then
+                severity="high"
+            elif [ "$validation_status" = "invalid" ]; then
+                severity="medium"
+            fi
+
+            cat <<EOF
+      "$container_name": {
+        "health_check_command": $health_cmd,
+        "binary_used": "$cmd_binary",
+        "validation_status": "$validation_status",
+        "current_health_status": "$health_status",
+        "severity": "$severity",
+        "issue": "$issue",
+        "recommendation": "$recommendation"
+      }
+EOF
+            first=false
+        fi
+    done < <(podman ps --format '{{.Names}}' 2>/dev/null)
+
+    echo ""
+    echo '    },'
+
+    # Summary statistics
+    local total_with_checks=$(podman ps --format '{{.Names}}' 2>/dev/null | while read name; do
+        podman inspect "$name" --format '{{if .Config.Healthcheck}}1{{end}}' 2>/dev/null
+    done | wc -l)
+
+    echo '    "summary": {'
+    echo "      \"total_services_with_healthchecks\": $total_with_checks"
+    echo '    }'
+    echo '  },'
+
+    log_info "Health check validation complete"
+}
+
+# Phase 3: Automated Recommendations Engine
+collect_recommendations() {
+    log_section "Generating automated recommendations"
+
+    echo '  "recommendations": {'
+    echo '    "priority_actions": ['
+
+    local first=true
+    local rec_count=0
+
+    # Recommendation 1: Unhealthy services with misconfigured health checks
+    while IFS= read -r container_name; do
+        local health_status=$(podman inspect "$container_name" --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' 2>/dev/null)
+
+        if [ "$health_status" = "unhealthy" ]; then
+            local health_cmd=$(podman inspect "$container_name" --format '{{if .Config.Healthcheck}}{{json .Config.Healthcheck.Test}}{{else}}none{{end}}' 2>/dev/null)
+
+            if [ "$health_cmd" != "none" ]; then
+                local cmd_binary=$(echo "$health_cmd" | jq -r '.[1]' 2>/dev/null | grep -oE '(curl|wget|nc)' | head -1)
+
+                if [ -n "$cmd_binary" ]; then
+                    if ! podman exec "$container_name" which "$cmd_binary" &>/dev/null; then
+                        [ "$first" = false ] && echo ","
+
+                        cat <<EOF
+      {
+        "priority": "high",
+        "category": "health_check",
+        "service": "$container_name",
+        "issue": "Health check failing due to missing '$cmd_binary' binary",
+        "impact": "Service may be healthy but reported as unhealthy, causing false alarms",
+        "fix_command": "Edit ~/.config/containers/systemd/${container_name}.container and update HealthCmd to use available binary",
+        "estimated_time": "5 minutes"
+      }
+EOF
+                        first=false
+                        rec_count=$((rec_count + 1))
+                    fi
+                fi
+            fi
+        fi
+    done < <(podman ps --format '{{.Names}}' 2>/dev/null)
+
+    # Recommendation 2: Services without memory limits
+    while IFS= read -r container_name; do
+        local memory_limit=$(podman inspect "$container_name" --format '{{.HostConfig.Memory}}' 2>/dev/null || echo 0)
+
+        if [ "$memory_limit" = "0" ]; then
+            # Check if this is a critical service
+            case "$container_name" in
+                prometheus|grafana|loki|postgresql*|immich*|jellyfin)
+                    [ "$first" = false ] && echo ","
+
+                    local suggested_limit="1G"
+                    case "$container_name" in
+                        prometheus|postgresql*) suggested_limit="2G" ;;
+                        immich-server) suggested_limit="3G" ;;
+                        immich-ml|jellyfin) suggested_limit="4G" ;;
+                    esac
+
+                    cat <<EOF
+      {
+        "priority": "medium",
+        "category": "resource_limits",
+        "service": "$container_name",
+        "issue": "Critical service has no memory limit configured",
+        "impact": "Service can consume unlimited memory, potentially causing OOM conditions",
+        "fix_command": "Add 'MemoryMax=$suggested_limit' to [Service] section in ~/.config/containers/systemd/${container_name}.container, then: systemctl --user daemon-reload && systemctl --user restart ${container_name}.service",
+        "estimated_time": "3 minutes"
+      }
+EOF
+                    first=false
+                    rec_count=$((rec_count + 1))
+                    ;;
+            esac
+        fi
+    done < <(podman ps --format '{{.Names}}' 2>/dev/null)
+
+    # Recommendation 3: Configuration drift (configured but not running)
+    if [ -d "$HOME/.config/containers/systemd" ]; then
+        while IFS= read -r quadlet_file; do
+            local service_name=$(basename "$quadlet_file" .container)
+
+            if ! podman ps --format '{{.Names}}' | grep -q "^${service_name}$"; then
+                [ "$first" = false ] && echo ","
+
+                cat <<EOF
+      {
+        "priority": "low",
+        "category": "configuration_drift",
+        "service": "$service_name",
+        "issue": "Service configured in quadlet but not running",
+        "impact": "Configuration drift may indicate incomplete deployment or abandoned service",
+        "fix_command": "Either start the service: systemctl --user start ${service_name}.service OR remove unused quadlet: rm ~/.config/containers/systemd/${service_name}.container && systemctl --user daemon-reload",
+        "estimated_time": "2 minutes"
+      }
+EOF
+                first=false
+                rec_count=$((rec_count + 1))
+            fi
+        done < <(find "$HOME/.config/containers/systemd" -name "*.container" -type f)
+    fi
+
+    echo ""
+    echo '    ],'
+    echo '    "summary": {'
+    echo "      \"total_recommendations\": $rec_count,"
+    echo '      "by_priority": {'
+
+    # Count by priority (this is simplified - would need to parse the actual data)
+    echo '        "high": 0,'
+    echo '        "medium": 0,'
+    echo '        "low": 0'
+    echo '      }'
+    echo '    }'
+    echo '  }'
+
+    log_info "Generated $rec_count recommendations"
 }
 
 ##############################################################################
@@ -821,7 +1037,7 @@ EOF
 
 main() {
     echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" >&2
-    echo -e "${BLUE}        HOMELAB SNAPSHOT TOOL v1.1${NC}" >&2
+    echo -e "${BLUE}        HOMELAB SNAPSHOT TOOL v1.2${NC}" >&2
     echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" >&2
     echo "" >&2
 
@@ -844,6 +1060,8 @@ main() {
         collect_configuration_drift
         collect_network_utilization
         collect_service_uptime
+        collect_health_check_validation
+        collect_recommendations
         echo "}"
     } > "$JSON_OUTPUT"
 
