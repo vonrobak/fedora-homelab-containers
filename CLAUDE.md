@@ -52,6 +52,7 @@ Services are isolated into logical networks:
 - `systemd-media_services` - Jellyfin and media processing
 - `systemd-auth_services` - TinyAuth, authentication services
 - `systemd-monitoring` - Prometheus, Grafana, Loki, Alertmanager, exporters
+- `systemd-photos` - Immich and its underlying services
 
 Services join networks based on trust/access requirements. Services can be on multiple networks.
 

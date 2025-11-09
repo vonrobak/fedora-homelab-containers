@@ -16,13 +16,19 @@ A learning-focused homelab project documenting the journey of building a product
 ## Services
 
 ### Operational
-- **SSH** - Hardware-secured with YubiKey FIDO2 across all systems
+- **SSH** - Hardware-secured ssh with YubiKey FIDO2 across all systems
 - **Pi-hole** - DNS and ad-blocking (raspberrypi)
 
-### Configured (fedora-htpc)
+### Configured (fedora-htpc) - all services reachable through *.patriark.org domains registered with hostinger.com and external DNS from Cloudflare.
 - **Traefik** - Reverse proxy with Let's Encrypt SSL
 - **CrowdSec** - Threat intelligence and IP blocking
 - **Jellyfin** - Media streaming server
+- **Grafana** - Monitoring graphical dashboards
+- **Prometheus** - Monitoring and alert toolkit
+- **Loki** - Log aggregation
+- **AlertManager** - Alerting service linked to Discord webook
+- **cAdvisor** - System metrics
+- **Immich** - Image and video service
 - **TinyAuth** - Forward authentication service
 
 ## Architecture
@@ -31,10 +37,10 @@ A learning-focused homelab project documenting the journey of building a product
 - **Orchestration:** systemd quadlets
 - **Authentication:** YubiKey FIDO2 (3 keys, triple redundancy)
 - **Security:** Hardware-backed SSH, forward authentication, layered middleware
-- **Storage:** BTRFS with snapshots and RAID1 (planned)
+- **Storage:** BTRFS with snapshots.  and RAID1 (planned)
 - **Networking:** Segmented Podman networks (reverse_proxy, media_services, database, auth_services)
 
-## Documentation Structure
+## Documentation Structure (well defined documentation logic in ~/containers/docs/CONTRIBUTING.md and ~/containers/docs/README.md)
 
 - `00-foundation/` - Core concepts and fundamentals
 - `10-services/` - Service-specific documentation
