@@ -29,8 +29,8 @@ Label=traefik.http.routers.tinyauth.tls=true
 Label=traefik.http.services.tinyauth.loadbalancer.server.port=3000
 Label=traefik.http.middlewares.tinyauth.forwardauth.address=http://tinyauth:3000/api/auth/traefik
 
-# Health check - validates auth endpoint is responding
-HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:3000/api/auth/traefik || exit 1
+# Health check - validates web server is responding (checks login page)
+HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=3
