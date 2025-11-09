@@ -16,7 +16,7 @@ acme.json
 **/acme.json
 
 # Quadlets with hardcoded secrets (keep local, use templates)
-quadlets/tinyauth.container
+# Note: tinyauth.container now uses placeholders and is tracked in git
 quadlets/grafana.container
 
 # SSL/TLS Certificates

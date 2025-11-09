@@ -1,0 +1,61 @@
+# ============================================================================
+# ⚠️  WARNING: PLACEHOLDER SECRETS - REPLACE BEFORE DEPLOYMENT  ⚠️
+# ============================================================================
+# This file contains placeholder values that MUST be replaced before use:
+#
+#   SECRET=<<REPLACE_WITH_RANDOM_SECRET>>
+#   USERS=<<REPLACE_WITH_USERNAME:BCRYPT_HASH>>
+#
+# Generate secrets:
+#   - SECRET: openssl rand -base64 32
+#   - USERS: Use bcrypt hash generator (14 rounds recommended)
+#
+# DO NOT restart tinyauth.service without replacing these values first!
+# ============================================================================
+
+[Unit]
+Description=TinyAuth - Lightweight Forward Authentication
+After=traefik.service reverse_proxy-network.service auth_services-network.service
+Wants=reverse_proxy-network.service auth_services-network.service
+Requires=reverse_proxy-network.service auth_services-network.service
+
+[Container]
+Image=ghcr.io/steveiliop56/tinyauth:v4
+ContainerName=tinyauth
+HostName=tinyauth
+
+# Networks (multi-network: serves login page + handles auth checks)
+Network=systemd-reverse_proxy
+Network=systemd-auth_services
+
+# ⚠️  REPLACE THESE PLACEHOLDERS BEFORE DEPLOYMENT ⚠️
+Environment=APP_URL=https://auth.patriark.org
+Environment=SECRET=<<REPLACE_WITH_RANDOM_SECRET>>
+Environment=USERS=<<REPLACE_WITH_USERNAME:BCRYPT_HASH>>
+
+# Storage
+Volume=%h/containers/data/tinyauth:/app/data:Z
+
+# Traefik Labels
+Label=traefik.enable=true
+Label=traefik.http.routers.tinyauth.rule=Host(`auth.patriark.org`)
+Label=traefik.http.routers.tinyauth.entrypoints=websecure
+Label=traefik.http.routers.tinyauth.tls=true
+Label=traefik.http.services.tinyauth.loadbalancer.server.port=3000
+Label=traefik.http.middlewares.tinyauth.forwardauth.address=http://tinyauth:3000/api/auth/traefik
+
+# Health check - validates auth endpoint is responding
+HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:3000/api/auth/traefik || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=60
+
+# Resource Limits
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target
