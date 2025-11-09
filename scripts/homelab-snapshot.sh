@@ -219,7 +219,7 @@ collect_system_info() {
     "selinux": "$selinux",
     "uptime_seconds": $uptime_seconds,
     "timestamp": "$(date -Iseconds)",
-    "snapshot_version": "1.0"
+    "snapshot_version": "1.1"
   },
 EOF
 }
@@ -591,10 +591,223 @@ collect_architectural_metadata() {
     "routing": "traefik file-based",
     "monitoring": "prometheus + grafana + loki",
     "authentication": "per-service (optional tinyauth gateway)"
-  }
+  },
 EOF
 
     log_info "Collected architectural metadata"
+}
+
+collect_health_analysis() {
+    log_section "Analyzing health check coverage"
+
+    local with_checks=0
+    local without_checks=0
+    local healthy=0
+    local unhealthy=0
+    local services_without_checks=""
+
+    while IFS= read -r container_name; do
+        local health=$(podman inspect "$container_name" --format '{{.State.Health.Status}}' 2>/dev/null || echo "none")
+
+        if [ "$health" = "none" ] || [ -z "$health" ]; then
+            without_checks=$((without_checks + 1))
+            [ -n "$services_without_checks" ] && services_without_checks="${services_without_checks}, "
+            services_without_checks="${services_without_checks}\"$container_name\""
+        else
+            with_checks=$((with_checks + 1))
+            if [ "$health" = "healthy" ]; then
+                healthy=$((healthy + 1))
+            elif [ "$health" = "unhealthy" ]; then
+                unhealthy=$((unhealthy + 1))
+            fi
+        fi
+    done < <(podman ps --format '{{.Names}}' 2>/dev/null)
+
+    local total=$((with_checks + without_checks))
+    local coverage_percent=0
+    [ $total -gt 0 ] && coverage_percent=$((with_checks * 100 / total))
+
+    cat <<EOF
+  "health_check_analysis": {
+    "total_services": $total,
+    "with_health_checks": $with_checks,
+    "without_health_checks": $without_checks,
+    "coverage_percent": $coverage_percent,
+    "healthy": $healthy,
+    "unhealthy": $unhealthy,
+    "services_without_checks": [${services_without_checks}]
+  },
+EOF
+
+    log_info "Analyzed health check coverage: $coverage_percent% ($with_checks/$total services)"
+}
+
+collect_resource_limits_analysis() {
+    log_section "Analyzing resource limits"
+
+    local quadlet_dir="${HOME}/.config/containers/systemd"
+    local with_limits=0
+    local without_limits=0
+    local services_without_limits=""
+
+    if [ -d "$quadlet_dir" ]; then
+        for quadlet_file in "$quadlet_dir"/*.container; do
+            [ -f "$quadlet_file" ] || continue
+
+            local service_name="${quadlet_file##*/}"
+            service_name="${service_name%.container}"
+
+            # Check if service has MemoryMax or CPUQuota
+            local has_memory=$(grep -q '^MemoryMax=' "$quadlet_file" && echo "yes" || echo "no")
+            local has_cpu=$(grep -q '^CPUQuota=' "$quadlet_file" && echo "yes" || echo "no")
+
+            if [ "$has_memory" = "yes" ] || [ "$has_cpu" = "yes" ]; then
+                with_limits=$((with_limits + 1))
+            else
+                without_limits=$((without_limits + 1))
+                [ -n "$services_without_limits" ] && services_without_limits="${services_without_limits}, "
+                services_without_limits="${services_without_limits}\"$service_name\""
+            fi
+        done
+    fi
+
+    local total=$((with_limits + without_limits))
+    local coverage_percent=0
+    [ $total -gt 0 ] && coverage_percent=$((with_limits * 100 / total))
+
+    cat <<EOF
+  "resource_limits_analysis": {
+    "total_services": $total,
+    "with_limits": $with_limits,
+    "without_limits": $without_limits,
+    "coverage_percent": $coverage_percent,
+    "services_without_limits": [${services_without_limits}]
+  },
+EOF
+
+    log_info "Analyzed resource limits: $coverage_percent% ($with_limits/$total services)"
+}
+
+collect_configuration_drift() {
+    log_section "Detecting configuration drift"
+
+    local quadlet_dir="${HOME}/.config/containers/systemd"
+    local configured_not_running=""
+    local running_not_configured=""
+
+    # Find quadlets not running
+    if [ -d "$quadlet_dir" ]; then
+        for quadlet_file in "$quadlet_dir"/*.container; do
+            [ -f "$quadlet_file" ] || continue
+
+            local service_name="${quadlet_file##*/}"
+            service_name="${service_name%.container}"
+
+            # Check if service is running
+            if ! podman ps --format '{{.Names}}' 2>/dev/null | grep -q "^${service_name}$"; then
+                [ -n "$configured_not_running" ] && configured_not_running="${configured_not_running}, "
+                configured_not_running="${configured_not_running}\"$service_name\""
+            fi
+        done
+    fi
+
+    # Find running containers without quadlets
+    while IFS= read -r container_name; do
+        if [ ! -f "${quadlet_dir}/${container_name}.container" ]; then
+            [ -n "$running_not_configured" ] && running_not_configured="${running_not_configured}, "
+            running_not_configured="${running_not_configured}\"$container_name\""
+        fi
+    done < <(podman ps --format '{{.Names}}' 2>/dev/null)
+
+    local has_drift="false"
+    [ -n "$configured_not_running" ] || [ -n "$running_not_configured" ] && has_drift="true"
+
+    cat <<EOF
+  "configuration_drift": {
+    "has_drift": $has_drift,
+    "configured_but_not_running": [${configured_not_running}],
+    "running_but_not_configured": [${running_not_configured}]
+  },
+EOF
+
+    log_info "Configuration drift detection complete"
+}
+
+collect_network_utilization() {
+    log_section "Analyzing network utilization"
+
+    local first=true
+    echo '  "network_utilization": {'
+
+    while IFS= read -r network_name; do
+        [ "$first" = false ] && echo ","
+
+        local container_count=$(podman network inspect "$network_name" 2>/dev/null | grep -c '"name":' || echo 0)
+
+        cat <<EOF
+    "$network_name": {
+      "container_count": $container_count
+    }
+EOF
+        first=false
+    done < <(podman network ls --format '{{.Name}}' 2>/dev/null | grep -v '^podman')
+
+    echo ""
+    echo '  },'
+
+    log_info "Analyzed network utilization"
+}
+
+collect_service_uptime() {
+    log_section "Calculating service uptime"
+
+    local first=true
+    local current_time=$(date +%s)
+
+    echo '  "service_uptime": {'
+
+    while IFS= read -r container_name; do
+        [ "$first" = false ] && echo ","
+
+        local started=$(podman inspect "$container_name" --format '{{.State.StartedAt}}' 2>/dev/null || echo "unknown")
+        local uptime_seconds=0
+        local uptime_human="unknown"
+
+        if [ "$started" != "unknown" ]; then
+            # Parse ISO 8601 date to epoch
+            local started_epoch=$(date -d "$started" +%s 2>/dev/null || echo 0)
+            if [ $started_epoch -gt 0 ]; then
+                uptime_seconds=$((current_time - started_epoch))
+
+                # Convert to human readable
+                local days=$((uptime_seconds / 86400))
+                local hours=$(((uptime_seconds % 86400) / 3600))
+                local minutes=$(((uptime_seconds % 3600) / 60))
+
+                if [ $days -gt 0 ]; then
+                    uptime_human="${days}d ${hours}h ${minutes}m"
+                elif [ $hours -gt 0 ]; then
+                    uptime_human="${hours}h ${minutes}m"
+                else
+                    uptime_human="${minutes}m"
+                fi
+            fi
+        fi
+
+        cat <<EOF
+    "$container_name": {
+      "started_at": "$started",
+      "uptime_seconds": $uptime_seconds,
+      "uptime_human": "$uptime_human"
+    }
+EOF
+        first=false
+    done < <(podman ps --format '{{.Names}}' 2>/dev/null)
+
+    echo ""
+    echo '  }'
+
+    log_info "Calculated service uptime"
 }
 
 ##############################################################################
@@ -603,7 +816,7 @@ EOF
 
 main() {
     echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" >&2
-    echo -e "${BLUE}        HOMELAB SNAPSHOT TOOL v1.0${NC}" >&2
+    echo -e "${BLUE}        HOMELAB SNAPSHOT TOOL v1.1${NC}" >&2
     echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}" >&2
     echo "" >&2
 
@@ -621,6 +834,11 @@ main() {
         collect_resources
         collect_quadlet_configs
         collect_architectural_metadata
+        collect_health_analysis
+        collect_resource_limits_analysis
+        collect_configuration_drift
+        collect_network_utilization
+        collect_service_uptime
         echo "}"
     } > "$JSON_OUTPUT"
 
