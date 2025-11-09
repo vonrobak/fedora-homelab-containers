@@ -1,18 +1,3 @@
-# ============================================================================
-# ⚠️  WARNING: PLACEHOLDER SECRETS - REPLACE BEFORE DEPLOYMENT  ⚠️
-# ============================================================================
-# This file contains placeholder values that MUST be replaced before use:
-#
-#   SECRET=<<REPLACE_WITH_RANDOM_SECRET>>
-#   USERS=<<REPLACE_WITH_USERNAME:BCRYPT_HASH>>
-#
-# Generate secrets:
-#   - SECRET: openssl rand -base64 32
-#   - USERS: Use bcrypt hash generator (14 rounds recommended)
-#
-# DO NOT restart tinyauth.service without replacing these values first!
-# ============================================================================
-
 [Unit]
 Description=TinyAuth - Lightweight Forward Authentication
 After=traefik.service reverse_proxy-network.service auth_services-network.service
@@ -30,8 +15,8 @@ Network=systemd-auth_services
 
 # ⚠️  REPLACE THESE PLACEHOLDERS BEFORE DEPLOYMENT ⚠️
 Environment=APP_URL=https://auth.patriark.org
-Environment=SECRET=<<REPLACE_WITH_RANDOM_SECRET>>
-Environment=USERS=<<REPLACE_WITH_USERNAME:BCRYPT_HASH>>
+Environment=SECRET=REPLACE_WITH_YOUR_SECRET_KEY
+Environment=USERS=REPLACE_WITH_USERNAME:BCRYPT_HASH
 
 # Storage
 Volume=%h/containers/data/tinyauth:/app/data:Z
