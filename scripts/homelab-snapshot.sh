@@ -310,8 +310,19 @@ collect_networks() {
         local containers=""
         while IFS= read -r container_name; do
             local container_networks=$(podman inspect "$container_name" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' 2>/dev/null)
-            if echo "$container_networks" | grep -q "$network_name"; then
-                local ip=$(podman inspect "$container_name" --format "{{.NetworkSettings.Networks.${network_name}.IPAddress}}" 2>/dev/null || echo "")
+            if echo "$container_networks" | grep -qw "$network_name"; then
+                # Get IP address for this specific network using json output
+                local ip=$(podman inspect "$container_name" --format "json" 2>/dev/null | \
+                    grep -A 20 "\"$network_name\"" | grep "IPAddress" | head -1 | \
+                    sed 's/.*: "\(.*\)".*/\1/' || echo "")
+
+                # Fallback: try direct podman network inspect
+                if [ -z "$ip" ]; then
+                    ip=$(podman network inspect "$network_name" 2>/dev/null | \
+                        grep -B 5 "\"name\": \"$container_name\"" | grep "ipv4" | \
+                        sed 's/.*: "\([^/]*\).*/\1/' | head -1 || echo "")
+                fi
+
                 if [ -n "$ip" ]; then
                     [ -n "$containers" ] && containers="${containers}, "
                     containers="${containers}\"${container_name}:${ip}\""
@@ -356,7 +367,7 @@ collect_traefik_routing() {
         local current_service=""
         local current_middlewares=""
 
-        while IFS= read -line; do
+        while IFS= read -r line; do
             # Detect router name (indented, ends with colon, not a comment)
             if echo "$line" | grep -E '^    [a-z-]+:$' | grep -v '^ *#' >/dev/null; then
                 if [ -n "$current_router" ]; then
@@ -458,11 +469,19 @@ EOF
 
     local first=true
     for container in $(podman ps --format '{{.Names}}' 2>/dev/null); do
-        local volumes=$(podman inspect "$container" --format '{{range .Mounts}}{{.Source}}:{{.Destination}}:{{.Mode}} {{end}}' 2>/dev/null)
+        local volumes=$(podman inspect "$container" --format '{{range .Mounts}}{{.Source}}:{{.Destination}}:{{.Mode}} {{end}}' 2>/dev/null | xargs)
         if [ -n "$volumes" ]; then
             [ "$first" = false ] && echo ","
             echo -n "      \"$container\": ["
-            echo "$volumes" | sed 's/ /", "/g; s/^/"/; s/$/"/' | sed 's/""//' | tr -d '\n'
+
+            # Convert space-separated volumes to JSON array
+            local vol_first=true
+            for vol in $volumes; do
+                [ "$vol_first" = false ] && echo -n ", "
+                echo -n "\"$vol\""
+                vol_first=false
+            done
+
             echo -n "]"
             first=false
         fi
