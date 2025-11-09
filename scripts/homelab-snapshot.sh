@@ -846,14 +846,28 @@ collect_health_check_validation() {
                 if [ -n "$cmd_binary" ]; then
                     # Test if the binary exists in the container (with 2s timeout to avoid hangs)
                     local binary_check_result="unknown"
-                    if timeout 2 podman exec "$container_name" which "$cmd_binary" &>/dev/null || \
-                       timeout 2 podman exec "$container_name" command -v "$cmd_binary" &>/dev/null; then
+
+                    # First try: which command (with hard kill after 2s+1s grace period)
+                    timeout --kill-after=1s 2s podman exec "$container_name" which "$cmd_binary" </dev/null &>/dev/null
+                    local exit_code=$?
+
+                    if [ $exit_code -eq 0 ]; then
                         binary_check_result="found"
-                    elif [ $? -eq 124 ]; then
-                        # Timeout occurred - container not responding
+                    elif [ $exit_code -eq 124 ] || [ $exit_code -eq 137 ]; then
+                        # Timeout occurred (124 = SIGTERM, 137 = SIGKILL) - container not responding
                         binary_check_result="timeout"
                     else
-                        binary_check_result="not_found"
+                        # which failed, try command -v
+                        timeout --kill-after=1s 2s podman exec "$container_name" command -v "$cmd_binary" </dev/null &>/dev/null
+                        exit_code=$?
+
+                        if [ $exit_code -eq 0 ]; then
+                            binary_check_result="found"
+                        elif [ $exit_code -eq 124 ] || [ $exit_code -eq 137 ]; then
+                            binary_check_result="timeout"
+                        else
+                            binary_check_result="not_found"
+                        fi
                     fi
 
                     if [ "$binary_check_result" = "not_found" ]; then
@@ -947,12 +961,14 @@ collect_recommendations() {
 
                 if [ -n "$cmd_binary" ]; then
                     # Check with timeout to avoid hanging (skip if container unresponsive)
-                    if ! timeout 2 podman exec "$container_name" which "$cmd_binary" &>/dev/null 2>&1; then
-                        # Only add recommendation if timeout didn't occur (exit code 124)
-                        if [ $? -ne 124 ]; then
-                            [ "$first" = false ] && echo ","
+                    timeout --kill-after=1s 2s podman exec "$container_name" which "$cmd_binary" </dev/null &>/dev/null 2>&1
+                    local check_exit_code=$?
 
-                            cat <<EOF
+                    # Only add recommendation if binary not found AND timeout didn't occur (124=SIGTERM, 137=SIGKILL)
+                    if [ $check_exit_code -ne 0 ] && [ $check_exit_code -ne 124 ] && [ $check_exit_code -ne 137 ]; then
+                        [ "$first" = false ] && echo ","
+
+                        cat <<EOF
       {
         "priority": "high",
         "category": "health_check",
@@ -963,9 +979,8 @@ collect_recommendations() {
         "estimated_time": "5 minutes"
       }
 EOF
-                            first=false
-                            rec_count=$((rec_count + 1))
-                        fi
+                        first=false
+                        rec_count=$((rec_count + 1))
                     fi
                 fi
             fi
