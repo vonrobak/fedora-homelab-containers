@@ -1,0 +1,722 @@
+{
+  "system": {
+    "hostname": "fedora-htpc",
+    "kernel": "6.17.6-200.fc42.x86_64",
+    "os": "Fedora release 42 (Adams)",
+    "selinux": "Enforcing",
+    "uptime_seconds": 458085,
+    "timestamp": "2025-11-09T19:14:15+01:00",
+    "snapshot_version": "1.1"
+  },
+  "services": {
+    "crowdsec": {
+      "image": "ghcr.io/crowdsecurity/crowdsec:latest",
+      "status": "running",
+      "health": "none",
+      "started": "2025-11-04 12:00:10.44327386 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-reverse_proxy"],
+      "ports": [],
+      "volumes": ["/home/patriark/containers/data/crowdsec/db:/var/lib/crowdsec/data", "/home/patriark/containers/data/crowdsec/config:/etc/crowdsec"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/crowdsec.container"
+    }
+,
+    "tinyauth": {
+      "image": "ghcr.io/steveiliop56/tinyauth:v4",
+      "status": "running",
+      "health": "none",
+      "started": "2025-11-05 19:30:40.583202806 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-auth_services", "systemd-reverse_proxy"],
+      "ports": ["3000/tcp"],
+      "volumes": ["/home/patriark/.local/share/containers/storage/volumes/bdfe66afc91a017d7efe779ae250330b126742e497c66766c2b9bbaaabdca291/_data:/data", "/home/patriark/containers/data/tinyauth:/app/data"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/tinyauth.container"
+    }
+,
+    "node_exporter": {
+      "image": "quay.io/prometheus/node-exporter:latest",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-05 22:42:14.669159663 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring"],
+      "ports": ["9100/tcp"],
+      "volumes": ["/sys:/host/sys", "/proc:/host/proc", "/:/host"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/node_exporter.container"
+    }
+,
+    "promtail": {
+      "image": "docker.io/grafana/promtail:3.2.1",
+      "status": "running",
+      "health": "none",
+      "started": "2025-11-06 08:51:33.361722236 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring"],
+      "ports": [],
+      "volumes": ["/home/patriark/containers/config/promtail:/etc/promtail", "/home/patriark/containers/data/promtail:/tmp", "/home/patriark/containers/data/journal-export:/var/log/journal-export"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/promtail.container"
+    }
+,
+    "alertmanager": {
+      "image": "quay.io/prometheus/alertmanager:latest",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-06 23:30:18.861043105 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring"],
+      "ports": ["9093/tcp"],
+      "volumes": ["/home/patriark/containers/config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml", "/home/patriark/containers/data/alertmanager:/alertmanager"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/alertmanager.container"
+    }
+,
+    "alert-discord-relay": {
+      "image": "localhost/alert-discord-relay:latest",
+      "status": "running",
+      "health": "none",
+      "started": "2025-11-06 23:44:51.427983431 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring"],
+      "ports": ["9095/tcp"],
+      "volumes": [],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/alert-discord-relay.container"
+    }
+,
+    "cadvisor": {
+      "image": "gcr.io/cadvisor/cadvisor:v0.50.0",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-07 09:31:45.645325295 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring"],
+      "ports": ["8080/tcp"],
+      "volumes": ["/sys/fs/cgroup:/sys/fs/cgroup", "/home/patriark/.local/share/containers:/var/lib/containers", "/dev/disk:/dev/disk", "/:/rootfs", "/run/user/1000/podman/podman.sock:/var/run/docker.sock", "/sys:/sys"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/cadvisor.container"
+    }
+,
+    "grafana": {
+      "image": "docker.io/grafana/grafana:11.3.0",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-07 09:40:37.032264408 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring", "systemd-reverse_proxy"],
+      "ports": ["3000/tcp"],
+      "volumes": ["/home/patriark/containers/data/grafana:/var/lib/grafana", "/home/patriark/containers/config/grafana/provisioning:/etc/grafana/provisioning"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/grafana.container"
+    }
+,
+    "redis-immich": {
+      "image": "docker.io/valkey/valkey:8",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-08 13:03:02.882505748 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-photos"],
+      "ports": ["6379/tcp"],
+      "volumes": ["/mnt/btrfs-pool/subvol7-containers/redis-immich:/data"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/redis-immich.container"
+    }
+,
+    "jellyfin": {
+      "image": "docker.io/jellyfin/jellyfin:latest",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-08 19:50:42.434116341 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-media_services", "systemd-monitoring", "systemd-reverse_proxy"],
+      "ports": ["7359/udp", "8096/tcp"],
+      "volumes": ["/mnt/btrfs-pool/subvol5-music:/media/music", "/home/patriark/containers/config/jellyfin:/config", "/mnt/btrfs-pool/subvol7-containers/jellyfin/data:/data", "/mnt/btrfs-pool/subvol6-tmp/jellyfin-cache:/cache", "/mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes:/config/transcodes", "/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/jellyfin.container"
+    }
+,
+    "traefik": {
+      "image": "docker.io/library/traefik:v3.2",
+      "status": "running",
+      "health": "none",
+      "started": "2025-11-09 18:07:32.14615512 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-auth_services", "systemd-monitoring", "systemd-reverse_proxy"],
+      "ports": ["443/tcp", "80/tcp", "8080/tcp"],
+      "volumes": ["/home/patriark/containers/scripts/traefik-entrypoint.sh:/traefik-entrypoint.sh", "/home/patriark/containers/config/traefik/traefik.yml:/etc/traefik/traefik.yml", "/home/patriark/containers/config/traefik/dynamic:/etc/traefik/dynamic", "/home/patriark/containers/config/traefik/letsencrypt:/letsencrypt", "/run/user/1000/podman/podman.sock:/var/run/podman/podman.sock"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/traefik.container"
+    }
+,
+    "prometheus": {
+      "image": "quay.io/prometheus/prometheus:latest",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-09 18:07:57.683049897 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring", "systemd-reverse_proxy"],
+      "ports": ["9090/tcp"],
+      "volumes": ["/home/patriark/containers/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml", "/home/patriark/containers/config/prometheus/alerts:/etc/prometheus/alerts", "/mnt/btrfs-pool/subvol7-containers/prometheus:/prometheus"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/prometheus.container"
+    }
+,
+    "loki": {
+      "image": "docker.io/grafana/loki:3.2.1",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-09 18:08:13.578031078 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring", "systemd-reverse_proxy"],
+      "ports": ["3100/tcp"],
+      "volumes": ["/home/patriark/containers/config/loki/loki-config.yml:/etc/loki/local-config.yaml", "/mnt/btrfs-pool/subvol7-containers/loki:/loki"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/loki.container"
+    }
+,
+    "postgresql-immich": {
+      "image": "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-09 18:08:29.032555016 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-photos"],
+      "ports": ["5432/tcp"],
+      "volumes": ["/mnt/btrfs-pool/subvol7-containers/postgresql-immich:/var/lib/postgresql/data"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/postgresql-immich.container"
+    }
+,
+    "immich-server": {
+      "image": "ghcr.io/immich-app/immich-server:release",
+      "status": "running",
+      "health": "healthy",
+      "started": "2025-11-09 18:09:08.406505579 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-monitoring", "systemd-photos", "systemd-reverse_proxy"],
+      "ports": ["2283/tcp"],
+      "volumes": ["/home/patriark/.local/share/containers/storage/volumes/fba507f69f1762a80a9e1bb50c07b7dca8f1e6b2751e9228002480af90f09f9d/_data:/data", "/mnt/btrfs-pool/subvol3-opptak/immich:/usr/src/app/upload", "/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/immich-server.container"
+    }
+,
+    "immich-ml": {
+      "image": "ghcr.io/immich-app/immich-machine-learning:release",
+      "status": "running",
+      "health": "unhealthy",
+      "started": "2025-11-09 18:51:38.240529457 +0100 CET",
+      "systemd_active": "active",
+      "networks": ["systemd-photos"],
+      "ports": [],
+      "volumes": ["/mnt/btrfs-pool/subvol7-containers/immich-ml-cache:/cache"],
+      "memory_mb": 0,
+      "quadlet_file": "/home/patriark/.config/containers/systemd/immich-ml.container"
+    }
+
+  },
+  "networks": {
+    "systemd-auth_services": {
+      "subnet": "10.89.3.0/24",
+      "gateway": "10.89.3.1",
+      "driver": "bridge",
+      "containers": ["tinyauth:10.89.3.2", "traefik:10.89.3.12"]
+    }
+,
+    "systemd-media_services": {
+      "subnet": "10.89.1.0/24",
+      "gateway": "10.89.1.1",
+      "driver": "bridge",
+      "containers": ["jellyfin:10.89.1.9"]
+    }
+,
+    "systemd-monitoring": {
+      "subnet": "10.89.4.0/24",
+      "gateway": "10.89.4.1",
+      "driver": "bridge",
+      "containers": ["node_exporter:10.89.4.8", "promtail:10.89.4.55", "alertmanager:10.89.4.101", "alert-discord-relay:10.89.4.104", "cadvisor:10.89.4.107", "grafana:10.89.4.109", "jellyfin:10.89.4.123", "traefik:10.89.4.125", "prometheus:10.89.4.126", "loki:10.89.4.127", "immich-server:10.89.4.129"]
+    }
+,
+    "systemd-photos": {
+      "subnet": "10.89.5.0/24",
+      "gateway": "10.89.5.1",
+      "driver": "bridge",
+      "containers": ["redis-immich:10.89.5.3", "postgresql-immich:10.89.5.10", "immich-server:10.89.5.12", "immich-ml:10.89.5.14"]
+    }
+,
+    "systemd-reverse_proxy": {
+      "subnet": "10.89.2.0/24",
+      "gateway": "10.89.2.1",
+      "driver": "bridge",
+      "containers": ["crowdsec:10.89.2.2", "tinyauth:10.89.2.7", "grafana:10.89.2.58", "jellyfin:10.89.2.72", "traefik:10.89.2.74", "prometheus:10.89.2.75", "loki:10.89.2.76", "immich-server:10.89.2.78"]
+    }
+,
+    "web_services": {
+      "subnet": "10.89.0.0/24",
+      "gateway": "10.89.0.1",
+      "driver": "bridge",
+      "containers": []
+    }
+
+  },
+  "traefik_routing": {
+    "routers_file": "/home/patriark/containers/config/traefik/dynamic/routers.yml",
+    "routers": {
+      "root-redirect": {
+        "rule": "Host(`patriark.org`)",
+        "service": "tinyauth",
+        "middlewares": ["websecure","bouncer","limit"]
+      }
+,
+      "tinyauth-portal": {
+        "rule": "Host(`auth.patriark.org`)",
+        "service": "tinyauth",
+        "middlewares": ["websecure","bouncer","limit"]
+      }
+,
+      "traefik-dashboard": {
+        "rule": "Host(`traefik.patriark.org`)",
+        "service": "api@internal",
+        "middlewares": ["websecure","bouncer","limit","tinyauth@file"]
+      }
+,
+      "jellyfin-secure": {
+        "rule": "Host(`jellyfin.patriark.org`)",
+        "service": "jellyfin",
+        "middlewares": ["websecure","bouncer","public"]
+      }
+,
+      "immich-assets": {
+        "rule": "Host(`photos.patriark.org`) && PathPrefix(`/_app/`)",
+        "service": "immich",
+        "middlewares": ["websecure","bouncer","limit"]
+      }
+,
+      "immich-secure": {
+        "rule": "Host(`photos.patriark.org`)",
+        "service": "immich",
+        "middlewares": ["websecure","bouncer","limit"]
+      }
+,
+      "grafana-secure": {
+        "rule": "Host(`grafana.patriark.org`)",
+        "service": "grafana",
+        "middlewares": ["websecure","bouncer","limit","tinyauth@file"]
+      }
+,
+      "prometheus-secure": {
+        "rule": "Host(`prometheus.patriark.org`)",
+        "service": "prometheus",
+        "middlewares": ["websecure","bouncer","whitelist","limit","tinyauth@file"]
+      }
+,
+      "loki-secure": {
+        "rule": "Host(`loki.patriark.org`)",
+        "service": "loki",
+        "middlewares": ["websecure","bouncer","whitelist","limit","tinyauth@file"]
+      }
+
+    }
+  },
+  "storage": {
+    "system_disk": {
+      "mount": "/",
+      "total_gb": 118,
+      "used_gb": 67,
+      "percent": 59
+    },
+    "btrfs_pool": {
+      "mount": "/mnt/btrfs-pool",
+      "total_gb": 13042,
+      "used_gb": 8377,
+      "percent": 65
+    },
+    "container_volumes": {
+      "crowdsec": ["/home/patriark/containers/data/crowdsec/db:/var/lib/crowdsec/data", "/home/patriark/containers/data/crowdsec/config:/etc/crowdsec"],
+      "tinyauth": ["/home/patriark/.local/share/containers/storage/volumes/bdfe66afc91a017d7efe779ae250330b126742e497c66766c2b9bbaaabdca291/_data:/data", "/home/patriark/containers/data/tinyauth:/app/data"],
+      "node_exporter": ["/sys:/host/sys", "/proc:/host/proc", "/:/host"],
+      "promtail": ["/home/patriark/containers/config/promtail:/etc/promtail", "/home/patriark/containers/data/promtail:/tmp", "/home/patriark/containers/data/journal-export:/var/log/journal-export"],
+      "alertmanager": ["/home/patriark/containers/config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml", "/home/patriark/containers/data/alertmanager:/alertmanager"],
+      "cadvisor": ["/sys/fs/cgroup:/sys/fs/cgroup", "/home/patriark/.local/share/containers:/var/lib/containers", "/dev/disk:/dev/disk", "/:/rootfs", "/run/user/1000/podman/podman.sock:/var/run/docker.sock", "/sys:/sys"],
+      "grafana": ["/home/patriark/containers/data/grafana:/var/lib/grafana", "/home/patriark/containers/config/grafana/provisioning:/etc/grafana/provisioning"],
+      "redis-immich": ["/mnt/btrfs-pool/subvol7-containers/redis-immich:/data"],
+      "jellyfin": ["/mnt/btrfs-pool/subvol5-music:/media/music", "/home/patriark/containers/config/jellyfin:/config", "/mnt/btrfs-pool/subvol7-containers/jellyfin/data:/data", "/mnt/btrfs-pool/subvol6-tmp/jellyfin-cache:/cache", "/mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes:/config/transcodes", "/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia"],
+      "traefik": ["/home/patriark/containers/scripts/traefik-entrypoint.sh:/traefik-entrypoint.sh", "/home/patriark/containers/config/traefik/traefik.yml:/etc/traefik/traefik.yml", "/home/patriark/containers/config/traefik/dynamic:/etc/traefik/dynamic", "/home/patriark/containers/config/traefik/letsencrypt:/letsencrypt", "/run/user/1000/podman/podman.sock:/var/run/podman/podman.sock"],
+      "prometheus": ["/home/patriark/containers/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml", "/home/patriark/containers/config/prometheus/alerts:/etc/prometheus/alerts", "/mnt/btrfs-pool/subvol7-containers/prometheus:/prometheus"],
+      "loki": ["/home/patriark/containers/config/loki/loki-config.yml:/etc/loki/local-config.yaml", "/mnt/btrfs-pool/subvol7-containers/loki:/loki"],
+      "postgresql-immich": ["/mnt/btrfs-pool/subvol7-containers/postgresql-immich:/var/lib/postgresql/data"],
+      "immich-server": ["/home/patriark/.local/share/containers/storage/volumes/fba507f69f1762a80a9e1bb50c07b7dca8f1e6b2751e9228002480af90f09f9d/_data:/data", "/mnt/btrfs-pool/subvol3-opptak/immich:/usr/src/app/upload", "/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media"],
+      "immich-ml": ["/mnt/btrfs-pool/subvol7-containers/immich-ml-cache:/cache"]
+    }
+  },
+  "resources": {
+    "memory": {
+      "total_mb": 31444,
+      "used_mb": 13294,
+      "available_mb": 18149,
+      "percent": 42
+    },
+    "swap": {
+      "total_mb": 8191,
+      "used_mb": 1958,
+      "percent": 23
+    },
+    "load_average": {
+      "1min": 0,
+      "5min": 46,
+      "15min": 0
+    }
+  },
+  "quadlet_configs": {
+    "alert-discord-relay": {
+      "file": "/home/patriark/.config/containers/systemd/alert-discord-relay.container",
+      "image": "localhost/alert-discord-relay:latest",
+      "networks": ["systemd-monitoring"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "alertmanager": {
+      "file": "/home/patriark/.config/containers/systemd/alertmanager.container",
+      "image": "quay.io/prometheus/alertmanager:latest",
+      "networks": ["systemd-monitoring"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "alloy": {
+      "file": "/home/patriark/.config/containers/systemd/alloy.container",
+      "image": "docker.io/grafana/alloy:latest",
+      "networks": ["systemd-monitoring"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "cadvisor": {
+      "file": "/home/patriark/.config/containers/systemd/cadvisor.container",
+      "image": "gcr.io/cadvisor/cadvisor:v0.50.0",
+      "networks": ["systemd-monitoring"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "crowdsec": {
+      "file": "/home/patriark/.config/containers/systemd/crowdsec.container",
+      "image": "ghcr.io/crowdsecurity/crowdsec:latest",
+      "networks": ["systemd-reverse_proxy"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "grafana": {
+      "file": "/home/patriark/.config/containers/systemd/grafana.container",
+      "image": "docker.io/grafana/grafana:11.3.0",
+      "networks": ["systemd-reverse_proxy", "systemd-monitoring"],
+      "memory_max": "1G",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "immich-ml": {
+      "file": "/home/patriark/.config/containers/systemd/immich-ml.container",
+      "image": "ghcr.io/immich-app/immich-machine-learning:release",
+      "networks": ["systemd-photos"],
+      "memory_max": "4G",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "immich-server": {
+      "file": "/home/patriark/.config/containers/systemd/immich-server.container",
+      "image": "ghcr.io/immich-app/immich-server:release",
+      "networks": ["systemd-reverse_proxy", "systemd-photos", "systemd-monitoring"],
+      "memory_max": "3G",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "jellyfin": {
+      "file": "/home/patriark/.config/containers/systemd/jellyfin.container",
+      "image": "docker.io/jellyfin/jellyfin:latest",
+      "networks": ["systemd-reverse_proxy", "systemd-media_services", "systemd-monitoring"],
+      "memory_max": "4G",
+      "cpu_shares": "",
+      "nice": "-5"
+    }
+,
+    "loki": {
+      "file": "/home/patriark/.config/containers/systemd/loki.container",
+      "image": "docker.io/grafana/loki:3.2.1",
+      "networks": ["systemd-reverse_proxy", "systemd-monitoring"],
+      "memory_max": "1G",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "node_exporter": {
+      "file": "/home/patriark/.config/containers/systemd/node_exporter.container",
+      "image": "quay.io/prometheus/node-exporter:latest",
+      "networks": ["systemd-monitoring"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "postgresql-immich": {
+      "file": "/home/patriark/.config/containers/systemd/postgresql-immich.container",
+      "image": "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0",
+      "networks": ["systemd-photos"],
+      "memory_max": "2G",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "prometheus": {
+      "file": "/home/patriark/.config/containers/systemd/prometheus.container",
+      "image": "quay.io/prometheus/prometheus:latest",
+      "networks": ["systemd-reverse_proxy", "systemd-monitoring"],
+      "memory_max": "2G",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "promtail": {
+      "file": "/home/patriark/.config/containers/systemd/promtail.container",
+      "image": "docker.io/grafana/promtail:3.2.1",
+      "networks": ["systemd-monitoring"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "redis-immich": {
+      "file": "/home/patriark/.config/containers/systemd/redis-immich.container",
+      "image": "docker.io/valkey/valkey:8",
+      "networks": ["systemd-photos"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "tinyauth": {
+      "file": "/home/patriark/.config/containers/systemd/tinyauth.container",
+      "image": "ghcr.io/steveiliop56/tinyauth:v4",
+      "networks": ["systemd-reverse_proxy", "systemd-auth_services"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+,
+    "traefik": {
+      "file": "/home/patriark/.config/containers/systemd/traefik.container",
+      "image": "docker.io/library/traefik:v3.2",
+      "networks": ["systemd-reverse_proxy", "systemd-auth_services", "systemd-monitoring"],
+      "memory_max": "",
+      "cpu_shares": "",
+      "nice": ""
+    }
+
+  },
+  "architecture": {
+    "orchestration": "systemd quadlets",
+    "runtime": "podman (rootless)",
+    "networks": "isolated per service tier",
+    "routing": "traefik file-based",
+    "monitoring": "prometheus + grafana + loki",
+    "authentication": "per-service (optional tinyauth gateway)"
+  },
+  "health_check_analysis": {
+    "total_services": 16,
+    "with_health_checks": 11,
+    "without_health_checks": 5,
+    "coverage_percent": 68,
+    "healthy": 10,
+    "unhealthy": 1,
+    "services_without_checks": ["crowdsec", "tinyauth", "promtail", "alert-discord-relay", "traefik"]
+  },
+  "resource_limits_analysis": {
+    "total_services": 17,
+    "with_limits": 7,
+    "without_limits": 10,
+    "coverage_percent": 41,
+    "services_without_limits": ["alert-discord-relay", "alertmanager", "alloy", "cadvisor", "crowdsec", "node_exporter", "promtail", "redis-immich", "tinyauth", "traefik"]
+  },
+  "configuration_drift": {
+    "has_drift": true,
+    "configured_but_not_running": ["alloy"],
+    "running_but_not_configured": []
+  },
+  "network_utilization": {
+    "systemd-auth_services": {
+      "container_count": 3
+    }
+,
+    "systemd-media_services": {
+      "container_count": 2
+    }
+,
+    "systemd-monitoring": {
+      "container_count": 12
+    }
+,
+    "systemd-photos": {
+      "container_count": 5
+    }
+,
+    "systemd-reverse_proxy": {
+      "container_count": 9
+    }
+,
+    "web_services": {
+      "container_count": 1
+    }
+
+  },
+  "service_uptime": {
+    "crowdsec": {
+      "started_at": "2025-11-04 12:00:10.44327386 +0100 CET",
+      "uptime_seconds": 458055,
+      "uptime_human": "5d 7h 14m"
+    }
+,
+    "tinyauth": {
+      "started_at": "2025-11-05 19:30:40.583202806 +0100 CET",
+      "uptime_seconds": 344625,
+      "uptime_human": "3d 23h 43m"
+    }
+,
+    "node_exporter": {
+      "started_at": "2025-11-05 22:42:14.669159663 +0100 CET",
+      "uptime_seconds": 333131,
+      "uptime_human": "3d 20h 32m"
+    }
+,
+    "promtail": {
+      "started_at": "2025-11-06 08:51:33.361722236 +0100 CET",
+      "uptime_seconds": 296572,
+      "uptime_human": "3d 10h 22m"
+    }
+,
+    "alertmanager": {
+      "started_at": "2025-11-06 23:30:18.861043105 +0100 CET",
+      "uptime_seconds": 243847,
+      "uptime_human": "2d 19h 44m"
+    }
+,
+    "alert-discord-relay": {
+      "started_at": "2025-11-06 23:44:51.427983431 +0100 CET",
+      "uptime_seconds": 242974,
+      "uptime_human": "2d 19h 29m"
+    }
+,
+    "cadvisor": {
+      "started_at": "2025-11-07 09:31:45.645325295 +0100 CET",
+      "uptime_seconds": 207760,
+      "uptime_human": "2d 9h 42m"
+    }
+,
+    "grafana": {
+      "started_at": "2025-11-07 09:40:37.032264408 +0100 CET",
+      "uptime_seconds": 207228,
+      "uptime_human": "2d 9h 33m"
+    }
+,
+    "redis-immich": {
+      "started_at": "2025-11-08 13:03:02.882505748 +0100 CET",
+      "uptime_seconds": 108683,
+      "uptime_human": "1d 6h 11m"
+    }
+,
+    "jellyfin": {
+      "started_at": "2025-11-08 19:50:42.434116341 +0100 CET",
+      "uptime_seconds": 84223,
+      "uptime_human": "23h 23m"
+    }
+,
+    "traefik": {
+      "started_at": "2025-11-09 18:07:32.14615512 +0100 CET",
+      "uptime_seconds": 4013,
+      "uptime_human": "1h 6m"
+    }
+,
+    "prometheus": {
+      "started_at": "2025-11-09 18:07:57.683049897 +0100 CET",
+      "uptime_seconds": 3988,
+      "uptime_human": "1h 6m"
+    }
+,
+    "loki": {
+      "started_at": "2025-11-09 18:08:13.578031078 +0100 CET",
+      "uptime_seconds": 3972,
+      "uptime_human": "1h 6m"
+    }
+,
+    "postgresql-immich": {
+      "started_at": "2025-11-09 18:08:29.032555016 +0100 CET",
+      "uptime_seconds": 3956,
+      "uptime_human": "1h 5m"
+    }
+,
+    "immich-server": {
+      "started_at": "2025-11-09 18:09:08.406505579 +0100 CET",
+      "uptime_seconds": 3917,
+      "uptime_human": "1h 5m"
+    }
+,
+    "immich-ml": {
+      "started_at": "2025-11-09 18:51:38.240529457 +0100 CET",
+      "uptime_seconds": 1367,
+      "uptime_human": "22m"
+    }
+
+  },
+  "health_check_validation": {
+    "validated_services": {
+      "node_exporter": {
+        "health_check_command": ["CMD-SHELL","wget --no-verbose --tries=1 --spider http://localhost:9100/metrics || exit 1"],
+        "binary_used": "wget",
+        "validation_status": "valid",
+        "current_health_status": "healthy",
+        "severity": "info",
+        "issue": "",
+        "recommendation": ""
+      }
+,
+      "alertmanager": {
+        "health_check_command": ["CMD-SHELL","wget --no-verbose --tries=1 --spider http://localhost:9093/-/healthy || exit 1"],
+        "binary_used": "wget",
+        "validation_status": "valid",
+        "current_health_status": "healthy",
+        "severity": "info",
+        "issue": "",
+        "recommendation": ""
+      }
+,
+      "cadvisor": {
+        "health_check_command": ["CMD-SHELL","wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1"],
+        "binary_used": "wget",
+        "validation_status": "valid",
+        "current_health_status": "healthy",
+        "severity": "info",
+        "issue": "",
+        "recommendation": ""
+      }
+,
+      "grafana": {
+        "health_check_command": ["CMD-SHELL","wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"],
+        "binary_used": "wget",
+        "validation_status": "valid",
+        "current_health_status": "healthy",
+        "severity": "info",
+        "issue": "",
+        "recommendation": ""
+      }
+,
