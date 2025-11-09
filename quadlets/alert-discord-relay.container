@@ -15,7 +15,7 @@ Secret=discord_webhook_url,type=env,target=DISCORD_WEBHOOK_URL
 
 # Health check (check if service is listening)
 # Using python3 since wget is not available in this container
-HealthCmd=python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:9095/', timeout=5)" || exit 1
+HealthCmd=python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:9095/health', timeout=5)" || exit 1
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=3
