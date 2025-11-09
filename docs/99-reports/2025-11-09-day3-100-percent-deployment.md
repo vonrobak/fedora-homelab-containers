@@ -45,26 +45,32 @@ git pull origin claude/improve-homelab-snapshot-script-011CUxXJaHNGcWQyfgK7PK3C
 ```
 
 **Expected files updated:**
-- `quadlets/tinyauth.container` (NEW)
+- `quadlets/tinyauth.container` (NEW - with placeholder secrets)
 - `quadlets/cadvisor.container` (MemoryMax added)
+- `.gitignore` (tinyauth.container now tracked)
 
 ### Step 2: Configure TinyAuth Secrets
 
-**IMPORTANT:** The tinyauth.container file has placeholder values that MUST be replaced with your actual secrets.
+**IMPORTANT:** The tinyauth.container file has obvious placeholder values with `<<REPLACE_WITH_...>>` syntax that MUST be replaced.
+
+The file has a big warning banner at the top and includes secret generation instructions:
 
 ```bash
-# Edit the quadlet with your actual values
+# Edit the quadlet to add your actual secrets
 nano quadlets/tinyauth.container
 
-# Find these lines and replace with real values:
-# Environment=SECRET=CHANGEME_GENERATE_RANDOM_SECRET
-# Environment=USERS=CHANGEME_USERNAME:BCRYPT_PASSWORD_HASH
+# Find and replace these placeholders:
+# Environment=SECRET=<<REPLACE_WITH_RANDOM_SECRET>>
+# Environment=USERS=<<REPLACE_WITH_USERNAME:BCRYPT_HASH>>
 
-# Your current values are in:
+# Generate a random secret:
+openssl rand -base64 32
+
+# If you already have tinyauth deployed, copy your existing values:
 cat ~/.config/containers/systemd/tinyauth.container | grep Environment
 ```
 
-**Copy the actual SECRET and USERS values from your deployed quadlet** and update the git version.
+**The placeholder syntax (`<<...>>`) will fail immediately if deployed without replacement**, preventing accidental insecure deployment.
 
 **Alternative (Better - Future Enhancement):**
 Use Podman secrets instead of environment variables:
