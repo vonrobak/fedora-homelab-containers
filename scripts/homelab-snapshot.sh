@@ -844,9 +844,19 @@ collect_health_check_validation() {
                 cmd_binary=$(echo "$full_cmd" | grep -oE '(curl|wget|nc|python|python3|node|java|psql|redis-cli)' | head -1)
 
                 if [ -n "$cmd_binary" ]; then
-                    # Test if the binary exists in the container
-                    if ! podman exec "$container_name" which "$cmd_binary" &>/dev/null && \
-                       ! podman exec "$container_name" command -v "$cmd_binary" &>/dev/null; then
+                    # Test if the binary exists in the container (with 2s timeout to avoid hangs)
+                    local binary_check_result="unknown"
+                    if timeout 2 podman exec "$container_name" which "$cmd_binary" &>/dev/null || \
+                       timeout 2 podman exec "$container_name" command -v "$cmd_binary" &>/dev/null; then
+                        binary_check_result="found"
+                    elif [ $? -eq 124 ]; then
+                        # Timeout occurred - container not responding
+                        binary_check_result="timeout"
+                    else
+                        binary_check_result="not_found"
+                    fi
+
+                    if [ "$binary_check_result" = "not_found" ]; then
                         validation_status="invalid"
                         issue="Health check uses '$cmd_binary' but binary not found in container"
 
@@ -865,6 +875,10 @@ collect_health_check_validation() {
                                 recommendation="Install '$cmd_binary' in container or use alternative health check method"
                                 ;;
                         esac
+                    elif [ "$binary_check_result" = "timeout" ]; then
+                        validation_status="unknown"
+                        issue="Container did not respond to validation check (timeout)"
+                        recommendation="Container may be starting up or unresponsive - retry validation later"
                     fi
                 fi
             fi
@@ -932,10 +946,13 @@ collect_recommendations() {
                 local cmd_binary=$(echo "$health_cmd" | jq -r '.[1]' 2>/dev/null | grep -oE '(curl|wget|nc)' | head -1)
 
                 if [ -n "$cmd_binary" ]; then
-                    if ! podman exec "$container_name" which "$cmd_binary" &>/dev/null; then
-                        [ "$first" = false ] && echo ","
+                    # Check with timeout to avoid hanging (skip if container unresponsive)
+                    if ! timeout 2 podman exec "$container_name" which "$cmd_binary" &>/dev/null 2>&1; then
+                        # Only add recommendation if timeout didn't occur (exit code 124)
+                        if [ $? -ne 124 ]; then
+                            [ "$first" = false ] && echo ","
 
-                        cat <<EOF
+                            cat <<EOF
       {
         "priority": "high",
         "category": "health_check",
@@ -946,8 +963,9 @@ collect_recommendations() {
         "estimated_time": "5 minutes"
       }
 EOF
-                        first=false
-                        rec_count=$((rec_count + 1))
+                            first=false
+                            rec_count=$((rec_count + 1))
+                        fi
                     fi
                 fi
             fi
