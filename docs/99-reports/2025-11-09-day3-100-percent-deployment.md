@@ -11,13 +11,35 @@
 Achieve portfolio-worthy perfection by adding the final health checks and resource limits to complete Phase 1+.
 
 **Changes:**
-- ✅ tinyauth.container: Added health check + MemoryMax=256M + Restart=on-failure
+- ✅ tinyauth.container: Added health check (checks `/` login page) + MemoryMax=256M + Restart=on-failure
+  - *Note:* Health check uses root endpoint instead of `/api/auth/traefik` to avoid auth header requirements
 - ✅ cadvisor.container: Added MemoryMax=256M
 
 **Expected Results:**
 - Health Check Coverage: 93% (15/16) → **100% (16/16)** ✅
 - Resource Limit Coverage: 87% (14/16) → **100% (16/16)** ✅
 - All services: HEALTHY ✅
+
+---
+
+## Quick Deployment (Automated)
+
+**If you prefer automated deployment**, use the completion script:
+
+```bash
+cd ~/containers
+git pull origin claude/improve-homelab-snapshot-script-011CUxXJaHNGcWQyfgK7PK3C
+./scripts/complete-day3-deployment.sh
+```
+
+This script will:
+1. Copy updated quadlets (tinyauth + cadvisor)
+2. Reload systemd and restart services
+3. Wait for health checks to stabilize
+4. Take a snapshot and verify 100% achievement
+5. Show a coverage report
+
+**Continue reading for manual deployment steps and technical details.**
 
 ---
 
