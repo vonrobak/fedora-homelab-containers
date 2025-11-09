@@ -64,15 +64,30 @@ systemctl --user daemon-reload
 echo -e "${GREEN}✓ Systemd reloaded${NC}"
 
 echo
-echo -e "${YELLOW}▶ Step 4: Restarting services${NC}"
-echo "  Restarting tinyauth..."
-systemctl --user restart tinyauth.service
-echo "  Restarting cadvisor..."
-systemctl --user restart cadvisor.service
-echo -e "${GREEN}✓ Services restarted${NC}"
+echo -e "${YELLOW}▶ Step 4: Stopping old containers to avoid port conflicts${NC}"
+echo "  Stopping old containers..."
+podman stop tinyauth cadvisor 2>/dev/null || true
+podman rm -f tinyauth cadvisor 2>/dev/null || true
+echo "  Waiting for ports to be released..."
+sleep 3
+echo -e "${GREEN}✓ Old containers cleaned up${NC}"
 
 echo
-echo -e "${YELLOW}▶ Step 5: Waiting for health checks to stabilize (60 seconds)...${NC}"
+echo -e "${YELLOW}▶ Step 5: Starting services with new configuration${NC}"
+echo "  Starting tinyauth..."
+systemctl --user start tinyauth.service || {
+    echo -e "${RED}  ✗ tinyauth failed to start${NC}"
+    systemctl --user status tinyauth.service --no-pager -l
+}
+echo "  Starting cadvisor..."
+systemctl --user start cadvisor.service || {
+    echo -e "${RED}  ✗ cadvisor failed to start${NC}"
+    systemctl --user status cadvisor.service --no-pager -l
+}
+echo -e "${GREEN}✓ Services started${NC}"
+
+echo
+echo -e "${YELLOW}▶ Step 6: Waiting for health checks to stabilize (60 seconds)...${NC}"
 echo "  TinyAuth and cAdvisor need time for health checks to run"
 for i in {60..1}; do
     printf "\r  Waiting: %2d seconds remaining..." "$i"
@@ -82,7 +97,7 @@ echo
 echo -e "${GREEN}✓ Health checks should have run${NC}"
 
 echo
-echo -e "${YELLOW}▶ Step 6: Verifying service status${NC}"
+echo -e "${YELLOW}▶ Step 7: Verifying service status${NC}"
 echo
 
 # Check tinyauth
@@ -104,7 +119,7 @@ else
 fi
 
 echo
-echo -e "${YELLOW}▶ Step 7: Taking snapshot to verify 100% coverage${NC}"
+echo -e "${YELLOW}▶ Step 8: Taking snapshot to verify 100% coverage${NC}"
 "$REPO_ROOT/scripts/homelab-snapshot.sh"
 
 # Parse the latest snapshot
