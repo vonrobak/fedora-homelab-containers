@@ -774,8 +774,13 @@ collect_service_uptime() {
         local uptime_human="unknown"
 
         if [ "$started" != "unknown" ]; then
-            # Parse ISO 8601 date to epoch
-            local started_epoch=$(date -d "$started" +%s 2>/dev/null || echo 0)
+            # Clean timestamp: remove fractional seconds and timezone name
+            # Podman format: "2025-11-04 12:00:10.44327386 +0100 CET"
+            # GNU date needs: "2025-11-04 12:00:10 +0100"
+            local started_clean=$(echo "$started" | sed 's/\.[0-9]* / /' | sed 's/ [A-Z][A-Z]*$//')
+
+            # Parse cleaned timestamp to epoch
+            local started_epoch=$(date -d "$started_clean" +%s 2>/dev/null || echo 0)
             if [ $started_epoch -gt 0 ]; then
                 uptime_seconds=$((current_time - started_epoch))
 
