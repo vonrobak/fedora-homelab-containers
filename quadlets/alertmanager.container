@@ -46,5 +46,8 @@ Label=traefik.http.routers.alertmanager-secure.middlewares=crowdsec-bouncer@file
 Restart=on-failure
 TimeoutStartSec=120
 
+# Resource Limits
+MemoryMax=256M
+
 [Install]
 WantedBy=default.target

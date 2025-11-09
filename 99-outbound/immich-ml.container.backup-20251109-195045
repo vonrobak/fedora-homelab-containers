@@ -5,6 +5,11 @@ Wants=network-online.target
 Requires=photos-network.service
 
 [Container]
+HealthCmd=/bin/sh -c "python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:3003/ping', timeout=5)" || exit 1"
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
 Image=ghcr.io/immich-app/immich-machine-learning:release
 ContainerName=immich-ml
 AutoUpdate=registry
@@ -19,19 +24,11 @@ Volume=/mnt/btrfs-pool/subvol7-containers/immich-ml-cache:/cache:Z
 Environment=MACHINE_LEARNING_CACHE_FOLDER=/cache
 
 # Health check
-# Using python3 for IPv4/IPv6 compatibility (service listens on [::]:3003)
-HealthCmd=python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3003/ping', timeout=5)" || exit 1
-HealthInterval=30s
-HealthTimeout=10s
-HealthRetries=3
-HealthStartPeriod=600s
 
 [Service]
-Restart=on-failure
+MemoryMax=4G
+Restart=always
 TimeoutStartSec=1800
-
-# Resource Limits
-MemoryMax=2G
 
 [Install]
 WantedBy=default.target

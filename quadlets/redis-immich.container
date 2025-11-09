@@ -22,8 +22,11 @@ HealthTimeout=5s
 HealthRetries=5
 
 [Service]
-Restart=always
+Restart=on-failure
 TimeoutStartSec=300
+
+# Resource Limits
+MemoryMax=512M
 
 [Install]
 WantedBy=default.target

@@ -13,9 +13,19 @@ Network=systemd-monitoring
 # Discord webhook URL
 Secret=discord_webhook_url,type=env,target=DISCORD_WEBHOOK_URL
 
+# Health check (check if service is listening)
+# Using python3 since wget is not available in this container
+HealthCmd=python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:9095/health', timeout=5)" || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
 [Service]
 Restart=on-failure
 TimeoutStartSec=60
+
+# Resource Limits
+MemoryMax=128M
 
 [Install]
 WantedBy=default.target
