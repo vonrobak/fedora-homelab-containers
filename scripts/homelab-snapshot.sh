@@ -823,14 +823,16 @@ collect_health_check_validation() {
     echo '  "health_check_validation": {'
     echo '    "validated_services": {'
 
-    while IFS= read -r container_name; do
+    while IFS= read -r container_name || [ -n "$container_name" ]; do
+        # Skip empty lines
+        [ -z "$container_name" ] && continue
         # Check if container has a health check configured
-        local health_cmd=$(podman inspect "$container_name" --format '{{if .Config.Healthcheck}}{{json .Config.Healthcheck.Test}}{{else}}none{{end}}' 2>/dev/null)
+        local health_cmd=$(podman inspect "$container_name" --format '{{if .Config.Healthcheck}}{{json .Config.Healthcheck.Test}}{{else}}none{{end}}' 2>/dev/null || echo "none")
 
         if [ "$health_cmd" != "none" ] && [ -n "$health_cmd" ]; then
             [ "$first" = false ] && echo ","
 
-            # Parse health check command
+            # Parse health check command (with error handling)
             local cmd_type=$(echo "$health_cmd" | jq -r '.[0]' 2>/dev/null || echo "unknown")
             local cmd_binary=""
             local validation_status="valid"
@@ -841,14 +843,15 @@ collect_health_check_validation() {
             if [ "$cmd_type" = "CMD-SHELL" ]; then
                 local full_cmd=$(echo "$health_cmd" | jq -r '.[1]' 2>/dev/null || echo "")
                 # Try to extract the main binary (curl, wget, python, etc.)
-                cmd_binary=$(echo "$full_cmd" | grep -oE '(curl|wget|nc|python|python3|node|java|psql|redis-cli)' | head -1)
+                cmd_binary=$(echo "$full_cmd" | grep -oE '(curl|wget|nc|python|python3|node|java|psql|redis-cli)' | head -1 || echo "")
 
                 if [ -n "$cmd_binary" ]; then
                     # Test if the binary exists in the container (with 2s timeout to avoid hangs)
                     local binary_check_result="unknown"
 
                     # First try: which command (with hard kill after 2s+1s grace period)
-                    timeout --kill-after=1s 2s podman exec "$container_name" which "$cmd_binary" </dev/null &>/dev/null
+                    # Wrap in subshell to prevent any errors from killing main script
+                    (timeout --kill-after=1s 2s podman exec "$container_name" which "$cmd_binary" </dev/null) &>/dev/null
                     local exit_code=$?
 
                     if [ $exit_code -eq 0 ]; then
@@ -858,7 +861,7 @@ collect_health_check_validation() {
                         binary_check_result="timeout"
                     else
                         # which failed, try command -v
-                        timeout --kill-after=1s 2s podman exec "$container_name" command -v "$cmd_binary" </dev/null &>/dev/null
+                        (timeout --kill-after=1s 2s podman exec "$container_name" command -v "$cmd_binary" </dev/null) &>/dev/null
                         exit_code=$?
 
                         if [ $exit_code -eq 0 ]; then
@@ -961,7 +964,7 @@ collect_recommendations() {
 
                 if [ -n "$cmd_binary" ]; then
                     # Check with timeout to avoid hanging (skip if container unresponsive)
-                    timeout --kill-after=1s 2s podman exec "$container_name" which "$cmd_binary" </dev/null &>/dev/null 2>&1
+                    (timeout --kill-after=1s 2s podman exec "$container_name" which "$cmd_binary" </dev/null) &>/dev/null 2>&1
                     local check_exit_code=$?
 
                     # Only add recommendation if binary not found AND timeout didn't occur (124=SIGTERM, 137=SIGKILL)
