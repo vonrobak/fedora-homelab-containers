@@ -10,6 +10,133 @@
 #
 # Output: JSON file in docs/99-reports/snapshot-TIMESTAMP.json
 #
+# ============================================================================
+# HANDOFF MESSAGE: Development Vision & Iteration Strategy
+# ============================================================================
+#
+# ARCHITECTURAL ROLE:
+# This tool is a critical intelligence gathering instrument for the homelab
+# project. It serves as the foundation for:
+#
+# 1. DOCUMENTATION BASELINE
+#    - Generates structured data for living service guides (docs/10-services/guides/)
+#    - Provides snapshots for journal entries (docs/10-services/journal/)
+#    - Captures point-in-time state for comparison and drift detection
+#
+# 2. DECISION SUPPORT
+#    - Maps service relationships and dependencies (who talks to whom?)
+#    - Identifies architectural patterns and anti-patterns
+#    - Highlights configuration drift from git-tracked quadlets
+#    - Surfaces opportunities for optimization
+#
+# 3. OPERATIONAL INTELLIGENCE
+#    - Complements homelab-intel.sh (health check) with deep structural analysis
+#    - Provides context for troubleshooting ("what changed since last snapshot?")
+#    - Feeds into Claude Code's homelab-intelligence skill for AI-assisted analysis
+#
+# DEVELOPMENT PHILOSOPHY:
+# This tool embodies the project's core principles:
+#
+# - **Configuration as Code**: Parses quadlets, Traefik configs, network definitions
+# - **Rootless Architecture**: Assumes podman rootless, systemd user services
+# - **Multi-Network Isolation**: Captures network segmentation strategy
+# - **File-Based Routing**: Parses Traefik dynamic configs (not Docker labels)
+# - **Resource Awareness**: Tracks memory limits, CPU priority, health checks
+#
+# ITERATION STRATEGY:
+# As the homelab evolves, this script should grow to capture:
+#
+# Phase 1 (CURRENT - v1.0):
+#   ✅ Service inventory with basic metadata
+#   ✅ Network topology mapping
+#   ✅ Traefik routing (basic YAML parsing)
+#   ✅ Storage layout and usage
+#   ✅ Resource utilization snapshot
+#   ✅ Quadlet configuration extraction
+#
+# Phase 2 (NEXT - v1.1):
+#   ⬜ Dependency graph generation (parse After=/Requires= from quadlets)
+#   ⬜ Configuration drift detection (compare running vs git-tracked)
+#   ⬜ Service relationship mapping (which services talk to each other?)
+#   ⬜ Middleware chain analysis (full Traefik middleware parsing)
+#   ⬜ ADR compliance checking (does setup match architecture decisions?)
+#
+# Phase 3 (FUTURE - v2.0):
+#   ⬜ Historical comparison (detect changes since last snapshot)
+#   ⬜ Security posture analysis (exposed ports, missing auth, etc.)
+#   ⬜ Performance baseline (response times, resource trends)
+#   ⬜ Diagram generation (network topology, service dependencies)
+#   ⬜ Migration planning (suggest improvements based on patterns)
+#
+# TESTING & VALIDATION:
+# This script should be tested:
+#
+# 1. ON NATIVE SYSTEM ONLY
+#    - Must run on actual fedora-htpc (not sandbox/container)
+#    - Requires access to: podman, systemctl --user, quadlet files
+#
+# 2. JSON OUTPUT VALIDATION
+#    - Must be valid JSON (test with: jq empty <output>)
+#    - Must be complete (no truncated data)
+#    - Must be stable (same system → same output)
+#
+# 3. COVERAGE VERIFICATION
+#    - All running containers captured?
+#    - All networks documented?
+#    - All quadlet files parsed?
+#    - Traefik routing complete?
+#
+# 4. INTEGRATION TESTING
+#    - Can Claude Code's homelab-intelligence skill consume the output?
+#    - Can it generate useful documentation from it?
+#    - Does it identify real issues (missing health checks, drift, etc.)?
+#
+# HOW TO ITERATE:
+# When adding new capabilities:
+#
+# 1. ADD NEW COLLECTION FUNCTION
+#    - Follow naming: collect_<category>()
+#    - Log progress: log_section "Collecting <category>"
+#    - Handle errors gracefully (don't crash the whole script)
+#    - Output valid JSON fragment
+#
+# 2. UPDATE JSON STRUCTURE
+#    - Add new top-level key to main() output
+#    - Document structure in comments
+#    - Maintain backwards compatibility (old keys stay)
+#
+# 3. TEST ON REAL SYSTEM
+#    - Run: ./scripts/homelab-snapshot.sh
+#    - Validate: jq . docs/99-reports/snapshot-*.json
+#    - Verify: All expected data present and accurate
+#
+# 4. UPDATE DOCUMENTATION
+#    - Update this header with new capabilities
+#    - Add to CLAUDE.md if it affects workflow
+#    - Document new JSON fields for consumers
+#
+# RELATIONSHIP TO OTHER TOOLS:
+# - homelab-intel.sh: Quick health check (complementary, not replacement)
+# - homelab-diagnose.sh: Detailed troubleshooting (uses snapshot data?)
+# - Claude Code intelligence skill: Primary consumer of snapshot JSON
+#
+# VISION:
+# This tool should become the single source of truth for "what is my homelab
+# right now?" It should enable:
+# - Instant documentation generation
+# - Intelligent recommendations from Claude
+# - Drift detection and compliance checking
+# - Historical analysis and trend identification
+#
+# Every time you enhance this script, ask:
+# "Does this help me understand my infrastructure better?"
+# "Can Claude use this to give better recommendations?"
+# "Does this align with my architectural principles?"
+#
+# If yes to all three: implement it.
+#
+# ============================================================================
+#
 
 set -euo pipefail
 
