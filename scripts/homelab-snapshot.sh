@@ -368,6 +368,11 @@ collect_traefik_routing() {
         local current_middlewares=""
 
         while IFS= read -r line; do
+            # Stop parsing if we hit the services section
+            if echo "$line" | grep -E '^  services:' >/dev/null; then
+                break
+            fi
+
             # Detect router name (indented, ends with colon, not a comment)
             if echo "$line" | grep -E '^    [a-z-]+:$' | grep -v '^ *#' >/dev/null; then
                 if [ -n "$current_router" ]; then
@@ -469,7 +474,7 @@ EOF
 
     local first=true
     for container in $(podman ps --format '{{.Names}}' 2>/dev/null); do
-        local volumes=$(podman inspect "$container" --format '{{range .Mounts}}{{.Source}}:{{.Destination}}:{{.Mode}} {{end}}' 2>/dev/null | xargs)
+        local volumes=$(podman inspect "$container" --format '{{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}' 2>/dev/null | xargs)
         if [ -n "$volumes" ]; then
             [ "$first" = false ] && echo ","
             echo -n "      \"$container\": ["
