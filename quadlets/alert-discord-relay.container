@@ -13,6 +13,12 @@ Network=systemd-monitoring
 # Discord webhook URL
 Secret=discord_webhook_url,type=env,target=DISCORD_WEBHOOK_URL
 
+# Health check (check if service is listening)
+HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:9095/ || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
 [Service]
 Restart=on-failure
 TimeoutStartSec=60

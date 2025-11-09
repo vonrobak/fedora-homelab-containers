@@ -25,5 +25,8 @@ HealthRetries=5
 Restart=always
 TimeoutStartSec=300
 
+# Resource Limits
+MemoryMax=512M
+
 [Install]
 WantedBy=default.target
