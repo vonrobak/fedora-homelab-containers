@@ -31,5 +31,8 @@ AutoUpdate=registry
 Restart=on-failure
 TimeoutStartSec=120
 
+# Resource Limits
+MemoryMax=512M
+
 [Install]
 WantedBy=default.target

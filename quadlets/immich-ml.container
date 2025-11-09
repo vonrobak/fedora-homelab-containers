@@ -26,8 +26,11 @@ HealthRetries=3
 HealthStartPeriod=600s
 
 [Service]
-Restart=always
+Restart=on-failure
 TimeoutStartSec=1800
+
+# Resource Limits
+MemoryMax=2G
 
 [Install]
 WantedBy=default.target
