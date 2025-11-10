@@ -25,16 +25,31 @@ echo
 
 # Check 1: Detect GPU hardware
 echo -e "${YELLOW}▶ Checking for AMD GPU hardware...${NC}"
+INTEGRATED_GPU=false
 if command -v lspci >/dev/null 2>&1 && lspci | grep -i vga | grep -qi amd; then
     GPU_INFO=$(lspci | grep -i vga | grep -i amd)
     echo -e "${GREEN}✓ AMD GPU detected:${NC}"
     echo "  $GPU_INFO"
     GPU_DETECTED=true
+
+    # Check if this is an integrated GPU (APU)
+    if echo "$GPU_INFO" | grep -qiE "Cezanne|Renoir|Raven|Picasso|Vega.*Mobile|Radeon.*Graphics"; then
+        INTEGRATED_GPU=true
+        echo
+        echo -e "${RED}⚠ WARNING: Integrated GPU (APU) detected!${NC}"
+        echo -e "${RED}  ROCm GPU acceleration is NOT SUPPORTED on integrated GPUs${NC}"
+        echo "  Reason: Shared memory architecture causes 'Memory critical error' crashes"
+        echo "  Supported: Discrete GPUs only (RX 6000/7000 series, etc.)"
+        echo "  See: docs/99-reports/2025-11-10-gpu-acceleration-failure-postmortem.md"
+    fi
 elif [[ -d /dev/dri ]] && [[ -e /dev/kfd ]]; then
     # Fallback: if GPU devices exist, assume AMD GPU present
     echo -e "${GREEN}✓ AMD GPU detected (via device presence):${NC}"
     echo "  /dev/dri and /dev/kfd exist (lspci not available)"
     GPU_DETECTED=true
+    echo
+    echo -e "${YELLOW}⚠ Cannot determine if GPU is integrated or discrete${NC}"
+    echo "  Install pciutils (lspci) for full detection"
 else
     echo -e "${RED}✗ No AMD GPU detected${NC}"
     GPU_DETECTED=false
@@ -163,6 +178,12 @@ else
     ALL_CHECKS_PASSED=false
 fi
 
+if [[ "$INTEGRATED_GPU" == "true" ]]; then
+    echo -e "${RED}✗ Integrated GPU (APU) detected - NOT SUPPORTED${NC}"
+    echo "  ROCm requires discrete GPU with dedicated VRAM"
+    ALL_CHECKS_PASSED=false
+fi
+
 if [[ "$DRI_EXISTS" == "true" ]]; then
     echo -e "${GREEN}✓ DRI devices available${NC}"
 else
@@ -208,13 +229,29 @@ if [[ "$ALL_CHECKS_PASSED" == "true" ]]; then
     echo "  3. Monitor GPU utilization with: watch -n 1 cat /sys/kernel/debug/dri/0/amdgpu_pm_info"
     exit 0
 else
-    echo -e "${RED}⚠ Some prerequisites are missing${NC}"
+    echo -e "${RED}⚠ Prerequisites check failed${NC}"
     echo
+
+    if [[ "$INTEGRATED_GPU" == "true" ]]; then
+        echo -e "${RED}CRITICAL: Integrated GPU detected${NC}"
+        echo
+        echo "ROCm GPU acceleration is NOT supported on integrated GPUs (APUs)."
+        echo "Integrated GPUs share system memory, causing fatal 'Memory critical error'"
+        echo "crashes when loading ML models."
+        echo
+        echo -e "${YELLOW}Options:${NC}"
+        echo "  1. Stay on CPU-only configuration (recommended for this hardware)"
+        echo "  2. Upgrade to discrete AMD GPU (RX 6600/6700 or newer)"
+        echo
+        echo "See post-mortem: docs/99-reports/2025-11-10-gpu-acceleration-failure-postmortem.md"
+        exit 1
+    fi
+
     echo -e "${BLUE}Required actions:${NC}"
 
     if [[ "$RENDER_GROUP" == "false" ]]; then
         echo "  • Add user to render group:"
-        echo "    sudo usermod -aG render $USER"
+        echo "    sudo usermod -aG render $CURRENT_USER"
         echo "    Then log out and log back in"
     fi
 

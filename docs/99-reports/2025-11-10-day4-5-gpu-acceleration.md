@@ -2,7 +2,8 @@
 
 **Date:** 2025-11-10
 **Goal:** Enable AMD GPU acceleration for Immich machine learning
-**Status:** Ready for deployment
+**Status:** ⚠️ **Not suitable for fedora-htpc (integrated GPU)** - See [Post-Mortem](2025-11-10-gpu-acceleration-failure-postmortem.md)
+**Hardware:** Requires discrete AMD GPU with dedicated VRAM (not APU/integrated GPU)
 
 ---
 
@@ -26,13 +27,30 @@ Transform Immich ML from CPU-only processing to GPU-accelerated performance usin
 
 ## Prerequisites
 
-Before deploying GPU acceleration, you need:
+⚠️ **CRITICAL: Read before deployment!**
 
 ### Hardware Requirements
 
-1. **AMD GPU** with ROCm support (check compatibility: https://rocm.docs.amd.com/)
-2. **Disk space**: ~35GB for ROCm image (first pull only)
-3. **RAM**: 4GB recommended for GPU-accelerated workloads
+**GPU Type - DISCRETE GPU REQUIRED:**
+
+✅ **Supported (Discrete GPUs):**
+- AMD RX 6000/7000 series (RDNA2/3)
+- AMD Radeon Pro series
+- AMD Instinct MI series
+- Any PCIe AMD GPU with dedicated VRAM
+
+❌ **NOT Supported (Integrated GPUs/APUs):**
+- **AMD Ryzen APUs** (5600G, 5700G, 7600G, etc.) - **Confirmed incompatible**
+- Intel integrated graphics
+- Any GPU with shared system memory
+
+**Why integrated GPUs fail:**
+ROCm expects dedicated VRAM with exclusive memory access. Integrated GPUs share system RAM, causing "Memory critical error" crashes when loading ML models. See post-mortem: `docs/99-reports/2025-11-10-gpu-acceleration-failure-postmortem.md`
+
+**Other requirements:**
+1. **Disk space**: ~35GB for ROCm image (first pull only)
+2. **RAM**: 4GB minimum container limit, 16GB+ system RAM recommended
+3. **VRAM**: 4GB+ dedicated VRAM on discrete GPU
 
 ### Software Requirements
 
