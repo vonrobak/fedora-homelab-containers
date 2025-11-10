@@ -8,6 +8,9 @@
 
 set -euo pipefail
 
+# Get current user (handle environments where USER isn't set)
+CURRENT_USER="${USER:-$(whoami)}"
+
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -22,10 +25,15 @@ echo
 
 # Check 1: Detect GPU hardware
 echo -e "${YELLOW}▶ Checking for AMD GPU hardware...${NC}"
-if lspci | grep -i vga | grep -qi amd; then
+if command -v lspci >/dev/null 2>&1 && lspci | grep -i vga | grep -qi amd; then
     GPU_INFO=$(lspci | grep -i vga | grep -i amd)
     echo -e "${GREEN}✓ AMD GPU detected:${NC}"
     echo "  $GPU_INFO"
+    GPU_DETECTED=true
+elif [[ -d /dev/dri ]] && [[ -e /dev/kfd ]]; then
+    # Fallback: if GPU devices exist, assume AMD GPU present
+    echo -e "${GREEN}✓ AMD GPU detected (via device presence):${NC}"
+    echo "  /dev/dri and /dev/kfd exist (lspci not available)"
     GPU_DETECTED=true
 else
     echo -e "${RED}✗ No AMD GPU detected${NC}"
@@ -71,7 +79,7 @@ if groups | grep -q render; then
 else
     echo -e "${RED}✗ User is NOT in 'render' group${NC}"
     echo "  This is required to access /dev/kfd"
-    echo "  Fix: sudo usermod -aG render $USER"
+    echo "  Fix: sudo usermod -aG render $CURRENT_USER"
     echo "       Then log out and back in"
     RENDER_GROUP=false
 fi
