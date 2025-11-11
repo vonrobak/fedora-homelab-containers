@@ -171,6 +171,45 @@ podman logs -f traefik
 ls -lh /path/to/letsencrypt/acme.json
 ```
 
+### Authelia Operations
+
+```bash
+# View Authelia logs
+podman logs -f authelia
+journalctl --user -u authelia.service -f
+
+# Check authentication status
+podman healthcheck run authelia
+curl http://localhost:9091/api/health
+
+# Access SSO portal
+# Navigate to sso.patriark.org
+
+# Add new user (generate password hash)
+podman exec -it authelia authelia crypto hash generate argon2 --password 'USER_PASSWORD'
+# Then edit ~/containers/config/authelia/users_database.yml
+# Restart: systemctl --user restart authelia.service
+
+# View active sessions (Redis)
+podman exec -it redis-authelia redis-cli
+KEYS authelia:session:*
+TTL authelia:session:<session-id>
+
+# Force logout all users (nuclear option)
+systemctl --user restart redis-authelia.service
+
+# Update configuration
+nano ~/containers/config/authelia/configuration.yml
+systemctl --user restart authelia.service
+
+# View OTP codes (filesystem notifier)
+cat ~/containers/data/authelia/notification.txt
+
+# Service management
+systemctl --user status authelia.service redis-authelia.service
+systemctl --user restart authelia.service
+```
+
 ## Troubleshooting Workflow
 
 ### Service Not Accessible Externally

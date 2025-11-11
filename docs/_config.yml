@@ -1,0 +1,75 @@
+# GitHub Pages Configuration
+# Jekyll theme for documentation site
+
+# Theme
+theme: jekyll-theme-cayman
+# Alternative themes:
+# theme: jekyll-theme-minimal
+# theme: jekyll-theme-slate
+
+# Site settings
+title: "Production-Grade Homelab Infrastructure"
+description: "Enterprise-level self-hosted infrastructure demonstrating DevOps/SRE best practices"
+url: "https://YOUR_USERNAME.github.io"
+baseurl: "/homelab-infrastructure-public"
+
+# Author
+author:
+  name: "Your Name"
+  email: "admin@example.com"
+  github: "YOUR_USERNAME"
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Plugins
+plugins:
+  - jekyll-github-metadata
+  - jekyll-relative-links
+
+# Include/Exclude
+include:
+  - PORTFOLIO.md
+  - ARCHITECTURE-DIAGRAMS.md
+  - RESUME-BULLET-POINTS.md
+  - _config.yml
+
+exclude:
+  - scripts/
+  - quadlets/
+  - .git/
+  - .gitignore
+  - README-PUBLIC.md
+  - LICENSE
+
+# Navigation (optional)
+header_pages:
+  - PORTFOLIO.md
+  - ARCHITECTURE-DIAGRAMS.md
+  - docs/README.md
+
+# Google Analytics (optional)
+# google_analytics: UA-XXXXXXXX-X
+
+# SEO
+lang: en-US
+social:
+  name: Your Name
+  links:
+    - https://github.com/YOUR_USERNAME
+    - https://linkedin.com/in/yourprofile
+
+# Collections (optional - for organizing docs)
+collections:
+  foundation:
+    output: true
+    permalink: /:collection/:name
+  services:
+    output: true
+    permalink: /:collection/:name
+  security:
+    output: true
+    permalink: /:collection/:name
