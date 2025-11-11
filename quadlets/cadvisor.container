@@ -17,8 +17,8 @@ Volume=/sys:/sys:ro
 Volume=%h/.local/share/containers:/var/lib/containers:ro
 Volume=/dev/disk:/dev/disk:ro
 
-# Expose metrics on port 8080 (internal only)
-PublishPort=8080:8080
+# Note: Port 8080 is NOT published on host - accessed via systemd-monitoring network only
+# Prometheus scrapes http://cadvisor:8080/metrics internally
 
 # Required capabilities for cAdvisor
 AddCapability=SYS_ADMIN
@@ -34,6 +34,9 @@ HealthRetries=3
 [Service]
 Restart=on-failure
 TimeoutStartSec=60
+
+# Resource Limits
+MemoryMax=256M
 
 [Install]
 WantedBy=default.target

@@ -1,0 +1,79 @@
+---
+###############################################################
+#              Homepage Services Configuration                #
+#     Patriark Homelab - YubiKey-Protected Dashboard         #
+###############################################################
+
+# Admin Services (YubiKey-protected)
+- Admin & Monitoring:
+    - Grafana:
+        icon: grafana.png
+        href: https://grafana.patriark.org
+        description: Metrics & Dashboards
+        widget:
+          type: grafana
+          url: http://grafana:3000
+          username: {{HOMEPAGE_VAR_GRAFANA_USER}}
+          password: {{HOMEPAGE_VAR_GRAFANA_PASSWORD}}
+
+    - Prometheus:
+        icon: prometheus.png
+        href: https://prometheus.patriark.org
+        description: Metrics Database
+        widget:
+          type: prometheus
+          url: http://prometheus:9090
+
+    - Loki:
+        icon: loki.png
+        href: https://loki.patriark.org
+        description: Log Aggregation
+        ping: http://loki:3100/ready
+
+    - Traefik:
+        icon: traefik.png
+        href: https://traefik.patriark.org
+        description: Reverse Proxy & SSL
+        ping: http://traefik:8080/ping
+
+    - Authelia:
+        icon: authelia.png
+        href: https://sso.patriark.org
+        description: SSO & YubiKey MFA
+        ping: http://authelia:9091/api/health
+
+# Media Services
+- Media & Photos:
+    - Jellyfin:
+        icon: jellyfin.png
+        href: https://jellyfin.patriark.org
+        description: Media Server
+        widget:
+          type: jellyfin
+          url: http://jellyfin:8096
+          key: {{HOMEPAGE_VAR_JELLYFIN_API_KEY}}
+
+    - Immich:
+        icon: immich.png
+        href: https://photos.patriark.org
+        description: Photo Management
+        widget:
+          type: immich
+          url: http://immich-server:2283
+          key: {{HOMEPAGE_VAR_IMMICH_API_KEY}}
+
+# Security
+- Security:
+    - CrowdSec:
+        icon: crowdsec.png
+        href: http://localhost:8080  # Internal only
+        description: Threat Protection
+        ping: http://crowdsec:8080/health
+
+# Infrastructure
+- Infrastructure:
+    - Redis (Authelia):
+        icon: redis.png
+        href: https://sso.patriark.org
+        description: Session Storage (via Authelia)
+        # Redis not directly accessible from reverse_proxy network

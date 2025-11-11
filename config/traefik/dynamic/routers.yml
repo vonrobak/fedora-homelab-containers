@@ -1,8 +1,34 @@
 http:
   routers:
-    # Root domain redirect
+    # Root domain → Homepage Dashboard
     root-redirect:
       rule: "Host(`patriark.org`)"
+      service: "homepage"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+        - authelia@file
+      tls:
+        certResolver: letsencrypt
+
+    # Homepage Dashboard (explicit subdomain)
+    homepage-dashboard:
+      rule: "Host(`home.patriark.org`)"
+      service: "homepage"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer
+        - rate-limit
+        - authelia@file
+      tls:
+        certResolver: letsencrypt
+
+    # Tinyauth portal
+    tinyauth-portal:
+      rule: "Host(`auth.patriark.org`)"
       service: "tinyauth"
       entryPoints:
         - websecure
@@ -12,10 +38,10 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Tinyauth portal
-    tinyauth-portal:
-      rule: "Host(`auth.patriark.org`)"
-      service: "tinyauth"
+    # Authelia SSO Portal (YubiKey-First Authentication)
+    authelia-portal:
+      rule: "Host(`sso.patriark.org`)"
+      service: "authelia"
       entryPoints:
         - websecure
       middlewares:
@@ -33,7 +59,7 @@ http:
       middlewares:
         - crowdsec-bouncer
         - rate-limit
-        - tinyauth@file
+        - authelia@file
       tls:
         certResolver: letsencrypt
 
@@ -46,24 +72,12 @@ http:
       middlewares:
         - crowdsec-bouncer
         - rate-limit-public
-        # - tinyauth@file  # Uncomment to enable authentication
+        - authelia@file
       tls:
         certResolver: letsencrypt
 
-    # Immich - Static Assets (bypass auth for /_app/ JavaScript/CSS)
-    immich-assets:
-      rule: "Host(`photos.patriark.org`) && PathPrefix(`/_app/`)"
-      service: "immich"
-      entryPoints:
-        - websecure
-      priority: 100  # Higher priority = evaluated first
-      middlewares:
-        - crowdsec-bouncer
-        - rate-limit
-      tls:
-        certResolver: letsencrypt
-
-    # Immich - Main Application (with auth)
+    # Immich - Uses native authentication (no Authelia SSO)
+    # Mobile apps and web UI both use Immich's built-in auth
     immich-secure:
       rule: "Host(`photos.patriark.org`)"
       service: "immich"
@@ -71,8 +85,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer
-        - rate-limit
- #      - tinyauth@file
+        - rate-limit-public
       tls:
         certResolver: letsencrypt
 
@@ -85,7 +98,7 @@ http:
       middlewares:
         - crowdsec-bouncer
         - rate-limit
-        - tinyauth@file
+        - authelia@file
       tls:
         certResolver: letsencrypt
 
@@ -97,9 +110,8 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer
-        - monitoring-api-whitelist
         - rate-limit
-        - tinyauth@file
+        - authelia@file
       tls:
         certResolver: letsencrypt
 
@@ -111,13 +123,17 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer
-        - monitoring-api-whitelist
         - rate-limit
-        - tinyauth@file
+        - authelia@file
       tls:
         certResolver: letsencrypt
 
   services:
+    homepage:
+      loadBalancer:
+        servers:
+          - url: "http://homepage:3000"
+
     jellyfin:
       loadBalancer:
         servers:
@@ -147,3 +163,8 @@ http:
       loadBalancer:
         servers:
           - url: "http://loki:3100"
+
+    authelia:
+      loadBalancer:
+        servers:
+          - url: "http://authelia:9091"

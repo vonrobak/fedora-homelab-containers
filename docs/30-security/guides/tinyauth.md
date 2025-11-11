@@ -1,5 +1,21 @@
 # Tinyauth Setup Guide - Complete
 
+> ## ⚠️ DEPRECATED - Superseded by Authelia
+>
+> **This setup guide is NO LONGER RECOMMENDED.**
+>
+> **Migration complete:** 2025-11-11
+> **Superseded by:** Authelia SSO with YubiKey/WebAuthn authentication
+>
+> **See current authentication documentation:**
+> - **Authelia Service Guide:** `/docs/10-services/guides/authelia.md`
+> - **Architecture Decision (ADR-005):** `/docs/30-security/decisions/2025-11-11-decision-005-authelia-sso-yubikey-deployment.md`
+> - **Deployment Journal:** `/docs/30-security/journal/2025-11-11-authelia-deployment.md`
+>
+> **This document preserved for historical reference only.**
+
+---
+
 ## 🎯 What is Tinyauth?
 
 **Tinyauth** is a simple, modern authentication middleware that:

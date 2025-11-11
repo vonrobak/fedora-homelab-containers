@@ -1,8 +1,21 @@
 # Homelab Documentation
 
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-11-10
 **System:** fedora-htpc production environment
-**Documentation Files:** 83+ markdown files
+**Documentation Files:** 90+ markdown files
+**Status:** 🎯 **100% Health Check & Resource Limit Coverage** | 🚀 **GPU Acceleration Ready** | 🔐 **SSO Architecture Planned**
+
+---
+
+## 🎉 Recent Achievements (Force Multiplier Week)
+
+**Days 1-5 Complete:**
+- ✅ **AI Intelligence System** - Proactive trend analysis (detected -1,152MB memory improvement)
+- ✅ **100% Coverage** - All 16 services have health checks and resource limits
+- ✅ **GPU Acceleration** - AMD ROCm implementation ready for 5-10x ML performance
+- ✅ **Authelia SSO** - Architecture decision documented (ADR-004)
+
+See: [Force Multiplier Week Summary](40-monitoring-and-documentation/journal/2025-11-10-force-multiplier-week-days-1-5-summary.md)
 
 ---
 
@@ -13,6 +26,11 @@
 2. Review [CONTRIBUTING.md](CONTRIBUTING.md) for documentation conventions
 3. Check [99-reports/](99-reports/) for latest system state
 4. Browse [guides/](*/guides/) subdirectories for current operational documentation
+
+**Force Multiplier Week progress?** See:
+- Intelligence system: `scripts/intelligence/simple-trend-report.sh`
+- GPU deployment: `scripts/deploy-immich-gpu-acceleration.sh`
+- Authelia plan: [ADR-004](30-security/decisions/2025-11-10-decision-004-authelia-sso-mfa-architecture.md)
 
 **Making changes?** See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - Documentation structure and conventions
@@ -71,10 +89,13 @@ docs/
 - Quick check: `podman ps`
 
 **Service Guides:**
-- Jellyfin: `10-services/guides/jellyfin.md` (to be created)
-- Traefik: `10-services/guides/traefik.md` (to be created)
-- Monitoring: `40-monitoring-and-documentation/guides/monitoring-stack.md`
-- Backup: `20-operations/guides/backup-strategy.md`
+- **Immich:** `10-services/guides/immich.md` ✨ NEW - Complete guide with GPU acceleration
+- **Jellyfin:** `10-services/guides/jellyfin.md`
+- **Traefik:** `10-services/guides/traefik.md`
+- **TinyAuth:** `10-services/guides/tinyauth.md`
+- **CrowdSec:** `10-services/guides/crowdsec.md`
+- **Monitoring:** `40-monitoring-and-documentation/guides/monitoring-stack.md`
+- **Backup:** `20-operations/guides/backup-strategy.md`
 
 ### Understanding How We Got Here
 
@@ -90,11 +111,11 @@ docs/
 
 **Why certain choices were made:** See `decisions/` subdirectories
 
-**Key ADRs** (to be created):
-- ADR-001: Rootless containers over privileged
-- ADR-002: Traefik over Caddy/Nginx
-- ADR-003: Systemd quadlets over docker-compose
-- ADR-004: Monitoring stack architecture
+**Key ADRs:**
+- **ADR-001:** `00-foundation/decisions/2025-10-20-decision-001-rootless-containers.md` - Rootless containers
+- **ADR-002:** `00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md` - Systemd quadlets
+- **ADR-003:** `40-monitoring-and-documentation/decisions/2025-11-06-decision-001-monitoring-stack-architecture.md` - Monitoring stack
+- **ADR-004:** `30-security/decisions/2025-11-10-decision-004-authelia-sso-mfa-architecture.md` ✨ NEW - Authelia SSO & MFA
 
 ---
 
@@ -119,9 +140,11 @@ docs/
 **What's here:** Deployment and operation of individual services
 
 **Services documented:**
+- **Immich** (photo management with GPU acceleration) ✨ NEW
 - Traefik (reverse proxy)
 - Jellyfin (media server)
-- TinyAuth (authentication)
+- TinyAuth (authentication - to be replaced by Authelia)
+- CrowdSec (IP reputation and bot protection)
 - Monitoring stack (Prometheus, Grafana, Loki)
 - Alertmanager (alerting + Discord relay)
 
@@ -182,7 +205,7 @@ docs/
 
 **When to read:** Researching why old approaches were abandoned
 
-**Note:** Check `ARCHIVE-INDEX.md` (to be created) for archival reasons
+**Note:** See `90-archive/ARCHIVE-INDEX.md` for comprehensive archival catalog
 
 ---
 
@@ -200,10 +223,11 @@ docs/
 **When to read:** Understanding system evolution or preparing for changes
 
 **Latest reports:**
-- `2025-11-07-backup-implementation-summary.md`
-- `2025-11-07-btrfs-backup-automation-report.md`
-- `2025-11-06-system-state.md`
-- `DOCUMENTATION-REVIEW-2025-11-07.md`
+- `2025-11-10-day4-5-gpu-acceleration.md` ✨ - AMD ROCm GPU acceleration guide
+- `2025-11-09-day3-100-percent-deployment.md` ✨ - 100% coverage achievement
+- `2025-11-09-strategic-direction-next-week.md` - Force Multiplier Week planning
+- `2025-11-07-backup-implementation-summary.md` - Backup automation
+- `2025-11-06-system-state.md` - System state snapshot
 
 ---
 
@@ -369,17 +393,25 @@ A: Check `*/decisions/` subdirectories for ADRs explaining why choices were made
 - ✅ Category directories with subdirectories created
 - ✅ Contribution guide (CONTRIBUTING.md) written
 - ✅ CLAUDE.md updated with new structure
-- ⏳ Migration of existing files to new structure (in progress)
-- ⏳ Creation of service guides (pending)
-- ⏳ Creation of ADRs for key decisions (pending)
-- ⏳ Archive cleanup and metadata addition (pending)
+- ✅ Archive cleanup complete (ARCHIVE-INDEX.md created)
+- ✅ Key ADRs written (ADR-001 through ADR-004)
+- ✅ Core service guides created (Immich, Jellyfin, Traefik, TinyAuth, CrowdSec)
+- ✅ Force Multiplier Week achievements documented
+- ⏳ Additional service guides (alertmanager, monitoring components)
+- ⏳ Automated documentation linting
+
+**Recent Additions (Nov 7-10):**
+1. ✅ Comprehensive Immich guide with GPU acceleration
+2. ✅ ADR-004: Authelia SSO & MFA architecture
+3. ✅ Force Multiplier Week summary journal
+4. ✅ GPU acceleration deployment guides and scripts
+5. ✅ Intelligence system documentation
 
 **Next Steps:**
-1. Migrate existing documentation to appropriate subdirectories
-2. Create service guides for all running services
-3. Write ADRs documenting major architectural decisions
-4. Clean up archive with proper metadata
-5. Implement automated documentation linting
+1. Deploy GPU acceleration on fedora-htpc (validate docs)
+2. Create Authelia deployment guides (Week 6+)
+3. Add alertmanager and monitoring component guides
+4. Quarterly documentation audit (Dec 2025)
 
 ---
 
@@ -400,6 +432,6 @@ A: Check `*/decisions/` subdirectories for ADRs explaining why choices were made
 
 **Remember:** Documentation is a love letter to your future self. Keep it current, clear, and kind. 💙
 
-**Last maintained:** 2025-11-07 by Claude Code
+**Last maintained:** 2025-11-10 by Claude Code
 **Review frequency:** Monthly
-**Next review:** 2025-12-07
+**Next review:** 2025-12-10

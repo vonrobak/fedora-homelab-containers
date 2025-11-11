@@ -1,0 +1,48 @@
+---
+###############################################################
+#              Homepage Settings Configuration                #
+###############################################################
+
+# Base URL configuration for host validation
+base: https://patriark.org
+
+title: Patriark Homelab
+favicon: https://github.com/walkxcode/dashboard-icons/blob/main/png/homelab.png
+
+background:
+  image: /images/background.png
+  blur: sm
+  saturate: 50
+  brightness: 50
+  opacity: 50
+
+theme: dark
+color: slate
+
+layout:
+  Admin & Monitoring:
+    style: row
+    columns: 4
+    icon: mdi-monitor-dashboard
+  Media & Photos:
+    style: row
+    columns: 2
+    icon: mdi-filmstrip
+  Security:
+    style: row
+    columns: 2
+    icon: mdi-shield-check
+  Infrastructure:
+    style: row
+    columns: 2
+    icon: mdi-server-network
+
+providers:
+  openweathermap: {{HOMEPAGE_VAR_OPENWEATHER_API_KEY}}
+
+headerStyle: boxed
+statusStyle: dot
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: false
+  hideVisitURL: false

@@ -90,6 +90,17 @@ http:
         #   key: /path/to/key.key
         #   insecureSkipVerify: false
 
+    # Authelia SSO & MFA (YubiKey-First)
+    authelia:
+      forwardAuth:
+        address: "http://authelia:9091/api/verify?rd=https://sso.patriark.org"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - "Remote-User"
+          - "Remote-Groups"
+          - "Remote-Name"
+          - "Remote-Email"
+
     # ═══════════════════════════════════════════════════════════
     # SECURITY HEADERS - Comprehensive
     # ═══════════════════════════════════════════════════════════

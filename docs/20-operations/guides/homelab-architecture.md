@@ -1,6 +1,6 @@
 # Homelab Architecture Documentation
 
-**Last Updated:** October 23, 2025
+**Last Updated:** November 11, 2025 (Authelia migration)
 **Status:** Production Ready ✅
 **Owner:** patriark
 **Domain:** patriark.org
@@ -39,8 +39,8 @@ Operating System:  Fedora Workstation
 Container Runtime: Podman (rootless)
 Orchestration:     Systemd Quadlets
 Reverse Proxy:     Traefik v3.2
-Authentication:    Tinyauth
-Security:          CrowdSec
+Authentication:    Authelia (SSO + YubiKey MFA)
+Security:          CrowdSec + WebAuthn/FIDO2
 DNS:               Cloudflare (external) + Pi-hole (internal)
 SSL:               Let's Encrypt (automated)
 Network:           UniFi Dream Machine Pro
@@ -48,13 +48,15 @@ Network:           UniFi Dream Machine Pro
 
 ### Key Features
 
-- ✅ **Zero-trust security** - Authentication required for all services
+- ✅ **Phishing-resistant authentication** - YubiKey/WebAuthn hardware 2FA
+- ✅ **Single Sign-On (SSO)** - Authelia provides unified authentication
+- ✅ **Zero-trust security** - Multi-factor authentication required for all admin services
 - ✅ **Automatic SSL** - Let's Encrypt certificates with auto-renewal
 - ✅ **Threat protection** - CrowdSec with global threat intelligence
 - ✅ **Dynamic DNS** - Automatic IP updates every 30 minutes
 - ✅ **Rootless containers** - Enhanced security with user-space isolation
 - ✅ **High availability** - Automatic container restarts on failure
-- ✅ **Monitoring ready** - Structured logs and metrics available
+- ✅ **Monitoring ready** - Prometheus + Grafana + Loki stack
 
 ---
 
@@ -97,14 +99,18 @@ Internet Request
 [4] Traefik (Reverse Proxy)
     ├── SSL Termination (Let's Encrypt)
     ├── Rate Limiting
+    ├── Authelia SSO (YubiKey + TOTP)
     ├── Security Headers
-    └── Route to service
+    └── Route to service or SSO portal
     ↓
-[5] Tinyauth (Authentication)
+[5] Authelia (SSO + Multi-Factor Authentication)
     ✓ Valid session → Service access
-    ✗ No session → Login redirect
+    ✗ No session → SSO portal (sso.patriark.org)
+        ├── Username + Password (Argon2id)
+        ├── YubiKey touch (WebAuthn/FIDO2)
+        └── Session created (Redis-backed, 1h expiration)
     ↓
-[6] Service (Jellyfin, etc.)
+[6] Service (Jellyfin, Grafana, etc.)
     Render response
     ↓
 [7] Return to User
@@ -115,11 +121,15 @@ Internet Request
 ```
 Host: fedora-htpc (192.168.1.70)
     │
-    └── Podman Network: systemd-reverse_proxy (10.89.2.0/24)
-        ├── traefik (10.89.2.x) - Gateway
-        ├── crowdsec (10.89.2.x) - Security
-        ├── tinyauth (10.89.2.x) - Auth
-        └── jellyfin (10.89.2.x) - Service
+    ├── Podman Network: systemd-reverse_proxy (10.89.2.0/24)
+    │   ├── traefik (10.89.2.x) - Reverse proxy & SSL
+    │   ├── crowdsec (10.89.2.x) - Threat protection
+    │   ├── authelia (10.89.2.x) - SSO portal
+    │   └── jellyfin (10.89.2.x) - Media service
+    │
+    └── Podman Network: systemd-auth_services (10.89.3.0/24)
+        ├── authelia (10.89.3.x) - SSO server
+        └── redis-authelia (10.89.3.x) - Session storage
 ```
 
 **Network Type:** Podman bridge network
@@ -136,7 +146,9 @@ Host: fedora-htpc (192.168.1.70)
 |---------|---------|------------|---------|--------|
 | **Traefik** | Reverse proxy & SSL | Traefik v3.2 | 80, 443, 8080 | Running ✅ |
 | **CrowdSec** | Threat protection | CrowdSec latest | 8080 (internal) | Running ✅ |
-| **Tinyauth** | SSO Authentication | Tinyauth v4 | 3000 (internal) | Running ✅ |
+| **Authelia** | SSO + YubiKey MFA | Authelia 4.38 | 9091 (internal) | Running ✅ |
+| **Redis** | Session storage | Redis 7 Alpine | 6379 (internal) | Running ✅ |
+| **~~Tinyauth~~** | ~~SSO Authentication~~ | ~~Tinyauth v4~~ | ~~3000 (internal)~~ | Deprecated ⚠️ |
 
 ### Application Services
 
@@ -159,19 +171,19 @@ Host: fedora-htpc (192.168.1.70)
 ### Defense in Depth Strategy
 
 ```
-Layer 7: Application Authentication (Tinyauth)
+Layer 7: Multi-Factor Authentication (Authelia: YubiKey + TOTP)
     ↓
-Layer 6: Rate Limiting (Traefik Middleware)
+Layer 6: SSO Session Management (Redis: 1h expiration)
     ↓
-Layer 5: Threat Intelligence (CrowdSec Bouncer)
+Layer 5: Rate Limiting (Traefik Middleware: Tiered 100-200 req/min)
     ↓
-Layer 4: TLS Encryption (Let's Encrypt)
+Layer 4: Threat Intelligence (CrowdSec Bouncer: IP reputation)
     ↓
-Layer 3: Security Headers (Traefik Middleware)
+Layer 3: TLS Encryption (Let's Encrypt: TLS 1.2+ with modern ciphers)
     ↓
-Layer 2: Port Filtering (UDM Pro Firewall)
+Layer 2: Security Headers (Traefik: HSTS, CSP, X-Frame-Options)
     ↓
-Layer 1: Network Isolation (Separate VLANs possible)
+Layer 1: Port Filtering (UDM Pro Firewall: Only 80/443 exposed)
 ```
 
 ### Security Features Implemented
@@ -189,15 +201,31 @@ Layer 1: Network Isolation (Separate VLANs possible)
 - HTTP exploit attempts
 - Rate abuse detection
 
-#### 2. **Authentication (Tinyauth)**
-- **Method:** Forward authentication
-- **Session:** Cookie-based
-- **Password:** Bcrypt hashed
-- **Scope:** All services except auth portal
+#### 2. **Multi-Factor Authentication (Authelia)**
+- **Primary:** YubiKey/WebAuthn (FIDO2 phishing-resistant)
+- **Fallback:** TOTP (Microsoft Authenticator)
+- **Base:** Username + password (Argon2id hashed)
+- **Session:** Redis-backed (1h expiration, 15min inactivity)
+- **SSO:** Single sign-on across all protected services
+- **Scope:** Admin services (Grafana, Prometheus, Traefik), Jellyfin web UI
 
-#### 3. **Rate Limiting**
-- **Global:** 100 requests/minute (burst: 50)
-- **Applied to:** All routes
+**Protected services:**
+- ✅ Grafana (grafana.patriark.org)
+- ✅ Prometheus (prometheus.patriark.org)
+- ✅ Loki (loki.patriark.org)
+- ✅ Traefik Dashboard (traefik.patriark.org)
+- ✅ Jellyfin Web UI (jellyfin.patriark.org)
+
+**Bypass patterns:**
+- Health check endpoints (all services)
+- Jellyfin API endpoints (mobile app compatibility)
+- Immich (uses native authentication)
+
+#### 3. **Rate Limiting (Tiered)**
+- **Public services:** 200 requests/minute (media, asset-heavy)
+- **Standard services:** 100 requests/minute (admin interfaces)
+- **Auth endpoints:** 10 requests/minute (SSO portal was 10, increased to 100 for SPA assets)
+- **Applied to:** All routes via Traefik middleware
 - **Purpose:** Prevent abuse and DoS
 
 #### 4. **SSL/TLS**
@@ -448,41 +476,96 @@ podman exec crowdsec cscli bouncers list
 
 ---
 
-### Tinyauth (Authentication)
+### Authelia (SSO + Multi-Factor Authentication)
 
-**Container:** `tinyauth`
-**Image:** `ghcr.io/steveiliop56/tinyauth:v4`
-**Network:** systemd-reverse_proxy
-**Port:** 3000 (internal only)
+**Container:** `authelia`
+**Image:** `docker.io/authelia/authelia:4.38`
+**Networks:** systemd-reverse_proxy, systemd-auth_services
+**Port:** 9091 (internal only)
 
 **Configuration:**
-- APP_URL: https://auth.patriark.org
-- Authentication: Bcrypt-hashed passwords
-- Session: Cookie-based
+- SSO Portal: https://sso.patriark.org
+- Authentication methods:
+  - Primary: YubiKey/WebAuthn (FIDO2)
+  - Fallback: TOTP (Microsoft Authenticator)
+  - Base: Username + password (Argon2id)
+- Session storage: Redis (redis-authelia)
+- Session expiration: 1 hour (15min inactivity)
+- Database: SQLite (`/data/db.sqlite3`)
 
 **Users:**
-- patriark (admin)
+- patriark (groups: admins, users)
+
+**Enrolled devices:**
+- YubiKey 5 NFC
+- YubiKey 5C Nano
+- Microsoft Authenticator (TOTP)
 
 **Integration:**
-- Traefik ForwardAuth middleware
-- Protects: All services except auth portal
+- Traefik ForwardAuth middleware (`authelia@file`)
+- Protects: Admin services, Jellyfin web UI
+- Bypasses: Health checks, Jellyfin API (mobile apps)
 
 **Access:**
-- Portal: https://auth.patriark.org
-- API: http://tinyauth:3000/api/auth/traefik (internal)
+- SSO Portal: https://sso.patriark.org
+- Settings: https://sso.patriark.org/settings
 
-**Add User:**
+**Management:**
 ```bash
-# Generate hash
-podman run --rm -i ghcr.io/steveiliop56/tinyauth:v4 user create --interactive
+# Service status
+systemctl --user status authelia.service
 
-# Edit quadlet
-nano ~/.config/containers/systemd/tinyauth.container
-# Add to USERS env (comma-separated)
+# View logs
+podman logs -f authelia
 
-# Restart
-systemctl --user restart tinyauth.service
+# Health check
+curl http://localhost:9091/api/health
+
+# Generate password hash
+podman exec -it authelia authelia crypto hash generate argon2 --random
 ```
+
+---
+
+### Redis (Session Storage)
+
+**Container:** `redis-authelia`
+**Image:** `docker.io/library/redis:7-alpine`
+**Network:** systemd-auth_services
+**Port:** 6379 (internal only)
+
+**Configuration:**
+- Persistence: AOF (append-only file)
+- Max memory: 128MB
+- Eviction policy: allkeys-lru
+
+**Purpose:**
+- Store Authelia SSO sessions
+- Session data encrypted by Authelia
+
+**Management:**
+```bash
+# Check health
+podman exec redis-authelia redis-cli ping
+
+# View stats
+podman exec redis-authelia redis-cli INFO stats
+
+# Session count
+podman exec redis-authelia redis-cli DBSIZE
+```
+
+---
+
+### ~~Tinyauth~~ (DEPRECATED - Replaced by Authelia)
+
+**Status:** Running as safety net (decommission planned 1-2 weeks)
+**Superseded by:** Authelia (2025-11-11)
+**Current state:** No services protected (all migrated to Authelia)
+
+**See:**
+- `/docs/10-services/guides/tinyauth.md` (deprecation notice)
+- `/docs/10-services/guides/authelia.md` (replacement documentation)
 
 ---
 
