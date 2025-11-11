@@ -84,3 +84,4 @@ Thumbs.db
 
 # Git backups
 .git.backup*
+users_database.yml

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A learning-focused homelab project building production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets. Platform: Fedora Workstation 42.
 
-**Current Services:** Traefik (reverse proxy + CrowdSec), Jellyfin (media server), TinyAuth (authentication), Prometheus/Grafana/Loki (monitoring), Alertmanager (alerting)
+**Current Services:** Traefik (reverse proxy + CrowdSec), Jellyfin (media server), Authelia (SSO + YubiKey MFA), Prometheus/Grafana/Loki (monitoring), Alertmanager (alerting), Immich (photo management)
 
 ## Architecture
 
@@ -34,9 +34,9 @@ Internet → Port Forward (80/443)
   ↓
 [1] CrowdSec IP Reputation (cache lookup - fastest)
   ↓
-[2] Rate Limiting (memory check)
+[2] Rate Limiting (tiered: 100-200 req/min)
   ↓
-[3] TinyAuth Authentication (database + bcrypt - most expensive)
+[3] Authelia SSO (YubiKey/WebAuthn + TOTP - phishing-resistant)
   ↓
 [4] Security Headers (applied on response)
   ↓
@@ -50,7 +50,7 @@ Backend Service
 Services are isolated into logical networks:
 - `systemd-reverse_proxy` - Traefik and externally-accessible services
 - `systemd-media_services` - Jellyfin and media processing
-- `systemd-auth_services` - TinyAuth, authentication services
+- `systemd-auth_services` - Authelia, Redis (session storage)
 - `systemd-monitoring` - Prometheus, Grafana, Loki, Alertmanager, exporters
 - `systemd-photos` - Immich and its underlying services
 
@@ -88,7 +88,7 @@ podman run -d \
   --network reverse_proxy \
   --label "traefik.enable=true" \
   --label "traefik.http.routers.jellyfin.rule=Host(\`jellyfin.example.com\`)" \
-  --label "traefik.http.routers.jellyfin.middlewares=crowdsec-bouncer@file,rate-limit@file,tinyauth@file" \
+  --label "traefik.http.routers.jellyfin.middlewares=crowdsec-bouncer@file,rate-limit@file,authelia@file" \
   -v ./config/jellyfin/config:/config:Z \
   jellyfin/jellyfin
 
@@ -509,6 +509,34 @@ systemctl --user restart service.service
 - Alertmanager: Alert routing to Discord
 
 **Status:** ✅ Production. Highest-value addition to homelab.
+
+### ADR-005: Authelia SSO with YubiKey-First Authentication
+**File:** `docs/30-security/decisions/2025-11-11-decision-005-authelia-sso-yubikey-deployment.md`
+
+**Decision:** Deploy Authelia as SSO server with YubiKey/WebAuthn as primary 2FA, replacing TinyAuth.
+
+**Rationale:**
+- Phishing-resistant authentication via hardware FIDO2/WebAuthn keys
+- Single sign-on improves user experience across services
+- Industry-standard solution with active development
+- Granular per-service access control policies
+- TOTP fallback for mobile device compatibility
+
+**Impact:**
+- ✅ YubiKey-protected admin access (Grafana, Prometheus, Traefik)
+- ✅ SSO session management (Redis-backed, 1h expiration)
+- ✅ Mobile app compatibility (API bypass pattern for Jellyfin)
+- ⚠️ Increased complexity (Authelia + Redis vs TinyAuth alone)
+- ⚠️ ~200MB RAM overhead (Authelia + Redis)
+- ⚠️ Password still required (Authelia limitation - cannot go fully passwordless)
+
+**Key Decisions:**
+- **Authentication methods:** YubiKey primary, TOTP fallback, password base
+- **Service tiers:** Admin services require YubiKey, media services conditional
+- **Immich decision:** Removed from Authelia (dual-auth UX issues) - uses native auth
+- **Mobile pattern:** Bypass Authelia for API endpoints, protect web UI only
+
+**Status:** ✅ Production. TinyAuth deprecated, all services migrated.
 
 ### Using ADRs When Making Changes
 

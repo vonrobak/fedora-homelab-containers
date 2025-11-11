@@ -1,0 +1,27 @@
+---
+###############################################################
+#              Homepage Widgets Configuration                 #
+###############################################################
+
+# System Resources (fedora-htpc)
+- resources:
+    cpu: true
+    memory: true
+    disk: /
+    cputemp: true
+    uptime: true
+    units: metric
+    refresh: 3000
+
+# System Information
+- search:
+    provider: google
+    target: _blank
+
+# Optional: Add datetime widget
+- datetime:
+    text_size: xl
+    format:
+      dateStyle: long
+      timeStyle: short
+      hourCycle: h23

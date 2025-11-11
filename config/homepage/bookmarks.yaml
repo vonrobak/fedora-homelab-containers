@@ -1,0 +1,31 @@
+---
+###############################################################
+#            Homepage Bookmarks Configuration                 #
+###############################################################
+
+- Documentation:
+    - Authelia Docs:
+        - icon: authelia.png
+          href: https://www.authelia.com/
+    - Traefik Docs:
+        - icon: traefik.png
+          href: https://doc.traefik.io/traefik/
+    - Homepage Docs:
+        - icon: homepage.png
+          href: https://gethomepage.dev/
+
+- Homelab Resources:
+    - GitHub Repo:
+        - icon: github.png
+          href: https://github.com/patriark/containers
+    - Claude Code:
+        - icon: mdi-robot
+          href: https://claude.ai/code
+
+- Monitoring:
+    - Grafana Dashboards:
+        - icon: grafana.png
+          href: https://grafana.patriark.org/dashboards
+    - Prometheus Targets:
+        - icon: prometheus.png
+          href: https://prometheus.patriark.org/targets

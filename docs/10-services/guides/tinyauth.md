@@ -1,8 +1,45 @@
 # TinyAuth Authentication Service
 
-**Last Updated:** 2025-11-07
+> ## ⚠️ DEPRECATED - Superseded by Authelia
+>
+> **Status:** Legacy / Safety Net
+> **Superseded by:** Authelia SSO with YubiKey authentication (2025-11-11)
+> **Decommission timeline:** 1-2 weeks (keep as rollback option)
+>
+> **Why migrated:**
+> - ✅ **Phishing-resistant authentication:** Authelia supports hardware YubiKey/WebAuthn (FIDO2)
+> - ✅ **Multi-factor authentication:** YubiKey primary + TOTP fallback
+> - ✅ **Single Sign-On:** Unified authentication across all services
+> - ✅ **Industry-standard solution:** Widely deployed, active development
+> - ✅ **Granular access control:** Per-service policies, group-based authorization
+>
+> **Migration status:**
+> - [x] Authelia deployed successfully
+> - [x] All admin services migrated (Grafana, Prometheus, Loki, Traefik)
+> - [x] Jellyfin web UI migrated
+> - [x] Mobile app compatibility verified
+> - [x] Testing complete across multiple browsers
+> - [ ] TinyAuth running as safety net (1-2 weeks)
+> - [ ] Decommission TinyAuth after confidence established
+>
+> **Current state:** TinyAuth still running but NO services protected. All authentication now via Authelia.
+>
+> **For new Authelia documentation, see:**
+> - **Service Guide:** `/docs/10-services/guides/authelia.md`
+> - **Architecture Decision:** `/docs/30-security/decisions/2025-11-11-decision-005-authelia-sso-yubikey-deployment.md`
+> - **Deployment Journal:** `/docs/30-security/journal/2025-11-11-authelia-deployment.md`
+>
+> **This document preserved for:**
+> - Historical reference
+> - Rollback procedure (if Authelia issues discovered)
+> - Understanding pre-Authelia authentication architecture
+
+---
+
+**Last Updated:** 2025-11-11 (deprecation notice added)
+**Original Version:** 2025-11-07
 **Version:** Custom (lightweight forward auth)
-**Status:** Production
+**Status:** ~~Production~~ **DEPRECATED**
 **Networks:** reverse_proxy, auth_services
 
 ---

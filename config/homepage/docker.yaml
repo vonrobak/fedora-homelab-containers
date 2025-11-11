@@ -1,0 +1,12 @@
+---
+###############################################################
+#         Homepage Podman Integration (Optional)              #
+###############################################################
+
+# Podman socket integration - shows running containers
+# Requires mounting Podman socket in quadlet:
+# Volume=/run/user/1000/podman/podman.sock:/var/run/docker.sock:ro
+
+# Uncomment to enable container auto-discovery:
+# my-podman:
+#   socket: /var/run/docker.sock
