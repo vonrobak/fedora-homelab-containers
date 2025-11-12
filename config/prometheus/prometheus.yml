@@ -84,3 +84,11 @@ scrape_configs:
         labels:
           instance: 'fedora-htpc'
           service: 'crowdsec'
+
+  # cAdvisor - Container metrics exporter
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'cadvisor'
