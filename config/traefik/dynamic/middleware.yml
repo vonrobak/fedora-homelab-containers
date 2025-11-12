@@ -75,6 +75,26 @@ http:
           ipStrategy:
             depth: 1
 
+    # Vaultwarden authentication rate limit (STRICTEST - password managers are high-value targets)
+    rate-limit-vaultwarden-auth:
+      rateLimit:
+        average: 5        # Very restrictive: 5 attempts/minute
+        burst: 2          # Allow minimal burst
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1      # Use first IP in X-Forwarded-For
+
+    # Vaultwarden general (non-auth endpoints)
+    rate-limit-vaultwarden:
+      rateLimit:
+        average: 100      # Normal usage
+        burst: 50
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
     # ═══════════════════════════════════════════════════════════
     # AUTHENTICATION
     # ═══════════════════════════════════════════════════════════
