@@ -304,6 +304,65 @@ sudo btrfs subvolume snapshot -r /home ~/.snapshots/htpc-home/$(date +%Y%m%d)-pr
 
 ## Automation Setup (Systemd Timers)
 
+### Prerequisites: Passwordless Sudo for BTRFS Commands
+
+**Required for automated backups via systemd user services.**
+
+The backup script uses `sudo` for BTRFS operations (snapshot, send, receive, delete). Since systemd user services cannot provide interactive password prompts, you must configure passwordless sudo for specific BTRFS commands.
+
+**Create sudoers file:**
+
+```bash
+sudo visudo -f /etc/sudoers.d/btrfs-backup
+```
+
+**Add the following rules:**
+
+```
+# BTRFS Backup Automation - Passwordless sudo for specific commands
+# Created: 2025-11-12
+# Purpose: Allow automated BTRFS snapshot backups via systemd user services
+#
+# Security: Only specific BTRFS commands allowed, no wildcards in command paths
+
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume snapshot *
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume delete *
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs send *
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs receive *
+```
+
+**Set correct permissions:**
+
+```bash
+sudo chmod 0440 /etc/sudoers.d/btrfs-backup
+```
+
+**Verify syntax:**
+
+```bash
+sudo visudo -c
+# Should output: /etc/sudoers: parsed OK
+```
+
+**Security notes:**
+- ✅ Only specific BTRFS subcommands are allowed (snapshot, delete, send, receive)
+- ✅ Command path is absolute (`/usr/sbin/btrfs`), preventing PATH manipulation
+- ✅ Wildcards only in arguments, not in command path
+- ✅ File permissions (0440) prevent unauthorized modification
+- ⚠️ User can create/delete any BTRFS snapshot - acceptable for single-user homelab
+
+**Test the configuration:**
+
+```bash
+# This should work without password prompt:
+sudo -n btrfs subvolume list / | head -5
+
+# Run backup script manually to verify:
+~/containers/scripts/btrfs-snapshot-backup.sh --local-only --verbose
+```
+
+---
+
 ### Daily Backup Timer
 
 Create systemd timer for daily local snapshots:
@@ -493,6 +552,53 @@ sudo btrfs subvolume snapshot ~/.snapshots/htpc-home/20251101-htpc-home /home
 
 ## Troubleshooting
 
+### Problem: Backup service fails with "sudo: a password is required"
+
+**Symptom:**
+```bash
+systemctl --user status btrfs-backup-daily.service
+# Shows: Active: failed (Result: exit-code)
+
+journalctl --user -u btrfs-backup-daily.service
+# Shows: sudo: a terminal is required to read the password
+```
+
+**Cause:** The backup script uses `sudo` for BTRFS operations, but systemd user services cannot provide interactive password prompts.
+
+**Solution:** Configure passwordless sudo for BTRFS commands (see "Automation Setup" section above).
+
+**Quick fix:**
+```bash
+# 1. Create sudoers file
+sudo bash -c 'cat > /etc/sudoers.d/btrfs-backup << EOF
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume snapshot *
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume delete *
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs send *
+patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs receive *
+EOF'
+
+# 2. Set permissions
+sudo chmod 0440 /etc/sudoers.d/btrfs-backup
+
+# 3. Verify syntax
+sudo visudo -c
+
+# 4. Test manually
+~/containers/scripts/btrfs-snapshot-backup.sh --local-only --verbose
+
+# 5. Test via systemd
+systemctl --user start btrfs-backup-daily.service
+systemctl --user status btrfs-backup-daily.service
+```
+
+**Verification:**
+- ✅ Service status shows `status=0/SUCCESS`
+- ✅ Logs show "BTRFS Snapshot & Backup Script Completed"
+- ✅ New snapshots appear in `~/.snapshots/` directories
+- ✅ No sudo password prompts in logs
+
+---
+
 ### Problem: "No space left on device" when creating snapshot
 
 **Cause:** NVMe full or BTRFS metadata full.
@@ -622,5 +728,5 @@ Consider implementing:
 
 ---
 
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-11-12 (Added passwordless sudo documentation and troubleshooting)
 **Script Version:** 1.0
