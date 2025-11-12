@@ -119,7 +119,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "container_last_seen{id=~\".*/app\\.slice/.*\\.service\"}",
+          "expr": "container_last_seen{id=~\".*/app.slice/.*service\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -238,7 +238,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(container_cpu_usage_seconds_total{id=~\".*/app\\.slice/.*\\.service\"}[5m]) * 100",
+          "expr": "rate(container_cpu_usage_seconds_total{id=~\".*/app.slice/.*service\"}[5m]) * 100",
           "legendFormat": "{{id}}",
           "refId": "A"
         }
