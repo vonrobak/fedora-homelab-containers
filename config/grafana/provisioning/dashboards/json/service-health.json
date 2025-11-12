@@ -119,7 +119,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "container_last_seen{name=~\".+\"}",
+          "expr": "container_last_seen{id=~\".*/app\\.slice/.*\\.service\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -141,7 +141,7 @@
             "indexByName": {},
             "renameByName": {
               "Value": "State",
-              "name": "Container"
+              "id": "Container"
             }
           }
         }
@@ -238,8 +238,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(container_cpu_usage_seconds_total{name=~\".+\"}[5m]) * 100",
-          "legendFormat": "{{name}}",
+          "expr": "rate(container_cpu_usage_seconds_total{id=~\".*/app\\.slice/.*\\.service\"}[5m]) * 100",
+          "legendFormat": "{{id}}",
           "refId": "A"
         }
       ],
@@ -334,8 +334,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "container_memory_usage_bytes{name=~\".+\"}",
-          "legendFormat": "{{name}}",
+          "expr": "container_memory_usage_bytes{id=~\".*/app\\.slice/.*\\.service\"}",
+          "legendFormat": "{{id}}",
           "refId": "A"
         }
       ],
@@ -429,8 +429,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(container_network_receive_bytes_total{name=~\".+\"}[5m])",
-          "legendFormat": "{{name}} RX",
+          "expr": "rate(container_network_receive_bytes_total{id=~\".*/app\\.slice/.*\\.service\"}[5m])",
+          "legendFormat": "{{id}} RX",
           "refId": "A"
         },
         {
@@ -438,8 +438,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(container_network_transmit_bytes_total{name=~\".+\"}[5m])",
-          "legendFormat": "{{name}} TX",
+          "expr": "rate(container_network_transmit_bytes_total{id=~\".*/app\\.slice/.*\\.service\"}[5m])",
+          "legendFormat": "{{id}} TX",
           "refId": "B"
         }
       ],
@@ -533,8 +533,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(container_fs_reads_bytes_total{name=~\".+\"}[5m])",
-          "legendFormat": "{{name}} Read",
+          "expr": "rate(container_fs_reads_bytes_total{id=~\".*/app\\.slice/.*\\.service\"}[5m])",
+          "legendFormat": "{{id}} Read",
           "refId": "A"
         },
         {
@@ -542,8 +542,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(container_fs_writes_bytes_total{name=~\".+\"}[5m])",
-          "legendFormat": "{{name}} Write",
+          "expr": "rate(container_fs_writes_bytes_total{id=~\".*/app\\.slice/.*\\.service\"}[5m])",
+          "legendFormat": "{{id}} Write",
           "refId": "B"
         }
       ],
