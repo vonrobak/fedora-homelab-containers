@@ -499,7 +499,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container_name=\"crowdsec\"} |= \"ban\"",
+          "expr": "{unit=\"crowdsec.service\"} |= \"ban\"",
           "refId": "A"
         }
       ],
@@ -535,7 +535,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container_name=\"authelia\"} |= \"failed\"",
+          "expr": "{unit=\"authelia.service\"} |= \"failed\"",
           "refId": "A"
         }
       ],
@@ -571,7 +571,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container_name=\"traefik\"} |= \"ClientIP\" | pattern `<_> ClientIP(<ip>)` | line_format \"{{.ip}}\"",
+          "expr": "{unit=\"traefik.service\"} |= \"ClientIP\" | pattern `<_> ClientIP(<ip>)` | line_format \"{{.ip}}\"",
           "refId": "A"
         }
       ],
