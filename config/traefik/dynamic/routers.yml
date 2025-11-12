@@ -50,6 +50,19 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # Vaultwarden Password Manager (NO Authelia - has own authentication)
+    vaultwarden-secure:
+      rule: "Host(`vault.patriark.org`)"
+      service: "vaultwarden"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-vaultwarden@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
     # Traefik Dashboard
     traefik-dashboard:
       rule: "Host(`traefik.patriark.org`)"
@@ -168,3 +181,8 @@ http:
       loadBalancer:
         servers:
           - url: "http://authelia:9091"
+
+    vaultwarden:
+      loadBalancer:
+        servers:
+          - url: "http://vaultwarden:80"
