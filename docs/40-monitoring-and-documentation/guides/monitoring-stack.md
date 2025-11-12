@@ -1,7 +1,7 @@
 # Homelab Monitoring Stack Guide
 
-**Created:** 2025-11-06  
-**Last Updated:** 2025-11-06
+**Created:** 2025-11-06
+**Last Updated:** 2025-11-12
 
 ## Overview
 
@@ -87,6 +87,85 @@ Sent via Discord during waking hours only (7am-11pm)
 - **GrafanaDown** - Dashboard unavailable >10min
 - **LokiDown** - Logs unavailable >10min
 - **NodeExporterDown** - Metrics stopped >5min
+
+## Grafana Dashboards
+
+The homelab includes 6 pre-configured dashboards for comprehensive monitoring:
+
+### 1. Homelab Overview
+**Purpose:** Single-pane-of-glass system health view
+**Panels:**
+- Service status table (all monitored services)
+- System resource gauges (CPU, memory, disk)
+- Active alerts counter
+- Network traffic overview
+
+**Use case:** Daily health checks, at-a-glance status
+
+### 2. Security Overview
+**Purpose:** Security threat visibility and access monitoring
+**Panels:**
+- Total requests (5-minute window)
+- 4xx errors (client errors)
+- 5xx errors (server errors)
+- Blocked requests (403 responses from CrowdSec)
+- Request rate by HTTP status code
+- Request rate by service
+- CrowdSec ban events (Loki logs)
+- Authelia failed login attempts (Loki logs)
+- Traefik access logs with IP extraction
+
+**Use case:** Security monitoring, attack detection, access pattern analysis
+
+### 3. Service Health
+**Purpose:** Deep-dive container and resource monitoring
+**Panels:**
+- Container status table (all containers with Up/Down state)
+- CPU usage by container (time series)
+- Memory usage by container (time series)
+- Network I/O by container (RX/TX rates)
+- Disk I/O by container (read/write rates)
+- System memory usage gauge
+- System CPU usage gauge
+- System disk usage gauge (root filesystem)
+
+**Use case:** Performance troubleshooting, resource planning, capacity analysis
+
+### 4. Traefik Overview
+**Purpose:** Reverse proxy metrics and routing health
+**Panels:**
+- HTTP request rate
+- Response codes breakdown
+- Router status
+- Backend latency
+
+**Use case:** Proxy performance, routing diagnostics
+
+### 5. Container Metrics (cAdvisor)
+**Purpose:** Low-level container resource metrics
+**Panels:**
+- Container CPU usage
+- Container memory usage
+- Container network I/O
+- Container filesystem I/O
+
+**Use case:** Container performance tuning
+
+### 6. Node Exporter Full
+**Purpose:** Comprehensive system-level metrics
+**Panels:**
+- CPU metrics (all cores)
+- Memory breakdown
+- Disk I/O statistics
+- Network interface stats
+- System load
+
+**Use case:** Deep system diagnostics
+
+**Dashboard Locations:**
+- Configuration: `~/containers/config/grafana/provisioning/dashboards/json/`
+- Provisioning config: `~/containers/config/grafana/provisioning/dashboards/default.yml`
+- Access: https://grafana.patriark.org
 
 ## Common Tasks
 
