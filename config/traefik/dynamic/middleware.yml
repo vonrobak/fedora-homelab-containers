@@ -98,17 +98,6 @@ http:
     # ═══════════════════════════════════════════════════════════
     # AUTHENTICATION
     # ═══════════════════════════════════════════════════════════
-    tinyauth:
-      forwardAuth:
-        address: "http://tinyauth:3000/api/auth/traefik"
-
-
-        # TLS configuration (for future HTTPS to auth service)
-        # tls:
-        #   ca: /path/to/ca.crt
-        #   cert: /path/to/cert.crt
-        #   key: /path/to/key.key
-        #   insecureSkipVerify: false
 
     # Authelia SSO & MFA (YubiKey-First)
     authelia:
