@@ -19,6 +19,10 @@ acme.json
 # Note: tinyauth.container now uses placeholders and is tracked in git
 quadlets/grafana.container
 
+# OCIS Generated Config (instance-specific, created by 'ocis init')
+# Contains instance UUIDs and auto-generated settings. Secrets handled via Podman secrets.
+config/ocis/ocis.yaml
+
 # SSL/TLS Certificates
 config/traefik/letsencrypt/
 **/letsencrypt/
@@ -62,6 +66,33 @@ data/*
 *.swp
 *~
 *.backup
+
+# ═══════════════════════════════════════════════════════════
+# CONFIGURATION IN DATA DIRECTORY (Alternative 1: Selective Exceptions)
+# ═══════════════════════════════════════════════════════════
+# Some services store configuration in data/ because they modify it at runtime.
+# We selectively track custom configs while excluding secrets and runtime state.
+
+# CrowdSec: Un-ignore parent directories first (gitignore requires this)
+!data/crowdsec/
+!data/crowdsec/config/
+!data/crowdsec/config/parsers/
+!data/crowdsec/config/parsers/s02-enrich/
+
+# CrowdSec: Track custom configs
+!data/crowdsec/config/profiles.yaml
+!data/crowdsec/config/acquis.yaml
+!data/crowdsec/config/parsers/s02-enrich/local-whitelist.yaml
+
+# CrowdSec: Re-ignore everything else in config (secrets, hub, etc.)
+data/crowdsec/config/*
+!data/crowdsec/config/profiles.yaml
+!data/crowdsec/config/acquis.yaml
+!data/crowdsec/config/parsers/
+data/crowdsec/config/parsers/*
+!data/crowdsec/config/parsers/s02-enrich/
+data/crowdsec/config/parsers/s02-enrich/*
+!data/crowdsec/config/parsers/s02-enrich/local-whitelist.yaml
 
 # Logs
 *.log
