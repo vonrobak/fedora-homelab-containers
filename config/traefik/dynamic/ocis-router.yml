@@ -1,0 +1,27 @@
+# OCIS Cloud Platform Routing
+# Created: 2025-11-12
+
+http:
+  routers:
+    # OCIS Cloud - Main Interface
+    ocis-secure:
+      rule: "Host(`cloud.patriark.org`)"
+      service: "ocis"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit@file
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    ocis:
+      loadBalancer:
+        servers:
+          - url: "http://ocis:9200"
+        passHostHeader: true
+        healthCheck:
+          path: "/"
+          interval: "30s"
+          timeout: "5s"
