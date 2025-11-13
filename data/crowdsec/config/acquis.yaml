@@ -1,0 +1,21 @@
+# CrowdSec Log Acquisition Configuration
+#
+# Note: CrowdSec primary value comes from CAPI (Community API) which provides
+# 5000+ known-bad IPs from the global CrowdSec community. Local log parsing
+# is secondary and optional.
+#
+# Current setup: Minimal configuration (satisfies requirement for datasource)
+# - Primary threat intel: CAPI (5000+ known-bad IPs from global community)
+# - Local acquisition: Placeholder file source (no actual logs processed yet)
+#
+# Future enhancement: Configure actual log sources when needed
+# Options: journald export to file, docker socket mount, or syslog
+#
+---
+# Placeholder file source (satisfies CrowdSec's requirement for at least one datasource)
+# Note: This file doesn't need to exist - CrowdSec will wait for it
+filenames:
+  - /var/log/crowdsec-placeholder.log
+labels:
+  type: syslog
+force_inotify: false

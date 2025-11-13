@@ -85,6 +85,14 @@ scrape_configs:
           instance: 'fedora-htpc'
           service: 'crowdsec'
 
+  # OCIS cloud platform (ownCloud Infinite Scale)
+  - job_name: 'ocis'
+    static_configs:
+      - targets: ['ocis:9205']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'ocis'
+
   # cAdvisor - Container metrics exporter
   - job_name: 'cadvisor'
     static_configs:

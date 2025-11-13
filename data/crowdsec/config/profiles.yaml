@@ -1,0 +1,58 @@
+# CrowdSec Tiered Ban Profiles (ADR-006 Compliant)
+# Created: 2025-11-12
+# Last Updated: 2025-11-12
+# Strategy: Different ban durations based on threat severity
+# Reference: docs/30-security/decisions/2025-11-12-decision-006-crowdsec-security-architecture.md
+
+# ═══════════════════════════════════════════════════════════
+# TIER 1: SEVERE THREATS - 7 Day Ban
+# CVE exploits, brute force attacks, backdoor attempts
+# ═══════════════════════════════════════════════════════════
+name: severe_threats
+filters:
+  - Alert.Remediation == true && Alert.GetScope() == "Ip"
+  - Alert.GetScenario() startsWith "crowdsecurity/http-cve" || Alert.GetScenario() contains "exploit" || Alert.GetScenario() contains "bf" || Alert.GetScenario() == "crowdsecurity/ssh-bf" || Alert.GetScenario() == "crowdsecurity/http-backdoors-attempts"
+decisions:
+  - type: ban
+    duration: 168h  # 7 days
+on_success: break
+
+---
+# ═══════════════════════════════════════════════════════════
+# TIER 2: AGGRESSIVE THREATS - 24 Hour Ban
+# Probing, scanning, suspicious patterns
+# ═══════════════════════════════════════════════════════════
+name: aggressive_threats
+filters:
+  - Alert.Remediation == true && Alert.GetScope() == "Ip"
+  - Alert.GetScenario() contains "probing" || Alert.GetScenario() contains "scan" || Alert.GetScenario() contains "crawl" || Alert.GetScenario() == "crowdsecurity/http-sensitive-files" || Alert.GetScenario() == "crowdsecurity/http-admin-interface-probing" || Alert.GetScenario() == "crowdsecurity/http-path-traversal-probing"
+decisions:
+  - type: ban
+    duration: 24h  # 1 day
+on_success: break
+
+---
+# ═══════════════════════════════════════════════════════════
+# TIER 3: STANDARD THREATS - 4 Hour Ban
+# General threats, bad user agents, generic attacks
+# ═══════════════════════════════════════════════════════════
+name: standard_threats
+filters:
+  - Alert.Remediation == true && Alert.GetScope() == "Ip"
+decisions:
+  - type: ban
+    duration: 4h  # 4 hours
+on_success: break
+
+---
+# ═══════════════════════════════════════════════════════════
+# RANGE BANS - 4 Hour Default
+# IP range bans (less common, more cautious)
+# ═══════════════════════════════════════════════════════════
+name: range_remediation
+filters:
+  - Alert.Remediation == true && Alert.GetScope() == "Range"
+decisions:
+  - type: ban
+    duration: 4h
+on_success: break

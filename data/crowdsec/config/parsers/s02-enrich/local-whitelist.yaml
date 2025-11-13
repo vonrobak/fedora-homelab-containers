@@ -1,0 +1,20 @@
+# Local Network Whitelist
+# Purpose: Prevent accidentally banning trusted networks
+# Created: 2025-11-12
+
+name: crowdsecurity/local-whitelist
+description: "Whitelist for local networks and VPN"
+whitelist:
+  reason: "Local trusted networks"
+  ip:
+    # Localhost
+    - "127.0.0.1"
+    - "::1"
+  cidr:
+    # Local LAN
+    - "192.168.1.0/24"
+    # WireGuard VPN
+    - "192.168.100.0/24"
+  expression:
+    # Container networks (Podman)
+    - evt.Parsed.source_ip startsWith '10.89.'
