@@ -1,0 +1,168 @@
+# Deployment Pattern: Cache Service
+# Examples: Redis, Memcached, KeyDB
+# Use Case: Session storage, caching layer, message queues
+
+pattern:
+  name: cache-service
+  description: "In-memory cache with optional persistence and network isolation"
+
+service:
+  quadlet_template: web-app.container
+  traefik_template: none  # Caches should NOT be exposed through Traefik
+
+  # Service configuration
+  image: "docker.io/library/redis:7-alpine"  # Lightweight Alpine image
+  memory_limit: "512M"
+  memory_high: "400M"
+
+  # Networks (NO reverse_proxy - internal only)
+  networks:
+    - systemd-{app}_services  # Application-specific network
+    - systemd-monitoring  # For redis_exporter
+
+  # Storage (minimal for AOF/RDB persistence)
+  config_dir: "~/containers/config/{service_name}"
+  data_dir: "~/containers/data/{service_name}"  # System SSD for speed
+
+  # No persistent storage for pure cache
+  ephemeral_storage: false  # Set true for pure in-memory cache
+
+  # No external access
+  expose_ports: []
+  traefik_enabled: false
+
+  # Health check
+  health_cmd: "redis-cli ping | grep PONG || exit 1"
+  health_interval: "10s"
+  health_timeout: "3s"
+  health_retries: 3
+
+  # Environment
+  environment:
+    - "TZ=Europe/Oslo"
+    - "REDIS_PASSWORD={redis_password}"  # Optional: Redis authentication
+
+  # Resource tuning
+  cpu_weight: 300  # Lower priority than databases
+  io_weight: 300
+
+  # Memory tuning
+  ulimit_nofile: 10032  # Increase file descriptor limit
+
+  # Monitoring
+  prometheus_metrics: false  # Use redis_exporter container instead
+  monitoring_notes: "Deploy redis_exporter on same network for Prometheus metrics"
+
+deployment_notes: |
+  Cache services (Redis/Memcached) characteristics:
+
+  1. Memory-optimized:
+     - Primary data store is RAM
+     - Set memory_limit to control max cache size
+     - Redis uses maxmemory policy for eviction
+
+  2. Persistence options (Redis):
+     - RDB: Periodic snapshots (low overhead, data loss possible)
+     - AOF: Append-only file (more durable, higher overhead)
+     - None: Pure cache (fastest, data lost on restart)
+
+  3. Network isolation:
+     - NO public access (security)
+     - Use application-specific network
+     - Only authorized apps can connect
+
+  4. Session storage pattern:
+     - Authelia uses Redis for session storage
+     - Set appropriate memory limits (sessions accumulate)
+     - Configure session TTL in application
+
+  5. Performance tuning:
+     - Keep data on system SSD (fast I/O)
+     - Use Alpine images (smaller footprint)
+     - Monitor memory usage and eviction rate
+
+validation_checks:
+  - Application-specific network exists
+  - Memory limit appropriate for workload
+  - Data directory on fast storage (system SSD)
+  - No Traefik labels present
+  - Redis password configured (if required)
+
+pre_deployment:
+  - Create application-specific network
+  - Calculate memory requirements (estimate * 1.5 for overhead)
+  - Decide persistence strategy (RDB/AOF/none)
+  - Generate secure password: openssl rand -base64 32
+  - Plan monitoring strategy (redis_exporter)
+
+post_deployment:
+  - Test connection: redis-cli -a {password} ping
+  - Verify memory limit: redis-cli -a {password} CONFIG GET maxmemory
+  - Check persistence: redis-cli -a {password} CONFIG GET save
+  - Monitor memory usage: redis-cli -a {password} INFO memory
+  - Deploy redis_exporter for metrics
+
+configuration_examples:
+  redis_persistence_rdb:
+    # Periodic snapshots (good for session storage)
+    - "REDIS_SAVE=900 1 300 10 60 10000"  # Save after time/changes
+
+  redis_persistence_aof:
+    # Append-only file (more durable)
+    - "REDIS_APPENDONLY=yes"
+    - "REDIS_APPENDFSYNC=everysec"
+
+  redis_pure_cache:
+    # No persistence (fastest)
+    - "REDIS_SAVE=''"
+    - "REDIS_APPENDONLY=no"
+
+  redis_eviction:
+    # Memory eviction policy
+    - "REDIS_MAXMEMORY=256mb"
+    - "REDIS_MAXMEMORY_POLICY=allkeys-lru"  # Evict least recently used
+
+common_issues:
+  - "Out of memory": Increase memory_limit or configure eviction policy
+  - "Connection refused": Check both containers on same network
+  - "Slow performance": Move data to system SSD, check memory pressure
+  - "Data loss on restart": Enable persistence (RDB or AOF)
+  - "Too many connections": Increase ulimit_nofile
+
+use_cases:
+  session_storage:
+    description: "Store user sessions (Authelia, web apps)"
+    persistence: "RDB (snapshot every 5 min)"
+    memory: "256M-512M"
+    ttl: "Set by application"
+
+  cache_layer:
+    description: "Cache API responses, database queries"
+    persistence: "None (ephemeral)"
+    memory: "512M-1G"
+    eviction: "allkeys-lru"
+
+  message_queue:
+    description: "Job queues, pub/sub"
+    persistence: "AOF (durable)"
+    memory: "256M-512M"
+    monitoring: "Critical - track queue depth"
+
+example_services:
+  redis:
+    image: "docker.io/library/redis:7-alpine"
+    health_cmd: "redis-cli ping"
+    default_port: 6379
+    notes: "Most popular, full-featured"
+
+  keydb:
+    image: "docker.io/eqalpha/keydb:latest"
+    health_cmd: "redis-cli ping"
+    default_port: 6379
+    notes: "Redis-compatible, multithreaded"
+
+  memcached:
+    image: "docker.io/library/memcached:alpine"
+    health_cmd: "echo stats | nc localhost 11211"
+    default_port: 11211
+    notes: "Simple, no persistence"

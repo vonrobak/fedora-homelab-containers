@@ -1,0 +1,128 @@
+# Deployment Pattern: Database Service
+# Examples: PostgreSQL, MariaDB, MySQL
+# Use Case: Backend databases for applications, isolated networking
+
+pattern:
+  name: database-service
+  description: "Database service with BTRFS NOCOW optimization and network isolation"
+
+service:
+  quadlet_template: database.container  # Specialized template
+  traefik_template: none  # Databases should NOT be exposed through Traefik
+
+  # Service configuration
+  image: "docker.io/library/{db_type}:latest"  # postgres, mariadb, mysql
+  memory_limit: "2G"
+  memory_high: "1.5G"
+
+  # Networks (NO reverse_proxy - internal only)
+  networks:
+    - systemd-{app}_services  # Application-specific network
+    - systemd-monitoring  # For metrics exporters
+
+  # Storage (CRITICAL: BTRFS NOCOW for database performance)
+  config_dir: "~/containers/config/{service_name}"
+  data_dir: "/mnt/btrfs-pool/subvol7-containers/{service_name}/data"
+
+  # BTRFS optimization required
+  btrfs_nocow: true  # MUST set NOCOW attribute on data directory
+
+  # No external access
+  expose_ports: []
+  traefik_enabled: false
+
+  # Health check (database-specific)
+  health_cmd: "pg_isready -U {db_user} || exit 1"  # PostgreSQL example
+  health_interval: "30s"
+  health_timeout: "5s"
+  health_retries: 3
+
+  # Environment (database credentials)
+  environment:
+    - "POSTGRES_USER={db_user}"
+    - "POSTGRES_PASSWORD={db_password}"  # Should use secrets
+    - "POSTGRES_DB={db_name}"
+    - "TZ=Europe/Oslo"
+
+  # Monitoring (database exporter on separate container)
+  prometheus_metrics: false  # Use dedicated exporter instead
+  monitoring_notes: "Deploy postgres_exporter or mysqld_exporter separately"
+
+  # Resource limits
+  cpu_weight: 500  # Higher priority for databases
+  io_weight: 500
+
+deployment_notes: |
+  Database services require special care:
+
+  1. BTRFS NOCOW optimization (CRITICAL):
+     - Database write patterns cause fragmentation with Copy-on-Write
+     - Set NOCOW BEFORE first database initialization
+     - Command: chattr +C /mnt/btrfs-pool/subvol7-containers/{service_name}/data
+     - Verify: lsattr -d /path/to/data (should show 'C' flag)
+
+  2. Network isolation:
+     - NO systemd-reverse_proxy network (security)
+     - Use application-specific network (e.g., systemd-nextcloud_services)
+     - Only app containers on same network can access database
+
+  3. Credentials management:
+     - Use strong passwords (generate with: openssl rand -base64 32)
+     - Store credentials outside Git (.env files in .gitignore)
+     - Consider Podman secrets for production
+
+  4. Backup strategy:
+     - Regular dumps with pg_dump/mysqldump
+     - Store backups on BTRFS pool (snapshots + dumps)
+     - Test restore procedures
+
+  5. Resource allocation:
+     - Databases benefit from higher CPU/IO priority
+     - Shared buffers should be 25% of allocated memory
+     - Monitor slow queries and optimize indexes
+
+validation_checks:
+  - BTRFS data directory has NOCOW attribute set
+  - Application-specific network exists
+  - Database user and credentials configured
+  - Sufficient memory allocated (minimum 1GB)
+  - Data directory permissions correct (700)
+  - No Traefik labels present (security check)
+
+pre_deployment:
+  - Create application-specific network
+  - Create data directory with NOCOW:
+      mkdir -p /mnt/btrfs-pool/subvol7-containers/{service_name}/data
+      chattr +C /mnt/btrfs-pool/subvol7-containers/{service_name}/data
+  - Generate secure credentials
+  - Plan backup strategy
+
+post_deployment:
+  - Verify database initialization: Check container logs
+  - Test connection from application container
+  - Set up monitoring exporter (e.g., postgres_exporter)
+  - Configure backup cron job
+  - Run VACUUM ANALYZE (PostgreSQL) or OPTIMIZE (MySQL)
+
+common_issues:
+  - "Connection refused": Check both containers on same network
+  - "Slow queries": Verify NOCOW attribute, check fragmentation
+  - "Out of memory": Increase memory_limit or tune shared buffers
+  - "Authentication failed": Verify environment variables match app config
+  - "Data corruption": NOCOW not set before first init - restore from backup
+
+example_services:
+  postgresql:
+    image: "docker.io/library/postgres:16"
+    health_cmd: "pg_isready -U postgres"
+    default_port: 5432
+
+  mariadb:
+    image: "docker.io/library/mariadb:11"
+    health_cmd: "healthcheck.sh --connect --innodb_initialized"
+    default_port: 3306
+
+  mysql:
+    image: "docker.io/library/mysql:8"
+    health_cmd: "mysqladmin ping -h localhost"
+    default_port: 3306

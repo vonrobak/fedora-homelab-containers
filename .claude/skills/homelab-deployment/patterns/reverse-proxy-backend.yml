@@ -1,0 +1,85 @@
+# Deployment Pattern: Reverse Proxy Backend
+# Examples: Internal APIs, dashboards, admin interfaces
+# Use Case: Services that live behind Traefik with no direct internet access
+
+pattern:
+  name: reverse-proxy-backend
+  description: "Backend service accessible only through Traefik reverse proxy"
+
+service:
+  quadlet_template: web-app.container
+  traefik_template: authenticated-service.yml
+
+  # Service configuration
+  image: "docker.io/library/{service_image}:latest"
+  memory_limit: "512M"
+  memory_high: "400M"
+
+  # Networks (reverse_proxy FIRST and ONLY for internal routing)
+  networks:
+    - systemd-reverse_proxy
+    - systemd-monitoring
+
+  # Storage
+  config_dir: "~/containers/config/{service_name}"
+  data_dir: "~/containers/data/{service_name}"
+
+  # No host port binding - access only through Traefik
+  expose_ports: []
+
+  # Health check
+  health_cmd: "curl -f http://localhost:{internal_port}/health || exit 1"
+  health_path: "/health"
+
+  # Environment
+  environment:
+    - "TZ=Europe/Oslo"
+
+  # Traefik configuration
+  hostname: "{service_name}.patriark.org"
+  port: "{internal_port}"  # Internal container port
+
+  # Middleware (strict security for internal services)
+  middleware:
+    - crowdsec-bouncer@file
+    - rate-limit-auth@file  # Stricter rate limit for admin interfaces
+    - authelia@file  # REQUIRED - no public access
+    - security-headers@file
+
+  # Monitoring
+  prometheus_metrics: true  # Most internal services expose metrics
+
+deployment_notes: |
+  Reverse proxy backend services:
+  - NO direct port binding to host (security)
+  - Access ONLY through Traefik on systemd-reverse_proxy network
+  - Authentication REQUIRED (Authelia middleware mandatory)
+  - Ideal for: Admin panels, internal APIs, management interfaces
+
+  Security considerations:
+  - Never remove Authelia middleware
+  - Use stricter rate limiting (rate-limit-auth@file)
+  - Consider IP whitelisting for sensitive services
+  - Monitor access logs for suspicious activity
+
+  Network topology:
+  - systemd-reverse_proxy: Traefik routing
+  - systemd-monitoring: Prometheus scraping (optional)
+  - NO external network access needed
+
+validation_checks:
+  - systemd-reverse_proxy network exists
+  - Authelia middleware configured in Traefik
+  - No PublishPort directives in quadlet (security check)
+  - Health endpoint responds on internal port
+
+post_deployment:
+  - Test access through Traefik: https://{hostname}
+  - Verify Authelia login prompt appears
+  - Confirm service NOT accessible on host ports
+  - Check Prometheus metrics endpoint (if enabled)
+
+common_issues:
+  - "Service unreachable": Check Traefik labels and network connectivity
+  - "Authentication loop": Verify Authelia session cookie settings
+  - "Metrics not scraped": Ensure service on systemd-monitoring network
