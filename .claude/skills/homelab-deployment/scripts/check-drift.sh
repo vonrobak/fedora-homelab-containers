@@ -96,7 +96,7 @@ get_quadlet_value() {
     awk -v section="[$section]" -v key="$key" '
         $0 == section { in_section=1; next }
         /^\[/ { in_section=0 }
-        in_section && $1 == key {
+        in_section && $0 ~ "^" key "=" {
             sub(/^[^=]*=/, "");
             gsub(/^[ \t]+|[ \t]+$/, "");
             print;
@@ -207,12 +207,17 @@ check_service_drift() {
 
     # Check 4: Volume mounts
     local quadlet_volumes=$(grep "^Volume=" "$quadlet_file" | wc -l)
-    local running_volumes=$(get_container_value "$container_name" ".Mounts | length")
+    local running_volumes=$(podman inspect "$container_name" --format '{{json .Mounts}}' 2>/dev/null | grep -o '"Type"' | wc -l)
 
     if [[ "$VERBOSE" == "true" ]]; then
         echo "  Volumes:"
         echo "    Quadlet defines: $quadlet_volumes mounts"
         echo "    Running has: $running_volumes mounts"
+    fi
+
+    # Ensure running_volumes is a number
+    if [[ ! "$running_volumes" =~ ^[0-9]+$ ]]; then
+        running_volumes=0
     fi
 
     if [[ "$quadlet_volumes" -ne "$running_volumes" ]] && [[ "$quadlet_volumes" -gt 0 ]]; then
@@ -227,6 +232,14 @@ check_service_drift() {
     # Check 5: Traefik labels
     local quadlet_traefik_labels=$(grep "^Label=" "$quadlet_file" | grep -c "traefik" || echo "0")
     local running_traefik_labels=$(podman inspect "$container_name" --format '{{range $k, $v := .Config.Labels}}{{if contains $k "traefik"}}{{$k}} {{end}}{{end}}' 2>/dev/null | wc -w)
+
+    # Ensure both are numbers
+    if [[ ! "$quadlet_traefik_labels" =~ ^[0-9]+$ ]]; then
+        quadlet_traefik_labels=0
+    fi
+    if [[ ! "$running_traefik_labels" =~ ^[0-9]+$ ]]; then
+        running_traefik_labels=0
+    fi
 
     if [[ "$VERBOSE" == "true" ]]; then
         echo "  Traefik Labels:"
