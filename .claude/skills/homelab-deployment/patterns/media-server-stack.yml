@@ -1,0 +1,76 @@
+# Deployment Pattern: Media Server Stack
+# Examples: Jellyfin, Plex, Emby
+# Use Case: Media streaming with transcoding support
+
+pattern:
+  name: media-server-stack
+  description: "Media server with GPU transcoding and public/authenticated access"
+
+service:
+  quadlet_template: web-app.container
+  traefik_template: authenticated-service.yml
+
+  # Service configuration
+  image: "docker.io/jellyfin/jellyfin:latest"
+  memory_limit: "4G"
+  memory_high: "3G"
+
+  # Networks (reverse_proxy FIRST for internet access)
+  networks:
+    - systemd-reverse_proxy
+    - systemd-media_services
+    - systemd-monitoring
+
+  # Storage
+  config_dir: "~/containers/config/{service_name}"
+  data_dir: "/mnt/btrfs-pool/subvol3-media/{service_name}"
+
+  # Additional volumes (media libraries)
+  additional_volumes:
+    - "/mnt/btrfs-pool/subvol3-media/movies:/movies:Z"
+    - "/mnt/btrfs-pool/subvol3-media/tv:/tv:Z"
+
+  # Hardware acceleration (optional)
+  devices:
+    - "/dev/dri/renderD128"  # AMD GPU
+
+  # Health check
+  health_cmd: "curl -f http://localhost:8096/health || exit 1"
+  health_path: "/health"
+
+  # Environment
+  environment:
+    - "TZ=Europe/Oslo"
+    - "JELLYFIN_PublishedServerUrl=https://{hostname}"
+
+  # Traefik configuration
+  hostname: "{service_name}.patriark.org"
+  port: 8096
+
+  # Middleware
+  middleware:
+    - crowdsec-bouncer@file
+    - rate-limit-public@file
+    - authelia@file  # Optional: Remove for public access
+    - security-headers@file
+
+  # Monitoring
+  prometheus_metrics: false  # Most media servers don't expose Prometheus metrics
+
+deployment_notes: |
+  Media servers typically need:
+  - GPU access for transcoding (AddDevice=/dev/dri/renderD128)
+  - Large storage volumes for media files
+  - systemd-media_services network for isolation
+  - Optional authentication (can be public with just CrowdSec)
+
+  GPU transcoding requires:
+  - Render group membership on host
+  - Correct device permissions
+  - Hardware acceleration enabled in service settings
+
+validation_checks:
+  - GPU device exists: "/dev/dri/renderD128"
+  - Media directories exist and have content
+  - Sufficient disk space for media
+  - Network allows streaming bandwidth

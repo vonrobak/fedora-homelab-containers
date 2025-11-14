@@ -1,0 +1,67 @@
+# Deployment Pattern: Monitoring Exporter
+# Examples: Node Exporter, cAdvisor, Postgres Exporter
+# Use Case: Prometheus metrics exporters
+
+pattern:
+  name: monitoring-exporter
+  description: "Lightweight monitoring exporter for Prometheus scraping"
+
+service:
+  quadlet_template: monitoring-service.container
+  traefik_template: null  # No external access needed
+
+  image: "{exporter_image}"
+  memory_limit: "128M"
+  memory_high: "96M"
+
+  networks:
+    - systemd-monitoring
+
+  config_dir: "~/containers/config/{service_name}"
+
+  # Metrics port (internal only, Prometheus scrapes from monitoring network)
+  metrics_port: "{metrics_port}"
+
+  health_cmd: "curl -f http://localhost:{metrics_port}/metrics || exit 1"
+
+  environment:
+    - "TZ=Europe/Oslo"
+
+# Prometheus configuration
+prometheus:
+  scrape_config_template: service-scrape-config.yml
+  metrics_port: "{metrics_port}"
+  metrics_path: "/metrics"
+  scrape_interval: "15s"
+
+  # Add this to ~/containers/config/prometheus/prometheus.yml
+  job_name: "{service_name}"
+  target: "{service_name}:{metrics_port}"
+
+deployment_sequence:
+  1: "Deploy exporter service"
+  2: "Wait for service healthy"
+  3: "Add Prometheus scrape config"
+  4: "Reload Prometheus: systemctl --user restart prometheus.service"
+  5: "Verify target UP in Prometheus: http://localhost:9090/targets"
+  6: "Test metrics endpoint: curl http://{service_name}:{metrics_port}/metrics"
+
+deployment_notes: |
+  Monitoring exporters are lightweight and only need:
+  - systemd-monitoring network (no reverse proxy)
+  - No Traefik route (internal access only)
+  - Minimal resource limits (usually <128MB)
+  - Prometheus scrape configuration
+
+  Common exporters:
+  - Node Exporter (port 9100): Host system metrics
+  - cAdvisor (port 8080): Container metrics
+  - Postgres Exporter (port 9187): Database metrics
+  - Redis Exporter (port 9121): Redis metrics
+
+validation_checks:
+  - Exporter on systemd-monitoring network
+  - Metrics endpoint accessible from Prometheus
+  - Prometheus target shows as UP
+  - Metrics being scraped successfully
+  - No external Traefik route created

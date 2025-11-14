@@ -1,0 +1,12 @@
+# Prometheus scrape configuration for {{SERVICE_NAME}}
+# Add this to ~/containers/config/prometheus/prometheus.yml under scrape_configs:
+
+  - job_name: '{{SERVICE_NAME}}'
+    static_configs:
+      - targets: ['{{SERVICE_NAME}}:{{METRICS_PORT}}']
+        labels:
+          service: '{{SERVICE_NAME}}'
+          environment: 'homelab'
+    scrape_interval: {{SCRAPE_INTERVAL}}
+    scrape_timeout: 10s
+    metrics_path: '{{METRICS_PATH}}'
