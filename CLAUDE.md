@@ -78,6 +78,69 @@ Services join networks based on trust/access requirements. Services can be on mu
 
 ### Service Deployment
 
+#### Pattern-Based Deployment (Recommended)
+
+Use battle-tested deployment patterns for consistent, validated deployments:
+
+```bash
+# Deploy using homelab-deployment skill patterns
+cd .claude/skills/homelab-deployment
+
+# Media server (Jellyfin, Plex)
+./scripts/deploy-from-pattern.sh \
+  --pattern media-server-stack \
+  --service-name jellyfin \
+  --hostname jellyfin.patriark.org \
+  --memory 4G
+
+# Web application with database
+./scripts/deploy-from-pattern.sh \
+  --pattern web-app-with-database \
+  --service-name wiki \
+  --hostname wiki.patriark.org \
+  --memory 2G
+
+# Database (PostgreSQL, MySQL)
+./scripts/deploy-from-pattern.sh \
+  --pattern database-service \
+  --service-name app-db \
+  --memory 2G
+
+# Cache (Redis, Memcached)
+./scripts/deploy-from-pattern.sh \
+  --pattern cache-service \
+  --service-name app-redis \
+  --memory 512M
+
+# Internal service (admin panels, APIs)
+./scripts/deploy-from-pattern.sh \
+  --pattern reverse-proxy-backend \
+  --service-name admin-panel \
+  --hostname admin.patriark.org \
+  --memory 512M
+
+# See all patterns
+ls -1 patterns/*.yml
+
+# Pattern selection guide
+cat docs/10-services/guides/pattern-selection-guide.md
+```
+
+**Available Patterns (9 total):**
+- `media-server-stack` - Jellyfin, Plex (GPU transcoding, large storage)
+- `web-app-with-database` - Wiki.js, Bookstack (standard web apps)
+- `document-management` - Paperless-ngx, Nextcloud (OCR, multi-container)
+- `authentication-stack` - Authelia + Redis (SSO with YubiKey)
+- `password-manager` - Vaultwarden (self-contained password vault)
+- `database-service` - PostgreSQL, MySQL (BTRFS NOCOW optimized)
+- `cache-service` - Redis, Memcached (session storage, caching)
+- `reverse-proxy-backend` - Internal services (strict auth required)
+- `monitoring-exporter` - Node exporter, cAdvisor (metrics collection)
+
+#### Manual Deployment (Legacy)
+
+For services without matching patterns:
+
 ```bash
 # Full Jellyfin + Traefik deployment
 ./scripts/deploy-jellyfin-with-traefik.sh
@@ -124,6 +187,20 @@ podman healthcheck run jellyfin     # Check container health
 
 # System intelligence report (health scoring + recommendations)
 ./scripts/homelab-intel.sh
+# Output: Health score (0-100), critical issues, warnings, recommendations
+# JSON: docs/99-reports/intel-<timestamp>.json
+
+# Configuration drift detection (compare running vs declared state)
+cd .claude/skills/homelab-deployment
+./scripts/check-drift.sh                    # Check all services
+./scripts/check-drift.sh jellyfin          # Check specific service
+./scripts/check-drift.sh --verbose         # Detailed comparison
+./scripts/check-drift.sh --json --output drift-report.json
+
+# Health check before deployment (integrates with homelab-intel.sh)
+./scripts/check-system-health.sh
+./scripts/check-system-health.sh --verbose
+./scripts/check-system-health.sh --force   # Override health blocks
 
 # Security compliance audit
 ./scripts/security-audit.sh
@@ -140,6 +217,13 @@ podman healthcheck run jellyfin     # Check container health
 # Storage diagnostics
 ./scripts/collect-storage-info.sh
 ```
+
+**Drift Detection Categories:**
+- ✓ MATCH - Configuration matches quadlet definition
+- ✗ DRIFT - Mismatch requiring reconciliation (restart service)
+- ⚠ WARNING - Minor differences (informational only)
+
+**What is checked:** Image version, memory limits, networks, volumes, Traefik labels
 
 ### Network Management
 
