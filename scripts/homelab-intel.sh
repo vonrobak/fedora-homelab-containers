@@ -142,7 +142,7 @@ check_services() {
 
     for svc in "${critical[@]}"; do
         if systemctl --user is-active "${svc}.service" &>/dev/null; then
-            ((running++))
+            running=$((running + 1))
         else
             failed+=("$svc")
         fi
