@@ -1,15 +1,37 @@
 # Session 3: Remaining Bugs & Follow-Up Tasks
 
 **Created:** 2025-11-14
-**Status:** Follow-up work needed
-**Estimated Time:** 1-2 hours
-**Priority:** MEDIUM (core functionality working)
+**Updated:** 2025-11-14 (Session 3.5 - BUGS FIXED)
+**Status:** ✅ COMPLETE (both bugs fixed)
+**Actual Time:** 45 minutes
+**Priority:** RESOLVED
 
 ---
 
-## Overview
+## ✅ Session 3.5 Resolution Summary
 
-Session 3 delivered 85% working functionality with 4/5 bugs fixed. Two issues remain that prevent full end-to-end deployment workflow but don't block immediate use of the skill.
+**Both bugs fixed successfully!** Root cause was identical: bash arithmetic post-increment with errexit.
+
+### Bug #1: check-prerequisites.sh ✅ FIXED
+- **Root cause:** `((CHECKS_PASSED++))` returns 0, triggers errexit
+- **Fix:** Changed to `CHECKS_PASSED=$((CHECKS_PASSED + 1))`
+- **Result:** All 7 checks complete successfully
+- **Testing:** Validated with single/multiple networks, nonexistent networks
+
+### Bug #2: homelab-intel.sh ✅ FIXED
+- **Root cause:** `((running++))` returns 0, triggers errexit
+- **Fix:** Changed to `running=$((running + 1))`
+- **Result:** Script completes, generates health report (80/100)
+- **Testing:** Full intelligence report generated in 2 seconds
+
+**Commits:** 1d7bf12
+**Report:** `docs/99-reports/2025-11-14-session-3.5-bug-fixes.md`
+
+---
+
+## Original Overview (Session 3 Validation)
+
+Session 3 delivered 85% working functionality with 4/5 bugs fixed. Two issues remained that prevented full end-to-end deployment workflow but didn't block immediate use of the skill.
 
 **What's Working:**
 - ✅ check-drift.sh - Production-ready drift detection
