@@ -1,0 +1,127 @@
+# Deployment Pattern: Authentication Stack
+# Examples: Authelia + Redis, Authentik + PostgreSQL
+# Use Case: SSO authentication service with session storage
+
+pattern:
+  name: authentication-stack
+  description: "SSO authentication service with session storage backend"
+
+# Session storage (deploy first)
+session_storage:
+  quadlet_template: database.container
+  image: "docker.io/library/redis:7-alpine"
+  memory_limit: "256M"
+  memory_high: "192M"
+
+  networks:
+    - systemd-auth_services
+
+  data_dir: "/mnt/btrfs-pool/subvol7-containers/{service_name}-redis"
+
+  health_cmd: "redis-cli ping | grep PONG || exit 1"
+
+  command: "redis-server --save 60 1 --loglevel warning"
+
+  # Persistence settings
+  volumes:
+    - "{data_dir}:/data:Z"
+
+# Authentication service (deploy after session storage)
+auth_service:
+  quadlet_template: web-app.container
+  traefik_template: authenticated-service.yml  # Custom: No Authelia on itself!
+
+  image: "ghcr.io/authelia/authelia:latest"
+  memory_limit: "512M"
+  memory_high: "384M"
+
+  networks:
+    - systemd-reverse_proxy
+    - systemd-auth_services
+    - systemd-monitoring
+
+  config_dir: "~/containers/config/{service_name}"
+  data_dir: "~/containers/data/{service_name}"
+
+  health_cmd: "curl -f http://localhost:9091/api/health || exit 1"
+  health_path: "/api/health"
+
+  environment:
+    - "TZ=Europe/Oslo"
+
+  secrets:
+    - "authelia_jwt_secret"
+    - "authelia_session_secret"
+    - "authelia_storage_encryption_key"
+
+  hostname: "sso.patriark.org"
+  port: 9091
+
+  # NO Authelia on itself (prevents recursive auth)
+  middleware:
+    - crowdsec-bouncer@file
+    - rate-limit-auth@file  # Strict rate limiting for auth
+    - security-headers@file
+
+deployment_sequence:
+  1: "Generate secrets:"
+     - "podman secret create authelia_jwt_secret -"
+     - "podman secret create authelia_session_secret -"
+     - "podman secret create authelia_storage_encryption_key -"
+  2: "Deploy Redis session storage"
+  3: "Wait for Redis healthy"
+  4: "Deploy Authelia service"
+  5: "Configure user database (users_database.yml)"
+  6: "Test SSO portal: https://sso.patriark.org"
+  7: "Configure protected services to use Authelia"
+  8: "Test end-to-end authentication flow"
+
+authelia_configuration:
+  # ~/containers/config/authelia/configuration.yml
+  session:
+    redis:
+      host: "{service_name}-redis"
+      port: 6379
+
+  authentication_backend:
+    file:
+      path: /config/users_database.yml
+
+  access_control:
+    default_policy: deny
+    rules:
+      - domain: "*.patriark.org"
+        policy: two_factor
+
+deployment_notes: |
+  Authentication stacks require:
+  - Session storage (Redis) on systemd-auth_services network
+  - Auth service on both reverse_proxy and auth_services networks
+  - NO Authelia middleware on the auth service itself
+  - Strict rate limiting on auth endpoints
+  - User database configuration
+  - Multiple secrets (JWT, session, encryption)
+
+  Authelia-specific:
+  - YubiKey/WebAuthn support for 2FA
+  - TOTP fallback
+  - Session management via Redis
+  - File-based user database (or LDAP)
+
+validation_checks:
+  - All secrets created
+  - Redis running and accessible from Authelia
+  - Authelia SSO portal accessible
+  - User database configured
+  - Can log in with test user
+  - 2FA working (YubiKey or TOTP)
+  - Session persists across refreshes
+  - Protected services redirect to SSO
+
+security_considerations:
+  - NO Authelia middleware on SSO portal itself
+  - Strict rate limiting on authentication endpoints
+  - Strong secrets (64+ characters)
+  - Session expiration configured (1h default)
+  - Failed login attempt tracking
+  - IP-based brute force protection

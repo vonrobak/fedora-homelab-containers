@@ -1,0 +1,96 @@
+# Deployment Pattern: Web Application with Database
+# Examples: Nextcloud, Wiki.js, Gitea, Paperless-ngx
+# Use Case: Web app requiring persistent database backend
+
+pattern:
+  name: web-app-with-database
+  description: "Web application with PostgreSQL/MySQL database backend"
+
+# Database service (deploy first)
+database:
+  quadlet_template: database.container
+  image: "docker.io/library/postgres:16-alpine"
+  memory_limit: "1G"
+  memory_high: "768M"
+
+  networks:
+    - systemd-database
+
+  # IMPORTANT: Database storage must have NOCOW on BTRFS
+  # Run: sudo chattr +C /mnt/btrfs-pool/subvol7-containers/{service_name}-db
+  data_dir: "/mnt/btrfs-pool/subvol7-containers/{service_name}-db"
+
+  health_cmd: "pg_isready -U {db_user} -d {db_name} || exit 1"
+
+  environment:
+    - "POSTGRES_DB={db_name}"
+    - "POSTGRES_USER={db_user}"
+    - "POSTGRES_PASSWORD_FILE=/run/secrets/db_password"
+
+  secrets:
+    - "db_password"  # Create with: podman secret create db_password -
+
+# Web application service (deploy after database)
+webapp:
+  quadlet_template: web-app.container
+  traefik_template: authenticated-service.yml
+
+  image: "{webapp_image}"
+  memory_limit: "2G"
+  memory_high: "1.5G"
+
+  networks:
+    - systemd-reverse_proxy
+    - systemd-database
+    - systemd-monitoring
+
+  config_dir: "~/containers/config/{service_name}"
+  data_dir: "~/containers/data/{service_name}"
+
+  health_cmd: "curl -f http://localhost:{port}/health || exit 1"
+  health_path: "/health"
+
+  environment:
+    - "TZ=Europe/Oslo"
+    - "DB_HOST={service_name}-db"
+    - "DB_PORT=5432"
+    - "DB_DATABASE={db_name}"
+    - "DB_USER={db_user}"
+    - "DB_PASSWORD_FILE=/run/secrets/db_password"
+
+  secrets:
+    - "db_password"  # Same secret as database
+
+  hostname: "{service_name}.patriark.org"
+  port: 3000
+
+  middleware:
+    - crowdsec-bouncer@file
+    - rate-limit@file
+    - authelia@file
+    - security-headers@file
+
+deployment_sequence:
+  1: "Create database secret: podman secret create {service_name}_db_password -"
+  2: "Set NOCOW on database directory: sudo chattr +C {db_data_dir}"
+  3: "Deploy database service"
+  4: "Wait for database healthy"
+  5: "Deploy web application"
+  6: "Run database migrations (if needed)"
+  7: "Configure Traefik route"
+  8: "Verify end-to-end connectivity"
+
+deployment_notes: |
+  Web apps with databases require:
+  - Database network for secure communication
+  - Shared secret for database password
+  - NOCOW attribute on database storage (BTRFS)
+  - Database must be deployed and healthy before webapp
+  - Webapp often needs initial setup/migration step
+
+validation_checks:
+  - Database secret exists
+  - Database directory has NOCOW attribute
+  - Database service healthy before webapp deployment
+  - Webapp can connect to database
+  - Both services on correct networks
