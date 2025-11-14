@@ -1,6 +1,6 @@
 # Archive Index
 
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-11-14
 **Purpose:** Catalog of archived documentation with archival context
 
 ---
@@ -32,8 +32,10 @@ This directory contains **superseded documentation** preserved for historical re
 | `QUICK-REFERENCE.md` | 2025-11-07 | Commands out of date, structure changed | Service-specific guides in `docs/10-services/guides/` |
 | `quick-reference.md` | 2025-11-07 | Duplicate of QUICK-REFERENCE | (same as above) |
 | `quick-reference-v2.md` | 2025-11-07 | Second iteration, also outdated | (same as above) |
+| `tinyauth-service-guide.md` | 2025-11-14 | TinyAuth superseded by Authelia SSO | `docs/10-services/guides/authelia.md` + ADR-005 |
+| `tinyauth-setup-guide.md` | 2025-11-14 | TinyAuth setup obsolete after Authelia migration | `docs/30-security/decisions/2025-11-11-decision-005-authelia-sso-yubikey-deployment.md` |
 
-**Why preserved:** Shows documentation evolution and early architectural decisions
+**Why preserved:** Shows documentation evolution and early architectural decisions. TinyAuth guides document the pragmatic "start simple, upgrade later" authentication journey from basic username/password to hardware-based 2FA with YubiKey.
 
 ---
 
@@ -285,14 +287,14 @@ Add to top of archived file:
 ## Statistics
 
 **Archive contents:**
-- Total files: 36
-- Markdown docs: 32
+- Total files: 38
+- Markdown docs: 34
 - Diagnostic outputs: 4
 - Backup files: 4 (to be removed)
-- Significant docs: ~15 (with useful historical context)
+- Significant docs: ~17 (with useful historical context)
 
 **Categories:**
-- Superseded documentation: 7 files
+- Superseded documentation: 9 files (added TinyAuth guides)
 - Failed experiments: 4 files
 - Planning/checklists: 7 files
 - Storage evolution: 4 files
@@ -300,7 +302,7 @@ Add to top of archived file:
 - Diagnostic outputs: 5 files
 - Backup files: 4 files (removal pending)
 
-**Date range:** October 20 - October 25, 2025 (1 week of rapid iteration)
+**Date range:** October 20, 2025 - November 14, 2025 (authentication evolution from TinyAuth → Authelia)
 
 ---
 

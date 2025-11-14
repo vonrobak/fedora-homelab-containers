@@ -1,3 +1,22 @@
+> **🗄️ ARCHIVED:** 2025-11-14
+>
+> **Reason:** TinyAuth superseded by Authelia SSO with YubiKey/WebAuthn authentication
+>
+> **Superseded by:**
+> - `docs/10-services/guides/authelia.md` (Service Guide)
+> - `docs/30-security/decisions/2025-11-11-decision-005-authelia-sso-yubikey-deployment.md` (ADR-005)
+> - `docs/30-security/journal/2025-11-11-authelia-deployment.md` (Deployment Journal)
+>
+> **Historical context:** TinyAuth was a lightweight forward authentication service deployed as a simple alternative to Authelia during October 2025. It provided basic username/password authentication for Traefik-routed services with minimal complexity (no Redis, no complex config). While functional, it lacked critical security features like phishing-resistant 2FA (YubiKey/WebAuthn) and proper SSO session management. Successfully replaced by Authelia on 2025-11-11 after overcoming initial complexity challenges documented in ADR-005.
+>
+> **Value:**
+> - Documents the evolution from simple to secure authentication
+> - Shows pragmatic "start simple, upgrade later" approach
+> - Provides rollback reference if Authelia issues arise
+> - Illustrates trade-offs between simplicity and security features
+>
+> ---
+
 # TinyAuth Authentication Service
 
 > ## ⚠️ DEPRECATED - Superseded by Authelia

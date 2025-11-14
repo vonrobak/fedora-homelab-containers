@@ -1,6 +1,6 @@
 # Vaultwarden Deployment Guide
 
-**Date:** 2025-11-12
+**Date:** 2025-11-12 (Updated: 2025-11-14)
 **Service:** Vaultwarden (Bitwarden-compatible password manager)
 **URL:** https://vault.patriark.org
 **Status:** 📋 Ready for deployment
@@ -31,7 +31,56 @@ Before deploying, ensure:
 
 ---
 
-## Deployment Steps
+## Deployment Method
+
+### Pattern-Based Deployment (Recommended - Future)
+
+**Note:** As of 2025-11-14, Vaultwarden can be deployed using the `password-manager` pattern from the homelab-deployment skill. This provides consistent configuration and validation.
+
+**Pattern deployment:**
+```bash
+cd .claude/skills/homelab-deployment
+
+# Deploy Vaultwarden with pattern
+./scripts/deploy-from-pattern.sh \
+  --pattern password-manager \
+  --service-name vaultwarden \
+  --hostname vault.patriark.org \
+  --memory 512M
+```
+
+**What the pattern provides:**
+- ✅ Optimized resource limits (512MB RAM suitable for password manager)
+- ✅ Correct network configuration (reverse_proxy for Traefik access)
+- ✅ Traefik labels with strict rate limiting
+- ✅ Security middleware (CrowdSec, auth protection)
+- ✅ BTRFS storage layout recommendations
+- ✅ Health check integration
+
+**Post-deployment steps:**
+1. Configure environment variables (admin token, SMTP, etc.)
+2. Set up YubiKey/WebAuthn 2FA
+3. Create initial user accounts
+4. Disable admin panel after setup
+
+**Pattern reference:** See `.claude/skills/homelab-deployment/patterns/password-manager.yml`
+
+**Documentation:**
+- **Pattern guide:** `docs/10-services/guides/pattern-selection-guide.md`
+- **ADR-007:** `docs/20-operations/decisions/2025-11-14-decision-007-pattern-based-deployment.md`
+
+### Manual Deployment (Current Process)
+
+**The following manual steps are preserved** for:
+- Understanding the existing Vaultwarden deployment
+- Customizing beyond pattern capabilities
+- Historical reference
+
+**Manual deployment workflow:**
+
+---
+
+## Manual Deployment Steps
 
 ### Step 1: Create Data Directory
 
