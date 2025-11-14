@@ -1,3 +1,22 @@
+> **🗄️ ARCHIVED:** 2025-11-14
+>
+> **Reason:** TinyAuth setup guide obsolete after migration to Authelia SSO
+>
+> **Superseded by:**
+> - `docs/10-services/guides/authelia.md` (Current authentication setup)
+> - `docs/30-security/decisions/2025-11-11-decision-005-authelia-sso-yubikey-deployment.md` (ADR-005)
+> - `docs/30-security/journal/2025-11-11-authelia-deployment.md` (Deployment steps)
+>
+> **Historical context:** This guide documented the initial TinyAuth deployment as a pragmatic "good enough" solution during October 2025. It emphasized simplicity over features (5-minute setup, no dependencies, minimal config). While TinyAuth successfully provided basic authentication, the project evolved to require hardware-based 2FA (YubiKey) and proper SSO capabilities, leading to the Authelia migration documented in ADR-005.
+>
+> **Value:**
+> - Shows the "start simple" philosophy that worked well initially
+> - Documents why simplicity eventually required upgrade to Authelia
+> - Provides historical context for authentication architecture decisions
+> - Reference for understanding the pre-Authelia authentication setup
+>
+> ---
+
 # Tinyauth Setup Guide - Complete
 
 > ## ⚠️ DEPRECATED - Superseded by Authelia

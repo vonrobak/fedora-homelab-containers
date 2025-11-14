@@ -1,6 +1,6 @@
 # Jellyfin Media Server
 
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-11-14
 **Version:** Latest (auto-update enabled)
 **Status:** Production
 **Networks:** reverse_proxy, media_services
@@ -62,6 +62,137 @@ curl http://localhost:8096/health
 # Media libraries (read-only)
 /mnt/btrfs-pool/subvol4-multimedia/  # Movies, TV shows
 /mnt/btrfs-pool/subvol5-music/       # Music library
+```
+
+---
+
+## Deployment
+
+### Pattern-Based Deployment (Recommended)
+
+**As of 2025-11-14**, Jellyfin deployment uses the `media-server-stack` pattern from the homelab-deployment skill.
+
+**Deployment command:**
+```bash
+cd .claude/skills/homelab-deployment
+
+# Deploy Jellyfin with pattern
+./scripts/deploy-from-pattern.sh \
+  --pattern media-server-stack \
+  --service-name jellyfin \
+  --hostname jellyfin.patriark.org \
+  --memory 4G
+```
+
+**What the pattern provides:**
+- ✅ Optimized for media streaming (4GB RAM, appropriate CPU weight)
+- ✅ Correct network configuration (reverse_proxy + media_services)
+- ✅ Traefik labels for automatic routing
+- ✅ Health check integration
+- ✅ GPU passthrough ready (add device post-deployment)
+- ✅ BTRFS storage layout recommendations
+- ✅ Security middleware (CrowdSec, rate limiting, optional Authelia)
+
+**Post-deployment customization:**
+
+1. **Add GPU transcoding** (required for hardware acceleration):
+   ```bash
+   nano ~/.config/containers/systemd/jellyfin.container
+
+   # Add under [Container] section:
+   AddDevice=/dev/dri/renderD128
+
+   # Apply
+   systemctl --user daemon-reload
+   systemctl --user restart jellyfin.service
+   ```
+
+2. **Add media library volumes**:
+   ```bash
+   nano ~/.config/containers/systemd/jellyfin.container
+
+   # Add under [Container] section:
+   Volume=/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia:Z,ro
+   Volume=/mnt/btrfs-pool/subvol5-music:/media/music:Z,ro
+
+   # Apply
+   systemctl --user daemon-reload
+   systemctl --user restart jellyfin.service
+   ```
+
+3. **Remove Authelia middleware** (optional - for public access):
+   ```bash
+   nano ~/.config/containers/systemd/jellyfin.container
+
+   # Find Traefik middleware label, remove authelia@docker
+   # Before: crowdsec-bouncer@file,rate-limit-public@file,authelia@docker,security-headers@file
+   # After:  crowdsec-bouncer@file,rate-limit-public@file,security-headers@file
+
+   # Apply
+   systemctl --user daemon-reload
+   systemctl --user restart jellyfin.service
+   ```
+
+**Verification:**
+```bash
+# Check service status
+systemctl --user status jellyfin.service
+
+# Verify no configuration drift
+cd .claude/skills/homelab-deployment
+./scripts/check-drift.sh jellyfin
+
+# Test access
+curl https://jellyfin.patriark.org
+```
+
+**Documentation references:**
+- **Pattern guide:** `docs/10-services/guides/pattern-selection-guide.md`
+- **Deployment cookbook:** `.claude/skills/homelab-deployment/COOKBOOK.md` (Recipe 1)
+- **ADR-007:** `docs/20-operations/decisions/2025-11-14-decision-007-pattern-based-deployment.md`
+
+### Manual Deployment (Legacy Reference)
+
+**Historical:** Before pattern-based deployment, Jellyfin was deployed via `deploy-jellyfin-with-traefik.sh`.
+
+This method is **deprecated** but documented for understanding existing deployments or customizing beyond patterns.
+
+**Script-based deployment:**
+```bash
+# Legacy deployment (no longer recommended)
+./scripts/deploy-jellyfin-with-traefik.sh
+```
+
+**Manual quadlet creation:**
+```bash
+# Create quadlet manually
+nano ~/.config/containers/systemd/jellyfin.container
+# (See pattern file for reference structure)
+
+# Load and start
+systemctl --user daemon-reload
+systemctl --user enable --now jellyfin.service
+```
+
+**Migration from manual to pattern:**
+
+If Jellyfin was deployed manually, compare configuration against pattern:
+```bash
+# Check current configuration
+cat ~/.config/containers/systemd/jellyfin.container
+
+# Compare with pattern
+cat .claude/skills/homelab-deployment/patterns/media-server-stack.yml
+
+# Check for drift
+./scripts/check-drift.sh jellyfin
+
+# If significant drift, redeploy from pattern (requires stopping service)
+systemctl --user stop jellyfin.service
+# Backup current config
+cp ~/.config/containers/systemd/jellyfin.container ~/backups/
+# Deploy from pattern
+./scripts/deploy-from-pattern.sh --pattern media-server-stack --service-name jellyfin
 ```
 
 ---

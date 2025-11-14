@@ -1,6 +1,6 @@
 # Homelab Architecture Documentation
 
-**Last Updated:** November 11, 2025 (Authelia migration)
+**Last Updated:** November 14, 2025 (Pattern-based deployment adoption)
 **Status:** Production Ready ✅
 **Owner:** patriark
 **Domain:** patriark.org
@@ -12,14 +12,15 @@
 1. [Overview](#overview)
 2. [Network Architecture](#network-architecture)
 3. [Service Stack](#service-stack)
-4. [Security Layers](#security-layers)
-5. [DNS Configuration](#dns-configuration)
-6. [Storage & Data](#storage--data)
-7. [Backup Strategy](#backup-strategy)
-8. [Service Details](#service-details)
-9. [Expansion Guide](#expansion-guide)
-10. [Maintenance](#maintenance)
-11. [Troubleshooting](#troubleshooting)
+4. [Deployment Ecosystem](#deployment-ecosystem)
+5. [Security Layers](#security-layers)
+6. [DNS Configuration](#dns-configuration)
+7. [Storage & Data](#storage--data)
+8. [Backup Strategy](#backup-strategy)
+9. [Service Details](#service-details)
+10. [Expansion Guide](#expansion-guide)
+11. [Maintenance](#maintenance)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -163,6 +164,93 @@ Host: fedora-htpc (192.168.1.70)
 | **Cloudflare DNS** | Public DNS | Cloudflare | Auto-update via API |
 | **Pi-hole** | Local DNS | Self-hosted | 192.168.1.69 |
 | **Let's Encrypt** | SSL Certificates | ACME | Auto-renew every 90 days |
+
+---
+
+## 📦 Deployment Ecosystem
+
+**Since:** November 14, 2025 (Session 3)
+**Method:** Pattern-based deployment automation
+**Status:** Production ✅
+
+### Pattern Library
+
+The homelab uses **deployment patterns** to standardize service deployment. Patterns are reusable YAML templates that encode best practices, network configuration, resource limits, and security settings.
+
+**Available Patterns (9 total):**
+
+| Pattern | Service Type | Resource Tier | Examples | Use Case |
+|---------|--------------|---------------|----------|----------|
+| **media-server-stack** | Media streaming | High (4GB+) | Jellyfin, Plex, Emby | GPU transcoding, large storage |
+| **web-app-with-database** | Web applications | Medium (2GB) | Wiki.js, Bookstack, Nextcloud | Standard 2-container stacks |
+| **document-management** | Document systems | High (3GB+) | Paperless-ngx | OCR, indexing, multi-service |
+| **authentication-stack** | SSO/Authentication | Low (512MB) | Authelia + Redis | Hardware 2FA, session management |
+| **password-manager** | Password vaults | Low (512MB) | Vaultwarden | Self-contained, own auth |
+| **database-service** | Databases | Medium (2GB) | PostgreSQL, MySQL | BTRFS NOCOW optimized |
+| **cache-service** | Caching | Low (256-512MB) | Redis, Memcached | Sessions, temporary data |
+| **reverse-proxy-backend** | Internal APIs | Low (512MB) | Admin panels, tools | Strict auth required |
+| **monitoring-exporter** | Metrics exporters | Minimal (128MB) | node_exporter, cAdvisor | Prometheus scraping |
+
+### Deployment Workflow
+
+**Standard deployment process:**
+
+1. **Health Check:** System health scoring (0-100) determines deployment readiness
+2. **Pattern Selection:** Choose appropriate pattern based on service type
+3. **Validation:** Prerequisite checks (image exists, networks exist, ports available)
+4. **Deployment:** Generate systemd quadlet from pattern template
+5. **Verification:** Drift detection confirms quadlet matches running container
+
+**Command example:**
+```bash
+cd .claude/skills/homelab-deployment
+
+# Deploy with pattern
+./scripts/deploy-from-pattern.sh \
+  --pattern media-server-stack \
+  --service-name jellyfin \
+  --hostname jellyfin.patriark.org \
+  --memory 4G
+
+# Verify deployment
+./scripts/check-drift.sh jellyfin
+```
+
+### Intelligence Integration
+
+**Health-aware deployment:**
+- Health scores 90-100: Excellent - deploy anything
+- Health scores 75-89: Good - proceed with monitoring
+- Health scores 50-74: Degraded - address warnings first
+- Health scores 0-49: Critical - block deployment
+
+**Drift detection:**
+- **MATCH:** Configuration correct (no action needed)
+- **DRIFT:** Mismatch detected (restart service to reconcile)
+- **WARNING:** Minor differences (informational only)
+
+**Checked categories:** Image version, memory limits, networks, volumes, Traefik labels
+
+### Pattern Benefits
+
+**Consistency:** All services follow the same configuration standards
+
+**Best Practices Built-In:**
+- Network ordering (reverse_proxy first for internet access)
+- SELinux labels (`:Z` on volume mounts)
+- BTRFS NOCOW for databases
+- Traefik middleware chains (CrowdSec → rate limit → auth → headers)
+- Resource limits and systemd dependencies
+
+**Validation:** Pre-deployment checks prevent common mistakes
+
+**Documentation:** Patterns are self-documenting with deployment notes and checklists
+
+**Documentation References:**
+- **Pattern Selection Guide:** `docs/10-services/guides/pattern-selection-guide.md`
+- **Deployment Cookbook:** `.claude/skills/homelab-deployment/COOKBOOK.md`
+- **Skill Integration:** `docs/10-services/guides/skill-integration-guide.md`
+- **ADR-007:** `docs/20-operations/decisions/2025-11-14-decision-007-pattern-based-deployment.md`
 
 ---
 
