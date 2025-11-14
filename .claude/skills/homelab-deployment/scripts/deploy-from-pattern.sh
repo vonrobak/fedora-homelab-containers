@@ -161,7 +161,7 @@ substitute_variables() {
     # Substitute pattern-specific variables
     for key in "${!PATTERN_VARS[@]}"; do
         if [[ -n "${PATTERN_VARS[$key]}" ]]; then
-            sed -i "s/{{${key}}}/${PATTERN_VARS[$key]}/g" "$output_file"
+            sed -i "s|{{${key}}}|${PATTERN_VARS[$key]}|g" "$output_file"
         fi
     done
 
