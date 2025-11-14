@@ -1,0 +1,210 @@
+# Deployment Pattern: Document Management
+# Examples: Paperless-ngx, Nextcloud, Wiki.js, Bookstack
+# Use Case: Document storage, OCR processing, search indexing
+
+pattern:
+  name: document-management
+  description: "Document management with OCR workers, preview generators, and large storage"
+
+service:
+  quadlet_template: web-app.container
+  traefik_template: authenticated-service.yml
+
+  # Service configuration
+  image: "ghcr.io/paperless-ngx/paperless-ngx:latest"
+  memory_limit: "2G"
+  memory_high: "1.5G"
+
+  # Networks
+  networks:
+    - systemd-reverse_proxy  # For web access
+    - systemd-{app}_services  # For database/redis
+    - systemd-monitoring
+
+  # Storage (large volumes for documents)
+  config_dir: "~/containers/config/{service_name}"
+  data_dir: "/mnt/btrfs-pool/subvol4-documents/{service_name}/data"
+  media_dir: "/mnt/btrfs-pool/subvol4-documents/{service_name}/media"
+  consume_dir: "/mnt/btrfs-pool/subvol4-documents/{service_name}/consume"
+
+  # Additional volumes
+  additional_volumes:
+    - "/mnt/btrfs-pool/subvol4-documents/{service_name}/export:/export:Z"
+
+  # Health check
+  health_cmd: "curl -f http://localhost:8000/api/ || exit 1"
+  health_path: "/api/"
+  health_interval: "60s"  # Longer interval for resource-intensive apps
+
+  # Environment (document processing configuration)
+  environment:
+    - "PAPERLESS_URL=https://{hostname}"
+    - "PAPERLESS_REDIS=redis://redis-{service_name}:6379"
+    - "PAPERLESS_DBHOST={service_name}-db"
+    - "PAPERLESS_DBNAME={db_name}"
+    - "PAPERLESS_DBUSER={db_user}"
+    - "PAPERLESS_DBPASS={db_password}"
+    - "PAPERLESS_OCR_LANGUAGE=eng+nor"
+    - "PAPERLESS_TIME_ZONE=Europe/Oslo"
+    - "PAPERLESS_CONSUMER_POLLING=60"  # Check consume folder every 60s
+    - "PAPERLESS_ENABLE_HTTP_REMOTE_USER=true"  # Authelia integration
+
+  # Traefik configuration
+  hostname: "{service_name}.patriark.org"
+  port: 8000
+
+  # Middleware
+  middleware:
+    - crowdsec-bouncer@file
+    - rate-limit-app@file
+    - authelia@file
+    - security-headers@file
+
+  # Resource limits (OCR is CPU-intensive)
+  cpu_weight: 400
+  io_weight: 400
+
+  # Monitoring
+  prometheus_metrics: false  # Most don't expose metrics natively
+
+deployment_notes: |
+  Document management systems require:
+
+  1. Storage architecture:
+     - data/: Document metadata and database
+     - media/: Original documents and thumbnails
+     - consume/: Import folder for new documents
+     - export/: Temporary export location
+     - All on BTRFS pool (large capacity)
+
+  2. Database backend:
+     - PostgreSQL recommended for full-text search
+     - Deploy database separately using database-service pattern
+     - Use application-specific network (systemd-{app}_services)
+
+  3. Cache layer:
+     - Redis for task queuing and caching
+     - Deploy separately using cache-service pattern
+     - Essential for background workers
+
+  4. OCR processing:
+     - CPU-intensive (consider higher cpu_weight)
+     - Tesseract OCR with multiple languages
+     - Background workers process documents
+     - Monitor task queue depth
+
+  5. Authentication:
+     - Authelia SSO integration (HTTP_REMOTE_USER)
+     - Sync user accounts between Authelia and app
+     - Single sign-on for better UX
+
+  6. Backup strategy:
+     - Database dumps (pg_dump)
+     - Document archives (media/ directory)
+     - Config backup (environment variables)
+     - Test restore procedures
+
+validation_checks:
+  - Database container running and accessible
+  - Redis container running and accessible
+  - Storage directories exist with sufficient space
+  - OCR languages installed in container
+  - Application-specific network configured
+  - Authelia middleware configured
+
+pre_deployment:
+  - Deploy PostgreSQL database (database-service pattern)
+  - Deploy Redis cache (cache-service pattern)
+  - Create application-specific network
+  - Create storage directories on BTRFS:
+      mkdir -p /mnt/btrfs-pool/subvol4-documents/{service_name}/{data,media,consume,export}
+  - Generate database credentials
+  - Plan document organization strategy
+
+post_deployment:
+  - Access web interface: https://{hostname}
+  - Complete initial setup wizard
+  - Configure OCR settings (languages, mode)
+  - Set up document tags and correspondents
+  - Test document import (drop file in consume/)
+  - Verify OCR processing works
+  - Configure backup schedule
+  - Set up monitoring for task queue
+
+common_issues:
+  - "OCR not working": Check PAPERLESS_OCR_LANGUAGE matches installed languages
+  - "Database connection failed": Verify both on same network, check credentials
+  - "Consume folder not monitored": Check polling interval, directory permissions
+  - "High CPU usage": OCR processing is normal, adjust cpu_weight if needed
+  - "Disk full": Documents consume space quickly, monitor storage
+  - "Slow search": Database needs indexing, run VACUUM ANALYZE
+
+multi_container_stack:
+  description: "Document management typically requires 3 containers"
+
+  database:
+    pattern: database-service
+    image: postgres:16
+    network: systemd-{app}_services
+    memory: 1G
+
+  cache:
+    pattern: cache-service
+    image: redis:7-alpine
+    network: systemd-{app}_services
+    memory: 256M
+
+  application:
+    pattern: document-management
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    networks:
+      - systemd-reverse_proxy
+      - systemd-{app}_services
+    memory: 2G
+
+deployment_order:
+  - "1. Deploy database container first"
+  - "2. Deploy Redis cache container"
+  - "3. Deploy application container"
+  - "4. Verify all three can communicate"
+
+example_services:
+  paperless_ngx:
+    image: "ghcr.io/paperless-ngx/paperless-ngx:latest"
+    features: "OCR, full-text search, tagging, workflows"
+    requirements: "PostgreSQL, Redis"
+    default_port: 8000
+
+  nextcloud:
+    image: "docker.io/library/nextcloud:latest"
+    features: "Files, calendar, contacts, collaboration"
+    requirements: "PostgreSQL/MariaDB, Redis"
+    default_port: 80
+
+  bookstack:
+    image: "lscr.io/linuxserver/bookstack:latest"
+    features: "Wiki, documentation, WYSIWYG editor"
+    requirements: "MySQL/MariaDB"
+    default_port: 80
+
+  wikijs:
+    image: "ghcr.io/requarks/wiki:2"
+    features: "Modern wiki, markdown, git sync"
+    requirements: "PostgreSQL"
+    default_port: 3000
+
+performance_tuning:
+  ocr:
+    - "Adjust PAPERLESS_OCR_PAGES: -1 (all pages) or limit for speed"
+    - "Use PAPERLESS_OCR_MODE: skip_noarchive (faster)"
+    - "Install fewer languages if not needed"
+
+  database:
+    - "Increase shared_buffers for PostgreSQL"
+    - "Enable full-text search indexing"
+    - "Run VACUUM regularly"
+
+  storage:
+    - "Enable BTRFS compression for documents"
+    - "Use SSD for database, HDD for documents"
+    - "Monitor inode usage"
