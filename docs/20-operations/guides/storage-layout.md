@@ -245,46 +245,13 @@ START: New service needs storage
 
 ## Migration Priorities (URGENT)
 
-### Priority 1: Move Jellyfin Config to BTRFS ⚠️
+### Priority 1: Move Jellyfin Config to BTRFS ⚠️ ### This is now resolved!
 
 **Impact:** Frees 4.6GB (5% of system drive)
 **Risk:** Low - just transcoding cache and metadata
 **Effort:** 30 minutes
-**Status:** **URGENT - DO IMMEDIATELY**
+**Status:** Resolved
 
-**Current:** `~/containers/config/jellyfin` (4.6GB on system drive)
-**Target:** `/mnt/btrfs-pool/subvol7-containers/jellyfin-config`
-
-**Migration Steps:**
-```bash
-# 1. Stop Jellyfin service
-systemctl --user stop jellyfin.service
-
-# 2. Create target directory on BTRFS
-mkdir -p /mnt/btrfs-pool/subvol7-containers/jellyfin-config
-
-# 3. Move data (preserves permissions, timestamps)
-rsync -av ~/containers/config/jellyfin/ \
-  /mnt/btrfs-pool/subvol7-containers/jellyfin-config/
-
-# 4. Update quadlet volume mount
-# Edit ~/.config/containers/systemd/jellyfin.container
-# Change: Volume=~/containers/config/jellyfin:/config:Z
-# To:     Volume=/mnt/btrfs-pool/subvol7-containers/jellyfin-config:/config:Z
-
-# 5. Reload and restart
-systemctl --user daemon-reload
-systemctl --user start jellyfin.service
-
-# 6. Verify service works
-systemctl --user status jellyfin.service
-curl -I http://localhost:8096
-
-# 7. After 24h verification, remove old data
-rm -rf ~/containers/config/jellyfin
-```
-
-**Expected Result:** System drive usage drops from 81% → 77%
 
 ---
 
@@ -293,7 +260,7 @@ rm -rf ~/containers/config/jellyfin
 **Impact:** Improved Loki performance, reduced fragmentation
 **Risk:** Low - just attribute change
 **Effort:** 15 minutes
-**Status:** **HIGH PRIORITY**
+**Status:** Tried, but encountered complex errors
 
 **Current:** `/mnt/btrfs-pool/subvol7-containers/loki` (NOCOW: NO)
 **Issue:** Database write patterns suffer from BTRFS Copy-on-Write overhead
