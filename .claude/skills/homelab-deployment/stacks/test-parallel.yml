@@ -1,0 +1,47 @@
+---
+# test-parallel.yml
+# Test stack with parallel deployment opportunities
+#
+# Dependency graph:
+#   postgres (no deps) \
+#   redis (no deps)     > app (depends on both)
+#
+# Expected deployment order:
+#   Phase 1 (parallel): postgres, redis
+#   Phase 2: app
+
+stack:
+  name: test-parallel
+  description: "Test stack with parallel deployment"
+
+shared:
+  networks:
+    - systemd-reverse_proxy
+
+services:
+  - name: test-postgres
+    pattern: database-service
+    dependencies: []
+    configuration:
+      image: docker.io/library/postgres:15-alpine
+      memory: 1024M
+      environment:
+        POSTGRES_USER: testuser
+        POSTGRES_PASSWORD: testpass
+        POSTGRES_DB: testdb
+
+  - name: test-redis
+    pattern: cache-service
+    dependencies: []
+    configuration:
+      image: docker.io/library/redis:7-alpine
+      memory: 512M
+
+  - name: test-app
+    pattern: web-app-with-database
+    dependencies:
+      - test-postgres
+      - test-redis
+    configuration:
+      image: docker.io/library/nginx:alpine
+      memory: 1024M

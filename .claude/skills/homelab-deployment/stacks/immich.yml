@@ -1,0 +1,276 @@
+---
+# immich.yml
+# Complete Immich photo management stack
+#
+# Services: 5 (postgres, redis, server, machine-learning, web)
+# Deployment order:
+#   Phase 1 (parallel): immich-postgres, immich-redis
+#   Phase 2: immich-server
+#   Phase 3 (parallel): immich-ml, immich-web
+#
+# Total memory: ~6.5GB
+# Estimated deployment time: 8-10 minutes
+
+stack:
+  name: immich
+  description: "Immich photo management and sharing platform"
+  version: "1.0"
+
+shared:
+  networks:
+    - systemd-reverse_proxy
+    - systemd-photos
+    - systemd-monitoring
+  resources:
+    total_memory_mb: 6656  # 1.5G + 512M + 2G + 2G + 640M
+  domain: photos.patriark.org
+  storage_base: /mnt/btrfs-pool/subvol7-containers/immich
+
+services:
+  # Phase 1: Database and cache
+  - name: immich-postgres
+    pattern: database-service
+    dependencies: []
+    configuration:
+      image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0
+      memory: 1536M
+      environment:
+        POSTGRES_USER: immich
+        POSTGRES_PASSWORD: "${IMMICH_DB_PASSWORD}"
+        POSTGRES_DB: immich
+      volumes:
+        - ${storage_base}/postgres:/var/lib/postgresql/data:Z
+      networks:
+        - systemd-photos
+        - systemd-monitoring
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        - "prometheus.scrape=true"
+        - "prometheus.port=9187"
+    ready_criteria:
+      type: healthcheck
+      timeout: 120s
+
+  - name: immich-redis
+    pattern: cache-service
+    dependencies: []
+    configuration:
+      image: docker.io/library/redis:7-alpine
+      memory: 512M
+      command: redis-server --requirepass "${IMMICH_REDIS_PASSWORD}"
+      volumes:
+        - ${storage_base}/redis:/data:Z
+      networks:
+        - systemd-photos
+        - systemd-monitoring
+      healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        - "prometheus.scrape=true"
+        - "prometheus.port=9121"
+    ready_criteria:
+      type: healthcheck
+      timeout: 60s
+
+  # Phase 2: Core server (depends on postgres and redis)
+  - name: immich-server
+    pattern: web-app-with-database
+    dependencies:
+      - immich-postgres
+      - immich-redis
+    configuration:
+      image: ghcr.io/immich-app/immich-server:release
+      memory: 2048M
+      environment:
+        DB_HOSTNAME: immich-postgres
+        DB_PORT: 5432
+        DB_USERNAME: immich
+        DB_PASSWORD: "${IMMICH_DB_PASSWORD}"
+        DB_DATABASE_NAME: immich
+        REDIS_HOSTNAME: immich-redis
+        REDIS_PASSWORD: "${IMMICH_REDIS_PASSWORD}"
+        REDIS_PORT: 6379
+        UPLOAD_LOCATION: /usr/src/app/upload
+        PUBLIC_LOGIN_PAGE_MESSAGE: "Patriark Family Photos"
+      volumes:
+        - ${storage_base}/upload:/usr/src/app/upload:Z
+        - /etc/localtime:/etc/localtime:ro
+      networks:
+        - systemd-reverse_proxy
+        - systemd-photos
+        - systemd-monitoring
+      healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:3001/api/server-info/ping || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        # Traefik routing
+        - "traefik.enable=true"
+        - "traefik.http.routers.immich.rule=Host(`${domain}`)"
+        - "traefik.http.routers.immich.entrypoints=websecure"
+        - "traefik.http.routers.immich.tls=true"
+        - "traefik.http.routers.immich.tls.certresolver=letsencrypt"
+        - "traefik.http.services.immich.loadbalancer.server.port=3001"
+        # Middleware (no Authelia - Immich has native auth)
+        - "traefik.http.routers.immich.middlewares=crowdsec-bouncer@file,rate-limit@file,security-headers@file"
+        # Prometheus
+        - "prometheus.scrape=true"
+        - "prometheus.port=3001"
+        - "prometheus.path=/metrics"
+    ready_criteria:
+      type: healthcheck
+      timeout: 180s  # Server takes longer to initialize
+
+  # Phase 3: ML and web frontend (depend on server)
+  - name: immich-ml
+    pattern: web-app-with-database
+    dependencies:
+      - immich-server
+    configuration:
+      image: ghcr.io/immich-app/immich-machine-learning:release
+      memory: 2048M
+      environment:
+        DB_HOSTNAME: immich-postgres
+        DB_PORT: 5432
+        DB_USERNAME: immich
+        DB_PASSWORD: "${IMMICH_DB_PASSWORD}"
+        DB_DATABASE_NAME: immich
+        REDIS_HOSTNAME: immich-redis
+        REDIS_PASSWORD: "${IMMICH_REDIS_PASSWORD}"
+        REDIS_PORT: 6379
+      volumes:
+        - ${storage_base}/model-cache:/cache:Z
+      networks:
+        - systemd-photos
+        - systemd-monitoring
+      healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:3003/ping || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        - "prometheus.scrape=true"
+        - "prometheus.port=3003"
+    ready_criteria:
+      type: healthcheck
+      timeout: 180s  # ML models take time to load
+
+  - name: immich-web
+    pattern: reverse-proxy-backend
+    dependencies:
+      - immich-server
+    configuration:
+      image: ghcr.io/immich-app/immich-web:release
+      memory: 640M
+      environment:
+        IMMICH_SERVER_URL: http://immich-server:3001
+      networks:
+        - systemd-photos
+      healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    ready_criteria:
+      type: healthcheck
+      timeout: 60s
+
+# Deployment configuration
+deployment:
+  phases:
+    - phase: 1
+      parallel: true
+      services:
+        - immich-postgres
+        - immich-redis
+      wait_for_healthy: true
+
+    - phase: 2
+      parallel: false
+      services:
+        - immich-server
+      wait_for_healthy: true
+
+    - phase: 3
+      parallel: true
+      services:
+        - immich-ml
+        - immich-web
+      wait_for_healthy: true
+
+# Post-deployment validation
+validation:
+  tests:
+    - name: "PostgreSQL connectivity"
+      type: sql_query
+      target: immich-postgres
+      query: "SELECT 1"
+      expected_exit: 0
+
+    - name: "Redis connectivity"
+      type: redis_ping
+      target: immich-redis
+
+    - name: "Server API reachable"
+      type: http_get
+      url: "http://immich-server:3001/api/server-info/ping"
+      expected_status: 200
+
+    - name: "ML service reachable"
+      type: http_get
+      url: "http://immich-ml:3003/ping"
+      expected_status: 200
+
+    - name: "Web UI reachable"
+      type: http_get
+      url: "http://immich-web:3000"
+      expected_status: 200
+
+    - name: "External access via Traefik"
+      type: http_get
+      url: "https://photos.patriark.org"
+      expected_status: 200
+
+# Documentation
+documentation:
+  pre_deployment:
+    - "Set environment variables: IMMICH_DB_PASSWORD, IMMICH_REDIS_PASSWORD"
+    - "Ensure storage base exists: /mnt/btrfs-pool/subvol7-containers/immich/"
+    - "Verify networks exist: systemd-reverse_proxy, systemd-photos, systemd-monitoring"
+    - "Estimated deployment time: 8-10 minutes"
+    - "Estimated memory usage: 6.5GB"
+
+  post_deployment:
+    - "Access Immich at: https://photos.patriark.org"
+    - "Create admin user on first access"
+    - "Configure mobile apps with server URL: https://photos.patriark.org"
+    - "Check logs: journalctl --user -u immich-*.service"
+    - "Monitor metrics in Grafana dashboard"
+
+  troubleshooting:
+    - "If server won't start: Check postgres logs for database issues"
+    - "If ML slow: Machine learning model downloads on first run (~2GB)"
+    - "If upload fails: Check volume permissions on upload directory"
+    - "If external access fails: Verify Traefik routing and DNS resolution"
+
+# Rollback strategy
+rollback:
+  strategy: "Stop services in reverse dependency order"
+  preserves_data: true
+  data_locations:
+    - ${storage_base}/postgres (database)
+    - ${storage_base}/upload (photos and videos)
+    - ${storage_base}/model-cache (ML models)
+  steps:
+    - "Stop services: immich-web, immich-ml, immich-server, immich-redis, immich-postgres"
+    - "Remove quadlet files from ~/.config/containers/systemd/"
+    - "Reload systemd: systemctl --user daemon-reload"
+    - "Data remains intact in ${storage_base}/ for future re-deployment"

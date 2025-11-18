@@ -1,0 +1,182 @@
+---
+# monitoring-simple.yml
+# Simple monitoring stack with Prometheus and Grafana
+#
+# Services: 2 (prometheus, grafana)
+# Deployment order:
+#   Phase 1: prometheus
+#   Phase 2: grafana (depends on prometheus)
+#
+# Total memory: ~1.5GB
+# Estimated deployment time: 2-3 minutes
+
+stack:
+  name: monitoring-simple
+  description: "Basic monitoring with Prometheus and Grafana"
+  version: "1.0"
+
+shared:
+  networks:
+    - systemd-reverse_proxy
+    - systemd-monitoring
+  resources:
+    total_memory_mb: 1536  # 896M + 640M
+  storage_base: /mnt/btrfs-pool/subvol7-containers
+
+services:
+  # Phase 1: Metrics storage
+  - name: prometheus
+    pattern: monitoring-exporter
+    dependencies: []
+    configuration:
+      image: docker.io/prom/prometheus:latest
+      memory: 896M
+      command:
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        - "--storage.tsdb.path=/prometheus"
+        - "--storage.tsdb.retention.time=15d"
+        - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+        - "--web.console.templates=/usr/share/prometheus/consoles"
+      volumes:
+        - ~/containers/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z
+        - ${storage_base}/prometheus:/prometheus:Z,nocopy
+      networks:
+        - systemd-reverse_proxy
+        - systemd-monitoring
+      ports:
+        - "127.0.0.1:9090:9090"
+      healthcheck:
+        test: ["CMD-SHELL", "wget -q --spider http://localhost:9090/-/healthy || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        # Traefik routing
+        - "traefik.enable=true"
+        - "traefik.http.routers.prometheus.rule=Host(`prometheus.patriark.org`)"
+        - "traefik.http.routers.prometheus.entrypoints=websecure"
+        - "traefik.http.routers.prometheus.tls=true"
+        - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+        - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+        # Middleware (requires Authelia for admin access)
+        - "traefik.http.routers.prometheus.middlewares=crowdsec-bouncer@file,rate-limit@file,authelia@file,security-headers@file"
+    ready_criteria:
+      type: healthcheck
+      timeout: 90s
+
+  # Phase 2: Visualization
+  - name: grafana
+    pattern: reverse-proxy-backend
+    dependencies:
+      - prometheus
+    configuration:
+      image: docker.io/grafana/grafana:latest
+      memory: 640M
+      environment:
+        GF_SERVER_ROOT_URL: "https://grafana.patriark.org"
+        GF_SERVER_DOMAIN: grafana.patriark.org
+        GF_SECURITY_ADMIN_USER: admin
+        GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+        GF_INSTALL_PLUGINS: ""
+        GF_ANALYTICS_ENABLED: "false"
+        GF_ANALYTICS_REPORTING_ENABLED: "false"
+        GF_USERS_ALLOW_SIGN_UP: "false"
+      volumes:
+        - ${storage_base}/grafana:/var/lib/grafana:Z
+        - ~/containers/config/grafana/provisioning:/etc/grafana/provisioning:Z
+      networks:
+        - systemd-reverse_proxy
+        - systemd-monitoring
+      ports:
+        - "127.0.0.1:3000:3000"
+      healthcheck:
+        test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        # Traefik routing
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=Host(`grafana.patriark.org`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.tls=true"
+        - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+        # Middleware (requires Authelia for admin access)
+        - "traefik.http.routers.grafana.middlewares=crowdsec-bouncer@file,rate-limit@file,authelia@file,security-headers@file"
+    ready_criteria:
+      type: healthcheck
+      timeout: 90s
+
+# Deployment configuration
+deployment:
+  phases:
+    - phase: 1
+      parallel: false
+      services:
+        - prometheus
+      wait_for_healthy: true
+
+    - phase: 2
+      parallel: false
+      services:
+        - grafana
+      wait_for_healthy: true
+
+# Post-deployment validation
+validation:
+  tests:
+    - name: "Prometheus API reachable"
+      type: http_get
+      url: "http://prometheus:9090/-/healthy"
+      expected_status: 200
+
+    - name: "Grafana API reachable"
+      type: http_get
+      url: "http://grafana:3000/api/health"
+      expected_status: 200
+
+    - name: "External Prometheus access"
+      type: http_get
+      url: "https://prometheus.patriark.org"
+      expected_status: 200
+
+    - name: "External Grafana access"
+      type: http_get
+      url: "https://grafana.patriark.org"
+      expected_status: 200
+
+# Documentation
+documentation:
+  pre_deployment:
+    - "Set environment variable: GRAFANA_ADMIN_PASSWORD"
+    - "Ensure storage exists: /mnt/btrfs-pool/subvol7-containers/{prometheus,grafana}"
+    - "Verify networks exist: systemd-reverse_proxy, systemd-monitoring"
+    - "Estimated deployment time: 2-3 minutes"
+    - "Estimated memory usage: 1.5GB"
+
+  post_deployment:
+    - "Access Prometheus at: https://prometheus.patriark.org"
+    - "Access Grafana at: https://grafana.patriark.org"
+    - "Login to Grafana with admin credentials"
+    - "Prometheus datasource should be auto-configured via provisioning"
+    - "Import dashboards from grafana/provisioning/dashboards/"
+
+  troubleshooting:
+    - "If Prometheus won't start: Check prometheus.yml syntax"
+    - "If Grafana can't reach Prometheus: Verify both on systemd-monitoring network"
+    - "If no data in Grafana: Check Prometheus targets at /targets"
+    - "If external access fails: Verify Traefik routing and Authelia configuration"
+
+# Rollback strategy
+rollback:
+  strategy: "Stop services in reverse order"
+  preserves_data: true
+  data_locations:
+    - ${storage_base}/prometheus (metrics database - TSDB)
+    - ${storage_base}/grafana (dashboards and settings)
+  steps:
+    - "Stop services: grafana, prometheus"
+    - "Remove quadlet files from ~/.config/containers/systemd/"
+    - "Reload systemd: systemctl --user daemon-reload"
+    - "Data preserved for future re-deployment"

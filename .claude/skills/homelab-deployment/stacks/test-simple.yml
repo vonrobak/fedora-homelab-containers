@@ -1,0 +1,38 @@
+---
+# test-simple.yml
+# Simple 2-service stack for testing dependency resolution
+#
+# Dependency graph:
+#   redis (no deps) -> app (depends on redis)
+#
+# Expected deployment order:
+#   Phase 1: redis
+#   Phase 2: app
+
+stack:
+  name: test-simple
+  description: "Simple test stack with 2 services"
+
+shared:
+  networks:
+    - systemd-reverse_proxy
+  resources:
+    total_memory_mb: 1536
+
+services:
+  - name: test-redis
+    pattern: cache-service
+    dependencies: []
+    configuration:
+      image: docker.io/library/redis:7-alpine
+      memory: 512M
+      environment:
+        REDIS_PASSWORD: testpass
+
+  - name: test-app
+    pattern: web-app-with-database
+    dependencies:
+      - test-redis
+    configuration:
+      image: docker.io/library/nginx:alpine
+      memory: 1024M
