@@ -1,0 +1,111 @@
+---
+# User Preferences for Claude Auto-Remediation
+# Created: 2025-11-18
+# Purpose: Configure auto-remediation behavior and risk tolerance
+
+# Auto-Remediation Settings
+remediation:
+  # Disk cleanup - Safe operation, can run automatically
+  auto_disk_cleanup: true
+  disk_cleanup_threshold_percent: 75
+
+  # Drift reconciliation - Modifies services, requires confirmation
+  auto_drift_fix: false
+  drift_fix_requires_confirmation: true
+
+  # Service restart - Generally safe, can auto-restart
+  auto_service_restart: true
+  service_restart_max_attempts: 3
+
+  # Resource pressure - May restart services, requires confirmation
+  auto_resource_pressure: false
+  resource_pressure_requires_confirmation: true
+
+# Risk Tolerance
+risk_tolerance: medium  # low | medium | high
+
+# Confirmation Required For
+confirmation_required_for:
+  - destructive_operations     # Any operation that deletes data
+  - large_changes              # Changes affecting multiple services
+  - service_modifications      # Config changes to running services
+  - high_risk_playbooks        # Playbooks marked risk_level: high
+
+# Deployment Preferences
+deployment_preferences:
+  default_memory_limit: "2G"
+  prefer_patterns: true           # Use pattern-based deployment when available
+  always_check_health: true       # Always verify service health after deployment
+  auto_enable_service: true       # Automatically enable service on deploy
+  create_backups: true            # Backup configs before modifications
+
+# Monitoring & Alerting
+monitoring:
+  send_notifications: true
+  notification_channels:
+    - discord                     # Via Alertmanager webhook
+  alert_on_remediation: true      # Alert when auto-remediation executes
+  alert_on_failure: true          # Alert on remediation failure
+
+# Logging
+logging:
+  retention_days: 90              # Keep remediation logs for 90 days
+  detailed_logging: true          # Include verbose output in logs
+  log_location: "~/containers/data/remediation-logs"
+
+# Context Framework
+context:
+  auto_update_system_profile: true    # Update profile after major changes
+  auto_record_issues: true            # Add resolved issues to history
+  auto_record_deployments: true       # Log deployments to deployment-log
+  context_retention_days: 365         # Keep context data for 1 year
+
+# Safety Limits
+safety:
+  max_concurrent_restarts: 1          # Never restart >1 service simultaneously
+  restart_cooldown_seconds: 300       # Wait 5min between service restarts
+  max_restarts_per_hour: 5            # Prevent restart loops
+  backup_before_drift_fix: true       # Always backup quadlets before drift fixes
+  verify_backups: true                # Verify backup created successfully
+
+# Service-Specific Overrides
+service_overrides:
+  # Critical services - extra caution
+  traefik:
+    auto_restart: false               # Never auto-restart reverse proxy
+    requires_confirmation: true
+
+  prometheus:
+    auto_restart: true                # Can auto-restart monitoring
+    restart_timeout_seconds: 90       # Allow longer startup time
+
+  jellyfin:
+    auto_restart: true
+    backup_before_changes: true       # Always backup Jellyfin config
+
+  authelia:
+    auto_restart: false               # SSO is critical, manual only
+    requires_confirmation: true
+
+# Experimental Features
+experimental:
+  enable_predictive_remediation: false    # Predict issues before they occur
+  enable_ml_drift_detection: false        # Use ML to detect unusual drift patterns
+  enable_auto_rollback: false             # Auto-rollback failed remediations
+
+# User Information
+user:
+  timezone: "Europe/Oslo"
+  preferred_language: "en"
+  notification_quiet_hours:
+    enabled: false
+    start: "22:00"
+    end: "07:00"
+
+# Comments
+# - Set auto_disk_cleanup: true since it's safe and system SSD gets full often
+# - Keep drift fixes manual (requires_confirmation: true) until more testing
+# - Service restarts are generally safe, allow auto-restart with limits
+# - Never auto-restart traefik or authelia (too critical)
+# - Backup everything before making changes
+# - Send alerts to Discord via existing Alertmanager integration

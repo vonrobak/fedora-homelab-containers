@@ -7,8 +7,9 @@
 # Confirmation Required: false (can run automatically)
 
 name: "Disk Space Cleanup"
-version: "1.0"
+version: "1.1"
 created: "2025-11-18"
+updated: "2025-11-18"
 risk_level: "low"
 requires_confirmation: false
 
@@ -16,8 +17,9 @@ metadata:
   category: "disk-space"
   severity: "critical"
   related_issues: ["ISS-001"]
-  estimated_space_freed: "5-15GB"
+  estimated_space_freed: "4-12GB"
   estimated_duration: "2-5 minutes"
+  changelog: "v1.1 - Removed -a flag from image prune for safety (preserves tagged images for rollback)"
 
 triggers:
   - condition: "system_ssd_usage > 75"
@@ -54,12 +56,12 @@ actions:
     reversible: false
     requires_sudo: true
 
-  - name: "Prune unused Podman images"
-    command: "podman image prune -af --filter 'until=168h'"
+  - name: "Prune dangling Podman images"
+    command: "podman image prune -f --filter 'until=168h'"
     expected_output: "Total reclaimed space"
-    estimated_freed: "1-4GB"
+    estimated_freed: "0.5-2GB"
     reversible: false
-    notes: "Removes images unused for 7+ days. Can be re-pulled if needed."
+    notes: "Removes only dangling/untagged images (build layers, intermediate images). Preserves tagged images for rollback capability after AutoUpdate."
 
   - name: "Prune Podman build cache"
     command: "podman system prune -f --volumes=false"
@@ -109,8 +111,8 @@ logging:
 
 rollback:
   available: false
-  reason: "Log rotation and image pruning not reversible. Safe operations with low risk."
-  recovery: "If services affected, restart with: systemctl --user restart <service>"
+  reason: "Log rotation and dangling image removal not reversible. Tagged images preserved for manual rollback if needed."
+  recovery: "If services affected, restart with: systemctl --user restart <service>. Re-pull removed images: podman pull <image>"
 
 success_criteria:
   - "Disk usage reduced by at least 3%"
