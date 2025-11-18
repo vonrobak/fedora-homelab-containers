@@ -1,0 +1,29 @@
+---
+# test-cycle.yml
+# Test stack with circular dependency (should fail validation)
+#
+# Dependency graph:
+#   service-a -> service-b -> service-a (CYCLE!)
+#
+# Expected result: ERROR - Circular dependency detected
+
+stack:
+  name: test-cycle
+  description: "Test stack with circular dependency"
+
+services:
+  - name: service-a
+    pattern: cache-service
+    dependencies:
+      - service-b
+    configuration:
+      image: docker.io/library/redis:7-alpine
+      memory: 512M
+
+  - name: service-b
+    pattern: web-app-with-database
+    dependencies:
+      - service-a
+    configuration:
+      image: docker.io/library/nginx:alpine
+      memory: 1024M
