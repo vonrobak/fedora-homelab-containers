@@ -1,0 +1,126 @@
+{
+  "generated_at": "2025-11-18T17:44:26+01:00",
+  "total_issues": 12,
+  "issues": [
+    {
+      "id": "ISS-001",
+      "title": "System SSD at 84% capacity",
+      "category": "disk-space",
+      "severity": "critical",
+      "date_encountered": "2025-11-18",
+      "description": "System SSD (/dev/nvme0n1) reached 84% capacity, triggering warnings in homelab-intel",
+      "resolution": "Pending: Need to clean journal logs, prune old containers, rotate backup logs",
+      "outcome": "ongoing"
+    },
+    {
+      "id": "ISS-002",
+      "title": "Authelia SSO deployment complications",
+      "category": "deployment",
+      "severity": "high",
+      "date_encountered": "2025-11-11",
+      "description": "Multiple attempts to deploy Authelia with YubiKey 2FA encountered config issues, Redis session storage problems",
+      "resolution": "Resolved: Created comprehensive configuration, separated Redis instance, validated MFA flow",
+      "outcome": "resolved"
+    },
+    {
+      "id": "ISS-003",
+      "title": "Immich dual-authentication user experience issue",
+      "category": "authentication",
+      "severity": "medium",
+      "date_encountered": "2025-11-12",
+      "description": "Immich requiring both Authelia SSO AND native login created poor UX for users",
+      "resolution": "Resolved: Removed Authelia middleware from Immich, use native auth only",
+      "outcome": "resolved"
+    },
+    {
+      "id": "ISS-004",
+      "title": "Drift detection script errexit failures",
+      "category": "scripting",
+      "severity": "high",
+      "date_encountered": "2025-11-13",
+      "description": "check-drift.sh failing with 'bad substitution' errors due to errexit in arithmetic expansion",
+      "resolution": "Resolved: Refactored arithmetic to use (( )) instead of 0, added proper error handling",
+      "outcome": "resolved"
+    },
+    {
+      "id": "ISS-005",
+      "title": "Monitoring stack health checks intermittent",
+      "category": "monitoring",
+      "severity": "medium",
+      "date_encountered": "2025-11-18",
+      "description": "Prometheus and Loki health endpoints timing out on initial checks, likely startup delays",
+      "resolution": "Workaround: Increased HealthStartPeriod in quadlets to 90s",
+      "outcome": "mitigated"
+    },
+    {
+      "id": "ISS-006",
+      "title": "High swap usage indicating memory pressure",
+      "category": "performance",
+      "severity": "medium",
+      "date_encountered": "2025-11-18",
+      "description": "Swap usage at 7.4GB (threshold 6.3GB), suggests containers may need memory limit tuning",
+      "resolution": "Investigation: Review container memory allocations, consider reducing Jellyfin from 4G to 3G",
+      "outcome": "investigating"
+    },
+    {
+      "id": "ISS-007",
+      "title": "Let's Encrypt certificate file not found warnings",
+      "category": "ssl",
+      "severity": "medium",
+      "date_encountered": "2025-11-18",
+      "description": "homelab-intel reporting certificate file missing, may be path issue or pre-issuance",
+      "resolution": "Investigation: Verify acme.json path and Let's Encrypt integration",
+      "outcome": "investigating"
+    },
+    {
+      "id": "ISS-008",
+      "title": "Jellyfin GPU transcoding not configured",
+      "category": "performance",
+      "severity": "high",
+      "date_encountered": "2025-11-17",
+      "description": "Jellyfin using CPU transcoding only, no VA-API hardware acceleration",
+      "resolution": "Resolved: Installed mesa-va-drivers-freeworld, added /dev/dri devices to quadlet, enabled VA-API in dashboard",
+      "outcome": "resolved"
+    },
+    {
+      "id": "ISS-009",
+      "title": "HDR/10-bit video color rendering incorrect on older TV",
+      "category": "media",
+      "severity": "medium",
+      "date_encountered": "2025-11-18",
+      "description": "HEVC 10-bit HDR content displays with wrong colors on 2016 Philips TV (no HDR support)",
+      "resolution": "Workaround: Disable HEVC 10-bit hardware decode, enable tone mapping in Jellyfin",
+      "outcome": "mitigated"
+    },
+    {
+      "id": "ISS-010",
+      "title": "Multiple storage layout revisions needed",
+      "category": "architecture",
+      "severity": "medium",
+      "date_encountered": "2025-10-25",
+      "description": "Initial storage layout inadequate, required multiple revisions for BTRFS optimization",
+      "resolution": "Resolved: Created authoritative storage architecture with NOCOW for databases",
+      "outcome": "resolved"
+    },
+    {
+      "id": "ISS-011",
+      "title": "Intelligence script hanging on SSL checks",
+      "category": "scripting",
+      "severity": "high",
+      "date_encountered": "2025-11-14",
+      "description": "homelab-intel.sh hanging indefinitely on certificate checks, blocking automation",
+      "resolution": "Resolved: Added timeout protection to curl commands, improved error handling",
+      "outcome": "resolved"
+    },
+    {
+      "id": "ISS-012",
+      "title": "Manual backup process error-prone",
+      "category": "operations",
+      "severity": "medium",
+      "date_encountered": "2025-11-07",
+      "description": "Manual BTRFS snapshot process tedious, risk of forgetting backups",
+      "resolution": "Resolved: Created btrfs-snapshot-backup.sh with automated scheduling",
+      "outcome": "resolved"
+    }
+  ]
+}
