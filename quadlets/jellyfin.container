@@ -16,6 +16,8 @@ Network=systemd-media_services
 Network=systemd-monitoring
 
 # AMD Radeon Vega GPU Hardware Acceleration
+# APU needs both card and render node
+AddDevice=/dev/dri/card1
 AddDevice=/dev/dri/renderD128
 
 # Environment
