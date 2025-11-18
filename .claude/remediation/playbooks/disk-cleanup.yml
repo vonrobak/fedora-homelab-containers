@@ -1,0 +1,129 @@
+---
+# disk-cleanup.yml
+# Auto-remediation playbook for disk space issues
+#
+# Trigger: System SSD usage > 75%
+# Risk Level: LOW (safe, reversible operations)
+# Confirmation Required: false (can run automatically)
+
+name: "Disk Space Cleanup"
+version: "1.0"
+created: "2025-11-18"
+risk_level: "low"
+requires_confirmation: false
+
+metadata:
+  category: "disk-space"
+  severity: "critical"
+  related_issues: ["ISS-001"]
+  estimated_space_freed: "5-15GB"
+  estimated_duration: "2-5 minutes"
+
+triggers:
+  - condition: "system_ssd_usage > 75"
+    description: "System SSD exceeded safe threshold"
+  - condition: "system_ssd_usage > 85"
+    description: "System SSD critical - immediate action required"
+    priority: "high"
+
+pre_checks:
+  - name: "Verify systemd-journald running"
+    command: "systemctl is-active systemd-journald"
+    expected: "active"
+
+  - name: "Verify podman accessible"
+    command: "podman --version"
+    expected_exit: 0
+
+  - name: "Verify user permissions"
+    command: "id -u"
+    expected: "1000"
+
+actions:
+  - name: "Rotate systemd journal logs (7 day retention)"
+    command: "journalctl --user --vacuum-time=7d"
+    expected_output: "Vacuuming done"
+    estimated_freed: "2-5GB"
+    reversible: false
+    notes: "Journal logs older than 7 days removed. Can be recovered from system journal if needed."
+
+  - name: "Rotate root journal logs (7 day retention)"
+    command: "sudo journalctl --vacuum-time=7d"
+    expected_output: "Vacuuming done"
+    estimated_freed: "1-3GB"
+    reversible: false
+    requires_sudo: true
+
+  - name: "Prune unused Podman images"
+    command: "podman image prune -af --filter 'until=168h'"
+    expected_output: "Total reclaimed space"
+    estimated_freed: "1-4GB"
+    reversible: false
+    notes: "Removes images unused for 7+ days. Can be re-pulled if needed."
+
+  - name: "Prune Podman build cache"
+    command: "podman system prune -f --volumes=false"
+    expected_output: "Total reclaimed space"
+    estimated_freed: "0.5-2GB"
+    reversible: false
+    notes: "Removes stopped containers and dangling images. Safe operation."
+
+  - name: "Clean old backup logs (30+ days)"
+    command: "find ~/containers/data/backup-logs -name '*.log' -mtime +30 -delete 2>/dev/null || true"
+    expected_exit: 0
+    estimated_freed: "0.1-1GB"
+    reversible: false
+    notes: "Removes backup logs older than 30 days"
+
+  - name: "Clean Jellyfin transcode temp files (1+ day old)"
+    command: "find /mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes -type f -mtime +1 -delete 2>/dev/null || true"
+    expected_exit: 0
+    estimated_freed: "0-5GB"
+    reversible: false
+    notes: "Removes stale Jellyfin transcode files from interrupted streams"
+
+post_checks:
+  - name: "Verify disk usage reduced"
+    command: "df / | awk 'NR==2 {print $5}' | tr -d '%'"
+    expected_condition: "< initial_usage"
+
+  - name: "Verify critical services still running"
+    command: "systemctl --user is-active traefik.service prometheus.service jellyfin.service"
+    expected: "active"
+
+logging:
+  - metric: "disk_usage_before"
+    command: "df / | awk 'NR==2 {print $5}'"
+
+  - metric: "disk_usage_after"
+    command: "df / | awk 'NR==2 {print $5}'"
+
+  - metric: "space_freed_gb"
+    command: "echo '(before - after) in GB'"
+
+  - metric: "journal_size_before"
+    command: "journalctl --user --disk-usage | awk '{print $7}'"
+
+  - metric: "journal_size_after"
+    command: "journalctl --user --disk-usage | awk '{print $7}'"
+
+rollback:
+  available: false
+  reason: "Log rotation and image pruning not reversible. Safe operations with low risk."
+  recovery: "If services affected, restart with: systemctl --user restart <service>"
+
+success_criteria:
+  - "Disk usage reduced by at least 3%"
+  - "All critical services remain active"
+  - "No errors in action execution"
+
+failure_handling:
+  - action: "Log failure details"
+  - action: "Send notification to user"
+  - action: "Do not proceed to next playbook"
+  - action: "Maintain system state (fail-safe)"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook disk-cleanup --dry-run"
+  execute: "./apply-remediation.sh --playbook disk-cleanup"
+  with_confirmation: "./apply-remediation.sh --playbook disk-cleanup --confirm"

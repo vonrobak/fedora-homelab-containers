@@ -1,0 +1,147 @@
+---
+# resource-pressure.yml
+# Auto-remediation playbook for memory/CPU pressure
+#
+# Trigger: High swap usage, memory pressure, or CPU throttling
+# Risk Level: MEDIUM (may restart services)
+# Confirmation Required: true (impacts running services)
+
+name: "Resource Pressure Mitigation"
+version: "1.0"
+created: "2025-11-18"
+risk_level: "medium"
+requires_confirmation: true
+
+metadata:
+  category: "performance"
+  severity: "medium"
+  related_issues: ["ISS-006"]
+  estimated_duration: "2-5 minutes"
+  affects: "System performance, may restart services"
+
+triggers:
+  - condition: "swap_usage_mb > 6000"
+    description: "Swap usage exceeding safe threshold"
+    priority: "high"
+  - condition: "memory_available_percent < 10"
+    description: "Less than 10% memory available"
+    priority: "critical"
+  - condition: "load_average_5min > cpu_cores * 2"
+    description: "System load significantly higher than CPU capacity"
+    priority: "medium"
+
+pre_checks:
+  - name: "Capture current resource state"
+    command: "free -h && top -bn1 | head -20 > /tmp/resource-pressure-$(date +%s).log"
+    expected_exit: 0
+
+  - name: "Identify top memory consumers"
+    command: "podman stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}' | sort -k2 -h"
+    expected_exit: 0
+
+  - name: "Check for memory leaks"
+    command: "podman ps --format '{{.Names}}' | xargs -I {} sh -c 'echo {}; podman inspect {} | jq -r \".[0].State.OOMKilled\"'"
+    expected_exit: 0
+
+actions:
+  - name: "Clear system caches (safe)"
+    command: "sync && echo 1 | sudo tee /proc/sys/vm/drop_caches"
+    expected_exit: 0
+    estimated_freed: "100-500MB"
+    reversible: false
+    requires_sudo: true
+    notes: "Clears page cache, safe operation, memory will be reallocated as needed"
+
+  - name: "Identify services exceeding memory limits"
+    command: "for svc in $(podman ps --format '{{.Names}}'); do echo \"$svc: $(podman inspect $svc | jq -r '.[0].HostConfig.Memory')\"; done"
+    expected_exit: 0
+
+  - name: "Restart memory-intensive services (if needed)"
+    command: "systemctl --user restart {{ high_memory_service }}.service"
+    expected_exit: 0
+    conditional: "service_memory_usage > limit * 0.9"
+    notes: "Only restart services approaching their memory limit"
+
+  - name: "Compact Jellyfin transcode cache"
+    command: "find /mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes -type f -mmin +60 -delete"
+    expected_exit: 0
+    estimated_freed: "0-2GB"
+    notes: "Remove transcode files idle for >1 hour"
+
+  - name: "Restart Prometheus (if high memory)"
+    command: "systemctl --user restart prometheus.service"
+    expected_exit: 0
+    conditional: "prometheus_memory > 2.5G"
+    notes: "Prometheus can accumulate memory, restart helps compact"
+
+post_checks:
+  - name: "Verify swap usage reduced"
+    command: "free -m | awk '/^Swap:/ {print $3}'"
+    expected_condition: "< initial_swap_usage * 0.8"
+
+  - name: "Verify memory available increased"
+    command: "free -m | awk '/^Mem:/ {print $7}'"
+    expected_condition: "> initial_available * 1.2"
+
+  - name: "Verify all critical services running"
+    command: "systemctl --user is-active traefik prometheus jellyfin grafana"
+    expected: "active"
+
+  - name: "Check for OOM kills"
+    command: "dmesg | grep -i 'killed process' | tail -5"
+    expected_exit: 1
+    notes: "Exit 1 means no matches, which is good"
+
+logging:
+  - metric: "swap_before_mb"
+    command: "free -m | awk '/^Swap:/ {print $3}'"
+
+  - metric: "swap_after_mb"
+    command: "free -m | awk '/^Swap:/ {print $3}'"
+
+  - metric: "memory_available_before_mb"
+    command: "free -m | awk '/^Mem:/ {print $7}'"
+
+  - metric: "memory_available_after_mb"
+    command: "free -m | awk '/^Mem:/ {print $7}'"
+
+  - metric: "top_memory_consumers"
+    command: "podman stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}' | head -10"
+
+  - metric: "load_average"
+    command: "uptime | awk -F'load average:' '{print $2}'"
+
+rollback:
+  available: false
+  reason: "Cache clearing not reversible, service restarts are standard recovery"
+  recovery: "If services affected, restart individually: systemctl --user restart <service>"
+
+success_criteria:
+  - "Swap usage reduced by at least 20%"
+  - "Memory available increased"
+  - "All critical services remain active"
+
+failure_handling:
+  - action: "Log detailed resource state"
+  - action: "Alert user to potential under-provisioning"
+  - action: "Suggest reviewing container memory limits"
+  - action: "Recommend system memory upgrade if persistent"
+
+recommendations:
+  - condition: "swap_usage consistently high"
+    suggestion: "Consider adding more RAM or reducing container memory limits"
+  - condition: "specific service using excessive memory"
+    suggestion: "Review service configuration, check for memory leaks, consider limiting memory"
+  - condition: "multiple services hitting limits"
+    suggestion: "System may be under-provisioned for current workload"
+
+safety_checks:
+  - "Never restart more than 1 service at a time"
+  - "Always verify critical services remain running"
+  - "Only clear caches if swap > 50% or available < 15%"
+  - "Create resource snapshot before any action"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook resource-pressure --dry-run"
+  execute: "./apply-remediation.sh --playbook resource-pressure"
+  memory_only: "./apply-remediation.sh --playbook resource-pressure --target memory"

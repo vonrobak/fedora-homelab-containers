@@ -1,0 +1,154 @@
+---
+# service-restart.yml
+# Auto-remediation playbook for service recovery
+#
+# Trigger: Service unhealthy or failed state
+# Risk Level: LOW (standard restart procedure)
+# Confirmation Required: false (safe operation)
+
+name: "Service Restart Recovery"
+version: "1.0"
+created: "2025-11-18"
+risk_level: "low"
+requires_confirmation: false
+
+metadata:
+  category: "operations"
+  severity: "high"
+  related_issues: ["ISS-005"]
+  estimated_duration: "30-60 seconds"
+  affects: "Single service availability"
+
+triggers:
+  - condition: "service_status == failed"
+    description: "Service in failed state"
+    priority: "critical"
+  - condition: "health_check_failing == true"
+    description: "Service health check returning errors"
+    priority: "high"
+  - condition: "service_status == inactive"
+    description: "Service unexpectedly stopped"
+    priority: "high"
+
+pre_checks:
+  - name: "Verify service exists"
+    command: "systemctl --user list-unit-files | grep {{ service }}.service"
+    expected_exit: 0
+
+  - name: "Check service dependencies"
+    command: "systemctl --user list-dependencies {{ service }}.service"
+    expected_exit: 0
+
+  - name: "Verify not in restart loop"
+    command: "systemctl --user show {{ service }}.service -p NRestarts --value"
+    expected_condition: "< 5"
+    notes: "Prevent infinite restart loops"
+
+actions:
+  - name: "Capture logs before restart"
+    command: "journalctl --user -u {{ service }}.service -n 50 > /tmp/{{ service }}-pre-restart-$(date +%s).log"
+    expected_exit: 0
+    estimated_duration: "1s"
+
+  - name: "Stop service gracefully"
+    command: "systemctl --user stop {{ service }}.service"
+    expected_exit: 0
+    estimated_duration: "5-10s"
+    timeout: 30
+    notes: "Allow service to shut down cleanly"
+
+  - name: "Wait for full shutdown"
+    command: "sleep 3"
+    expected_exit: 0
+
+  - name: "Verify service stopped"
+    command: "systemctl --user is-active {{ service }}.service"
+    expected: "inactive"
+    failure_action: "force_stop"
+
+  - name: "Start service"
+    command: "systemctl --user start {{ service }}.service"
+    expected_exit: 0
+    estimated_duration: "10-30s"
+
+  - name: "Wait for startup"
+    command: "sleep 15"
+    expected_exit: 0
+    notes: "Allow service time to initialize"
+
+post_checks:
+  - name: "Verify service active"
+    command: "systemctl --user is-active {{ service }}.service"
+    expected: "active"
+    retry_count: 3
+    retry_delay: 10
+
+  - name: "Verify container running"
+    command: "podman ps --filter name={{ service }} --format '{{.Status}}'"
+    expected_contains: "Up"
+
+  - name: "Check service health"
+    command: "podman healthcheck run {{ service }}"
+    expected: "healthy"
+    allow_skip: true
+    notes: "Some services don't have health checks defined"
+
+  - name: "Capture logs after restart"
+    command: "journalctl --user -u {{ service }}.service -n 20 > /tmp/{{ service }}-post-restart-$(date +%s).log"
+    expected_exit: 0
+
+logging:
+  - metric: "service_name"
+    value: "{{ service }}"
+
+  - metric: "restart_timestamp"
+    command: "date -Iseconds"
+
+  - metric: "restart_reason"
+    value: "{{ reason }}"
+
+  - metric: "previous_status"
+    command: "systemctl --user show {{ service }}.service -p ActiveState --value"
+
+  - metric: "restart_duration_seconds"
+    command: "systemctl --user show {{ service }}.service -p ActiveEnterTimestamp --value"
+
+  - metric: "pre_restart_logs"
+    value: "/tmp/{{ service }}-pre-restart-*.log"
+
+  - metric: "post_restart_logs"
+    value: "/tmp/{{ service }}-post-restart-*.log"
+
+rollback:
+  available: false
+  reason: "Restart is idempotent - no state change to rollback"
+  recovery: "If service fails to start, investigate logs and consider drift reconciliation"
+
+success_criteria:
+  - "Service active within 60 seconds"
+  - "Container shows 'Up' status"
+  - "Health check passing (if available)"
+
+failure_handling:
+  - action: "Log detailed failure information"
+  - action: "Capture full systemd journal for service"
+  - action: "Check for drift with check-drift.sh"
+  - action: "Alert user to potential configuration issue"
+  - action: "Do not retry automatically (prevent loops)"
+
+escalation:
+  - condition: "restart_count > 3 in last hour"
+    action: "trigger_drift_reconciliation"
+  - condition: "restart_count > 5 in last hour"
+    action: "alert_critical_and_stop_auto_restart"
+
+safety_checks:
+  - "Never restart more than 3 services simultaneously"
+  - "Never restart if in restart loop (>5 restarts recent)"
+  - "Always capture logs before restart"
+  - "Always verify startup before marking success"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook service-restart --service prometheus --dry-run"
+  execute: "./apply-remediation.sh --playbook service-restart --service prometheus --reason 'health check failing'"
+  force: "./apply-remediation.sh --playbook service-restart --service jellyfin --force"

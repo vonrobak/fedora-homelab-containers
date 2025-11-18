@@ -1,0 +1,143 @@
+---
+# drift-reconciliation.yml
+# Auto-remediation playbook for configuration drift
+#
+# Trigger: check-drift.sh detects config mismatch
+# Risk Level: MEDIUM (modifies running services)
+# Confirmation Required: true (user approval needed)
+
+name: "Configuration Drift Reconciliation"
+version: "1.0"
+created: "2025-11-18"
+risk_level: "medium"
+requires_confirmation: true
+
+metadata:
+  category: "deployment"
+  severity: "medium"
+  related_issues: ["ISS-004"]
+  estimated_duration: "1-3 minutes per service"
+  affects: "Running containers"
+
+triggers:
+  - condition: "drift_detected == true"
+    description: "check-drift.sh found mismatch between running container and quadlet"
+  - condition: "drift_count > 3"
+    description: "Multiple services drifted - may indicate pattern issue"
+    priority: "high"
+
+pre_checks:
+  - name: "Verify drift detection script exists"
+    command: "test -f .claude/skills/homelab-deployment/scripts/check-drift.sh"
+    expected_exit: 0
+
+  - name: "Verify quadlet directory accessible"
+    command: "test -d ~/.config/containers/systemd"
+    expected_exit: 0
+
+  - name: "Verify systemd user instance running"
+    command: "systemctl --user is-system-running"
+    expected: "running"
+
+  - name: "Create backup directory"
+    command: "mkdir -p ~/containers/backups/quadlets/$(date +%Y%m%d-%H%M%S)"
+    expected_exit: 0
+
+actions:
+  - name: "Backup current quadlet file"
+    command: "cp ~/.config/containers/systemd/{{ service }}.container ~/containers/backups/quadlets/$(date +%Y%m%d-%H%M%S)/{{ service }}.container.bak"
+    expected_exit: 0
+    estimated_duration: "1s"
+    reversible: true
+
+  - name: "Regenerate quadlet from pattern"
+    command: ".claude/skills/homelab-deployment/scripts/deploy-from-pattern.sh --service {{ service }} --regenerate-only"
+    expected_exit: 0
+    estimated_duration: "5-10s"
+    reversible: true
+    notes: "Uses deployment-log.json to identify original pattern and settings"
+
+  - name: "Validate new quadlet syntax"
+    command: "systemd-analyze verify ~/.config/containers/systemd/{{ service }}.container"
+    expected_exit: 0
+    estimated_duration: "1s"
+    failure_action: "restore_backup"
+
+  - name: "Reload systemd daemon"
+    command: "systemctl --user daemon-reload"
+    expected_exit: 0
+    estimated_duration: "1-2s"
+    reversible: false
+
+  - name: "Restart service"
+    command: "systemctl --user restart {{ service }}.service"
+    expected_exit: 0
+    estimated_duration: "5-30s"
+    reversible: false
+    notes: "Service will be briefly unavailable during restart"
+
+  - name: "Wait for service health check"
+    command: "sleep 30 && systemctl --user is-active {{ service }}.service"
+    expected: "active"
+    estimated_duration: "30s"
+    failure_action: "rollback"
+
+post_checks:
+  - name: "Verify drift resolved"
+    command: ".claude/skills/homelab-deployment/scripts/check-drift.sh {{ service }}"
+    expected_output: "✓ MATCH"
+
+  - name: "Verify service healthy"
+    command: "systemctl --user status {{ service }}.service"
+    expected_exit: 0
+
+  - name: "Verify container running"
+    command: "podman ps --filter name={{ service }} --format '{{.Status}}'"
+    expected_contains: "Up"
+
+logging:
+  - metric: "service_name"
+    value: "{{ service }}"
+
+  - metric: "drift_before"
+    command: ".claude/skills/homelab-deployment/scripts/check-drift.sh {{ service }} --json"
+
+  - metric: "drift_after"
+    command: ".claude/skills/homelab-deployment/scripts/check-drift.sh {{ service }} --json"
+
+  - metric: "restart_duration"
+    command: "systemctl --user show {{ service }}.service --property=ActiveEnterTimestamp"
+
+  - metric: "backup_location"
+    command: "echo ~/containers/backups/quadlets/$(date +%Y%m%d)/"
+
+rollback:
+  available: true
+  reason: "Quadlet backup created before changes"
+  recovery_steps:
+    - "Restore backup: cp ~/containers/backups/quadlets/<timestamp>/{{ service }}.container.bak ~/.config/containers/systemd/{{ service }}.container"
+    - "Reload systemd: systemctl --user daemon-reload"
+    - "Restart service: systemctl --user restart {{ service }}.service"
+
+success_criteria:
+  - "Service restarted successfully"
+  - "Drift check shows MATCH status"
+  - "Container health check passing"
+
+failure_handling:
+  - action: "Restore from backup automatically"
+  - action: "Log failure with drift details"
+  - action: "Alert user to manual intervention needed"
+  - action: "Do not attempt remediation on other services"
+
+safety_checks:
+  - "Never reconcile more than 1 service at a time"
+  - "Always create backup before changes"
+  - "Always validate quadlet syntax before applying"
+  - "Always wait for health check before marking success"
+  - "Rollback if service fails to start within 60s"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook drift-reconciliation --service jellyfin --dry-run"
+  execute: "./apply-remediation.sh --playbook drift-reconciliation --service jellyfin"
+  with_backup_only: "./apply-remediation.sh --playbook drift-reconciliation --service jellyfin --backup-only"
