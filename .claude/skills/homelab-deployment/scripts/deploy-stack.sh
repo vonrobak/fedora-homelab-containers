@@ -199,7 +199,7 @@ deploy_service() {
     fi
 
     # Extract service configuration using Python
-    local config=$(python3 <<EOF
+    local config_json=$(python3 <<EOF
 import yaml
 import json
 
@@ -214,26 +214,156 @@ for svc in services:
 EOF
 )
 
-    if [[ -z "$config" ]]; then
+    if [[ -z "$config_json" ]]; then
         log ERROR "Service not found in stack: $service_name"
         SERVICE_STATUS[$service_name]="failed"
         return 1
     fi
 
-    # For now, log what would be deployed
-    # TODO: Integrate with actual deployment patterns
-    log DEBUG "Service config: $config"
+    log DEBUG "Service config: $config_json"
 
-    # Simulate deployment
-    log INFO "Creating container for $service_name..."
-    log INFO "Generating systemd quadlet for $service_name..."
-    log INFO "Enabling and starting $service_name.service..."
+    # Generate quadlet file for this service
+    if ! generate_quadlet_from_stack "$service_name" "$config_json" "$stack_file"; then
+        log ERROR "Failed to generate quadlet for $service_name"
+        SERVICE_STATUS[$service_name]="failed"
+        return 1
+    fi
 
-    # Mark as deployed
-    SERVICE_STATUS[$service_name]="deployed"
-    DEPLOYED_SERVICES+=("$service_name")
+    # Deploy using existing deploy-service.sh infrastructure
+    log INFO "Deploying $service_name via systemd..."
+    if "$SCRIPT_DIR/deploy-service.sh" --service "$service_name" --wait-for-healthy --timeout 300 >> "$DEPLOYMENT_LOG" 2>&1; then
+        SERVICE_STATUS[$service_name]="deployed"
+        DEPLOYED_SERVICES+=("$service_name")
+        log SUCCESS "Service deployed: $service_name"
+        return 0
+    else
+        log ERROR "Deployment failed: $service_name"
+        log ERROR "Check logs: journalctl --user -u ${service_name}.service"
+        SERVICE_STATUS[$service_name]="failed"
+        return 1
+    fi
+}
 
-    log SUCCESS "Service deployed: $service_name"
+# Generate quadlet file from stack configuration
+generate_quadlet_from_stack() {
+    local service_name=$1
+    local config_json=$2
+    local stack_file=$3
+
+    local quadlet_dir="$HOME/.config/containers/systemd"
+    local quadlet_file="$quadlet_dir/${service_name}.container"
+
+    mkdir -p "$quadlet_dir"
+
+    log DEBUG "Generating quadlet: $quadlet_file"
+
+    # Extract configuration fields using Python
+    python3 <<EOF > "$quadlet_file"
+import yaml
+import json
+
+# Load stack and service config
+with open('$stack_file', 'r') as f:
+    stack = yaml.safe_load(f)
+
+config = json.loads('$config_json')
+service_config = config.get('configuration', {})
+
+# Get shared config
+shared = stack.get('shared', {})
+
+# Print quadlet file
+print("[Unit]")
+print(f"Description={service_name} container (deployed via stack)")
+print("After=network-online.target")
+print("Wants=network-online.target")
+print("")
+
+print("[Container]")
+print(f"ContainerName={service_name}")
+
+# Image
+image = service_config.get('image', 'docker.io/library/alpine:latest')
+print(f"Image={image}")
+
+# Memory limits
+memory = service_config.get('memory', '512M')
+print(f"Memory={memory}")
+
+# Environment variables
+env_vars = service_config.get('environment', {})
+if isinstance(env_vars, dict):
+    for key, value in env_vars.items():
+        # Handle environment variable substitution
+        if value.startswith('\${') and value.endswith('}'):
+            var_name = value[2:-1]
+            print(f"Environment={key}=%{var_name}")
+        else:
+            print(f"Environment={key}={value}")
+
+# Volumes
+volumes = service_config.get('volumes', [])
+for volume in volumes:
+    # Expand variables like \${storage_base}
+    volume_expanded = volume
+    if '\${storage_base}' in volume:
+        storage_base = shared.get('storage_base', '/mnt/btrfs-pool/subvol7-containers')
+        volume_expanded = volume.replace('\${storage_base}', storage_base)
+
+    print(f"Volume={volume_expanded}")
+
+# Networks
+networks = service_config.get('networks', shared.get('networks', []))
+for network in networks:
+    print(f"Network={network}")
+
+# Labels (Traefik, Prometheus)
+labels = service_config.get('labels', [])
+for label in labels:
+    # Expand \${domain} variable
+    label_expanded = label
+    if '\${domain}' in label:
+        domain = shared.get('domain', 'example.patriark.org')
+        label_expanded = label.replace('\${domain}', domain)
+
+    print(f"Label={label_expanded}")
+
+# Health check
+healthcheck = service_config.get('healthcheck', {})
+if healthcheck:
+    test = healthcheck.get('test', [])
+    if test:
+        test_cmd = ' '.join(test) if isinstance(test, list) else test
+        print(f"HealthCmd={test_cmd}")
+
+    interval = healthcheck.get('interval', '30s')
+    print(f"HealthInterval={interval}")
+
+    timeout = healthcheck.get('timeout', '10s')
+    print(f"HealthTimeout={timeout}")
+
+    retries = healthcheck.get('retries', 3)
+    print(f"HealthRetries={retries}")
+
+# Auto-update (disabled for stack-managed services)
+print("AutoUpdate=disabled")
+
+print("")
+print("[Service]")
+print("Restart=always")
+print("TimeoutStartSec=300")
+print("")
+
+print("[Install]")
+print("WantedBy=multi-user.target default.target")
+EOF
+
+    if [[ ! -f "$quadlet_file" ]]; then
+        log ERROR "Failed to create quadlet file: $quadlet_file"
+        return 1
+    fi
+
+    log SUCCESS "Quadlet generated: $quadlet_file"
     return 0
 }
 
@@ -294,20 +424,46 @@ deploy_phase() {
     log INFO "Phase $phase_number: Deploying ${#services[@]} service(s)"
     log INFO "=========================================="
 
-    # Deploy all services in this phase (sequentially for now)
-    # TODO: Implement parallel deployment for independent services
-    for service in "${services[@]}"; do
-        if ! deploy_service "$stack_file" "$service"; then
-            log ERROR "Deployment failed: $service"
-            return 1
-        fi
+    # Check if parallel deployment is beneficial (multiple services)
+    if [[ ${#services[@]} -gt 1 ]]; then
+        log INFO "Deploying services in parallel..."
 
-        # Wait for health before proceeding to next service
-        if ! wait_for_healthy "$service"; then
-            log ERROR "Health check failed: $service"
+        # Deploy all services in background
+        declare -A service_pids
+        for service in "${services[@]}"; do
+            (
+                if ! deploy_service "$stack_file" "$service"; then
+                    exit 1
+                fi
+            ) &
+            service_pids[$service]=$!
+            log DEBUG "Started deployment of $service (PID: ${service_pids[$service]})"
+        done
+
+        # Wait for all deployments to complete
+        local all_success=true
+        for service in "${services[@]}"; do
+            if wait ${service_pids[$service]}; then
+                log SUCCESS "Parallel deployment succeeded: $service"
+            else
+                log ERROR "Parallel deployment failed: $service"
+                all_success=false
+            fi
+        done
+
+        if [[ "$all_success" == "false" ]]; then
+            log ERROR "One or more services failed in parallel deployment"
             return 1
         fi
-    done
+    else
+        # Single service - deploy sequentially
+        for service in "${services[@]}"; do
+            if ! deploy_service "$stack_file" "$service"; then
+                log ERROR "Deployment failed: $service"
+                return 1
+            fi
+        done
+    fi
 
     log SUCCESS "Phase $phase_number complete"
     return 0
@@ -381,6 +537,115 @@ orchestrate_deployment() {
     done
 
     log SUCCESS "All phases deployed successfully"
+    return 0
+}
+
+# Post-deployment validation
+post_deployment_validation() {
+    local stack_file=$1
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log INFO "[DRY-RUN] Would run post-deployment validation"
+        return 0
+    fi
+
+    log INFO "Running post-deployment validation..."
+
+    # Check if validation tests are defined
+    local has_validation=$(python3 -c "import yaml; s = yaml.safe_load(open('$stack_file')); print('validation' in s and 'tests' in s['validation'])" 2>/dev/null || echo "False")
+
+    if [[ "$has_validation" != "True" ]]; then
+        log INFO "No validation tests defined"
+        return 0
+    fi
+
+    # Get test count
+    local test_count=$(python3 -c "import yaml; s = yaml.safe_load(open('$stack_file')); print(len(s.get('validation', {}).get('tests', [])))")
+
+    if [[ "$test_count" == "0" ]]; then
+        log INFO "No validation tests defined"
+        return 0
+    fi
+
+    log INFO "Running $test_count validation test(s)..."
+
+    local i=0
+    local failed_tests=0
+
+    while [[ $i -lt $test_count ]]; do
+        # Extract test details
+        local test_info=$(python3 <<EOF
+import yaml
+import json
+
+with open('$stack_file', 'r') as f:
+    stack = yaml.safe_load(f)
+
+test = stack.get('validation', {}).get('tests', [])[$i]
+print(json.dumps(test))
+EOF
+)
+
+        local test_name=$(echo "$test_info" | python3 -c "import json, sys; print(json.load(sys.stdin)['name'])")
+        local test_type=$(echo "$test_info" | python3 -c "import json, sys; print(json.load(sys.stdin)['type'])")
+
+        log INFO "Test $((i+1))/$test_count: $test_name"
+
+        # Run test based on type
+        case $test_type in
+            http_get)
+                local url=$(echo "$test_info" | python3 -c "import json, sys; print(json.load(sys.stdin)['url'])")
+                local expected_status=$(echo "$test_info" | python3 -c "import json, sys; print(json.load(sys.stdin)['expected_status'])")
+
+                local actual_status=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "0")
+
+                if [[ "$actual_status" == "$expected_status" ]]; then
+                    log SUCCESS "✓ $test_name (HTTP $actual_status)"
+                else
+                    log ERROR "✗ $test_name (expected $expected_status, got $actual_status)"
+                    ((failed_tests++))
+                fi
+                ;;
+
+            sql_query)
+                local target=$(echo "$test_info" | python3 -c "import json, sys; print(json.load(sys.stdin)['target'])")
+                local query=$(echo "$test_info" | python3 -c "import json, sys; print(json.load(sys.stdin)['query'])")
+
+                if podman exec "$target" psql -U postgres -c "$query" &>/dev/null; then
+                    log SUCCESS "✓ $test_name"
+                else
+                    log ERROR "✗ $test_name (SQL query failed)"
+                    ((failed_tests++))
+                fi
+                ;;
+
+            redis_ping)
+                local target=$(echo "$test_info" | python3 -c "import json, sys; print(json.load(sys.stdin)['target'])")
+
+                local response=$(podman exec "$target" redis-cli ping 2>/dev/null || echo "ERROR")
+
+                if [[ "$response" == "PONG" ]]; then
+                    log SUCCESS "✓ $test_name"
+                else
+                    log ERROR "✗ $test_name (Redis did not respond with PONG)"
+                    ((failed_tests++))
+                fi
+                ;;
+
+            *)
+                log WARNING "Unknown test type: $test_type (skipping)"
+                ;;
+        esac
+
+        ((i++))
+    done
+
+    if [[ $failed_tests -gt 0 ]]; then
+        log WARNING "$failed_tests validation test(s) failed"
+        return 1
+    fi
+
+    log SUCCESS "All validation tests passed"
     return 0
 }
 
@@ -503,6 +768,23 @@ main() {
         fi
 
         exit 1
+    fi
+
+    echo ""
+
+    # Phase 3: Post-deployment validation
+    if ! post_deployment_validation "$STACK_FILE"; then
+        log WARNING "Post-deployment validation failed"
+
+        if [[ "$ROLLBACK_ON_FAILURE" == "true" && "$DRY_RUN" == "false" ]]; then
+            read -p "Rollback deployment? (y/n) " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                echo ""
+                rollback_stack
+                exit 1
+            fi
+        fi
     fi
 
     # Success summary
