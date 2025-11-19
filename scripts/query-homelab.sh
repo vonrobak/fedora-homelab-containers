@@ -349,12 +349,15 @@ get_disk_usage() {
 
 # Get recent service restarts (last 7 days)
 get_recent_restarts() {
-    journalctl --user --since "7 days ago" --output json 2>/dev/null | \
-    jq -s '[.[] | select(.MESSAGE? | contains("Started") or contains("Stopped")) | {
+    # SAFETY FIX: Limit journalctl output BEFORE piping to jq
+    # Using -n to limit entries and --grep to filter in journalctl itself
+    journalctl --user --since "7 days ago" -n 500 --output json \
+        --grep "Started|Stopped" 2>/dev/null | \
+    jq -s 'if length > 0 then [.[] | select(.MESSAGE? | contains("Started") or contains("Stopped")) | {
         service: (.UNIT // .SYSLOG_IDENTIFIER // "unknown"),
         message: .MESSAGE,
         timestamp: (.__REALTIME_TIMESTAMP | tonumber / 1000000 | strftime("%Y-%m-%d %H:%M:%S"))
-    }] | unique_by(.service + .timestamp) | sort_by(.timestamp) | reverse | .[0:10]'
+    }] | unique_by(.service + .timestamp) | sort_by(.timestamp) | reverse | .[0:10] else [] end'
 }
 
 # Get service configuration
