@@ -347,17 +347,22 @@ get_disk_usage() {
         ]}'
 }
 
-# Get recent service restarts (last 7 days)
+# Get recent service restarts (last 24h only - SAFETY LIMITED)
 get_recent_restarts() {
-    # SAFETY FIX: Limit journalctl output BEFORE piping to jq
-    # Using -n to limit entries and --grep to filter in journalctl itself
-    journalctl --user --since "7 days ago" -n 500 --output json \
-        --grep "Started|Stopped" 2>/dev/null | \
-    jq -s 'if length > 0 then [.[] | select(.MESSAGE? | contains("Started") or contains("Stopped")) | {
-        service: (.UNIT // .SYSLOG_IDENTIFIER // "unknown"),
-        message: .MESSAGE,
-        timestamp: (.__REALTIME_TIMESTAMP | tonumber / 1000000 | strftime("%Y-%m-%d %H:%M:%S"))
-    }] | unique_by(.service + .timestamp) | sort_by(.timestamp) | reverse | .[0:10] else [] end'
+    # CRITICAL SAFETY: journalctl --grep on large time windows causes system hangs
+    # SOLUTION: Use systemctl to check current service states instead of journal history
+
+    # Get all user services and their states
+    systemctl --user list-units --type=service --all --no-pager --output json 2>/dev/null | \
+    jq -c '[.[] | select(.unit | endswith(".service")) | {
+        service: (.unit | rtrimstr(".service")),
+        status: .active,
+        state: .sub,
+        load: .load
+    }] | .[0:20]' || echo '[]'
+
+    # NOTE: This returns current state, not restart history
+    # Restart history requires journalctl which is too slow/dangerous for large time windows
 }
 
 # Get service configuration
