@@ -8,8 +8,34 @@
 - User asks "how is the system?"
 - User requests health check or diagnostics
 - User mentions issues or performance concerns
+- User asks specific questions about services, resources, or configuration
 - Before making significant changes to the infrastructure
 - Periodically for proactive monitoring
+
+---
+
+## Quick Query System (NEW: 2025-11-22)
+
+**For specific questions, use the natural language query system first:**
+
+```bash
+~/containers/scripts/query-homelab.sh "Your question here"
+```
+
+**Supported query types:**
+- **Resource usage**: "What services are using the most memory?", "Show me disk usage"
+- **Service status**: "Is jellyfin running?", "Show me recent restarts"
+- **Network topology**: "What's on the reverse_proxy network?"
+- **Configuration**: "What's jellyfin's configuration?"
+
+**Benefits:**
+- ✅ Instant responses (<1s) from cache
+- ✅ No need to run full intel script for simple questions
+- ✅ Production-ready and safety-tested
+
+**When to use query system vs full intel:**
+- **Query system**: Specific, quick questions about current state
+- **Full intel**: Comprehensive health assessment, troubleshooting, recommendations
 
 ---
 

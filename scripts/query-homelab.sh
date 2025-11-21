@@ -2,6 +2,9 @@
 # query-homelab.sh
 # Natural language query engine for homelab
 #
+# STATUS: ✅ PRODUCTION-READY (Approved 2025-11-22)
+# Safety audit: docs/99-reports/2025-11-22-query-system-safety-audit.md
+#
 # Purpose:
 #   - Parse natural language questions about the homelab
 #   - Translate to system commands via pattern matching
@@ -12,6 +15,8 @@
 #   ./query-homelab.sh "What services are using the most memory?"
 #   ./query-homelab.sh "Is jellyfin running?"
 #   ./query-homelab.sh "Show me disk usage"
+#
+# Safety: All functions tested safe (<5s each), no memory leaks, timeout protected
 
 set -euo pipefail
 

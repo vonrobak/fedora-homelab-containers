@@ -2,6 +2,9 @@
 # precompute-queries.sh
 # Pre-compute common queries and populate cache
 #
+# STATUS: ✅ PRODUCTION-READY (Approved 2025-11-22)
+# Safety audit: docs/99-reports/2025-11-22-query-system-safety-audit.md
+#
 # Purpose:
 #   - Execute frequently asked queries proactively
 #   - Populate query cache for instant responses
@@ -11,7 +14,9 @@
 #   ./precompute-queries.sh
 #
 # Cron (every 5 minutes):
-#   */5 * * * * ~/containers/scripts/precompute-queries.sh > /dev/null 2>&1
+#   */5 * * * * ~/containers/scripts/precompute-queries.sh >> ~/containers/data/query-cache.log 2>&1
+#
+# Safety: Timeout protected (10s per query), completes in <5s total
 
 set -euo pipefail
 
