@@ -1,3 +1,15 @@
+> **🗄️ ARCHIVED:** 2025-11-18
+>
+> **Reason:** Session 2 handoff complete - validation testing finished
+>
+> **Superseded by:** `docs/99-reports/2025-11-14-session-2-validation-report.md`
+>
+> **Historical context:** This handoff document coordinated Session 2 CLI testing of deployment automation scripts created in Web session. It defined test scenarios and success criteria.
+>
+> **Value:** Shows test-driven approach to validating automation scripts. Demonstrates Web (creation) → CLI (validation) workflow pattern.
+>
+> ---
+
 # Session 2 CLI Handoff: Deployment Automation Validation
 
 **Created:** Web Session (2025-11-14)

@@ -1,3 +1,15 @@
+> **🗄️ ARCHIVED:** 2025-11-18
+>
+> **Reason:** Completed session handoff document - planning phase complete, execution phase finished
+>
+> **Superseded by:** Session execution reports in `docs/99-reports/`
+>
+> **Historical context:** This document coordinated the transition from planning (Claude Code Web) to execution (Claude Code CLI). It captured next steps and priorities after initial planning sessions.
+>
+> **Value:** Demonstrates planning-to-execution workflow and how Claude Code Web/CLI sessions build on each other. Shows strategic planning methodology.
+>
+> ---
+
 # Handoff: Ready for CLI Implementation Session
 
 ## Planning Session Complete ✅

@@ -123,13 +123,13 @@ execute_disk_cleanup() {
         log "    [DRY RUN] Would execute: sudo journalctl --vacuum-time=7d"
     fi
 
-    # Action 3: Prune unused images
-    log "  [3/6] Pruning unused Podman images (7+ days old)..."
+    # Action 3: Prune dangling images
+    log "  [3/6] Pruning dangling Podman images (7+ days old)..."
     if [[ "$DRY_RUN" == "false" ]]; then
-        IMAGE_OUTPUT=$(podman image prune -af --filter 'until=168h' 2>&1 || true)
+        IMAGE_OUTPUT=$(podman image prune -f --filter 'until=168h' 2>&1 || true)
         log "    $IMAGE_OUTPUT"
     else
-        log "    [DRY RUN] Would execute: podman image prune -af --filter 'until=168h'"
+        log "    [DRY RUN] Would execute: podman image prune -f --filter 'until=168h'"
     fi
 
     # Action 4: Prune build cache

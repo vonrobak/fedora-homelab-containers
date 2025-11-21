@@ -1,6 +1,6 @@
 # Archive Index
 
-**Last Updated:** 2025-11-14
+**Last Updated:** 2025-11-18
 **Purpose:** Catalog of archived documentation with archival context
 
 ---
@@ -80,6 +80,23 @@ This directory contains **superseded documentation** preserved for historical re
 
 ---
 
+### 📅 Session Planning & Handoffs (Completed)
+
+**What:** Planning and handoff documents for completed Claude Code sessions
+
+| File | Archived | Session | Superseded By |
+|------|----------|---------|---------------|
+| `2025-11-09-handoff-next-steps.md` | 2025-11-18 | Planning session | Session execution reports in 99-reports/ |
+| `2025-11-14-session-2-cli-handoff.md` | 2025-11-18 | Session 2 | `2025-11-14-session-2-validation-report.md` |
+| `2025-11-14-session-3-proposal.md` | 2025-11-18 | Session 3 | `2025-11-14-session-3-completion-summary.md` |
+| `pr-description-planning-session.md` | 2025-11-18 | Planning PR | PR merged/closed |
+
+**Why preserved:** Documents planning-to-execution workflow and session coordination between Claude Code Web and CLI
+
+**Historical value:** Shows how Web/CLI hybrid approach evolved, session planning methodology, and how Claude Code sessions build on each other. These handoff documents were transitional - valuable during execution but superseded by completion reports.
+
+---
+
 ### 📊 Storage Architecture Evolution
 
 **What:** Multiple iterations of storage documentation as design evolved
@@ -137,23 +154,21 @@ This directory contains **superseded documentation** preserved for historical re
 
 ---
 
-### 🗑️ Backup Files (.bak) - SHOULD BE REMOVED
+### 🗑️ Backup Files (.bak) - ✅ PREVIOUSLY REMOVED
 
-**What:** Git-tracked backup files (anti-pattern!)
+**What:** Git-tracked backup files (anti-pattern!) that were removed
 
-| File | Original | Why Wrong |
-|------|----------|-----------|
-| `readme.bak-20251021-172023.md` | readme.md | Git already tracks history |
-| `readme.bak-20251021-221915.md` | readme.md | Redundant with Git |
-| `quick-reference.bak-20251021-172023.md` | quick-reference.md | Redundant with Git |
-| `quick-reference.bak-20251021-221915.md` | quick-reference.md | Redundant with Git |
+**Status:** ✅ These files were already removed before 2025-11-18 cleanup
 
-**Action:** These should be removed from Git entirely
-- Git already provides complete history
-- Backup files pollute repository
-- Can retrieve any version via `git log` + `git checkout`
+**Files that were removed:**
+- `readme.bak-20251021-172023.md`
+- `readme.bak-20251021-221915.md`
+- `quick-reference.bak-20251021-172023.md`
+- `quick-reference.bak-20251021-221915.md`
 
-**Removal planned:** Phase 4 cleanup
+**Reason for removal:** Git already provides complete history, backup files polluted repository
+
+**Lesson learned:** Use Git for versioning, not file copies with .bak extensions
 
 ---
 
@@ -287,22 +302,23 @@ Add to top of archived file:
 ## Statistics
 
 **Archive contents:**
-- Total files: 38
-- Markdown docs: 34
+- Total files: 42
+- Markdown docs: 38
 - Diagnostic outputs: 4
-- Backup files: 4 (to be removed)
-- Significant docs: ~17 (with useful historical context)
+- Backup files: 0 (previously removed)
+- Significant docs: ~21 (with useful historical context)
 
 **Categories:**
-- Superseded documentation: 9 files (added TinyAuth guides)
+- Superseded documentation: 9 files (includes TinyAuth guides)
 - Failed experiments: 4 files
 - Planning/checklists: 7 files
+- Session handoffs: 4 files (added 2025-11-18)
 - Storage evolution: 4 files
 - Configuration snapshots: 5 files
 - Diagnostic outputs: 5 files
-- Backup files: 4 files (removal pending)
+- Backup files: 0 (previously removed)
 
-**Date range:** October 20, 2025 - November 14, 2025 (authentication evolution from TinyAuth → Authelia)
+**Date range:** October 20, 2025 - November 18, 2025 (includes Session 4 context framework completion)
 
 ---
 
