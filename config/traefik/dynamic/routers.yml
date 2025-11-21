@@ -26,11 +26,6 @@ http:
       tls:
         certResolver: letsencrypt
 
-        - crowdsec-bouncer@file
-        - rate-limit@file
-      tls:
-        certResolver: letsencrypt
-
     # Authelia SSO Portal (YubiKey-First Authentication)
     authelia-portal:
       rule: "Host(`sso.patriark.org`)"
