@@ -24,7 +24,7 @@ http:
             - 10.89.2.0/24           # reverse_proxy network
             - 10.89.3.0/24           # authentication network
             - 10.89.1.0/24           # media services network
-            - 10.89.5.0/24	     # monitoring network
+            - 10.89.5.0/24           # monitoring network
             - 192.168.1.0/24         # Local network
           
           # Ban behavior
