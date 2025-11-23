@@ -87,6 +87,8 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit-public@file
+        - compression@file
+        - security-headers@file
       tls:
         certResolver: letsencrypt
 
