@@ -64,7 +64,8 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Jellyfin
+    # Jellyfin - Uses native authentication (no Authelia SSO)
+    # Media Player clients and web UI both use Jellyfin's built-in auth
     jellyfin-secure:
       rule: "Host(`jellyfin.patriark.org`)"
       service: "jellyfin"
@@ -73,7 +74,7 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit-public@file
-        - authelia@file
+        - security-headers@file
       tls:
         certResolver: letsencrypt
 
