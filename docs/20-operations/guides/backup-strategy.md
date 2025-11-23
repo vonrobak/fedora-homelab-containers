@@ -37,12 +37,12 @@ This guide documents the automated BTRFS snapshot and backup strategy, optimized
 
 | Tier | Subvolume | Local Frequency | Local Retention | External Frequency | External Retention |
 |------|-----------|-----------------|-----------------|-------------------|-------------------|
-| 1 | htpc-home | Daily (02:00) | 7 days | Weekly (Sunday 03:00) | 8 weekly + 12 monthly |
-| 1 | subvol3-opptak | Daily (02:00) | 7 days | Weekly (Sunday 03:00) | 8 weekly + 12 monthly |
-| 1 | subvol7-containers | Daily (02:00) | 7 days | Weekly (Sunday 03:00) | 4 weekly + 6 monthly |
-| 2 | subvol1-docs | Daily (02:00) | 7 days | Weekly (Sunday 03:00) | 8 weekly + 6 monthly |
+| 1 | htpc-home | Daily (02:00) | 7 days | Weekly (Saturday 04:00) | 8 weekly + 12 monthly |
+| 1 | subvol3-opptak | Daily (02:00) | 7 days | Weekly (Saturday 04:00) | 8 weekly + 12 monthly |
+| 1 | subvol7-containers | Daily (02:00) | 7 days | Weekly (Saturday 04:00) | 4 weekly + 6 monthly |
+| 2 | subvol1-docs | Daily (02:00) | 7 days | Weekly (Saturday 04:00) | 8 weekly + 6 monthly |
 | 2 | htpc-root | Monthly (1st, 04:00) | 1 month | Monthly | 6 monthly |
-| 3 | subvol2-pics | Weekly (Sunday 02:00) | 4 weeks | Monthly (1st Sunday) | 12 monthly |
+| 3 | subvol2-pics | Weekly (Saturday 02:00) | 4 weeks | Monthly (1st Saturday) | 12 monthly |
 
 ---
 
@@ -122,10 +122,10 @@ TIER2_DOCS_ENABLED=false
 
 ```bash
 # In backup_tier1_home() function (around line 280)
-# Remove the Sunday check:
+# Remove the Saturday check:
 
 # BEFORE:
-if [[ $(date +%u) -eq 7 ]]; then  # Sunday
+if [[ $(date +%u) -eq 6 ]]; then  # Saturday
     check_external_mounted || return 1
     ...
 fi
@@ -140,8 +140,14 @@ check_external_mounted || return 1
 **To decrease frequency (e.g., monthly instead of weekly):**
 
 ```bash
-# Change the day check:
+# Change the day check (e.g., for monthly instead of weekly):
 if [[ $(date +%d) -eq 01 ]]; then  # 1st of month
+    check_external_mounted || return 1
+    ...
+fi
+
+# Or change the day of week (current: Saturday = 6):
+if [[ $(date +%u) -eq 1 ]]; then  # Monday
     check_external_mounted || return 1
     ...
 fi
@@ -189,7 +195,7 @@ backup_tier2_projects() {
     fi
 
     # Send to external (weekly)
-    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 7 ]]; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
         check_external_mounted || return 1
 
         local parent=$(get_latest_snapshot "$TIER2_PROJECTS_EXTERNAL_DIR" "*-projects")
@@ -423,7 +429,7 @@ Description=Weekly BTRFS External Backup Timer
 Requires=btrfs-backup-weekly.service
 
 [Timer]
-OnCalendar=Sun 03:00
+OnCalendar=Sat 04:00
 Persistent=true
 
 [Install]

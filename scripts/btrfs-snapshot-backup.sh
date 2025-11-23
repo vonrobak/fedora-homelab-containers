@@ -21,7 +21,7 @@
 #
 # Schedule (via systemd timers):
 #   - Daily:   02:00 AM - Tier 1 local snapshots + cleanup
-#   - Weekly:  Sunday 03:00 AM - All tiers external backup
+#   - Weekly:  Saturday 04:00 AM - All tiers external backup
 #   - Monthly: 1st of month 04:00 AM - Monthly snapshots + external
 #
 ################################################################################
@@ -315,7 +315,7 @@ backup_tier1_home() {
     # Send to external (weekly)
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ "$TIER1_HOME_SCHEDULE" == "daily" ]]; then
         # Only send on the designated weekly backup day
-        if [[ $(date +%u) -eq 7 ]]; then  # Sunday
+        if [[ $(date +%u) -eq 6 ]]; then  # Saturday
             check_external_mounted || return 1
 
             local parent=$(get_latest_snapshot "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home")
@@ -349,7 +349,7 @@ backup_tier1_opptak() {
     fi
 
     # Send to external (weekly)
-    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 7 ]]; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
         check_external_mounted || return 1
 
         local parent=$(get_latest_snapshot "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak")
@@ -382,7 +382,7 @@ backup_tier1_containers() {
     fi
 
     # Send to external (weekly)
-    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 7 ]]; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
         check_external_mounted || return 1
 
         local parent=$(get_latest_snapshot "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers")
@@ -415,7 +415,7 @@ backup_tier2_docs() {
     fi
 
     # Send to external (weekly)
-    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 7 ]]; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
         check_external_mounted || return 1
 
         local parent=$(get_latest_snapshot "$TIER2_DOCS_EXTERNAL_DIR" "*-docs")
@@ -479,8 +479,8 @@ backup_tier3_pics() {
     fi
 
     # Weekly local snapshots
-    if [[ $(date +%u) -ne 7 ]]; then
-        log INFO "subvol2-pics local backup runs on Sundays only, skipping"
+    if [[ $(date +%u) -ne 6 ]]; then
+        log INFO "subvol2-pics local backup runs on Saturdays only, skipping"
         return 0
     fi
 
