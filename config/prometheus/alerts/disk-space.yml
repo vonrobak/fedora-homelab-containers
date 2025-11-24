@@ -4,7 +4,7 @@ groups:
     rules:
       # System SSD disk space alerts
       - alert: SystemDiskSpaceWarning
-        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 25
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.25
         for: 5m
         labels:
           severity: warning
@@ -14,7 +14,7 @@ groups:
           description: "System SSD {{ $labels.instance }} has {{ $value | humanizePercentage }} free space remaining (Warning threshold: <25%)"
 
       - alert: SystemDiskSpaceCritical
-        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 20
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.20
         for: 2m
         labels:
           severity: critical
@@ -25,7 +25,7 @@ groups:
 
       # BTRFS pool space alerts
       - alert: BtrfsPoolSpaceWarning
-        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/btrfs-pool"} / node_filesystem_size_bytes{mountpoint="/mnt/btrfs-pool"}) * 100 < 20
+        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/btrfs-pool"} / node_filesystem_size_bytes{mountpoint="/mnt/btrfs-pool"}) < 0.20
         for: 10m
         labels:
           severity: warning
@@ -36,7 +36,7 @@ groups:
 
       # Memory pressure alerts
       - alert: MemoryPressureHigh
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.90
         for: 5m
         labels:
           severity: warning
@@ -47,7 +47,7 @@ groups:
 
       # Swap usage alerts
       - alert: SwapUsageHigh
-        expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) * 100 > 80
+        expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) > 0.80
         for: 10m
         labels:
           severity: warning

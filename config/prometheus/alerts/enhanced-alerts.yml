@@ -1,0 +1,108 @@
+# Enhanced Discord Alerts - Prospect #4
+# Created: 2025-11-24
+# Focus: Proactive monitoring and automated reporting
+
+groups:
+  - name: container_health
+    interval: 30s
+    rules:
+      # Warning: Container memory pressure (using >90% of limit)
+      - alert: ContainerMemoryPressure
+        expr: |
+          (
+            container_memory_working_set_bytes{name!~"POD|pause"}
+            /
+            container_spec_memory_limit_bytes{name!~"POD|pause"}
+          ) > 0.90 and container_spec_memory_limit_bytes > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} memory pressure high"
+          description: "Container {{ $labels.name }} is using {{ $value | humanizePercentage }} of its memory limit. May be at risk of OOM kill."
+
+      # Warning: Container not running (expected to be up)
+      - alert: ContainerNotRunning
+        expr: |
+          (
+            time() - container_last_seen{name!~"POD|pause"} > 300
+          )
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} not running"
+          description: "Container {{ $labels.name }} has not been seen for more than 5 minutes. It may have crashed or been stopped."
+
+  - name: certificate_health
+    interval: 6h
+    rules:
+      # Monthly health check: Certificate renewal working (45-60 days before expiry)
+      - alert: CertificateRenewalHealthCheck
+        expr: (traefik_tls_certs_not_after - time()) / 86400 < 60 and (traefik_tls_certs_not_after - time()) / 86400 >= 45
+        for: 24h
+        labels:
+          severity: info
+          component: security
+        annotations:
+          summary: "Certificate renewal health check - 45-60 days to expiry"
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}. This is normal - auto-renewal should handle this. Alert serves as monthly health confirmation."
+
+  - name: network_security
+    interval: 5m
+    rules:
+      # CrowdSec ban spike (potential attack)
+      - alert: CrowdSecBanSpike
+        expr: |
+          (
+            rate(crowdsec_decisions_total[1h]) > 10
+          )
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "CrowdSec ban rate spike detected"
+          description: "CrowdSec is banning IPs at {{ $value | humanize }} per hour. This may indicate an active attack or scan."
+
+      # CrowdSec service health
+      - alert: CrowdSecDown
+        expr: up{job="crowdsec"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "CrowdSec security monitoring is down"
+          description: "CrowdSec has been unreachable for more than 5 minutes. IP reputation filtering is disabled!"
+
+  - name: system_performance
+    interval: 1m
+    rules:
+      # Info: Weekly resource digest trigger (fires once per week for reporting)
+      # This alert is designed to be caught by a future enhancement that generates digests
+      - alert: WeeklyResourceDigest
+        expr: |
+          (
+            day_of_week() == 0 and hour() == 9
+          )
+        for: 5m
+        labels:
+          severity: info
+          component: reporting
+        annotations:
+          summary: "Weekly resource utilization digest"
+          description: "Automated weekly report trigger. System stats: CPU avg {{ $value | humanize }}%"
+
+      # Warning: Sustained high system load
+      - alert: HighSystemLoad
+        expr: node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.5
+        for: 15m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High system load sustained for 15+ minutes"
+          description: "15-minute load average is {{ $value | humanize }}x CPU count. System may be overloaded."
