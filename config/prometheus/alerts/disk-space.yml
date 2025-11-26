@@ -58,11 +58,11 @@ groups:
 
       # Swap thrashing (performance degradation indicator)
       - alert: SwapThrashing
-        expr: rate(node_vmstat_pswpin[5m]) > 100 or rate(node_vmstat_pswpout[5m]) > 100
-        for: 5m
+        expr: rate(node_vmstat_pswpin[5m]) > 300 or rate(node_vmstat_pswpout[5m]) > 300
+        for: 10m
         labels:
           severity: warning
           component: system
         annotations:
           summary: "System is swap thrashing"
-          description: "High swap I/O detected ({{ $value }} pages/sec). Performance degradation likely."
+          description: "High swap I/O detected ({{ $value | humanize }} pages/sec). Performance degradation likely. Consider adding RAM or reducing container memory usage."

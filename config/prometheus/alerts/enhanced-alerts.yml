@@ -48,7 +48,7 @@ groups:
           component: security
         annotations:
           summary: "Certificate renewal health check - 45-60 days to expiry"
-          description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}. This is normal - auto-renewal should handle this. Alert serves as monthly health confirmation."
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value }} days (normal - auto-renewal between 45-60 days). Alert confirms renewal system is working."
 
   - name: network_security
     interval: 5m
