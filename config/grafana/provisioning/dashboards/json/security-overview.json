@@ -118,7 +118,7 @@
             ]
           },
           "unit": "short"
-          },
+        },
         "overrides": []
       },
       "gridPos": {
@@ -582,7 +582,11 @@
   "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["security", "crowdsec", "traefik"],
+  "tags": [
+    "security",
+    "crowdsec",
+    "traefik"
+  ],
   "templating": {
     "list": []
   },

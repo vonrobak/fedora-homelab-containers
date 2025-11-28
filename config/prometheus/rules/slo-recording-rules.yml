@@ -1,0 +1,388 @@
+# SLO Recording Rules
+# Created: 2025-11-27
+# Purpose: Pre-calculate Service Level Indicators for efficient querying
+
+groups:
+  # ===========================================================================
+  # AVAILABILITY SLIs (Success Rate)
+  # ===========================================================================
+  - name: sli_availability
+    interval: 30s
+    rules:
+      # Jellyfin - Total requests
+      - record: sli:jellyfin:requests:total
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[5m]))
+
+      # Jellyfin - Successful requests (2xx/3xx)
+      - record: sli:jellyfin:requests:success
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[5m]))
+
+      # Jellyfin - Availability (success rate)
+      - record: sli:jellyfin:availability:ratio
+        expr: |
+          sli:jellyfin:requests:success / sli:jellyfin:requests:total
+
+      # Immich - Total requests
+      - record: sli:immich:requests:total
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="immich@file"}[5m]))
+
+      # Immich - Successful requests
+      - record: sli:immich:requests:success
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[5m]))
+
+      # Immich - Availability
+      - record: sli:immich:availability:ratio
+        expr: |
+          sli:immich:requests:success / sli:immich:requests:total
+
+      # OCIS - Total requests
+      - record: sli:ocis:requests:total
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="ocis@file"}[5m]))
+
+      # OCIS - Successful requests
+      - record: sli:ocis:requests:success
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="ocis@file", code=~"2..|3.."}[5m]))
+
+      # OCIS - Availability
+      - record: sli:ocis:availability:ratio
+        expr: |
+          sli:ocis:requests:success / sli:ocis:requests:total
+
+      # Authelia - Total requests
+      - record: sli:authelia:requests:total
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[5m]))
+
+      # Authelia - Successful requests
+      - record: sli:authelia:requests:success
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[5m]))
+
+      # Authelia - Availability
+      - record: sli:authelia:availability:ratio
+        expr: |
+          sli:authelia:requests:success / sli:authelia:requests:total
+
+      # Traefik Gateway - Uptime
+      - record: sli:traefik:availability:ratio
+        expr: |
+          avg_over_time(up{job="traefik"}[5m])
+
+  # ===========================================================================
+  # LATENCY SLIs (Response Time)
+  # ===========================================================================
+  - name: sli_latency
+    interval: 30s
+    rules:
+      # Jellyfin - p95 latency (requests completing under 500ms)
+      - record: sli:jellyfin:latency:p95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="jellyfin@file"}[5m])) by (le)
+          )
+
+      # Jellyfin - Requests under 500ms target
+      - record: sli:jellyfin:latency:fast_ratio
+        expr: |
+          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="jellyfin@file", le="0.5"}[5m]))
+          /
+          sum(rate(traefik_service_request_duration_seconds_count{exported_service="jellyfin@file"}[5m]))
+
+      # Authelia - p95 latency
+      - record: sli:authelia:latency:p95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="authelia@file"}[5m])) by (le)
+          )
+
+      # Authelia - Requests under 200ms target
+      - record: sli:authelia:latency:fast_ratio
+        expr: |
+          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="authelia@file", le="0.2"}[5m]))
+          /
+          sum(rate(traefik_service_request_duration_seconds_count{exported_service="authelia@file"}[5m]))
+
+      # Traefik - p99 entrypoint latency (all traffic)
+      - record: sli:traefik:latency:p99
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(traefik_entrypoint_request_duration_seconds_bucket[5m])) by (le)
+          )
+
+      # Traefik - Requests under 100ms target
+      - record: sli:traefik:latency:fast_ratio
+        expr: |
+          sum(rate(traefik_entrypoint_request_duration_seconds_bucket{le="0.1"}[5m]))
+          /
+          sum(rate(traefik_entrypoint_request_duration_seconds_count[5m]))
+
+  # ===========================================================================
+  # UPLOAD/WRITE SUCCESS SLIs
+  # ===========================================================================
+  - name: sli_writes
+    interval: 30s
+    rules:
+      # Immich - Upload success (POST/PUT/PATCH operations)
+      - record: sli:immich:uploads:total
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[5m]))
+
+      - record: sli:immich:uploads:success
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH", code=~"2.."}[5m]))
+
+      - record: sli:immich:uploads:success_ratio
+        expr: |
+          sli:immich:uploads:success / sli:immich:uploads:total
+
+  # ===========================================================================
+  # SLO COMPLIANCE (30-day rolling windows)
+  # ===========================================================================
+  - name: slo_compliance
+    interval: 2m
+    rules:
+      # Jellyfin - 99.5% availability target over 30 days
+      - record: slo:jellyfin:availability:target
+        expr: 0.995
+
+      - record: slo:jellyfin:availability:actual
+        expr: |
+          (
+            sum(increase(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[30d]))
+            /
+            sum(increase(traefik_service_requests_total{exported_service="jellyfin@file"}[30d]))
+          )
+
+      - record: slo:jellyfin:availability:compliant
+        expr: |
+          slo:jellyfin:availability:actual >= slo:jellyfin:availability:target
+
+      # Immich - 99.9% availability target over 30 days
+      - record: slo:immich:availability:target
+        expr: 0.999
+
+      - record: slo:immich:availability:actual
+        expr: |
+          (
+            sum(increase(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[30d]))
+            /
+            sum(increase(traefik_service_requests_total{exported_service="immich@file"}[30d]))
+          )
+
+      - record: slo:immich:availability:compliant
+        expr: |
+          slo:immich:availability:actual >= slo:immich:availability:target
+
+      # OCIS - 99.5% availability target over 30 days
+      - record: slo:ocis:availability:target
+        expr: 0.995
+
+      - record: slo:ocis:availability:actual
+        expr: |
+          (
+            sum(increase(traefik_service_requests_total{exported_service="ocis@file", code=~"2..|3.."}[30d]))
+            /
+            sum(increase(traefik_service_requests_total{exported_service="ocis@file"}[30d]))
+          )
+
+      - record: slo:ocis:availability:compliant
+        expr: |
+          slo:ocis:availability:actual >= slo:ocis:availability:target
+
+      # Authelia - 99.9% availability target over 30 days
+      - record: slo:authelia:availability:target
+        expr: 0.999
+
+      - record: slo:authelia:availability:actual
+        expr: |
+          (
+            sum(increase(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[30d]))
+            /
+            sum(increase(traefik_service_requests_total{exported_service="authelia@file"}[30d]))
+          )
+
+      - record: slo:authelia:availability:compliant
+        expr: |
+          slo:authelia:availability:actual >= slo:authelia:availability:target
+
+      # Traefik - 99.95% availability target over 30 days
+      - record: slo:traefik:availability:target
+        expr: 0.9995
+
+      - record: slo:traefik:availability:actual
+        expr: |
+          avg_over_time(up{job="traefik"}[30d])
+
+      - record: slo:traefik:availability:compliant
+        expr: |
+          slo:traefik:availability:actual >= slo:traefik:availability:target
+
+  # ===========================================================================
+  # ERROR BUDGET TRACKING
+  # ===========================================================================
+  - name: error_budget
+    interval: 5m
+    rules:
+      # Jellyfin - Error budget (0.5% allowed failure = 216 min/month)
+      - record: error_budget:jellyfin:availability:budget_total
+        expr: 0.005
+
+      - record: error_budget:jellyfin:availability:budget_consumed
+        expr: |
+          1 - slo:jellyfin:availability:actual
+
+      - record: error_budget:jellyfin:availability:budget_remaining
+        expr: |
+          (error_budget:jellyfin:availability:budget_total - error_budget:jellyfin:availability:budget_consumed)
+          / error_budget:jellyfin:availability:budget_total
+
+      # Immich - Error budget (0.1% allowed failure = 43 min/month)
+      - record: error_budget:immich:availability:budget_total
+        expr: 0.001
+
+      - record: error_budget:immich:availability:budget_consumed
+        expr: |
+          1 - slo:immich:availability:actual
+
+      - record: error_budget:immich:availability:budget_remaining
+        expr: |
+          (error_budget:immich:availability:budget_total - error_budget:immich:availability:budget_consumed)
+          / error_budget:immich:availability:budget_total
+
+      # OCIS - Error budget (0.5% = 216 min/month)
+      - record: error_budget:ocis:availability:budget_total
+        expr: 0.005
+
+      - record: error_budget:ocis:availability:budget_consumed
+        expr: |
+          1 - slo:ocis:availability:actual
+
+      - record: error_budget:ocis:availability:budget_remaining
+        expr: |
+          (error_budget:ocis:availability:budget_total - error_budget:ocis:availability:budget_consumed)
+          / error_budget:ocis:availability:budget_total
+
+      # Authelia - Error budget (0.1% = 43 min/month)
+      - record: error_budget:authelia:availability:budget_total
+        expr: 0.001
+
+      - record: error_budget:authelia:availability:budget_consumed
+        expr: |
+          1 - slo:authelia:availability:actual
+
+      - record: error_budget:authelia:availability:budget_remaining
+        expr: |
+          (error_budget:authelia:availability:budget_total - error_budget:authelia:availability:budget_consumed)
+          / error_budget:authelia:availability:budget_total
+
+      # Traefik - Error budget (0.05% = 21 min/month)
+      - record: error_budget:traefik:availability:budget_total
+        expr: 0.0005
+
+      - record: error_budget:traefik:availability:budget_consumed
+        expr: |
+          1 - slo:traefik:availability:actual
+
+      - record: error_budget:traefik:availability:budget_remaining
+        expr: |
+          (error_budget:traefik:availability:budget_total - error_budget:traefik:availability:budget_consumed)
+          / error_budget:traefik:availability:budget_total
+
+  # ===========================================================================
+  # BURN RATE CALCULATIONS (for multi-window alerting)
+  # ===========================================================================
+  - name: burn_rate
+    interval: 1m
+    rules:
+      # Jellyfin - 1h burn rate (used for fast alerts)
+      - record: burn_rate:jellyfin:availability:1h
+        expr: |
+          (1 - avg_over_time(sli:jellyfin:availability:ratio[1h]))
+          / error_budget:jellyfin:availability:budget_total
+
+      # Jellyfin - 5m burn rate (used for fast alert confirmation)
+      - record: burn_rate:jellyfin:availability:5m
+        expr: |
+          (1 - avg_over_time(sli:jellyfin:availability:ratio[5m]))
+          / error_budget:jellyfin:availability:budget_total
+
+      # Jellyfin - 6h burn rate (used for slow alerts)
+      - record: burn_rate:jellyfin:availability:6h
+        expr: |
+          (1 - avg_over_time(sli:jellyfin:availability:ratio[6h]))
+          / error_budget:jellyfin:availability:budget_total
+
+      # Jellyfin - 30m burn rate (used for slow alert confirmation)
+      - record: burn_rate:jellyfin:availability:30m
+        expr: |
+          (1 - avg_over_time(sli:jellyfin:availability:ratio[30m]))
+          / error_budget:jellyfin:availability:budget_total
+
+      # Immich - Burn rates
+      - record: burn_rate:immich:availability:1h
+        expr: |
+          (1 - avg_over_time(sli:immich:availability:ratio[1h]))
+          / error_budget:immich:availability:budget_total
+
+      - record: burn_rate:immich:availability:5m
+        expr: |
+          (1 - avg_over_time(sli:immich:availability:ratio[5m]))
+          / error_budget:immich:availability:budget_total
+
+      - record: burn_rate:immich:availability:6h
+        expr: |
+          (1 - avg_over_time(sli:immich:availability:ratio[6h]))
+          / error_budget:immich:availability:budget_total
+
+      - record: burn_rate:immich:availability:30m
+        expr: |
+          (1 - avg_over_time(sli:immich:availability:ratio[30m]))
+          / error_budget:immich:availability:budget_total
+
+      # Authelia - Burn rates
+      - record: burn_rate:authelia:availability:1h
+        expr: |
+          (1 - avg_over_time(sli:authelia:availability:ratio[1h]))
+          / error_budget:authelia:availability:budget_total
+
+      - record: burn_rate:authelia:availability:5m
+        expr: |
+          (1 - avg_over_time(sli:authelia:availability:ratio[5m]))
+          / error_budget:authelia:availability:budget_total
+
+      - record: burn_rate:authelia:availability:6h
+        expr: |
+          (1 - avg_over_time(sli:authelia:availability:ratio[6h]))
+          / error_budget:authelia:availability:budget_total
+
+      - record: burn_rate:authelia:availability:30m
+        expr: |
+          (1 - avg_over_time(sli:authelia:availability:ratio[30m]))
+          / error_budget:authelia:availability:budget_total
+
+      # Traefik - Burn rates
+      - record: burn_rate:traefik:availability:1h
+        expr: |
+          (1 - avg_over_time(sli:traefik:availability:ratio[1h]))
+          / error_budget:traefik:availability:budget_total
+
+      - record: burn_rate:traefik:availability:5m
+        expr: |
+          (1 - avg_over_time(sli:traefik:availability:ratio[5m]))
+          / error_budget:traefik:availability:budget_total
+
+      - record: burn_rate:traefik:availability:6h
+        expr: |
+          (1 - avg_over_time(sli:traefik:availability:ratio[6h]))
+          / error_budget:traefik:availability:budget_total
+
+      - record: burn_rate:traefik:availability:30m
+        expr: |
+          (1 - avg_over_time(sli:traefik:availability:ratio[30m]))
+          / error_budget:traefik:availability:budget_total

@@ -758,7 +758,11 @@
   "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["services", "health", "monitoring"],
+  "tags": [
+    "services",
+    "health",
+    "monitoring"
+  ],
   "templating": {
     "list": []
   },

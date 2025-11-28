@@ -607,7 +607,10 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["homelab", "overview"],
+  "tags": [
+    "homelab",
+    "overview"
+  ],
   "templating": {
     "list": []
   },

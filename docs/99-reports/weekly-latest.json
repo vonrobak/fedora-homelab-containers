@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-11-24T21:58:50+01:00",
+  "week_ending": "2025-11-24",
+  "health": 80,
+  "storage": {
+    "root_percent": 77,
+    "root_used_gb": 89,
+    "root_avail_gb": 27,
+    "btrfs_percent": 66,
+    "btrfs_used_tb": 9.00
+  },
+  "resources": {
+    "memory_total_mb": 31445,
+    "memory_used_mb": 13073,
+    "memory_percent": 41,
+    "cpu_avg_percent": 0.0
+  },
+  "services": {
+    "containers_total": 20,
+    "containers_healthy": 20,
+    "critical_services_total": 4,
+    "critical_services_running": 4
+  },
+  "security": {
+    "crowdsec_active_bans": 0
+  },
+  "trends": {
+    "disk_delta_pct": 0,
+    "memory_delta_pct": 0,
+    "health_delta": 0,
+    "days_until_80pct_disk": 999
+  }
+}

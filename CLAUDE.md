@@ -294,6 +294,39 @@ systemctl --user status authelia.service redis-authelia.service
 systemctl --user restart authelia.service
 ```
 
+### SLO Monitoring and Reports
+
+```bash
+# View SLO dashboard
+# Navigate to https://grafana.patriark.org/d/slo-dashboard
+
+# Query SLO metrics in Prometheus
+curl 'http://localhost:9090/api/v1/query?query=slo:jellyfin:availability:actual'
+curl 'http://localhost:9090/api/v1/query?query=error_budget:jellyfin:availability:budget_remaining'
+
+# Check burn rate alerts
+curl http://localhost:9093/api/v2/alerts | jq '.[] | select(.labels.component=="slo")'
+
+# Run monthly SLO report manually
+~/containers/scripts/monthly-slo-report.sh
+
+# Check monthly report schedule
+systemctl --user list-timers | grep monthly-slo-report
+systemctl --user status monthly-slo-report.timer
+
+# View report execution history
+journalctl --user -u monthly-slo-report.service
+
+# Available SLO targets (9 SLOs across 5 services):
+# - Jellyfin: 99.5% availability, 95% latency <500ms
+# - Immich: 99.9% availability, 99.5% upload success
+# - Authelia: 99.9% availability, 95% latency <200ms
+# - Traefik: 99.95% availability, 99% latency <100ms
+# - OCIS: 99.5% availability
+```
+
+**Documentation:** `docs/40-monitoring-and-documentation/guides/slo-framework.md`
+
 ## Troubleshooting Workflow
 
 ### Service Not Accessible Externally

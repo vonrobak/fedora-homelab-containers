@@ -1,0 +1,268 @@
+# SLO Burn-Rate Alerts
+# Created: 2025-11-27
+# Purpose: Multi-window, multi-burn-rate alerting for SLO violations
+
+groups:
+  # ===========================================================================
+  # JELLYFIN SLO ALERTS
+  # ===========================================================================
+  - name: slo_jellyfin
+    interval: 1m
+    rules:
+      # CRITICAL: Fast burn (exhausts 2% budget in 1 hour)
+      - alert: SLOBurnRateCritical_Jellyfin
+        expr: |
+          burn_rate:jellyfin:availability:1h > 14.4
+          and
+          burn_rate:jellyfin:availability:5m > 14.4
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: jellyfin
+          slo: availability
+        annotations:
+          summary: "Jellyfin SLO burn rate critically high"
+          description: |
+            Jellyfin availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            Current availability: {{ query "slo:jellyfin:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.5%
+            Error budget remaining: {{ query "error_budget:jellyfin:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # WARNING: Slow burn (exhausts 5% budget in 6 hours)
+      - alert: SLOBurnRateHigh_Jellyfin
+        expr: |
+          burn_rate:jellyfin:availability:6h > 6
+          and
+          burn_rate:jellyfin:availability:30m > 6
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: jellyfin
+          slo: availability
+        annotations:
+          summary: "Jellyfin SLO burn rate elevated"
+          description: |
+            Jellyfin availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            Current availability: {{ query "slo:jellyfin:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.5%
+            Error budget remaining: {{ query "error_budget:jellyfin:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # INFO: Error budget low
+      - alert: SLOErrorBudgetLow_Jellyfin
+        expr: |
+          error_budget:jellyfin:availability:budget_remaining < 0.25
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+          service: jellyfin
+          slo: availability
+        annotations:
+          summary: "Jellyfin error budget running low"
+          description: |
+            Jellyfin has consumed {{ query "100 - (error_budget:jellyfin:availability:budget_remaining * 100)" | first | value | humanize }}% of its monthly error budget.
+            Only {{ query "error_budget:jellyfin:availability:budget_remaining * 100" | first | value | humanize }}% remains.
+
+            Consider freezing non-critical changes to preserve reliability.
+
+  # ===========================================================================
+  # IMMICH SLO ALERTS
+  # ===========================================================================
+  - name: slo_immich
+    interval: 1m
+    rules:
+      # CRITICAL: Fast burn
+      - alert: SLOBurnRateCritical_Immich
+        expr: |
+          burn_rate:immich:availability:1h > 14.4
+          and
+          burn_rate:immich:availability:5m > 14.4
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: immich
+          slo: availability
+        annotations:
+          summary: "Immich SLO burn rate critically high"
+          description: |
+            Immich availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            Current availability: {{ query "slo:immich:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.9%
+            Error budget remaining: {{ query "error_budget:immich:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # WARNING: Slow burn
+      - alert: SLOBurnRateHigh_Immich
+        expr: |
+          burn_rate:immich:availability:6h > 6
+          and
+          burn_rate:immich:availability:30m > 6
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: immich
+          slo: availability
+        annotations:
+          summary: "Immich SLO burn rate elevated"
+          description: |
+            Immich availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            Current availability: {{ query "slo:immich:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.9%
+            Error budget remaining: {{ query "error_budget:immich:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # INFO: Error budget low
+      - alert: SLOErrorBudgetLow_Immich
+        expr: |
+          error_budget:immich:availability:budget_remaining < 0.25
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+          service: immich
+          slo: availability
+        annotations:
+          summary: "Immich error budget running low"
+          description: |
+            Immich has consumed {{ query "100 - (error_budget:immich:availability:budget_remaining * 100)" | first | value | humanize }}% of its monthly error budget.
+            Only {{ query "error_budget:immich:availability:budget_remaining * 100" | first | value | humanize }}% remains.
+
+  # ===========================================================================
+  # AUTHELIA SLO ALERTS
+  # ===========================================================================
+  - name: slo_authelia
+    interval: 1m
+    rules:
+      # CRITICAL: Fast burn
+      - alert: SLOBurnRateCritical_Authelia
+        expr: |
+          burn_rate:authelia:availability:1h > 14.4
+          and
+          burn_rate:authelia:availability:5m > 14.4
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: authelia
+          slo: availability
+        annotations:
+          summary: "Authelia SLO burn rate critically high"
+          description: |
+            Authelia availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            ⚠️ Authelia failures block access to ALL protected services!
+
+            Current availability: {{ query "slo:authelia:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.9%
+            Error budget remaining: {{ query "error_budget:authelia:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # WARNING: Slow burn
+      - alert: SLOBurnRateHigh_Authelia
+        expr: |
+          burn_rate:authelia:availability:6h > 6
+          and
+          burn_rate:authelia:availability:30m > 6
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: authelia
+          slo: availability
+        annotations:
+          summary: "Authelia SLO burn rate elevated"
+          description: |
+            Authelia availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            Current availability: {{ query "slo:authelia:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.9%
+            Error budget remaining: {{ query "error_budget:authelia:availability:budget_remaining * 100" | first | value | humanize }}%
+
+  # ===========================================================================
+  # TRAEFIK SLO ALERTS
+  # ===========================================================================
+  - name: slo_traefik
+    interval: 1m
+    rules:
+      # CRITICAL: Fast burn
+      - alert: SLOBurnRateCritical_Traefik
+        expr: |
+          burn_rate:traefik:availability:1h > 14.4
+          and
+          burn_rate:traefik:availability:5m > 14.4
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: traefik
+          slo: availability
+        annotations:
+          summary: "Traefik SLO burn rate critically high"
+          description: |
+            Traefik availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            ⚠️ Traefik is the gateway - failures affect ALL services!
+
+            Current availability: {{ query "slo:traefik:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.95%
+            Error budget remaining: {{ query "error_budget:traefik:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # WARNING: Slow burn
+      - alert: SLOBurnRateHigh_Traefik
+        expr: |
+          burn_rate:traefik:availability:6h > 6
+          and
+          burn_rate:traefik:availability:30m > 6
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: traefik
+          slo: availability
+        annotations:
+          summary: "Traefik SLO burn rate elevated"
+          description: |
+            Traefik availability SLO is burning error budget at {{ $value | humanize }}x the normal rate.
+            Error budget consumption is critically high!
+
+            Current availability: {{ query "slo:traefik:availability:actual * 100" | first | value | humanize }}%
+            Target: 99.95%
+            Error budget remaining: {{ query "error_budget:traefik:availability:budget_remaining * 100" | first | value | humanize }}%
+
+  # ===========================================================================
+  # MONTHLY SLO SUMMARY (triggers report generation)
+  # ===========================================================================
+  - name: slo_reporting
+    interval: 6h
+    rules:
+      # Monthly report trigger (first day of month at 9 AM)
+      - alert: SLOMonthlyReport
+        expr: |
+          day_of_month() == 1 and hour() == 9
+        for: 5m
+        labels:
+          severity: info
+          component: slo
+          type: report
+        annotations:
+          summary: "Monthly SLO Report Generated"
+          description: |
+            Automated monthly SLO compliance report
+
+            Services meeting SLO targets:
+            - Jellyfin: {{ if query "slo:jellyfin:availability:compliant" | first | value | eq 1.0 }}✅{{ else }}❌{{ end }}
+            - Immich: {{ if query "slo:immich:availability:compliant" | first | value | eq 1.0 }}✅{{ else }}❌{{ end }}
+            - Authelia: {{ if query "slo:authelia:availability:compliant" | first | value | eq 1.0 }}✅{{ else }}❌{{ end }}
+            - Traefik: {{ if query "slo:traefik:availability:compliant" | first | value | eq 1.0 }}✅{{ else }}❌{{ end }}
