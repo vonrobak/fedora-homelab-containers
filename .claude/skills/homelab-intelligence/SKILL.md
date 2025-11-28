@@ -250,13 +250,55 @@ If health score >90 and no issues:
 
 ---
 
+## Context Framework Integration
+
+When troubleshooting, leverage the Context Framework for historical awareness:
+
+### Query Past Issues
+```bash
+cd ~/containers/.claude/context/scripts
+
+# Check if this problem has occurred before
+./query-issues.sh --category disk-space      # Disk issues
+./query-issues.sh --category deployment      # Deployment issues
+./query-issues.sh --status resolved          # See what worked before
+```
+
+### Query Deployment History
+```bash
+# How was a service originally deployed?
+./query-deployments.sh --service jellyfin
+./query-deployments.sh --pattern monitoring-stack
+```
+
+### Auto-Remediation
+For common issues, use the remediation playbooks:
+
+```bash
+cd ~/containers/.claude/remediation/scripts
+
+# Disk cleanup (safe, no confirmation needed)
+./apply-remediation.sh --playbook disk-cleanup --dry-run  # Preview first
+./apply-remediation.sh --playbook disk-cleanup            # Execute
+
+# Service restart (with logging)
+./apply-remediation.sh --playbook service-restart --service prometheus
+```
+
+**Available playbooks:** disk-cleanup, service-restart, drift-reconciliation, resource-pressure
+
+See `~/.claude/QUICK-REFERENCE.md` for full command reference.
+
+---
+
 ## Integration with Other Skills
 
 This skill works well with:
 
-- **session-start-hook**: Run intelligence check at start of sessions for context
-- **Documentation skills**: Reference findings when updating guides
-- **Deployment skills**: Verify system health before/after deployments
+- **Context Framework**: Query issue history and deployment patterns
+- **Auto-Remediation**: Execute playbooks for common fixes
+- **homelab-deployment**: Verify system health before/after deployments
+- **systematic-debugging**: Use when issues require deeper investigation
 
 ---
 
@@ -279,7 +321,9 @@ Keep responses concise but actionable. Always provide specific commands or file 
 ## Notes
 
 - **v2.0 improvements:** Always generates JSON output, improved monitoring health checks via `podman exec`, better backup detection (3 locations), smarter swap threshold
+- **v2.1 (2025-11-28):** Added Context Framework and Auto-Remediation integration
 - JSON reports automatically saved to `~/containers/docs/99-reports/intel-<timestamp>.json`
 - Script is safe to run frequently (no side effects, read-only operations)
 - Health scoring algorithm: Start at 100, -20 for critical issues, -5 for warnings
 - Exit codes: 0=healthy, 1=warning, 2=critical (useful for automation)
+- Full script reference: `docs/20-operations/guides/automation-reference.md`

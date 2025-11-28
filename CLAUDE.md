@@ -181,6 +181,8 @@ podman healthcheck run jellyfin     # Check container health
 
 ### Diagnostics and Auditing
 
+**Full reference:** `docs/20-operations/guides/automation-reference.md` - Complete catalog of all scripts, schedules, and skill integrations.
+
 ```bash
 # Comprehensive system diagnostics (generates timestamped report in docs/99-reports/)
 ./scripts/homelab-diagnose.sh

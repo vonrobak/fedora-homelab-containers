@@ -238,14 +238,20 @@ When creating or adapting skills for this homelab:
 
 Potential skills to develop for this homelab:
 
-- **homelab-deployment** - Automated service deployment workflows
+- ~~**homelab-deployment** - Automated service deployment workflows~~ **IMPLEMENTED**
 - **backup-orchestration** - Backup verification and restore procedures
 - **security-audit** - Security configuration validation
 - **performance-optimization** - Resource usage analysis and tuning
 - **disaster-recovery** - Runbook generation and testing
 
+## Script Reference
+
+For a complete catalog of all automation scripts (including skill scripts), schedules, and integration points, see:
+
+**`docs/20-operations/guides/automation-reference.md`**
+
 ---
 
-**Last Updated:** 2025-11-13
+**Last Updated:** 2025-11-28
 **Organization:** Homelab infrastructure management
 **Integration:** Fedora 42, Podman rootless, systemd quadlets
