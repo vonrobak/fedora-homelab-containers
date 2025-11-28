@@ -62,6 +62,8 @@ These scripts run automatically via systemd timers. **Do not run manually unless
 | `btrfs-snapshot-backup.sh` | `btrfs-backup-daily.timer` | Daily 02:00 | Create local BTRFS snapshots |
 | `btrfs-snapshot-backup.sh` | `btrfs-backup-weekly.timer` | Weekly Sun 03:00 | Sync to external drive |
 | `maintenance-cleanup.sh` | `maintenance-cleanup.timer` | Weekly Sun 03:00 | Prune containers, rotate logs |
+| `daily-drift-check.sh` | `daily-drift-check.timer` | Daily 06:00 | Detect config drift → Discord alert |
+| `daily-resource-forecast.sh` | `daily-resource-forecast.timer` | Daily 06:05 | Predict exhaustion → Discord alert |
 | `weekly-intelligence-report.sh` | `weekly-intelligence.timer` | Weekly Sun 09:00 | Generate health report → Discord |
 | `monthly-slo-report.sh` | `monthly-slo-report.timer` | Monthly 1st 09:00 | SLO compliance report → Discord |
 | `rotate-journal-export.sh` | `journal-logrotate.timer` | Hourly | Keep journal logs under control |
@@ -234,13 +236,15 @@ See `scripts/archived/README.md` for restoration instructions if needed.
 All timers are in `~/.config/systemd/user/`:
 
 ```
-cloudflare-ddns.timer       → Every 30 min, 5 min after boot
-btrfs-backup-daily.timer    → Daily at 02:00
-btrfs-backup-weekly.timer   → Sunday at 03:00 (external sync)
-maintenance-cleanup.timer   → Sunday at 03:00 (±30 min random)
-weekly-intelligence.timer   → Sunday at 09:00 (±15 min random)
-monthly-slo-report.timer    → 1st of month at 09:00 (±15 min random)
-journal-logrotate.timer     → Hourly
+cloudflare-ddns.timer         → Every 30 min, 5 min after boot
+btrfs-backup-daily.timer      → Daily at 02:00
+btrfs-backup-weekly.timer     → Sunday at 03:00 (external sync)
+maintenance-cleanup.timer     → Sunday at 03:00 (±30 min random)
+daily-drift-check.timer       → Daily at 06:00 (±10 min random) - NEW
+daily-resource-forecast.timer → Daily at 06:05 (±10 min random) - NEW
+weekly-intelligence.timer     → Sunday at 09:00 (±15 min random)
+monthly-slo-report.timer      → 1st of month at 09:00 (±15 min random)
+journal-logrotate.timer       → Hourly
 ```
 
 ### Adding New Scheduled Automation
@@ -319,14 +323,16 @@ Intelligence-related scripts could potentially be consolidated under the homelab
 
 ## Automation Candidates (Trajectory 2)
 
-Scripts that could benefit from scheduled automation:
+**Implemented (2025-11-28):**
+- ~~`check-drift.sh`~~ → `daily-drift-check.timer` (Daily 06:00)
+- ~~`predict-resource-exhaustion.sh`~~ → `daily-resource-forecast.timer` (Daily 06:05)
 
-| Script | Suggested Schedule | Rationale |
-|--------|-------------------|-----------|
-| `check-drift.sh` | Daily | Catch drift before it causes issues |
-| `security-audit.sh` | Weekly | Regular security posture check |
-| `precompute-queries.sh` | Every 5 min | Keep query cache fresh |
-| `predict-resource-exhaustion.sh` | Daily | Proactive capacity planning |
+**Remaining candidates:**
+
+| Script | Suggested Schedule | Rationale | Blocker |
+|--------|-------------------|-----------|---------|
+| `security-audit.sh` | Weekly | Regular security posture check | Uses `sudo firewall-cmd` |
+| `precompute-queries.sh` | Every 5 min | Keep query cache fresh | Low value vs complexity |
 
 ---
 
