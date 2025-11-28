@@ -95,6 +95,16 @@ http:
           ipStrategy:
             depth: 1
 
+    # OCIS file storage (higher capacity for OIDC/JWKS traffic)
+    rate-limit-ocis:
+      rateLimit:
+        average: 200      # Increased to handle OIDC token refresh bursts
+        burst: 100        # Handle simultaneous authentication requests
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
     # ═══════════════════════════════════════════════════════════
     # AUTHENTICATION
     # ═══════════════════════════════════════════════════════════

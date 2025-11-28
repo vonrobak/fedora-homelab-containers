@@ -35,6 +35,8 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit@file
+        - circuit-breaker@file         # Prevent cascade failures
+        - retry@file                   # Retry transient endpoint errors
       tls:
         certResolver: letsencrypt
 
@@ -88,6 +90,8 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit-public@file
+        - circuit-breaker@file         # Prevent cascade failures
+        - retry@file                   # Retry transient connection errors
         - compression@file
         - security-headers@file
       tls:

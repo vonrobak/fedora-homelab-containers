@@ -19,10 +19,9 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[5m]))
 
-      # Jellyfin - Availability (success rate)
+      # Jellyfin - Availability (use 30d SLO for current display)
       - record: sli:jellyfin:availability:ratio
-        expr: |
-          sli:jellyfin:requests:success / sli:jellyfin:requests:total
+        expr: slo:jellyfin:availability:actual
 
       # Immich - Total requests
       - record: sli:immich:requests:total
@@ -34,10 +33,9 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[5m]))
 
-      # Immich - Availability
+      # Immich - Availability (use 30d SLO for current display)
       - record: sli:immich:availability:ratio
-        expr: |
-          sli:immich:requests:success / sli:immich:requests:total
+        expr: slo:immich:availability:actual
 
       # OCIS - Total requests
       - record: sli:ocis:requests:total
@@ -49,10 +47,9 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="ocis@file", code=~"2..|3.."}[5m]))
 
-      # OCIS - Availability
+      # OCIS - Availability (use 30d SLO for current display)
       - record: sli:ocis:availability:ratio
-        expr: |
-          sli:ocis:requests:success / sli:ocis:requests:total
+        expr: slo:ocis:availability:actual
 
       # Authelia - Total requests
       - record: sli:authelia:requests:total
@@ -64,10 +61,9 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[5m]))
 
-      # Authelia - Availability
+      # Authelia - Availability (use 30d SLO for current display)
       - record: sli:authelia:availability:ratio
-        expr: |
-          sli:authelia:requests:success / sli:authelia:requests:total
+        expr: slo:authelia:availability:actual
 
       # Traefik Gateway - Uptime
       - record: sli:traefik:availability:ratio
@@ -235,12 +231,14 @@ groups:
 
       - record: error_budget:jellyfin:availability:budget_consumed
         expr: |
-          1 - slo:jellyfin:availability:actual
+          clamp_min(
+            (1 - slo:jellyfin:availability:actual) / (1 - slo:jellyfin:availability:target),
+            0
+          )
 
       - record: error_budget:jellyfin:availability:budget_remaining
         expr: |
-          (error_budget:jellyfin:availability:budget_total - error_budget:jellyfin:availability:budget_consumed)
-          / error_budget:jellyfin:availability:budget_total
+          clamp_max(1 - error_budget:jellyfin:availability:budget_consumed, 1)
 
       # Immich - Error budget (0.1% allowed failure = 43 min/month)
       - record: error_budget:immich:availability:budget_total
@@ -248,12 +246,14 @@ groups:
 
       - record: error_budget:immich:availability:budget_consumed
         expr: |
-          1 - slo:immich:availability:actual
+          clamp_min(
+            (1 - slo:immich:availability:actual) / (1 - slo:immich:availability:target),
+            0
+          )
 
       - record: error_budget:immich:availability:budget_remaining
         expr: |
-          (error_budget:immich:availability:budget_total - error_budget:immich:availability:budget_consumed)
-          / error_budget:immich:availability:budget_total
+          clamp_max(1 - error_budget:immich:availability:budget_consumed, 1)
 
       # OCIS - Error budget (0.5% = 216 min/month)
       - record: error_budget:ocis:availability:budget_total
@@ -261,12 +261,14 @@ groups:
 
       - record: error_budget:ocis:availability:budget_consumed
         expr: |
-          1 - slo:ocis:availability:actual
+          clamp_min(
+            (1 - slo:ocis:availability:actual) / (1 - slo:ocis:availability:target),
+            0
+          )
 
       - record: error_budget:ocis:availability:budget_remaining
         expr: |
-          (error_budget:ocis:availability:budget_total - error_budget:ocis:availability:budget_consumed)
-          / error_budget:ocis:availability:budget_total
+          clamp_max(1 - error_budget:ocis:availability:budget_consumed, 1)
 
       # Authelia - Error budget (0.1% = 43 min/month)
       - record: error_budget:authelia:availability:budget_total
@@ -274,12 +276,14 @@ groups:
 
       - record: error_budget:authelia:availability:budget_consumed
         expr: |
-          1 - slo:authelia:availability:actual
+          clamp_min(
+            (1 - slo:authelia:availability:actual) / (1 - slo:authelia:availability:target),
+            0
+          )
 
       - record: error_budget:authelia:availability:budget_remaining
         expr: |
-          (error_budget:authelia:availability:budget_total - error_budget:authelia:availability:budget_consumed)
-          / error_budget:authelia:availability:budget_total
+          clamp_max(1 - error_budget:authelia:availability:budget_consumed, 1)
 
       # Traefik - Error budget (0.05% = 21 min/month)
       - record: error_budget:traefik:availability:budget_total
@@ -287,12 +291,14 @@ groups:
 
       - record: error_budget:traefik:availability:budget_consumed
         expr: |
-          1 - slo:traefik:availability:actual
+          clamp_min(
+            (1 - slo:traefik:availability:actual) / (1 - slo:traefik:availability:target),
+            0
+          )
 
       - record: error_budget:traefik:availability:budget_remaining
         expr: |
-          (error_budget:traefik:availability:budget_total - error_budget:traefik:availability:budget_consumed)
-          / error_budget:traefik:availability:budget_total
+          clamp_max(1 - error_budget:traefik:availability:budget_consumed, 1)
 
   # ===========================================================================
   # BURN RATE CALCULATIONS (for multi-window alerting)
