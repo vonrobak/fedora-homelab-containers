@@ -231,7 +231,8 @@ check_service_drift() {
 
     # Check 5: Traefik labels
     local quadlet_traefik_labels=$(grep "^Label=" "$quadlet_file" | grep -c "traefik" || echo "0")
-    local running_traefik_labels=$(podman inspect "$container_name" --format '{{range $k, $v := .Config.Labels}}{{if contains $k "traefik"}}{{$k}} {{end}}{{end}}' 2>/dev/null | wc -w)
+    # Note: Podman's Go template doesn't support 'contains', so use jq instead
+    local running_traefik_labels=$(podman inspect "$container_name" --format '{{json .Config.Labels}}' 2>/dev/null | jq -r 'to_entries | map(select(.key | startswith("traefik"))) | length' 2>/dev/null || echo "0")
 
     # Ensure both are numbers
     if [[ ! "$quadlet_traefik_labels" =~ ^[0-9]+$ ]]; then
