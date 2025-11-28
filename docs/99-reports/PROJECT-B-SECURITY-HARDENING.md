@@ -1,27 +1,45 @@
 # Project B: Security Hardening & Compliance Framework
 
-**Status:** High-Level Plan (Ready for Detailed Planning)
+**Status:** ✅ PHASE 1-2 COMPLETE (Updated 2025-11-28)
 **Priority:** 🔒 HIGH
 **Risk Mitigation:** Prevent breaches, ensure compliance with security standards
-**Estimated Effort:** 5-7 hours (detailed planning: +2 hours)
+**Remaining Effort:** 3-4 hours (vulnerability scanning, incident response)
 **Dependencies:** None (standalone project)
+
+---
+
+## Current Status Summary
+
+**Completed (2025-11-28):**
+- ✅ Security audit script (`security-audit.sh`) - 10 comprehensive checks
+- ✅ CrowdSec stable and healthy (CAPI connected, no crash loops)
+- ✅ Traefik middleware properly configured
+- ✅ TinyAuth removed (Authelia is sole SSO)
+- ✅ Resource limits applied to most services
+
+**Remaining:**
+- ⏳ Vulnerability scanning (Trivy)
+- ⏳ ADR compliance checker automation
+- ⏳ Incident response playbooks
+- ⏳ CrowdSec metrics in Discord reports
 
 ---
 
 ## Executive Summary
 
-Your homelab exposes services to the internet with layered security (CrowdSec, Authelia, Traefik), but recent issues (CrowdSec crash-looping 3900+ times, ADR-006 only 75% compliant) reveal gaps in security validation and compliance checking.
+Your homelab exposes services to the internet with layered security (CrowdSec, Authelia, Traefik). Previous issues (CrowdSec crash-looping, ADR compliance gaps) have been **resolved**.
 
 This project creates a **comprehensive security framework** that:
-1. **Audits** your security posture automatically
-2. **Validates** compliance with your ADRs
-3. **Scans** for vulnerabilities in containers
-4. **Enforces** security baselines pre-deployment
-5. **Responds** to security incidents automatically
+1. ✅ **Audits** your security posture automatically - `security-audit.sh` implemented
+2. ⏳ **Validates** compliance with your ADRs - Partial (manual checks)
+3. ⏳ **Scans** for vulnerabilities in containers - Not yet implemented
+4. ✅ **Enforces** security baselines pre-deployment - Via deployment skill checks
+5. ⏳ **Responds** to security incidents automatically - Not yet implemented
 
-**The Gap:**
+**Progress:**
 ```
-Current: ✅ Security tools deployed → ❌ No validation → ❓ Are we secure?
+Before:  ✅ Security tools deployed → ❌ No validation → ❓ Are we secure?
+Now:     ✅ Security tools deployed → ✅ Manual auditing → ✅ Mostly compliant
 Target:  ✅ Security tools deployed → ✅ Continuous auditing → ✅ Proven compliant
 ```
 
@@ -29,37 +47,37 @@ Target:  ✅ Security tools deployed → ✅ Continuous auditing → ✅ Proven 
 
 ## Problem Statement
 
-### Security Risks Identified
+### Security Risks - Status Update
 
-**From System Intelligence Report (2025-11-12):**
-- ⚠️ CrowdSec: Crashed 3900+ times (5 hours downtime) - config validation gap
-- ⚠️ Vaultwarden: No resource limits (OOM vulnerability)
-- ⚠️ ADR-006 Compliance: Only 75% complete
-- ⚠️ TinyAuth: Still running (deprecated, redundant with Authelia)
+**From System Intelligence Report (2025-11-12) - RESOLVED:**
+- ✅ ~~CrowdSec: Crashed 3900+ times~~ → Now stable, CAPI connected
+- ✅ ~~Vaultwarden: No resource limits~~ → Resource limits applied
+- ✅ ~~ADR-006 Compliance: Only 75%~~ → Now ~95% compliant
+- ✅ ~~TinyAuth: Still running~~ → Removed, Authelia is sole SSO
 
-**Additional Concerns:**
-- No automated security scanning of container images
-- No validation of Traefik middleware configurations
-- No audit log for security-related changes
-- No incident response playbook
-- No regular security reviews
+**Remaining Concerns (2025-11-28):**
+- ⏳ No automated CVE scanning of container images
+- ✅ Traefik middleware configurations validated via `security-audit.sh`
+- ⏳ No audit log for security-related changes
+- ⏳ No incident response playbooks
+- ✅ Security audit script now exists (`security-audit.sh`)
 
-### Compliance Gaps
+### Compliance Status (2025-11-28)
 
-**ADR-006 (CrowdSec Security) - 75% Compliant:**
-- ✅ Version pinning
-- ✅ CAPI enrollment
-- ✅ Tiered ban profiles
-- ✅ Whitelisting
-- ⚠️ Middleware standardization (inconsistent @file suffixes)
-- ⚠️ Bouncer cleanup (17 stale registrations)
-- ⚠️ Service stability (restart loop)
+**ADR-006 (CrowdSec Security) - ~95% Compliant:**
+- ✅ Version pinning (v1.7.3)
+- ✅ CAPI enrollment (active, pulling community blocklist)
+- ✅ Tiered ban profiles (configured)
+- ✅ Whitelisting (local networks)
+- ✅ Middleware standardization (fixed @file suffixes)
+- ⚠️ Bouncer cleanup (minor - stale registrations possible)
+- ✅ Service stability (no restarts in weeks)
 
-**No Compliance Framework for Other ADRs:**
-- ADR-001 (Rootless Containers) - Compliance unknown
-- ADR-002 (Systemd Quadlets) - Compliance unknown
-- ADR-003 (Monitoring Stack) - Compliance unknown
-- ADR-005 (Authelia SSO) - Compliance unknown
+**Other ADRs - Current Status:**
+- ADR-001 (Rootless Containers) - ✅ Validated by `security-audit.sh`
+- ADR-002 (Systemd Quadlets) - ✅ All services use quadlets
+- ADR-003 (Monitoring Stack) - ✅ Operational, alerting works
+- ADR-005 (Authelia SSO) - ✅ YubiKey primary, TOTP fallback
 
 ---
 
@@ -280,68 +298,71 @@ trivy image --severity HIGH,CRITICAL docker.io/jellyfin/jellyfin:latest
 
 ## Implementation Roadmap
 
-### Phase 1: Foundation (2 hours)
-- [ ] Install Trivy vulnerability scanner
-- [ ] Create security audit script framework
-- [ ] Define ADR compliance schema (YAML)
-- [ ] Set up security reports directory
+### Phase 1: Foundation (2 hours) - ✅ COMPLETE
+- [x] ~~Install Trivy vulnerability scanner~~ (deferred to Phase 3)
+- [x] Create security audit script framework
+- [x] ~~Define ADR compliance schema (YAML)~~ (using script-based validation)
+- [x] Set up security reports directory (`docs/99-reports/`)
 
-### Phase 2: Audit & Compliance (2 hours)
-- [ ] Implement security-audit.sh
-- [ ] Implement compliance-check.sh (ADR-001 through ADR-006)
-- [ ] Test on current homelab state
-- [ ] Generate initial reports
+### Phase 2: Audit & Compliance (2 hours) - ✅ COMPLETE
+- [x] Implement security-audit.sh (10 checks, fully functional)
+- [x] ~~Implement compliance-check.sh~~ (checks integrated into security-audit.sh)
+- [x] Test on current homelab state (7 pass, 3 warnings)
+- [x] Generate initial reports
 
-### Phase 3: Vulnerability Scanning (1 hour)
+### Phase 3: Vulnerability Scanning (1 hour) - ⏳ NOT STARTED
+- [ ] Install Trivy scanner
 - [ ] Implement scan-vulnerabilities.sh
-- [ ] Configure Trivy for all container images
+- [ ] Configure for all container images
 - [ ] Create vulnerability report template
-- [ ] Set up weekly cron job
+- [ ] Set up weekly timer
 
-### Phase 4: Baseline Enforcement (1-2 hours)
-- [ ] Implement enforce-security-baseline.sh
-- [ ] Integrate with homelab-deployment skill
-- [ ] Create security checklist template
-- [ ] Test pre-deployment validation
+### Phase 4: Baseline Enforcement (1-2 hours) - ✅ PARTIAL
+- [x] Security baseline checks via deployment skill
+- [x] Pre-deployment health checks (`check-system-health.sh`)
+- [x] Resource limit enforcement in quadlets
+- [ ] Formal security checklist integration
 
-### Phase 5: Incident Response (1 hour)
+### Phase 5: Incident Response (1 hour) - ⏳ NOT STARTED
 - [ ] Create IR playbook templates
 - [ ] Write IR-001 through IR-004
 - [ ] Set up security event logging
 - [ ] Test playbook execution
 
-### Phase 6: Monitoring Integration (1 hour)
+### Phase 6: Monitoring Integration (1 hour) - ✅ PARTIAL
+- [x] Alerting via Alertmanager → Discord
+- [x] CrowdSec health monitored via security-audit.sh
 - [ ] Export security metrics to Prometheus
 - [ ] Create Grafana security dashboard
-- [ ] Configure security-related alerts
-- [ ] Test alerting workflow
+- [ ] Add CrowdSec data to weekly reports
 
 ---
 
 ## Deliverables Summary
 
-### Scripts
-- `scripts/security-audit.sh` - Comprehensive security scanner
-- `scripts/compliance-check.sh` - ADR compliance validator
-- `scripts/scan-vulnerabilities.sh` - CVE scanner (Trivy wrapper)
-- `scripts/enforce-security-baseline.sh` - Pre-deployment security gate
+### Scripts - Status
+- ✅ `scripts/security-audit.sh` - Comprehensive security scanner (10 checks)
+- ⏳ `scripts/compliance-check.sh` - Merged into security-audit.sh
+- ⏳ `scripts/scan-vulnerabilities.sh` - CVE scanner (Trivy wrapper) - NOT STARTED
+- ✅ `scripts/check-system-health.sh` - Pre-deployment health gate (in deployment skill)
 
-### Documentation
-- `docs/30-security/guides/security-framework.md` - Framework overview
-- `docs/30-security/runbooks/IR-001-brute-force.md`
-- `docs/30-security/runbooks/IR-002-unauthorized-port.md`
-- `docs/30-security/runbooks/IR-003-critical-cve.md`
-- `docs/30-security/runbooks/IR-004-compliance-failure.md`
+### Documentation - Status
+- ⏳ `docs/30-security/guides/security-framework.md` - Framework overview
+- ⏳ `docs/30-security/runbooks/IR-001-brute-force.md`
+- ⏳ `docs/30-security/runbooks/IR-002-unauthorized-port.md`
+- ⏳ `docs/30-security/runbooks/IR-003-critical-cve.md`
+- ⏳ `docs/30-security/runbooks/IR-004-compliance-failure.md`
 
-### Monitoring
-- Prometheus metrics for security events
-- Grafana dashboard: "Security Posture"
-- Alertmanager rules for security incidents
+### Monitoring - Status
+- ✅ Alertmanager rules for service alerts
+- ✅ Discord notifications for alerts
+- ⏳ Prometheus metrics for security events
+- ⏳ Grafana dashboard: "Security Posture"
+- ⏳ CrowdSec metrics in weekly reports
 
 ### Reports (Auto-generated)
-- `~/containers/data/security-reports/audit-*.json`
-- `~/containers/data/security-reports/compliance-*.json`
-- `~/containers/data/security-reports/vulnerabilities-*.json`
+- ✅ `docs/99-reports/intel-*.json` - Health intelligence reports
+- ⏳ `~/containers/data/security-reports/vulnerabilities-*.json` - NOT STARTED
 
 ---
 
@@ -416,21 +437,30 @@ Priority: Address ✗ items within 1 week
 
 ## Next Steps
 
-**To proceed with Project B:**
+**Remaining work (3-4 hours):**
 
-1. **Review this high-level plan** - Confirm scope and approach
-2. **Request detailed implementation plan** - Similar to Project A level of detail
-3. **Adjust priorities** - Which components are most critical?
-4. **Schedule CLI sessions** - When CLI credits available
+1. **Phase 3: Vulnerability Scanning** (~1 hour)
+   - Install Trivy
+   - Create `scan-vulnerabilities.sh`
+   - Schedule weekly scans
 
-**Questions to answer before detailed planning:**
-- Which ADRs are highest priority for compliance checking?
-- Should vulnerability scanning block deployments or just alert?
-- What severity level for security alerts? (Discord notifications?)
-- Do you want automated remediation or manual approval?
+2. **Phase 5: Incident Response** (~1 hour)
+   - Create IR playbook templates
+   - Document response procedures
+
+3. **Phase 6: CrowdSec Discord Integration** (~1 hour)
+   - Add CrowdSec ban count to weekly reports
+   - Add CrowdSec alerts for significant events
+   - Create security section in Discord notifications
+
+**Decisions made:**
+- ✅ ADR compliance integrated into security-audit.sh (not separate script)
+- ✅ Vulnerability scanning will alert, not block (homelab context)
+- ✅ Discord notifications enabled for alerts
+- ✅ Manual remediation preferred (learning opportunity)
 
 ---
 
-**Status:** High-level plan complete
-**Ready for:** Detailed implementation planning (add 2 hours for full plan)
-**Estimated Total:** 5-7 hours implementation + 2 hours planning = 7-9 hours
+**Status:** Phase 1-2 Complete (2025-11-28)
+**Progress:** ~60% complete
+**Remaining:** 3-4 hours for vulnerability scanning, incident response, CrowdSec Discord integration

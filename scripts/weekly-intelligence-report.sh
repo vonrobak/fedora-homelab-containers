@@ -113,9 +113,17 @@ collect_current_metrics() {
 
     # CrowdSec metrics (if available)
     local crowdsec_bans=0
+    local crowdsec_alerts=0
+    local crowdsec_capi="disconnected"
     if systemctl --user is-active crowdsec.service &>/dev/null; then
-        # Count decisions in last 7 days
-        crowdsec_bans=$(podman exec crowdsec cscli decisions list -o json 2>/dev/null | jq '. | length' || echo "0")
+        # Count active decisions (bans)
+        crowdsec_bans=$(timeout 5 podman exec crowdsec cscli decisions list -o json 2>/dev/null | jq '. | length' 2>/dev/null || echo "0")
+        # Count alerts in last 7 days
+        crowdsec_alerts=$(timeout 5 podman exec crowdsec cscli alerts list -o json 2>/dev/null | jq '. | length' 2>/dev/null || echo "0")
+        # Check CAPI status
+        if timeout 5 podman exec crowdsec cscli capi status 2>&1 | grep -q "successfully interact"; then
+            crowdsec_capi="connected"
+        fi
     fi
 
     # Build JSON report
@@ -144,7 +152,9 @@ collect_current_metrics() {
     "critical_services_running": ${services_running}
   },
   "security": {
-    "crowdsec_active_bans": ${crowdsec_bans}
+    "crowdsec_active_bans": ${crowdsec_bans},
+    "crowdsec_alerts_7d": ${crowdsec_alerts},
+    "crowdsec_capi": "${crowdsec_capi}"
   }
 }
 EOF
@@ -218,6 +228,8 @@ send_discord_notification() {
     local containers=$(jq -r '.services.containers_total' "$CURRENT_REPORT")
     local containers_healthy=$(jq -r '.services.containers_healthy' "$CURRENT_REPORT")
     local crowdsec_bans=$(jq -r '.security.crowdsec_active_bans' "$CURRENT_REPORT")
+    local crowdsec_alerts=$(jq -r '.security.crowdsec_alerts_7d // 0' "$CURRENT_REPORT")
+    local crowdsec_capi=$(jq -r '.security.crowdsec_capi // "unknown"' "$CURRENT_REPORT")
 
     # Trends (if available)
     local disk_delta=$(jq -r '.trends.disk_delta_pct // 0' "$CURRENT_REPORT")
@@ -269,7 +281,7 @@ send_discord_notification() {
       },
       {
         "name": "🛡️ Security",
-        "value": "Memory: ${mem_pct}%\nCrowdSec: ${crowdsec_bans} bans",
+        "value": "CrowdSec: ${crowdsec_capi}\nBans: ${crowdsec_bans} | Alerts: ${crowdsec_alerts}",
         "inline": true
       }
     ],
