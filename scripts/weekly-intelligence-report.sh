@@ -212,118 +212,89 @@ send_discord_notification() {
     # Read metrics
     local health=$(jq -r '.health' "$CURRENT_REPORT")
     local disk_pct=$(jq -r '.storage.root_percent' "$CURRENT_REPORT")
-    local disk_used=$(jq -r '.storage.root_used_gb' "$CURRENT_REPORT")
     local disk_avail=$(jq -r '.storage.root_avail_gb' "$CURRENT_REPORT")
     local btrfs_pct=$(jq -r '.storage.btrfs_percent' "$CURRENT_REPORT")
     local mem_pct=$(jq -r '.resources.memory_percent' "$CURRENT_REPORT")
-    local cpu_avg=$(jq -r '.resources.cpu_avg_percent' "$CURRENT_REPORT")
     local containers=$(jq -r '.services.containers_total' "$CURRENT_REPORT")
     local containers_healthy=$(jq -r '.services.containers_healthy' "$CURRENT_REPORT")
     local crowdsec_bans=$(jq -r '.security.crowdsec_active_bans' "$CURRENT_REPORT")
 
     # Trends (if available)
-    local disk_delta=$(jq -r '.trends.disk_delta_pct // "N/A"' "$CURRENT_REPORT")
-    local mem_delta=$(jq -r '.trends.memory_delta_pct // "N/A"' "$CURRENT_REPORT")
-    local health_delta=$(jq -r '.trends.health_delta // "N/A"' "$CURRENT_REPORT")
-    local days_forecast=$(jq -r '.trends.days_until_80pct_disk // "N/A"' "$CURRENT_REPORT")
+    local disk_delta=$(jq -r '.trends.disk_delta_pct // 0' "$CURRENT_REPORT")
+    local days_forecast=$(jq -r '.trends.days_until_80pct_disk // 999' "$CURRENT_REPORT")
 
-    # Format deltas with arrows
-    local disk_arrow=""
-    if [ "$disk_delta" != "N/A" ]; then
-        [ "$disk_delta" -gt 0 ] && disk_arrow="↑${disk_delta}%" || disk_arrow="↓${disk_delta#-}%"
+    # Format delta arrow
+    local disk_trend=""
+    if [ "$disk_delta" -gt 0 ] 2>/dev/null; then
+        disk_trend=" ↑${disk_delta}%"
+    elif [ "$disk_delta" -lt 0 ] 2>/dev/null; then
+        disk_trend=" ↓${disk_delta#-}%"
     fi
 
-    local mem_arrow=""
-    if [ "$mem_delta" != "N/A" ]; then
-        [ "$mem_delta" -gt 0 ] && mem_arrow="↑${mem_delta}%" || mem_arrow="↓${mem_delta#-}%"
-    fi
-
-    local health_arrow=""
-    if [ "$health_delta" != "N/A" ]; then
-        [ "$health_delta" -gt 0 ] && health_arrow="↑${health_delta}" || health_arrow="↓${health_delta#-}"
-    fi
-
-    # Health status emoji
+    # Determine health color and emoji
+    local report_color="3066993"  # Green
     local health_emoji="✅"
-    [ "$health" -lt 75 ] && health_emoji="⚠️"
-    [ "$health" -lt 50 ] && health_emoji="🚨"
+    if [ "$health" -lt 75 ]; then
+        report_color="15105570"  # Orange
+        health_emoji="⚠️"
+    fi
+    if [ "$health" -lt 50 ]; then
+        report_color="15158332"  # Red
+        health_emoji="🚨"
+    fi
 
-    # Storage status
-    local storage_status="Healthy ✅"
-    [ "$disk_pct" -ge 70 ] && storage_status="Elevated ⚠️"
-    [ "$disk_pct" -ge 80 ] && storage_status="Critical 🚨"
+    # Build forecast warning if relevant
+    local forecast_note=""
+    if [ "$days_forecast" -lt 30 ] 2>/dev/null; then
+        forecast_note="\n⚠️ **Disk forecast:** 80% full in ${days_forecast} days"
+    fi
 
-    # Build Discord message
-    local description="Automated weekly intelligence report\\n\\n"
-    description+="**📊 STORAGE**\\n"
-    description+="• System SSD: ${disk_pct}% (${disk_used}GB used, ${disk_avail}GB free) ${disk_arrow}\\n"
-    description+="• BTRFS Pool: ${btrfs_pct}%\\n"
-    description+="• Status: ${storage_status}\\n"
-    [ "$days_forecast" != "N/A" ] && [ "$days_forecast" -lt 999 ] && description+="• Forecast: 80% full in ${days_forecast} days\\n"
-    description+="\\n"
-    description+="**💾 RESOURCES**\\n"
-    description+="• Memory: ${mem_pct}% avg ${mem_arrow}\\n"
-    description+="• CPU: ${cpu_avg}% avg\\n"
-    description+="\\n"
-    description+="**⚙️ SERVICES**\\n"
-    description+="• Containers: ${containers_healthy}/${containers} healthy\\n"
-    description+="• Critical services: 4/4 running\\n"
-    description+="\\n"
-    description+="**🛡️ SECURITY**\\n"
-    description+="• CrowdSec: ${crowdsec_bans} active bans\\n"
-    description+="• Auth failures: 0 (Authelia metrics TBD)\\n"
-    description+="\\n"
-    description+="📈 Full report: weekly-${TIMESTAMP}.json"
-
-    # Prepare Alertmanager-format payload
-    local payload=$(cat <<EOF
+    # Build succinct Discord embed
+    read -r -d '' DISCORD_PAYLOAD <<EOF || true
 {
-  "version": "4",
-  "groupKey": "{}:{alertname=\"WeeklyIntelligenceReport\"}",
-  "status": "firing",
-  "receiver": "discord-default",
-  "groupLabels": {
-    "alertname": "WeeklyIntelligenceReport"
-  },
-  "commonLabels": {
-    "alertname": "WeeklyIntelligenceReport",
-    "severity": "info",
-    "component": "intelligence"
-  },
-  "commonAnnotations": {
-    "summary": "📊 Weekly Homelab Intelligence - Week ending ${TIMESTAMP}",
-    "description": "${description}"
-  },
-  "externalURL": "http://homelab-intelligence",
-  "alerts": [
-    {
-      "status": "firing",
-      "labels": {
-        "alertname": "WeeklyIntelligenceReport",
-        "severity": "info",
-        "component": "intelligence"
+  "embeds": [{
+    "title": "📊 Weekly Intelligence - Week of ${TIMESTAMP}",
+    "description": "**Health Score:** ${health}/100 ${health_emoji}${forecast_note}",
+    "color": ${report_color},
+    "fields": [
+      {
+        "name": "💾 Storage",
+        "value": "SSD: ${disk_pct}%${disk_trend} (${disk_avail}GB free)\nBTRFS: ${btrfs_pct}%",
+        "inline": true
       },
-      "annotations": {
-        "summary": "📊 HOMELAB WEEKLY INTELLIGENCE - ${TIMESTAMP}",
-        "description": "Health: ${health}/100 ${health_emoji} ${health_arrow}"
+      {
+        "name": "⚙️ Services",
+        "value": "${containers_healthy}/${containers} healthy\n4/4 critical",
+        "inline": true
       },
-      "startsAt": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)",
-      "endsAt": "0001-01-01T00:00:00Z",
-      "generatorURL": "http://homelab-intelligence/weekly"
-    }
-  ]
+      {
+        "name": "🛡️ Security",
+        "value": "Memory: ${mem_pct}%\nCrowdSec: ${crowdsec_bans} bans",
+        "inline": true
+      }
+    ],
+    "footer": {
+      "text": "Weekly Report • Next: $(date -d 'next friday' '+%b %d')"
+    },
+    "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
+  }]
 }
 EOF
-)
 
-    # Send via Prometheus container (on monitoring network)
-    if podman exec prometheus wget -q -O- --post-data="${payload}" \
-        --header="Content-Type: application/json" \
-        http://alert-discord-relay:9095/webhook \
-        >/dev/null 2>&1; then
-        log "${GREEN}✓ Discord notification sent${NC}"
+    # Get Discord webhook URL and send directly
+    local DISCORD_WEBHOOK=$(podman exec alert-discord-relay env 2>/dev/null | grep DISCORD_WEBHOOK_URL | cut -d= -f2 || echo "")
+
+    if [ -n "$DISCORD_WEBHOOK" ]; then
+        if curl -s -o /dev/null -w "%{http_code}" \
+            -H "Content-Type: application/json" \
+            -d "$DISCORD_PAYLOAD" \
+            "$DISCORD_WEBHOOK" | grep -q "^20"; then
+            log "${GREEN}✓ Discord notification sent${NC}"
+        else
+            log "${YELLOW}⚠ Discord notification failed${NC}"
+        fi
     else
-        log "${YELLOW}⚠ Discord notification failed (non-critical)${NC}"
+        log "${YELLOW}⚠ Discord webhook not found${NC}"
     fi
 }
 
