@@ -102,13 +102,12 @@ systemctl --user list-timers backup-restore-test.timer
 
 | Runbook | Scenario | RTO | RPO | Tested |
 |---------|----------|-----|-----|--------|
+| [DR-001](../runbooks/DR-001-system-ssd-failure.md) | System SSD complete failure | 4-6 hours | 7 days | Not yet tested |
+| [DR-002](../runbooks/DR-002-btrfs-pool-corruption.md) | BTRFS pool corruption/unmountable | 6-12 hours | 7-30 days | Not yet tested |
 | [DR-003](../runbooks/DR-003-accidental-deletion.md) | Accidental file/directory deletion | 5-30 min | 1 day | ✓ 2025-11-30 |
+| [DR-004](../runbooks/DR-004-total-catastrophe.md) | Fire/flood/theft (total loss) | 1-2 weeks | **TOTAL LOSS*** | N/A |
 
-### Planned Runbooks
-
-- **DR-001:** System SSD Failure - Complete OS drive failure, restore from external backup
-- **DR-002:** BTRFS Pool Corruption - Storage array corruption, reformat and restore
-- **DR-004:** Total Catastrophe - Fire/flood/theft, rebuild from off-site backup
+**\*DR-004 Note:** Currently NO off-site backup exists. Total catastrophe = 100% data loss. See DR-004 for implementation plan.
 
 ---
 
@@ -413,20 +412,21 @@ sudo btrfs subvolume delete ~/.snapshots/htpc-home/20251101-home
 
 ---
 
-**Project Status:** Phase 1 Complete ✓
+**Project Status:** Phase 1-2 Complete ✓
 
 - [x] Automated restore testing script
 - [x] Monthly test schedule (systemd timer)
-- [x] First DR runbook (DR-003)
-- [ ] All DR runbooks (DR-001, DR-002, DR-004)
+- [x] All 4 DR runbooks (DR-001, DR-002, DR-003, DR-004)
 - [ ] Prometheus alerting integration
 - [ ] Grafana dashboard
 - [ ] RTO measurement for all subvolumes
-- [ ] Off-site backup implementation
+- [ ] **Off-site backup implementation (CRITICAL!)**
 
 **Next Steps:**
 1. Let automated tests run for 3 months to establish baseline
-2. Create remaining DR runbooks (DR-001, DR-002, DR-004)
-3. Implement Prometheus alerting for backup failures
-4. Build Grafana backup health dashboard
-5. Plan and implement off-site backup strategy
+2. Implement Prometheus alerting for backup failures (Phase 3)
+3. Build Grafana backup health dashboard (Phase 3)
+4. Measure actual RTO for each subvolume (Phase 4)
+5. **Implement off-site backup strategy (Phase 5) - HIGHEST PRIORITY**
+   - Estimated cost: ~$4/month for critical data (photos, docs, configs)
+   - See DR-004 for detailed implementation plan
