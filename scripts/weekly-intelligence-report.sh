@@ -126,6 +126,31 @@ collect_current_metrics() {
         fi
     fi
 
+    # Autonomous Operations metrics
+    local auto_ops_enabled="false"
+    local auto_ops_actions=0
+    local auto_ops_success_rate="1.0"
+    local auto_ops_circuit="ok"
+    local auto_state_file="${HOME}/containers/.claude/context/autonomous-state.json"
+    local auto_decision_log="${HOME}/containers/.claude/context/decision-log.json"
+
+    if [[ -f "$auto_state_file" ]]; then
+        auto_ops_enabled=$(jq -r '.enabled // false' "$auto_state_file")
+        auto_ops_success_rate=$(jq -r '.statistics.success_rate // 1.0' "$auto_state_file")
+        if [[ "$(jq -r '.circuit_breaker.triggered // false' "$auto_state_file")" == "true" ]]; then
+            auto_ops_circuit="triggered"
+        elif [[ "$(jq -r '.paused // false' "$auto_state_file")" == "true" ]]; then
+            auto_ops_circuit="paused"
+        fi
+    fi
+
+    if [[ -f "$auto_decision_log" ]]; then
+        # Count decisions in last 7 days
+        local cutoff_date
+        cutoff_date=$(date -d "7 days ago" -Iseconds)
+        auto_ops_actions=$(jq --arg cutoff "$cutoff_date" '[.decisions[] | select(.timestamp > $cutoff)] | length' "$auto_decision_log" 2>/dev/null || echo "0")
+    fi
+
     # Build JSON report
     cat > "${CURRENT_REPORT}" <<EOF
 {
@@ -155,6 +180,12 @@ collect_current_metrics() {
     "crowdsec_active_bans": ${crowdsec_bans},
     "crowdsec_alerts_7d": ${crowdsec_alerts},
     "crowdsec_capi": "${crowdsec_capi}"
+  },
+  "autonomous_ops": {
+    "enabled": ${auto_ops_enabled},
+    "actions_7d": ${auto_ops_actions},
+    "success_rate": ${auto_ops_success_rate},
+    "circuit_breaker": "${auto_ops_circuit}"
   }
 }
 EOF
@@ -231,6 +262,22 @@ send_discord_notification() {
     local crowdsec_alerts=$(jq -r '.security.crowdsec_alerts_7d // 0' "$CURRENT_REPORT")
     local crowdsec_capi=$(jq -r '.security.crowdsec_capi // "unknown"' "$CURRENT_REPORT")
 
+    # Autonomous operations metrics
+    local auto_ops_actions=$(jq -r '.autonomous_ops.actions_7d // 0' "$CURRENT_REPORT")
+    local auto_ops_rate=$(jq -r '.autonomous_ops.success_rate // 1.0' "$CURRENT_REPORT" | awk '{printf "%.0f", $1 * 100}')
+    local auto_ops_circuit=$(jq -r '.autonomous_ops.circuit_breaker // "ok"' "$CURRENT_REPORT")
+    local auto_ops_enabled=$(jq -r '.autonomous_ops.enabled // false' "$CURRENT_REPORT")
+
+    # Determine status display
+    local auto_ops_status="Active"
+    if [[ "$auto_ops_circuit" == "triggered" ]]; then
+        auto_ops_status="⚠️ Breaker"
+    elif [[ "$auto_ops_circuit" == "paused" ]]; then
+        auto_ops_status="Paused"
+    elif [[ "$auto_ops_enabled" == "false" ]]; then
+        auto_ops_status="Disabled"
+    fi
+
     # Trends (if available)
     local disk_delta=$(jq -r '.trends.disk_delta_pct // 0' "$CURRENT_REPORT")
     local days_forecast=$(jq -r '.trends.days_until_80pct_disk // 999' "$CURRENT_REPORT")
@@ -282,6 +329,11 @@ send_discord_notification() {
       {
         "name": "🛡️ Security",
         "value": "CrowdSec: ${crowdsec_capi}\nBans: ${crowdsec_bans} | Alerts: ${crowdsec_alerts}",
+        "inline": true
+      },
+      {
+        "name": "🤖 Autonomous Ops",
+        "value": "Status: ${auto_ops_status}\nActions: ${auto_ops_actions} | Rate: ${auto_ops_rate}%",
         "inline": true
       }
     ],

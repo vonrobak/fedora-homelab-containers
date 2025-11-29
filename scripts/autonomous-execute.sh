@@ -1,0 +1,840 @@
+#!/usr/bin/env bash
+#
+# autonomous-execute.sh - Autonomous Operations Executor
+#
+# Implements the ACT phase of the OODA loop.
+# Executes approved actions with safety controls and logging.
+#
+# Usage:
+#   ./autonomous-execute.sh                    # Execute pending actions
+#   ./autonomous-execute.sh --action-id ID     # Execute specific action
+#   ./autonomous-execute.sh --from-check       # Run check first, then execute
+#   ./autonomous-execute.sh --dry-run          # Simulate execution
+#   ./autonomous-execute.sh --status           # Show current status
+#   ./autonomous-execute.sh --stop             # Emergency stop
+#   ./autonomous-execute.sh --pause            # Pause operations
+#   ./autonomous-execute.sh --resume           # Resume operations
+#
+# Exit codes:
+#   0 - Success
+#   1 - Execution had failures
+#   2 - Error or paused/stopped
+#
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONTAINERS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+CONTEXT_DIR="$CONTAINERS_DIR/.claude/context"
+STATE_FILE="$CONTEXT_DIR/autonomous-state.json"
+DECISION_LOG="$CONTEXT_DIR/decision-log.json"
+PREFERENCES="$CONTEXT_DIR/preferences.yml"
+
+# Remediation playbooks
+PLAYBOOK_DIR="$CONTAINERS_DIR/.claude/remediation/playbooks"
+APPLY_REMEDIATION="$CONTAINERS_DIR/.claude/remediation/scripts/apply-remediation.sh"
+
+# Backup script
+BACKUP_SCRIPT="$SCRIPT_DIR/btrfs-snapshot-backup.sh"
+
+# Check script
+AUTONOMOUS_CHECK="$SCRIPT_DIR/autonomous-check.sh"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Flags
+DRY_RUN=false
+FROM_CHECK=false
+ACTION_ID=""
+FORCE=false
+
+# Circuit breaker settings
+CIRCUIT_BREAKER_THRESHOLD=3
+CIRCUIT_BREAKER_RESET_HOURS=24
+
+# Discord webhook (from environment or file)
+DISCORD_WEBHOOK="${DISCORD_WEBHOOK:-}"
+if [[ -z "$DISCORD_WEBHOOK" && -f "$CONTAINERS_DIR/config/alertmanager/discord-webhook.txt" ]]; then
+    DISCORD_WEBHOOK=$(cat "$CONTAINERS_DIR/config/alertmanager/discord-webhook.txt" 2>/dev/null || echo "")
+fi
+
+##############################################################################
+# Argument Parsing
+##############################################################################
+
+# Command to run (set during argument parsing, executed after functions defined)
+RUN_COMMAND=""
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            --from-check)
+                FROM_CHECK=true
+                shift
+                ;;
+            --action-id)
+                ACTION_ID="$2"
+                shift 2
+                ;;
+            --force)
+                FORCE=true
+                shift
+                ;;
+            --status)
+                RUN_COMMAND="status"
+                shift
+                ;;
+            --stop)
+                RUN_COMMAND="stop"
+                shift
+                ;;
+            --pause)
+                RUN_COMMAND="pause"
+                shift
+                ;;
+            --resume)
+                RUN_COMMAND="resume"
+                shift
+                ;;
+            --help|-h)
+                cat << EOF
+Usage: $0 [OPTIONS]
+
+Autonomous operations executor - ACT phase of OODA loop.
+
+Options:
+  --dry-run          Simulate execution without making changes
+  --from-check       Run autonomous-check.sh first, then execute
+  --action-id ID     Execute specific action by ID
+  --force            Force execution (bypass cooldowns)
+  --status           Show current autonomous operations status
+  --stop             Emergency stop all autonomous operations
+  --pause            Pause operations (keep monitoring)
+  --resume           Resume operations (reset circuit breaker)
+  --help, -h         Show this help
+
+Safety Controls:
+  - Pre-action BTRFS snapshots
+  - Circuit breaker (pauses after $CIRCUIT_BREAKER_THRESHOLD consecutive failures)
+  - Cooldown periods between same action types
+  - Service-specific overrides from preferences.yml
+
+Exit Codes:
+  0 - Success
+  1 - Execution had failures
+  2 - Error or paused/stopped
+EOF
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1" >&2
+                exit 2
+                ;;
+        esac
+    done
+}
+
+# Parse arguments now, execute commands later
+parse_args "$@"
+
+##############################################################################
+# Logging
+##############################################################################
+
+log() {
+    local level=$1
+    shift
+    local message="$*"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    case $level in
+        INFO)    echo -e "${BLUE}[$timestamp INFO]${NC} $message" ;;
+        SUCCESS) echo -e "${GREEN}[$timestamp SUCCESS]${NC} $message" ;;
+        WARNING) echo -e "${YELLOW}[$timestamp WARNING]${NC} $message" ;;
+        ERROR)   echo -e "${RED}[$timestamp ERROR]${NC} $message" ;;
+        DEBUG)   echo -e "${CYAN}[$timestamp DEBUG]${NC} $message" ;;
+    esac
+}
+
+##############################################################################
+# State Management
+##############################################################################
+
+load_state() {
+    if [[ -f "$STATE_FILE" ]]; then
+        cat "$STATE_FILE"
+    else
+        echo '{"enabled": true, "paused": false, "circuit_breaker": {"triggered": false, "consecutive_failures": 0}}'
+    fi
+}
+
+save_state() {
+    local state="$1"
+    echo "$state" | jq '.' > "$STATE_FILE"
+}
+
+is_paused() {
+    local state
+    state=$(load_state)
+    [[ "$(echo "$state" | jq -r '.paused // false')" == "true" ]]
+}
+
+is_circuit_breaker_triggered() {
+    local state
+    state=$(load_state)
+    [[ "$(echo "$state" | jq -r '.circuit_breaker.triggered // false')" == "true" ]]
+}
+
+increment_failure() {
+    local state
+    state=$(load_state)
+
+    local failures
+    failures=$(echo "$state" | jq '.circuit_breaker.consecutive_failures + 1')
+
+    local triggered=false
+    if (( failures >= CIRCUIT_BREAKER_THRESHOLD )); then
+        triggered=true
+        log ERROR "Circuit breaker TRIGGERED after $failures consecutive failures"
+        send_notification "Circuit Breaker Triggered" "Autonomous operations paused after $failures consecutive failures. Manual intervention required."
+    fi
+
+    state=$(echo "$state" | jq \
+        --argjson failures "$failures" \
+        --argjson triggered "$triggered" \
+        --arg ts "$(date -Iseconds)" \
+        '.circuit_breaker.consecutive_failures = $failures |
+         .circuit_breaker.triggered = $triggered |
+         .circuit_breaker.last_failure = $ts')
+
+    save_state "$state"
+}
+
+reset_failure_count() {
+    local state
+    state=$(load_state)
+    state=$(echo "$state" | jq '.circuit_breaker.consecutive_failures = 0')
+    save_state "$state"
+}
+
+set_cooldown() {
+    local action_type=$1
+    local cooldown_seconds=$2
+
+    local state
+    state=$(load_state)
+
+    local cooldown_end
+    cooldown_end=$(date -d "+${cooldown_seconds} seconds" -Iseconds)
+
+    state=$(echo "$state" | jq \
+        --arg key "$action_type" \
+        --arg val "$cooldown_end" \
+        '.cooldowns[$key] = $val')
+
+    save_state "$state"
+}
+
+is_on_cooldown() {
+    local action_type=$1
+
+    local state
+    state=$(load_state)
+
+    local cooldown_end
+    cooldown_end=$(echo "$state" | jq -r ".cooldowns[\"$action_type\"] // \"\"")
+
+    if [[ -n "$cooldown_end" && "$cooldown_end" != "null" ]]; then
+        local cooldown_epoch current_epoch
+        cooldown_epoch=$(date -d "$cooldown_end" +%s 2>/dev/null || echo 0)
+        current_epoch=$(date +%s)
+
+        if (( cooldown_epoch > current_epoch )); then
+            return 0  # On cooldown
+        fi
+    fi
+
+    return 1  # Not on cooldown
+}
+
+##############################################################################
+# Control Commands
+##############################################################################
+
+show_status() {
+    local state
+    state=$(load_state)
+
+    echo "=== Autonomous Operations Status ==="
+    echo ""
+
+    local enabled paused triggered failures last_check last_action
+    enabled=$(echo "$state" | jq -r '.enabled // true')
+    paused=$(echo "$state" | jq -r '.paused // false')
+    triggered=$(echo "$state" | jq -r '.circuit_breaker.triggered // false')
+    failures=$(echo "$state" | jq -r '.circuit_breaker.consecutive_failures // 0')
+    last_check=$(echo "$state" | jq -r '.last_check // "never"')
+    last_action=$(echo "$state" | jq -r '.last_action // "never"')
+
+    echo "Enabled:          $enabled"
+    echo "Paused:           $paused"
+    echo "Circuit Breaker:  $triggered (failures: $failures/$CIRCUIT_BREAKER_THRESHOLD)"
+    echo "Last Check:       $last_check"
+    echo "Last Action:      $last_action"
+    echo ""
+
+    # Statistics
+    echo "=== Statistics ==="
+    local stats
+    stats=$(echo "$state" | jq '.statistics // {}')
+    echo "Total Checks:     $(echo "$stats" | jq -r '.total_checks // 0')"
+    echo "Total Actions:    $(echo "$stats" | jq -r '.total_actions // 0')"
+    echo "Success Rate:     $(echo "$stats" | jq -r '.success_rate // 1.0' | awk '{printf "%.1f%%", $1 * 100}')"
+    echo ""
+
+    # Active cooldowns
+    echo "=== Active Cooldowns ==="
+    local cooldowns
+    cooldowns=$(echo "$state" | jq -r '.cooldowns // {}')
+    if [[ "$cooldowns" == "{}" ]]; then
+        echo "  (none)"
+    else
+        echo "$cooldowns" | jq -r 'to_entries[] | "  \(.key): \(.value)"'
+    fi
+    echo ""
+
+    # Recent decisions
+    echo "=== Recent Decisions (last 5) ==="
+    if [[ -f "$DECISION_LOG" ]]; then
+        jq -r '.decisions[-5:][] | "  [\(.timestamp)] \(.action_type): \(.outcome)"' "$DECISION_LOG" 2>/dev/null || echo "  (none)"
+    else
+        echo "  (none)"
+    fi
+}
+
+emergency_stop() {
+    log WARNING "EMERGENCY STOP activated"
+
+    local state
+    state=$(load_state)
+    state=$(echo "$state" | jq \
+        --arg ts "$(date -Iseconds)" \
+        '.enabled = false | .paused = true | .emergency_stop = $ts')
+    save_state "$state"
+
+    send_notification "Emergency Stop" "Autonomous operations have been stopped. All automation is disabled."
+
+    echo "Autonomous operations STOPPED"
+    echo "To resume: $0 --resume"
+}
+
+pause_operations() {
+    log INFO "Pausing autonomous operations"
+
+    local state
+    state=$(load_state)
+    state=$(echo "$state" | jq '.paused = true')
+    save_state "$state"
+
+    echo "Autonomous operations PAUSED"
+    echo "Monitoring continues, but no actions will be taken."
+    echo "To resume: $0 --resume"
+}
+
+resume_operations() {
+    log INFO "Resuming autonomous operations"
+
+    local state
+    state=$(load_state)
+    state=$(echo "$state" | jq \
+        '.enabled = true |
+         .paused = false |
+         .circuit_breaker.triggered = false |
+         .circuit_breaker.consecutive_failures = 0 |
+         del(.emergency_stop)')
+    save_state "$state"
+
+    echo "Autonomous operations RESUMED"
+    echo "Circuit breaker reset."
+}
+
+##############################################################################
+# Notification
+##############################################################################
+
+send_notification() {
+    local title=$1
+    local message=$2
+
+    if [[ -z "$DISCORD_WEBHOOK" ]]; then
+        log DEBUG "No Discord webhook configured, skipping notification"
+        return
+    fi
+
+    local payload
+    payload=$(jq -n \
+        --arg title "$title" \
+        --arg msg "$message" \
+        '{
+          embeds: [{
+            title: ("Autonomous Operations: " + $title),
+            description: $msg,
+            color: 3447003,
+            timestamp: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+          }]
+        }')
+
+    curl -s -X POST "$DISCORD_WEBHOOK" \
+        -H "Content-Type: application/json" \
+        -d "$payload" >/dev/null 2>&1 || true
+}
+
+##############################################################################
+# Pre-Action Safety
+##############################################################################
+
+create_snapshot() {
+    local operation=$1
+
+    if $DRY_RUN; then
+        log INFO "[DRY RUN] Would create snapshot for: $operation"
+        return 0
+    fi
+
+    if [[ -x "$BACKUP_SCRIPT" ]]; then
+        log INFO "Creating pre-action snapshot..."
+        local snapshot_name="autonomous-${operation}-$(date +%Y%m%d-%H%M%S)"
+
+        # Create snapshot of containers subvolume
+        if "$BACKUP_SCRIPT" --tier 1 --subvolume containers --quiet 2>/dev/null; then
+            log SUCCESS "Pre-action snapshot created"
+            return 0
+        else
+            log WARNING "Failed to create snapshot, proceeding with caution"
+            return 1
+        fi
+    else
+        log WARNING "Backup script not found, skipping snapshot"
+        return 0
+    fi
+}
+
+##############################################################################
+# Action Execution
+##############################################################################
+
+execute_disk_cleanup() {
+    log INFO "Executing disk cleanup..."
+
+    local playbook="$PLAYBOOK_DIR/disk-cleanup.yml"
+
+    if [[ ! -f "$playbook" ]]; then
+        log ERROR "Disk cleanup playbook not found: $playbook"
+        return 1
+    fi
+
+    if $DRY_RUN; then
+        log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION $playbook"
+        return 0
+    fi
+
+    # Execute cleanup
+    if [[ -x "$APPLY_REMEDIATION" ]]; then
+        "$APPLY_REMEDIATION" "$playbook" 2>&1 || {
+            log ERROR "Disk cleanup playbook failed"
+            return 1
+        }
+    else
+        # Fallback: basic cleanup
+        log INFO "Running basic cleanup..."
+
+        # Clean podman
+        podman system prune -f 2>/dev/null || true
+
+        # Clean old logs
+        find "$CONTAINERS_DIR/data" -name "*.log" -mtime +30 -delete 2>/dev/null || true
+
+        # Rotate journal
+        journalctl --user --vacuum-time=7d 2>/dev/null || true
+    fi
+
+    log SUCCESS "Disk cleanup completed"
+    return 0
+}
+
+execute_service_restart() {
+    local service=$1
+
+    log INFO "Restarting service: $service"
+
+    if $DRY_RUN; then
+        log INFO "[DRY RUN] Would restart: systemctl --user restart $service.service"
+        return 0
+    fi
+
+    # Check if service exists
+    if ! systemctl --user list-unit-files "$service.service" >/dev/null 2>&1; then
+        log ERROR "Service not found: $service"
+        return 1
+    fi
+
+    # Graceful restart
+    if systemctl --user restart "$service.service"; then
+        # Wait for health
+        sleep 5
+
+        if systemctl --user is-active "$service.service" >/dev/null 2>&1; then
+            log SUCCESS "Service $service restarted successfully"
+            return 0
+        else
+            log ERROR "Service $service failed to start after restart"
+            return 1
+        fi
+    else
+        log ERROR "Failed to restart service: $service"
+        return 1
+    fi
+}
+
+execute_drift_reconciliation() {
+    log INFO "Reconciling configuration drift..."
+
+    local playbook="$PLAYBOOK_DIR/drift-reconciliation.yml"
+
+    if [[ ! -f "$playbook" ]]; then
+        log WARNING "Drift reconciliation playbook not found"
+
+        if $DRY_RUN; then
+            log INFO "[DRY RUN] Would reload systemd and restart drifted services"
+            return 0
+        fi
+
+        # Basic reconciliation: reload systemd
+        systemctl --user daemon-reload
+
+        log SUCCESS "Systemd reloaded (basic reconciliation)"
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION $playbook"
+        return 0
+    fi
+
+    if [[ -x "$APPLY_REMEDIATION" ]]; then
+        "$APPLY_REMEDIATION" "$playbook" 2>&1 || {
+            log ERROR "Drift reconciliation failed"
+            return 1
+        }
+    fi
+
+    log SUCCESS "Drift reconciliation completed"
+    return 0
+}
+
+execute_action() {
+    local action="$1"
+
+    local action_id action_type service confidence risk decision
+    action_id=$(echo "$action" | jq -r '.id')
+    action_type=$(echo "$action" | jq -r '.type')
+    service=$(echo "$action" | jq -r '.service // ""')
+    confidence=$(echo "$action" | jq -r '.confidence')
+    risk=$(echo "$action" | jq -r '.risk')
+    decision=$(echo "$action" | jq -r '.decision')
+
+    log INFO "=========================================="
+    log INFO "Action: $action_id"
+    log INFO "Type: $action_type"
+    [[ -n "$service" ]] && log INFO "Service: $service"
+    log INFO "Confidence: $(awk "BEGIN {printf \"%.0f%%\", $confidence * 100}")"
+    log INFO "Risk: $risk"
+    log INFO "Decision: $decision"
+    log INFO "=========================================="
+
+    # Check decision type
+    case "$decision" in
+        auto-execute|notify-execute)
+            # Proceed with execution
+            ;;
+        queue)
+            log INFO "Action queued for approval, skipping"
+            return 0
+            ;;
+        alert-only)
+            log INFO "Alert-only action, skipping execution"
+            return 0
+            ;;
+        *)
+            log WARNING "Unknown decision type: $decision"
+            return 0
+            ;;
+    esac
+
+    # Check cooldown
+    local cooldown_key="$action_type"
+    [[ -n "$service" ]] && cooldown_key="${service}.${action_type}"
+
+    if ! $FORCE && is_on_cooldown "$cooldown_key"; then
+        log INFO "Action on cooldown, skipping"
+        return 0
+    fi
+
+    # Create pre-action snapshot
+    create_snapshot "$action_type" || true
+
+    # Notify if required
+    if [[ "$decision" == "notify-execute" ]]; then
+        send_notification "Executing Action" "Type: $action_type\nService: ${service:-N/A}\nConfidence: $(awk "BEGIN {printf \"%.0f%%\", $confidence * 100}")"
+    fi
+
+    # Execute
+    local start_time outcome details duration
+    start_time=$(date +%s)
+    outcome="success"
+    details=""
+
+    case "$action_type" in
+        disk-cleanup)
+            if execute_disk_cleanup; then
+                details="Disk cleanup completed"
+            else
+                outcome="failure"
+                details="Disk cleanup failed"
+            fi
+            ;;
+        service-restart)
+            if [[ -z "$service" ]]; then
+                outcome="failure"
+                details="No service specified"
+            elif execute_service_restart "$service"; then
+                details="Service $service restarted"
+            else
+                outcome="failure"
+                details="Failed to restart $service"
+            fi
+            ;;
+        drift-reconciliation)
+            if execute_drift_reconciliation; then
+                details="Drift reconciliation completed"
+            else
+                outcome="failure"
+                details="Drift reconciliation failed"
+            fi
+            ;;
+        *)
+            log WARNING "Unknown action type: $action_type"
+            outcome="skipped"
+            details="Unknown action type"
+            ;;
+    esac
+
+    duration=$(($(date +%s) - start_time))
+
+    # Log decision
+    log_decision "$action" "$outcome" "$details" "$duration"
+
+    # Update counters
+    if [[ "$outcome" == "success" ]]; then
+        reset_failure_count
+        log SUCCESS "$details (${duration}s)"
+    else
+        increment_failure
+        log ERROR "$details"
+    fi
+
+    # Set cooldown
+    local cooldown_seconds=300  # Default 5 minutes
+    case "$action_type" in
+        disk-cleanup) cooldown_seconds=3600 ;;  # 1 hour
+        service-restart) cooldown_seconds=300 ;; # 5 minutes
+        drift-reconciliation) cooldown_seconds=900 ;; # 15 minutes
+    esac
+    set_cooldown "$cooldown_key" "$cooldown_seconds"
+
+    [[ "$outcome" == "success" ]]
+}
+
+log_decision() {
+    local action="$1"
+    local outcome="$2"
+    local details="$3"
+    local duration="$4"
+
+    local entry
+    entry=$(cat << EOF
+{
+  "id": "decision-$(date +%Y%m%d%H%M%S)-$RANDOM",
+  "timestamp": "$(date -Iseconds)",
+  "action_type": $(echo "$action" | jq '.type'),
+  "action_id": $(echo "$action" | jq '.id'),
+  "service": $(echo "$action" | jq '.service // null'),
+  "trigger": $(echo "$action" | jq '.reason'),
+  "confidence": $(echo "$action" | jq '.confidence'),
+  "risk": $(echo "$action" | jq '.risk'),
+  "decision": $(echo "$action" | jq '.decision'),
+  "outcome": "$outcome",
+  "details": "$details",
+  "duration_seconds": $duration
+}
+EOF
+    )
+
+    # Update decision log
+    if [[ -f "$DECISION_LOG" ]]; then
+        local updated
+        updated=$(jq --argjson entry "$entry" '.decisions += [$entry]' "$DECISION_LOG")
+        echo "$updated" > "$DECISION_LOG"
+    fi
+
+    # Update state statistics
+    local state
+    state=$(load_state)
+    state=$(echo "$state" | jq \
+        --arg ts "$(date -Iseconds)" \
+        '.last_action = $ts | .statistics.total_actions += 1')
+
+    if [[ "$outcome" == "success" ]]; then
+        state=$(echo "$state" | jq '.statistics.success_count += 1')
+    else
+        state=$(echo "$state" | jq '.statistics.failure_count += 1')
+    fi
+
+    # Recalculate success rate
+    local success_count total_actions
+    success_count=$(echo "$state" | jq '.statistics.success_count // 0')
+    total_actions=$(echo "$state" | jq '.statistics.total_actions // 1')
+    state=$(echo "$state" | jq \
+        --argjson rate "$(awk "BEGIN {printf \"%.2f\", $success_count / $total_actions}")" \
+        '.statistics.success_rate = $rate')
+
+    save_state "$state"
+}
+
+##############################################################################
+# Main
+##############################################################################
+
+main() {
+    # Check safety conditions
+    if is_paused; then
+        log WARNING "Autonomous operations are PAUSED"
+        echo "Use '$0 --resume' to resume operations"
+        exit 2
+    fi
+
+    if is_circuit_breaker_triggered; then
+        log ERROR "Circuit breaker is TRIGGERED"
+        echo "Manual intervention required. Use '$0 --resume' to reset."
+        exit 2
+    fi
+
+    # Get actions to execute
+    local actions='[]'
+
+    if $FROM_CHECK; then
+        log INFO "Running autonomous check first..."
+        local check_output
+        check_output=$("$AUTONOMOUS_CHECK" --json 2>/dev/null || echo '{"recommended_actions": []}')
+        actions=$(echo "$check_output" | jq '.recommended_actions // []')
+    elif [[ -n "$ACTION_ID" ]]; then
+        # Execute specific action from state
+        local state
+        state=$(load_state)
+        actions=$(echo "$state" | jq --arg id "$ACTION_ID" '[.pending_actions[] | select(.id == $id)]')
+    else
+        # Get pending actions from state
+        local state
+        state=$(load_state)
+        actions=$(echo "$state" | jq '.pending_actions // []')
+
+        if [[ "$actions" == "[]" ]]; then
+            log INFO "No pending actions. Running check..."
+            local check_output
+            check_output=$("$AUTONOMOUS_CHECK" --json 2>/dev/null || echo '{"recommended_actions": []}')
+            actions=$(echo "$check_output" | jq '.recommended_actions // []')
+        fi
+    fi
+
+    local action_count
+    action_count=$(echo "$actions" | jq 'length')
+
+    if (( action_count == 0 )); then
+        log INFO "No actions to execute"
+        exit 0
+    fi
+
+    log INFO "Found $action_count action(s) to evaluate"
+
+    # Execute actions
+    local success_count=0
+    local failure_count=0
+
+    local i=0
+    while (( i < action_count )); do
+        local action
+        action=$(echo "$actions" | jq ".[$i]")
+
+        if execute_action "$action"; then
+            ((success_count++)) || true
+        else
+            ((failure_count++)) || true
+        fi
+
+        ((i++)) || true
+
+        # Check circuit breaker after each action
+        if is_circuit_breaker_triggered; then
+            log ERROR "Circuit breaker triggered, stopping execution"
+            break
+        fi
+    done
+
+    echo ""
+    log INFO "=========================================="
+    log INFO "Execution Summary"
+    log INFO "  Total:    $action_count"
+    log INFO "  Success:  $success_count"
+    log INFO "  Failures: $failure_count"
+    log INFO "=========================================="
+
+    if (( failure_count > 0 )); then
+        exit 1
+    fi
+
+    exit 0
+}
+
+# Dispatch based on RUN_COMMAND (set during argument parsing)
+case "$RUN_COMMAND" in
+    status)
+        show_status
+        exit 0
+        ;;
+    stop)
+        emergency_stop
+        exit 0
+        ;;
+    pause)
+        pause_operations
+        exit 0
+        ;;
+    resume)
+        resume_operations
+        exit 0
+        ;;
+    *)
+        main
+        ;;
+esac

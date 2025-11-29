@@ -1,0 +1,39 @@
+{
+  "enabled": true,
+  "mode": "active",
+  "paused": false,
+  "version": "1.0.0",
+  "initialized": "2025-11-29T23:00:00+01:00",
+  "last_check": null,
+  "last_action": null,
+  "circuit_breaker": {
+    "threshold": 3,
+    "triggered": false,
+    "consecutive_failures": 0,
+    "last_failure": null,
+    "reset_after_hours": 24
+  },
+  "pending_actions": [],
+  "cooldowns": {},
+  "statistics": {
+    "total_checks": 0,
+    "total_actions": 0,
+    "actions_24h": 0,
+    "actions_7d": 0,
+    "success_count": 0,
+    "failure_count": 0,
+    "success_rate": 1.0,
+    "avg_confidence": 0.0
+  },
+  "settings": {
+    "check_interval_minutes": 60,
+    "min_confidence_auto": 0.90,
+    "min_confidence_notify": 0.80,
+    "min_confidence_queue": 0.70,
+    "cooldown_defaults": {
+      "service-restart": 300,
+      "disk-cleanup": 3600,
+      "drift-reconciliation": 900
+    }
+  }
+}
