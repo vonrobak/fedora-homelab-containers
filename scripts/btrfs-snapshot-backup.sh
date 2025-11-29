@@ -292,6 +292,50 @@ get_latest_snapshot() {
     echo "$latest"
 }
 
+get_second_latest_snapshot() {
+    local snapshot_dir=$1
+    local pattern=$2
+
+    if [[ ! -d "$snapshot_dir" ]]; then
+        echo ""
+        return 1
+    fi
+
+    # Find second most recent snapshot matching pattern (for use as parent in incremental send)
+    local second=$(find "$snapshot_dir" -maxdepth 1 -type d -name "$pattern" -printf '%T+ %p\n' | sort -r | sed -n '2p' | awk '{print $2}')
+
+    echo "$second"
+}
+
+find_common_parent() {
+    # Find a local snapshot that also exists on the external drive (for incremental send)
+    # For btrfs send -p to work, the parent must exist locally AND have been received at destination
+    local local_dir=$1
+    local external_dir=$2
+    local pattern=$3
+
+    if [[ ! -d "$local_dir" ]] || [[ ! -d "$external_dir" ]]; then
+        echo ""
+        return 1
+    fi
+
+    # Get local snapshots sorted by date (newest first), excluding the current one being sent
+    local local_snapshots=$(find "$local_dir" -maxdepth 1 -type d -name "$pattern" -printf '%f\n' | sort -r)
+
+    # Check each local snapshot to see if it exists on external
+    for snap in $local_snapshots; do
+        if [[ -d "$external_dir/$snap" ]]; then
+            # Found a common ancestor
+            echo "$local_dir/$snap"
+            return 0
+        fi
+    done
+
+    # No common parent found - will need full send
+    echo ""
+    return 1
+}
+
 ################################################################################
 # BACKUP FUNCTIONS BY TIER
 ################################################################################
@@ -318,7 +362,8 @@ backup_tier1_home() {
         if [[ $(date +%u) -eq 6 ]]; then  # Saturday
             check_external_mounted || return 1
 
-            local parent=$(get_latest_snapshot "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home")
+            # Find common parent that exists on both local and external (for incremental send)
+            local parent=$(find_common_parent "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_HOME_EXTERNAL_DIR"
 
             # Cleanup external snapshots
@@ -352,7 +397,8 @@ backup_tier1_opptak() {
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
         check_external_mounted || return 1
 
-        local parent=$(get_latest_snapshot "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak")
+        # Find common parent that exists on both local and external (for incremental send)
+        local parent=$(find_common_parent "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak")
         send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_OPPTAK_EXTERNAL_DIR"
 
         # Cleanup external snapshots
@@ -385,7 +431,8 @@ backup_tier1_containers() {
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
         check_external_mounted || return 1
 
-        local parent=$(get_latest_snapshot "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers")
+        # Find common parent that exists on both local and external (for incremental send)
+        local parent=$(find_common_parent "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers")
         send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_CONTAINERS_EXTERNAL_DIR"
 
         # Cleanup external snapshots
@@ -418,7 +465,8 @@ backup_tier2_docs() {
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
         check_external_mounted || return 1
 
-        local parent=$(get_latest_snapshot "$TIER2_DOCS_EXTERNAL_DIR" "*-docs")
+        # Find common parent that exists on both local and external (for incremental send)
+        local parent=$(find_common_parent "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs")
         send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_DOCS_EXTERNAL_DIR"
 
         # Cleanup external snapshots
@@ -457,7 +505,8 @@ backup_tier2_root() {
     if [[ "$LOCAL_ONLY" != "true" ]]; then
         check_external_mounted || return 1
 
-        local parent=$(get_latest_snapshot "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root")
+        # Find common parent that exists on both local and external (for incremental send)
+        local parent=$(find_common_parent "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root")
         send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_ROOT_EXTERNAL_DIR"
 
         # Cleanup external snapshots
@@ -496,7 +545,8 @@ backup_tier3_pics() {
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%d) -le 7 ]]; then  # First week of month
         check_external_mounted || return 1
 
-        local parent=$(get_latest_snapshot "$TIER3_PICS_EXTERNAL_DIR" "*-pics*")
+        # Find common parent that exists on both local and external (for incremental send)
+        local parent=$(find_common_parent "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*")
         send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_PICS_EXTERNAL_DIR"
 
         # Cleanup external snapshots
