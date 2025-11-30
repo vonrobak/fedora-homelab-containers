@@ -2,7 +2,7 @@
 
 **Purpose:** Operational manual for maintaining a healthy, efficient homelab
 **Audience:** Homelab operators (you + Claude Code)
-**Last Updated:** 2025-11-14
+**Last Updated:** 2025-11-30
 **Philosophy:** Proactive health, systematic deployment, routine maintenance
 
 ---
@@ -66,6 +66,11 @@ df -h / /mnt/btrfs-pool | grep -v tmpfs
 
 # Any unusual activity?
 podman stats --no-stream | head -10
+
+# Quick natural language queries (fast, cached):
+./scripts/query-homelab.sh "What services are using the most memory?"
+./scripts/query-homelab.sh "Show me disk usage"
+./scripts/query-homelab.sh "What's using the most CPU?"
 ```
 
 **Time Budget:** 5 minutes
@@ -305,6 +310,19 @@ sudo dnf check-update
 ## 🔍 Troubleshooting Decision Tree
 
 ### When Something Goes Wrong
+
+**Step 0: Get Skill Recommendation**
+```bash
+# Let the system suggest which skill to use
+./scripts/recommend-skill.sh "describe the problem"
+
+# Examples:
+./scripts/recommend-skill.sh "Jellyfin won't start with permission errors"
+# → Recommends: systematic-debugging (63% confidence)
+
+./scripts/recommend-skill.sh "Need to reconfigure Immich service"
+# → Recommends: homelab-deployment (58% confidence)
+```
 
 **Step 1: Check System Health**
 ```bash
@@ -570,14 +588,20 @@ echo "$(date +%Y-%m-%d): <service> - <change>" >> ~/operational-journal.md
 | Why pattern-based? | `docs/20-operations/decisions/2025-11-14-decision-007-pattern-based-deployment.md` |
 | Architecture overview? | `docs/20-operations/guides/homelab-architecture.md` |
 | Service-specific help? | `docs/10-services/guides/<service>.md` |
+| Natural language queries? | `docs/40-monitoring-and-documentation/guides/natural-language-queries.md` |
+| Skill recommendations? | `docs/10-services/guides/skill-recommendation.md` |
+| Autonomous operations? | `docs/20-operations/guides/autonomous-operations.md` |
+| All automation scripts? | `docs/20-operations/guides/automation-reference.md` |
 
 **When Claude Code should help:**
+- **Let the system decide:** `./scripts/recommend-skill.sh "describe the task"`
 - Deploying new services → Invoke `homelab-deployment` skill
 - System health check → Invoke `homelab-intelligence` skill
 - Bug investigation → Invoke `systematic-debugging` skill
 - Complex git operations → Invoke `git-advanced-workflows` skill
+- Quick system queries → Use `./scripts/query-homelab.sh "your question"`
 
-**See:** `docs/10-services/guides/skill-integration-guide.md`
+**See:** `docs/10-services/guides/skill-recommendation.md`
 
 ---
 

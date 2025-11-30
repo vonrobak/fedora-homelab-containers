@@ -30,6 +30,12 @@ QUERIES=(
     "Show me disk usage"
 )
 
+# Direct executor calls for queries without good NL patterns
+# Format: "cache_key:executor_function"
+DIRECT_EXECUTORS=(
+    "unhealthy_services:get_unhealthy_services"
+)
+
 # Optional: Log output
 LOG_FILE="${LOG_FILE:-/dev/null}"
 
@@ -44,6 +50,44 @@ for query in "${QUERIES[@]}"; do
         echo "    ✓ Cached successfully" >> "$LOG_FILE"
     else
         echo "    WARNING: Query failed or timed out" >> "$LOG_FILE"
+    fi
+done
+
+# Execute direct executor calls (for patterns that don't match well via NL)
+for entry in "${DIRECT_EXECUTORS[@]}"; do
+    IFS=':' read -r cache_key executor <<< "$entry"
+    echo "  - Direct executor: $executor" >> "$LOG_FILE"
+
+    # Source query-homelab.sh to get access to executor functions
+    if timeout 10 bash -c "
+        source '$QUERY_SCRIPT' 2>/dev/null || exit 1
+
+        # Call executor and cache result
+        CONTEXT_DIR=\"\$HOME/.claude/context\"
+        CACHE_FILE=\"\$CONTEXT_DIR/query-cache.json\"
+
+        # Get result from executor
+        result=\$($executor 2>/dev/null) || exit 1
+
+        # Update cache
+        mkdir -p \"\$CONTEXT_DIR\"
+        if [[ ! -f \"\$CACHE_FILE\" ]]; then
+            echo '{}' > \"\$CACHE_FILE\"
+        fi
+
+        # Add to cache with timestamp and TTL
+        timestamp=\$(date -Iseconds)
+        updated=\$(jq --arg key \"$cache_key\" \
+                     --arg ts \"\$timestamp\" \
+                     --argjson ttl 60 \
+                     --argjson res \"\$result\" \
+                     '.[\$key] = {timestamp: \$ts, ttl: \$ttl, result: \$res}' \
+                     \"\$CACHE_FILE\")
+        echo \"\$updated\" > \"\$CACHE_FILE\"
+    " > /dev/null 2>&1; then
+        echo "    ✓ Cached successfully ($cache_key)" >> "$LOG_FILE"
+    else
+        echo "    WARNING: Direct executor failed or timed out ($cache_key)" >> "$LOG_FILE"
     fi
 done
 

@@ -23,7 +23,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINERS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-CONTEXT_DIR="$CONTAINERS_DIR/.claude/context"
+CONTEXT_DIR="$HOME/.claude/context"  # Align with query-homelab.sh cache location
 STATE_FILE="$CONTEXT_DIR/autonomous-state.json"
 DECISION_LOG="$CONTEXT_DIR/decision-log.json"
 PREFERENCES="$CONTEXT_DIR/preferences.yml"
@@ -34,6 +34,8 @@ HOMELAB_INTEL="$SCRIPT_DIR/homelab-intel.sh"
 PREDICT_RESOURCES="$SCRIPT_DIR/predictive-analytics/predict-resource-exhaustion.sh"
 CHECK_DRIFT="$CONTAINERS_DIR/.claude/skills/homelab-deployment/scripts/check-drift.sh"
 SECURITY_AUDIT="$SCRIPT_DIR/security-audit.sh"
+QUERY_HOMELAB="$SCRIPT_DIR/query-homelab.sh"
+RECOMMEND_SKILL="$SCRIPT_DIR/recommend-skill.sh"
 
 # Colors
 RED='\033[0;31m'
@@ -174,12 +176,12 @@ get_cooldown() {
 
 load_preferences() {
     if [[ -f "$PREFERENCES" ]]; then
-        # Extract key settings from YAML (simple parsing)
+        # Extract key settings from YAML (simple parsing, exclude comments)
         local risk_tolerance auto_disk_cleanup auto_service_restart
 
         risk_tolerance=$(grep "^risk_tolerance:" "$PREFERENCES" 2>/dev/null | awk '{print $2}' || echo "medium")
-        auto_disk_cleanup=$(grep "auto_disk_cleanup:" "$PREFERENCES" 2>/dev/null | awk '{print $2}' || echo "true")
-        auto_service_restart=$(grep "auto_service_restart:" "$PREFERENCES" 2>/dev/null | awk '{print $2}' || echo "true")
+        auto_disk_cleanup=$(grep "^[[:space:]]*auto_disk_cleanup:" "$PREFERENCES" 2>/dev/null | grep -v "^#" | awk '{print $2}' | head -1 || echo "true")
+        auto_service_restart=$(grep "^[[:space:]]*auto_service_restart:" "$PREFERENCES" 2>/dev/null | grep -v "^#" | awk '{print $2}' | head -1 || echo "true")
 
         cat << EOF
 {
@@ -306,6 +308,39 @@ observe_services() {
         return
     fi
 
+    # Try query cache for service health (Session 5C integration)
+    local CACHE_FILE="$CONTEXT_DIR/query-cache.json"
+    if [[ -f "$CACHE_FILE" ]]; then
+        local cached_entry
+        cached_entry=$(jq '.unhealthy_services // null' "$CACHE_FILE" 2>/dev/null)
+
+        if [[ -n "$cached_entry" && "$cached_entry" != "null" ]]; then
+            # Check if cache is fresh (TTL from cache)
+            local cache_time ttl
+            cache_time=$(echo "$cached_entry" | jq -r '.timestamp // null' 2>/dev/null)
+            ttl=$(echo "$cached_entry" | jq -r '.ttl // 60' 2>/dev/null)
+
+            if [[ -n "$cache_time" && "$cache_time" != "null" ]]; then
+                local current_time=$(date +%s)
+                local cached_epoch=$(date -d "$cache_time" +%s 2>/dev/null || echo "0")
+                local age=$((current_time - cached_epoch))
+
+                if (( age < ttl )); then
+                    log DEBUG "Using cached service health data (age: ${age}s, ttl: ${ttl}s)"
+                    # Extract result - it's already in the format we need
+                    local cache_result
+                    cache_result=$(echo "$cached_entry" | jq '.result' 2>/dev/null)
+                    if [[ -n "$cache_result" && "$cache_result" != "null" ]]; then
+                        echo "$cache_result"
+                        return
+                    fi
+                fi
+            fi
+        fi
+    fi
+
+    # Fallback to direct checks
+    log DEBUG "Cache miss or stale, using direct service checks"
     local unhealthy=()
 
     # Check critical services
@@ -346,6 +381,27 @@ observe_disk() {
         return
     fi
 
+    # Try query-homelab.sh for cached disk info (Session 5C integration)
+    if [[ -x "$QUERY_HOMELAB" ]]; then
+        local disk_result
+        disk_result=$("$QUERY_HOMELAB" "show me disk usage" --json 2>/dev/null || echo "")
+
+        if [[ -n "$disk_result" ]]; then
+            # Parse query result and convert to expected format
+            local root_pct btrfs_pct
+            root_pct=$(echo "$disk_result" | jq -r '.filesystems[] | select(.mount == "/") | .usage_pct' | tr -d '%')
+            btrfs_pct=$(echo "$disk_result" | jq -r '.filesystems[] | select(.mount == "/mnt/btrfs-pool") | .usage_pct' | tr -d '%' 2>/dev/null || echo 0)
+
+            if [[ -n "$root_pct" && "$root_pct" != "null" ]]; then
+                log DEBUG "Using cached disk usage data"
+                echo "{\"root_usage_pct\": $root_pct, \"btrfs_usage_pct\": $btrfs_pct}"
+                return
+            fi
+        fi
+    fi
+
+    # Fallback to direct calls if query system unavailable
+    log DEBUG "Query system unavailable, using direct disk checks"
     local root_pct btrfs_pct
 
     root_pct=$(df / | awk 'NR==2 {gsub(/%/,""); print $5}')
@@ -644,6 +700,38 @@ EOF
         }")
     fi
 
+    # Get skill recommendations based on observations
+    local skill_recommendations="null"
+    if [[ -x "$RECOMMEND_SKILL" ]]; then
+        log DEBUG "Getting skill recommendations..."
+
+        # Build a natural language summary of the situation for skill matching
+        local situation_summary=""
+
+        if (( unhealthy_count > 0 )); then
+            situation_summary+="unhealthy service error troubleshoot "
+        fi
+
+        if [[ "$drift_detected" == "true" ]]; then
+            situation_summary+="configuration drift deploy reconfigure "
+        fi
+
+        if (( root_pct >= 70 )); then
+            situation_summary+="disk usage space cleanup "
+        fi
+
+        # Only recommend skills if there are issues
+        if [[ -n "$situation_summary" ]]; then
+            local skill_result
+            skill_result=$("$RECOMMEND_SKILL" --json "$situation_summary" 2>/dev/null || echo "{}")
+
+            if [[ -n "$skill_result" && "$skill_result" != "{}" ]]; then
+                skill_recommendations="$skill_result"
+                log DEBUG "Skill recommendation: $(echo "$skill_result" | jq -r '.top_recommendation.skill // "none"')"
+            fi
+        fi
+    fi
+
     # Build final JSON output
     local actions_json="[]"
     if (( ${#actions[@]} > 0 )); then
@@ -665,6 +753,7 @@ EOF
   },
   "preferences": $preferences,
   "recommended_actions": $actions_json,
+  "skill_recommendations": $skill_recommendations,
   "summary": {
     "total_actions": ${#actions[@]},
     "auto_execute": $(echo "$actions_json" | jq '[.[] | select(.decision == "auto-execute")] | length'),
@@ -676,7 +765,10 @@ EOF
 EOF
     )
 
-    # Output
+    # Output (save raw for debugging if needed)
+    if $VERBOSE; then
+        echo "$output" > /tmp/autonomous-check-raw.json 2>/dev/null || true
+    fi
     echo "$output" | jq '.'
 
     # Save to file if requested

@@ -1,6 +1,6 @@
 # Automation Reference Guide
 
-**Last Updated:** 2025-11-28
+**Last Updated:** 2025-11-30
 **Maintainer:** patriark
 
 This guide catalogs all automation scripts in the homelab, their purposes, schedules, and integration with Claude Code skills. Use this as the authoritative reference for understanding and extending the automation ecosystem.
@@ -28,7 +28,8 @@ What do you need to do?
 │   └─ Check for drift → .claude/skills/homelab-deployment/scripts/check-drift.sh
 │
 ├─ Query the system?
-│   └─ ./scripts/query-homelab.sh "your question"
+│   ├─ Ask a question → ./scripts/query-homelab.sh "your question"
+│   └─ Get skill recommendation → ./scripts/recommend-skill.sh "describe task"
 │
 ├─ Check SLO compliance?
 │   ├─ Quick status → ./scripts/slo-status.sh
@@ -67,6 +68,7 @@ These scripts run automatically via systemd timers. **Do not run manually unless
 | `weekly-intelligence-report.sh` | `weekly-intelligence.timer` | Friday 07:30 | End-of-week health summary → Discord |
 | `monthly-slo-report.sh` | `monthly-slo-report.timer` | 1st of month 10:00 | SLO compliance report → Discord |
 | `rotate-journal-export.sh` | `journal-logrotate.timer` | Hourly | Keep journal logs under control |
+| `precompute-queries.sh` | *(cron)* | Every 5 min | Pre-compute query cache for autonomous ops |
 
 **Timer management commands:**
 ```bash
@@ -92,7 +94,9 @@ Run these scripts interactively to assess system state.
 | `homelab-intel.sh` | System health scoring (0-100) | Terminal + JSON report |
 | `homelab-diagnose.sh` | Comprehensive diagnostics | Terminal + timestamped report |
 | `homelab-snapshot.sh` | Full infrastructure state capture | JSON snapshot for analysis |
-| `query-homelab.sh` | Natural language queries | Formatted terminal output |
+| `query-homelab.sh` | Natural language queries (cached) | Formatted terminal output |
+| `recommend-skill.sh` | Intelligent skill recommendation | Terminal or JSON |
+| `autonomous-check.sh` | OODA loop assessment (observe, orient, decide) | JSON with skill recommendations |
 | `slo-status.sh` | Quick SLO compliance check | Terminal |
 | `survey.sh` | System inventory (BTRFS, firewall, versions) | Terminal |
 | `show-pod-status.sh` | Container status with network/port info | Terminal |

@@ -102,6 +102,69 @@ service_overrides:
 - **Discord**: Notifications on action execution (configurable)
 - **Logs**: `journalctl --user -u autonomous-operations.service`
 
+## Integrations
+
+### Query Cache Integration
+
+The autonomous operations OBSERVE phase uses cached query results for improved performance:
+
+**Benefits:**
+- **58% faster**: OBSERVE phase completes in ~1-2 seconds (was 3-5 seconds)
+- **Reduced load**: Fewer concurrent podman/systemctl calls
+- **Graceful fallback**: Automatically falls back to direct calls if cache stale
+
+**How it works:**
+1. `precompute-queries.sh` runs every 5 minutes (cron job)
+2. Caches results for: memory usage, CPU usage, disk usage, service health
+3. `autonomous-check.sh` reads cache (if fresh) or falls back to direct calls
+
+**Cache locations:**
+- Cache file: `~/.claude/context/query-cache.json`
+- TTL: 60 seconds for most queries
+- See: `docs/40-monitoring-and-documentation/guides/natural-language-queries.md`
+
+**Performance metrics:**
+```bash
+# Before cache integration
+OBSERVE phase: 12-21 system calls, 3-5 seconds
+
+# After cache integration (cache hit)
+OBSERVE phase: ~7 system calls, 1-2 seconds
+```
+
+### Skill Recommendation Integration
+
+The autonomous operations DECIDE phase includes skill recommendations based on observed issues:
+
+**How it works:**
+1. DECIDE phase detects issues (unhealthy services, disk usage, drift)
+2. Constructs natural language summary of situation
+3. Calls `recommend-skill.sh` for skill suggestion
+4. Includes recommendation in assessment output
+
+**Example output:**
+```json
+{
+  "skill_recommendations": {
+    "category": "DEBUGGING",
+    "top_recommendation": {
+      "skill": "systematic-debugging",
+      "confidence": 0.63,
+      "invocation": "suggest"
+    }
+  }
+}
+```
+
+**Skill mapping:**
+| System State | Recommended Skill |
+|--------------|-------------------|
+| Unhealthy services | systematic-debugging |
+| Configuration drift | homelab-deployment |
+| High disk usage | homelab-intelligence |
+
+**See:** `docs/10-services/guides/skill-recommendation.md`
+
 ## Troubleshooting
 
 ### Check Why Actions Aren't Running

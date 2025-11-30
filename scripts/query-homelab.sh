@@ -405,6 +405,40 @@ list_all_services() {
     }] | .[0:20]'
 }
 
+# Get unhealthy services (for autonomous operations integration)
+get_unhealthy_services() {
+    local critical_services=("traefik" "prometheus" "grafana" "alertmanager" "authelia" "jellyfin" "immich-server")
+    local unhealthy=()
+
+    for service in "${critical_services[@]}"; do
+        if systemctl --user is-active "$service.service" >/dev/null 2>&1; then
+            # Service running, check health if container exists
+            if podman container exists "$service" 2>/dev/null; then
+                if ! podman healthcheck run "$service" >/dev/null 2>&1; then
+                    unhealthy+=("$service")
+                fi
+            fi
+        elif systemctl --user list-unit-files "$service.service" >/dev/null 2>&1; then
+            # Service exists but not running
+            unhealthy+=("$service")
+        fi
+    done
+
+    # Output JSON array
+    if (( ${#unhealthy[@]} > 0 )); then
+        printf '{"unhealthy_services": ['
+        local first=true
+        for s in "${unhealthy[@]}"; do
+            $first || printf ','
+            printf '"%s"' "$s"
+            first=false
+        done
+        printf ']}'
+    else
+        echo '{"unhealthy_services": []}'
+    fi
+}
+
 # ==================== RESPONSE FORMATTERS ====================
 
 # Format result as human-readable text
@@ -457,6 +491,14 @@ format_response() {
         get_service_config)
             echo -e "${BLUE}Configuration${cache_note}:${NC}"
             echo "$result" | jq -r 'to_entries | .[] | "  \(.key): \(.value)"'
+            ;;
+        get_unhealthy_services)
+            if [[ "$(echo "$result" | jq '.unhealthy_services | length')" -gt 0 ]]; then
+                echo -e "${YELLOW}Unhealthy services${cache_note}:${NC}"
+                echo "$result" | jq -r '.unhealthy_services[]' | sed 's/^/  ❌ /'
+            else
+                echo -e "${GREEN}All services healthy${cache_note}${NC}"
+            fi
             ;;
         list_all_services)
             echo -e "${BLUE}Services${cache_note}:${NC}"
@@ -587,4 +629,7 @@ main() {
 }
 
 # Run
-main "$@"
+# Only run main if script is executed (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
