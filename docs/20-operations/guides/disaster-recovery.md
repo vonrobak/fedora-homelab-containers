@@ -257,14 +257,50 @@ backup_restore_test_last_run_timestamp
 cat ~/containers/data/backup-metrics/restore-test-metrics.prom
 ```
 
-### Future: Grafana Dashboard
+### Grafana Dashboard
 
-Planned dashboard panels:
-- Backup status overview (all subvolumes)
-- Restore test results (pass/fail history)
-- Backup age (time since last backup)
-- Backup size trends
-- RTO/RPO metrics
+**Dashboard:** Backup Health Dashboard
+**Location:** http://grafana.patriark.org/d/backup-health
+**Refresh:** 30 seconds auto-refresh
+
+**Dashboard Panels (6 total):**
+
+1. **Backup Status - All Subvolumes** (Stat Panel)
+   - Shows SUCCESS/FAILED status for each subvolume
+   - Color-coded: Green = Success, Red = Failed
+   - Quick visual health check
+
+2. **Backup Duration** (Time Series)
+   - Tracks how long each backup takes
+   - Helps identify performance degradation
+   - Shows max/last values in legend
+
+3. **Time Since Last Successful Backup** (Stat Panel)
+   - Age of last successful backup per subvolume
+   - Color thresholds: Green (<1 day), Yellow (1-2 days), Red (>2 days)
+   - Critical for detecting stale backups
+
+4. **Snapshot Counts (Local vs External)** (Bar Chart)
+   - Horizontal bar chart showing local and external snapshot counts
+   - Blue bars = Local snapshots
+   - Green bars = External snapshots
+   - Helps verify backup retention is working
+
+5. **Active Backup Alerts** (Table)
+   - Lists all firing/pending backup-related alerts
+   - Columns: Alert name, State, Severity, Category, Component, Subvolume
+   - Color-coded by severity (Critical = Red, Warning = Yellow)
+
+6. **Snapshot Count Trends Over Time** (Time Series)
+   - Historical view of snapshot counts (24h default)
+   - Shows both local and external trends
+   - Useful for identifying cleanup issues or backup failures
+
+**Dashboard Features:**
+- Auto-refresh every 30 seconds
+- 24-hour time window (default)
+- Tagged with: backup, disaster-recovery, monitoring
+- All panels use Prometheus datasource
 
 ---
 
@@ -419,7 +455,7 @@ sudo btrfs subvolume delete ~/.snapshots/htpc-home/20251101-home
 - [x] All 4 DR runbooks (DR-001, DR-002, DR-003, DR-004)
 - [x] Prometheus alerting integration (8 alert rules)
 - [x] Backup metrics export (via node_exporter textfile collector)
-- [ ] Grafana dashboard (metrics available, dashboard creation pending)
+- [x] Grafana dashboard (Backup Health Dashboard with 6 panels)
 - [ ] RTO measurement for all subvolumes
 - [x] **Off-site backup implementation** ✓ Quarterly rotation of 18TB encrypted drive
 
@@ -431,6 +467,7 @@ sudo btrfs subvolume delete ~/.snapshots/htpc-home/20251101-home
 
 **Next Steps:**
 1. Let automated tests run for 3 months to establish baseline
-2. Build Grafana backup health dashboard (Phase 3 - optional enhancement)
+2. Monitor backup metrics and alerts via Grafana dashboard
 3. Measure actual RTO for each subvolume (Phase 4)
 4. Document off-site backup rotation procedure (Phase 5)
+5. Tune alert thresholds based on actual backup patterns
