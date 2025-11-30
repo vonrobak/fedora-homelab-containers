@@ -24,12 +24,15 @@ Automated, validated, and documented service deployment for homelab infrastructu
 
 **With this skill:**
 - Template-based configuration
-- Automatic validation
+- Automatic validation (4 validation scripts)
 - Best practices enforced
 - Systematic verification
 - Auto-generated documentation
+- Drift detection and health gates
 - 10-15 minute deployments
 - <5% failure rate
+- 9 battle-tested patterns
+- 10 operational scripts
 
 ## Quick Start
 
@@ -106,7 +109,7 @@ homelab-deployment/
 
 ### 2. Validation Scripts
 
-**Prerequisites Checker:**
+**Prerequisites Checker (`check-prerequisites.sh`):**
 - Image availability
 - Network existence
 - Port availability
@@ -115,7 +118,7 @@ homelab-deployment/
 - Conflict detection
 - SELinux status
 
-**Quadlet Validator:**
+**Quadlet Validator (`validate-quadlet.sh`):**
 - INI syntax validation
 - Required sections present
 - Network naming (systemd- prefix)
@@ -123,20 +126,40 @@ homelab-deployment/
 - Health checks defined
 - Resource limits set
 
+**Drift Detection (`check-drift.sh`):**
+- Compare running container vs quadlet definition
+- Detect image version changes
+- Memory limit mismatches
+- Network configuration differences
+- Volume mount changes
+- Traefik label drift
+
+**System Health Check (`check-system-health.sh`):**
+- Pre-deployment health gate
+- Validates sufficient resources
+- Checks for critical service issues
+- Integrates with homelab-intel.sh
+- Can be bypassed with --force flag
+
 ### 3. Deployment Patterns
 
-**5 Battle-Tested Patterns:**
-- **Media Server Stack**: Jellyfin/Plex with GPU transcoding
-- **Web App + Database**: Nextcloud/Wiki.js with PostgreSQL
-- **Monitoring Exporter**: Prometheus metrics exporters
-- **Password Manager**: Vaultwarden with strictest security
-- **Authentication Stack**: Authelia + Redis SSO
+**9 Battle-Tested Patterns:**
+- **Media Server Stack** (`media-server-stack.yml`): Jellyfin/Plex with GPU transcoding
+- **Web App + Database** (`web-app-with-database.yml`): Nextcloud/Wiki.js with PostgreSQL
+- **Document Management** (`document-management.yml`): Paperless-ngx, Nextcloud with OCR
+- **Authentication Stack** (`authentication-stack.yml`): Authelia + Redis SSO
+- **Password Manager** (`password-manager.yml`): Vaultwarden with strictest security
+- **Database Service** (`database-service.yml`): PostgreSQL/MySQL with BTRFS NOCOW
+- **Cache Service** (`cache-service.yml`): Redis/Memcached for session storage
+- **Reverse Proxy Backend** (`reverse-proxy-backend.yml`): Internal services with strict auth
+- **Monitoring Exporter** (`monitoring-exporter.yml`): Node exporter, cAdvisor for metrics
 
 Each pattern includes:
 - Complete configuration
 - Deployment sequence
 - Security notes
 - Validation checks
+- Resource requirements
 
 ### 4. Documentation Generation
 
@@ -306,17 +329,30 @@ Phase 7: Git Commit
 - Forget to document changes
 - Deploy sensitive services without authentication
 
+## Implemented Scripts
+
+The following deployment scripts are fully operational:
+
+- **deploy-from-pattern.sh** - Pattern-based deployment with validation
+- **deploy-stack.sh** - Multi-service stack deployment with dependency resolution
+- **deploy-service.sh** - Full orchestration for single service deployment
+- **test-deployment.sh** - Comprehensive post-deployment verification
+- **generate-docs.sh** - Automatic documentation generation
+- **check-drift.sh** - Drift detection (compare running vs expected config)
+- **check-prerequisites.sh** - Pre-deployment validation
+- **check-system-health.sh** - Health gate before deployment
+- **validate-quadlet.sh** - Quadlet syntax and best practice validation
+- **resolve-dependencies.sh** - Dependency graph resolution for stacks
+
 ## Future Enhancements
 
 **Planned:**
-- Deploy-service.sh (full orchestration)
-- Test-deployment.sh (comprehensive verification)
-- Generate-docs.sh (documentation automation)
 - Rollback-deployment.sh (automated rollback)
-- Drift detection (compare running vs expected config)
-- Ansible integration for multi-host
-- Backup/restore hooks
-- Blue-green deployments
+- Ansible integration for multi-host deployments
+- Backup/restore hooks for stateful services
+- Blue-green deployment support
+- Canary deployment patterns
+- Integration testing framework
 
 ## Contributing
 
@@ -336,6 +372,20 @@ Phase 7: Git Commit
 
 ## Version History
 
+**v1.2.0 (2025-11-30)**
+- Added 4 new deployment patterns (9 total)
+- Implemented drift detection (check-drift.sh)
+- Added system health pre-deployment gate
+- Integrated with autonomous operations
+- Added dependency resolution for stacks
+- Comprehensive documentation generation
+
+**v1.1.0 (2025-11-20)**
+- Implemented deploy-stack.sh for multi-service stacks
+- Added test-deployment.sh for verification
+- Integrated predictive analytics for capacity planning
+- Enhanced security validation
+
 **v1.0.0 (2025-11-14)**
 - Initial release
 - 4 quadlet templates
@@ -348,4 +398,4 @@ Phase 7: Git Commit
 
 **Skill Owner:** Claude Code
 **Maintained By:** homelab-deployment skill
-**Last Updated:** 2025-11-14
+**Last Updated:** 2025-11-30

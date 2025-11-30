@@ -192,6 +192,19 @@ podman healthcheck run jellyfin     # Check container health
 # Output: Health score (0-100), critical issues, warnings, recommendations
 # JSON: docs/99-reports/intel-<timestamp>.json
 
+# Natural language system queries
+./scripts/query-homelab.sh "what services are using the most memory?"
+./scripts/query-homelab.sh "show me disk usage"
+./scripts/query-homelab.sh "is jellyfin running?"
+
+# Autonomous operations assessment
+./scripts/autonomous-check.sh --verbose
+./scripts/autonomous-check.sh --json
+
+# Predictive analytics
+./scripts/predictive-analytics/predict-resource-exhaustion.sh
+./scripts/predictive-analytics/predict-resource-exhaustion.sh --all --output json
+
 # Configuration drift detection (compare running vs declared state)
 cd .claude/skills/homelab-deployment
 ./scripts/check-drift.sh                    # Check all services
@@ -206,6 +219,15 @@ cd .claude/skills/homelab-deployment
 
 # Security compliance audit
 ./scripts/security-audit.sh
+
+# Vulnerability scanning
+./scripts/scan-vulnerabilities.sh
+./scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
+
+# Skill usage analytics
+./scripts/analyze-skill-usage.sh
+./scripts/analyze-skill-usage.sh --skill systematic-debugging
+./scripts/analyze-skill-usage.sh --monthly-report
 
 # Pod status with network/port info
 ./scripts/show-pod-status.sh
@@ -328,6 +350,157 @@ journalctl --user -u monthly-slo-report.service
 ```
 
 **Documentation:** `docs/40-monitoring-and-documentation/guides/slo-framework.md`
+
+### Autonomous Operations
+
+**OODA Loop:** Daily automated Observe → Orient → Decide → Act cycle with safety controls.
+
+```bash
+# Check autonomous operations status
+~/containers/scripts/autonomous-execute.sh --status
+
+# Run assessment only (no actions)
+~/containers/scripts/autonomous-check.sh --verbose
+
+# Run full cycle (dry-run)
+~/containers/scripts/autonomous-execute.sh --from-check --dry-run
+
+# Emergency controls
+~/containers/scripts/autonomous-execute.sh --pause    # Stop autonomous actions
+~/containers/scripts/autonomous-execute.sh --stop     # Full shutdown
+~/containers/scripts/autonomous-execute.sh --resume   # Resume operations
+
+# Query decision history
+~/containers/.claude/context/scripts/query-decisions.sh --last 7d
+~/containers/.claude/context/scripts/query-decisions.sh --outcome failure
+~/containers/.claude/context/scripts/query-decisions.sh --stats
+```
+
+**Automation:** Runs daily at 06:30 via `autonomous-operations.timer`
+
+**Safety Features:**
+- Circuit breaker (pauses after 3 consecutive failures)
+- Service overrides (traefik, authelia never auto-restart)
+- Pre-action BTRFS snapshots for instant rollback
+- Confidence-based decision matrix (>90% + low risk → auto-execute)
+- Cooldown periods per action type
+
+**Documentation:** `docs/20-operations/guides/autonomous-operations.md`
+
+### Natural Language Queries
+
+**Ask system questions in plain English** - cached for instant responses.
+
+```bash
+# Query system state
+~/containers/scripts/query-homelab.sh "what services are using the most memory?"
+~/containers/scripts/query-homelab.sh "is jellyfin running?"
+~/containers/scripts/query-homelab.sh "show me disk usage"
+~/containers/scripts/query-homelab.sh "what's on the reverse_proxy network?"
+
+# JSON output for scripting
+~/containers/scripts/query-homelab.sh "top cpu users" --json
+
+# Pre-compute query cache (runs every 5 min via cron)
+~/containers/scripts/precompute-queries.sh
+```
+
+**Performance:**
+- Cache hit: <0.5s response time
+- Cache miss: <2s response time
+- TTL: 60-300 seconds (depending on query type)
+
+**Documentation:** `docs/40-monitoring-and-documentation/guides/natural-language-queries.md`
+
+### Skill Recommendations
+
+**Get context-aware skill suggestions** for complex tasks.
+
+```bash
+# Get skill recommendation
+~/containers/scripts/recommend-skill.sh "jellyfin won't start"
+~/containers/scripts/recommend-skill.sh "deploy new service"
+~/containers/scripts/recommend-skill.sh "check system health"
+
+# View skill usage analytics
+~/containers/scripts/analyze-skill-usage.sh
+~/containers/scripts/analyze-skill-usage.sh --skill systematic-debugging
+~/containers/scripts/analyze-skill-usage.sh --monthly-report
+```
+
+**Available Skills:**
+- `homelab-deployment` - Service deployment with validation
+- `homelab-intelligence` - System health and diagnostics
+- `systematic-debugging` - Root cause investigation framework
+- `autonomous-operations` - OODA loop operations
+- `git-advanced-workflows` - Advanced Git operations
+- `claude-code-analyzer` - Claude Code workflow optimization
+
+**Documentation:** `docs/10-services/guides/skill-recommendation.md`
+
+### Security Framework
+
+```bash
+# Run comprehensive security audit
+~/containers/scripts/security-audit.sh
+
+# Scan for vulnerabilities (uses Trivy)
+~/containers/scripts/scan-vulnerabilities.sh
+~/containers/scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
+
+# View vulnerability reports
+ls -lh ~/containers/data/security-reports/
+
+# Check security audit schedule
+systemctl --user status vulnerability-scan.timer
+```
+
+**Automated Security:**
+- Weekly vulnerability scanning (Sundays 06:00)
+- ADR compliance validation
+- Security baseline enforcement in deployments
+- Incident response runbooks (IR-001 through IR-004)
+
+**Documentation:**
+- `docs/30-security/runbooks/IR-001-brute-force-attack.md`
+- `docs/30-security/runbooks/IR-002-unauthorized-port.md`
+- `docs/30-security/runbooks/IR-003-critical-cve.md`
+- `docs/30-security/runbooks/IR-004-compliance-failure.md`
+
+## Runbooks
+
+The homelab includes comprehensive runbooks for disaster recovery and incident response scenarios.
+
+### Disaster Recovery Runbooks
+
+Located in `docs/20-operations/runbooks/`:
+
+- **DR-001: System SSD Failure** - Recovery when system SSD (128GB) fails
+- **DR-002: BTRFS Pool Corruption** - Recovery from BTRFS filesystem corruption
+- **DR-003: Accidental Deletion** - Restore services/data after accidental deletion
+- **DR-004: Total Catastrophe** - Full homelab rebuild from bare metal
+
+Each runbook includes:
+- Detection criteria and symptoms
+- Step-by-step recovery procedures
+- Estimated recovery time
+- Required resources and prerequisites
+- Verification steps
+
+### Incident Response Runbooks
+
+Located in `docs/30-security/runbooks/`:
+
+- **IR-001: Brute Force Attack** - Response to authentication brute force attempts
+- **IR-002: Unauthorized Port Exposed** - Handling unexpected open ports
+- **IR-003: Critical CVE in Running Container** - Patching vulnerable containers
+- **IR-004: Compliance Failure** - Addressing ADR compliance violations
+
+Each runbook includes:
+- Trigger conditions and detection
+- Automated response steps
+- Manual remediation procedures
+- Post-incident actions
 
 ## Troubleshooting Workflow
 
@@ -589,6 +762,11 @@ Examples: 2025-11-07-system-state.md
 3. **Configuration as code** - All configs in Git (secrets excluded via .gitignore)
 4. **Health-aware deployment** - Scripts verify service readiness before completion
 5. **Zero-trust model** - Authentication required for all internet-accessible services
+6. **Autonomous operations** - OODA loop with confidence-based decision making and safety controls
+7. **Predictive maintenance** - Forecast resource exhaustion 7-14 days in advance
+8. **Defense in depth** - Layered security (IP reputation, rate limiting, authentication, headers, vulnerability scanning)
+9. **Fail-safe defaults** - Autonomous actions require high confidence; circuit breaker on failures
+10. **Observable system** - Natural language queries, comprehensive metrics, audit trails
 
 ## Architecture Decision Records (ADRs)
 

@@ -23,7 +23,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINERS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-CONTEXT_DIR="$HOME/.claude/context"  # Align with query-homelab.sh cache location
+CONTEXT_DIR="$HOME/containers/.claude/context"  # Unified context location
 STATE_FILE="$CONTEXT_DIR/autonomous-state.json"
 DECISION_LOG="$CONTEXT_DIR/decision-log.json"
 PREFERENCES="$CONTEXT_DIR/preferences.yml"

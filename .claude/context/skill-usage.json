@@ -1,0 +1,72 @@
+{
+  "sessions": [
+    {
+      "timestamp": "2025-11-30T20:21:07+01:00",
+      "task_category": "DEBUGGING",
+      "skill_used": "systematic-debugging",
+      "task_keywords": [
+        "jellyfin error"
+      ],
+      "outcome": "success"
+    },
+    {
+      "timestamp": "2025-11-30T20:49:30+01:00",
+      "task_category": "DEPLOYMENT",
+      "skill_used": "homelab-deployment",
+      "task_keywords": [
+        "immich deploy"
+      ],
+      "outcome": "success"
+    },
+    {
+      "timestamp": "2025-11-30T20:49:30+01:00",
+      "task_category": "MONITORING",
+      "skill_used": "homelab-intelligence",
+      "task_keywords": [
+        "health check"
+      ],
+      "outcome": "success"
+    },
+    {
+      "timestamp": "2025-11-30T20:49:30+01:00",
+      "task_category": "DEBUGGING",
+      "skill_used": "systematic-debugging",
+      "task_keywords": [
+        "container crash"
+      ],
+      "outcome": "success"
+    },
+    {
+      "timestamp": "2025-11-30T20:49:30+01:00",
+      "task_category": "DEPLOYMENT",
+      "skill_used": "homelab-deployment",
+      "task_keywords": [
+        "complex service"
+      ],
+      "outcome": "failure"
+    },
+    {
+      "timestamp": "2025-11-30T20:49:30+01:00",
+      "task_category": "MONITORING",
+      "skill_used": "homelab-intelligence",
+      "task_keywords": [
+        "disk usage"
+      ],
+      "outcome": "success"
+    }
+  ],
+  "statistics": {
+    "total_invocations": 6,
+    "by_skill": {
+      "systematic-debugging": 2,
+      "homelab-deployment": 2,
+      "homelab-intelligence": 2
+    },
+    "by_category": {
+      "DEBUGGING": 2,
+      "DEPLOYMENT": 2,
+      "MONITORING": 2
+    },
+    "success_rate": 0.8333333333333334
+  }
+}

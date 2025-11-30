@@ -349,6 +349,52 @@ show_post_deployment() {
 }
 
 ##############################################################################
+# Context Logging
+##############################################################################
+
+log_deployment_to_context() {
+    local context_script="$HOME/containers/.claude/context/scripts/append-deployment.sh"
+
+    # Skip if context logging not available
+    if [[ ! -x "$context_script" ]]; then
+        return 0
+    fi
+
+    # Extract networks from quadlet
+    local networks=""
+    if [[ -f "$HOME/.config/containers/systemd/${SERVICE_NAME}.container" ]]; then
+        networks=$(grep "^Network=" "$HOME/.config/containers/systemd/${SERVICE_NAME}.container" | \
+                  sed 's/^Network=//' | \
+                  tr '\n' ',' | \
+                  sed 's/,$//')
+    fi
+
+    # If no networks found, use pattern default or "unknown"
+    if [[ -z "$networks" ]]; then
+        networks="${PATTERN_VARS[networks]:-unknown}"
+    fi
+
+    # Get current date
+    local deploy_date=$(date +%Y-%m-%d)
+
+    # Prepare notes
+    local notes="Auto-logged deployment via deploy-from-pattern.sh"
+    if [[ -n "$HOSTNAME" ]]; then
+        notes="$notes, accessible at https://$HOSTNAME"
+    fi
+
+    # Log to context (suppress errors - non-critical)
+    "$context_script" \
+        "$SERVICE_NAME" \
+        "$deploy_date" \
+        "$PATTERN" \
+        "$MEMORY" \
+        "$networks" \
+        "$notes" \
+        "pattern-based" 2>/dev/null || true
+}
+
+##############################################################################
 # Argument Parsing
 ##############################################################################
 
@@ -451,6 +497,7 @@ main() {
     run_prerequisites_check
     validate_quadlet
     deploy_service
+    log_deployment_to_context
     show_post_deployment
 }
 

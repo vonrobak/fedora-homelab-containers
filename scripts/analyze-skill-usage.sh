@@ -22,7 +22,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTEXT_DIR="$HOME/.claude/context"
+CONTEXT_DIR="$HOME/containers/.claude/context"
 SKILL_USAGE="$CONTEXT_DIR/skill-usage.json"
 TASK_SKILL_MAP="$CONTEXT_DIR/task-skill-map.json"
 

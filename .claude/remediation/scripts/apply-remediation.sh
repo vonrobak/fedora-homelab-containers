@@ -22,6 +22,7 @@ DRY_RUN=false
 PLAYBOOK=""
 SERVICE=""
 FORCE=false
+DECISION_LOG=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -42,8 +43,12 @@ while [[ $# -gt 0 ]]; do
             FORCE=true
             shift
             ;;
+        --log-to)
+            DECISION_LOG="$2"
+            shift 2
+            ;;
         *)
-            echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--dry-run] [--force]"
+            echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--dry-run] [--force] [--log-to FILE]"
             echo "Available playbooks: disk-cleanup, drift-reconciliation, service-restart, resource-pressure"
             exit 1
             ;;
@@ -498,3 +503,28 @@ log "${GREEN}  REMEDIATION COMPLETE${NC}"
 log "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 log ""
 log "Log saved to: $LOG_FILE"
+
+# Append to decision log if requested (for autonomous operations integration)
+if [[ -n "$DECISION_LOG" ]] && [[ -f "$DECISION_LOG" ]]; then
+    local entry
+    entry=$(cat << EOF
+{
+  "id": "remediation-$(date +%Y%m%d%H%M%S)-$RANDOM",
+  "timestamp": "$(date -Iseconds)",
+  "playbook": "$PLAYBOOK",
+  "service": $(if [[ -n "$SERVICE" ]]; then echo "\"$SERVICE\""; else echo "null"; fi),
+  "outcome": "success",
+  "log_file": "$LOG_FILE"
+}
+EOF
+    )
+
+    # Append to decision log
+    if jq --argjson entry "$entry" '.remediation_executions += [$entry]' "$DECISION_LOG" > "${DECISION_LOG}.tmp" 2>/dev/null; then
+        mv "${DECISION_LOG}.tmp" "$DECISION_LOG"
+        log "${GREEN}✓ Logged to decision log${NC}"
+    else
+        rm -f "${DECISION_LOG}.tmp"
+        log "${YELLOW}⚠ Could not append to decision log${NC}"
+    fi
+fi

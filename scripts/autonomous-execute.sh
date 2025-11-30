@@ -435,112 +435,80 @@ create_snapshot() {
 ##############################################################################
 
 execute_disk_cleanup() {
-    log INFO "Executing disk cleanup..."
-
-    local playbook="$PLAYBOOK_DIR/disk-cleanup.yml"
-
-    if [[ ! -f "$playbook" ]]; then
-        log ERROR "Disk cleanup playbook not found: $playbook"
-        return 1
-    fi
+    log INFO "Executing disk cleanup via remediation playbook..."
 
     if $DRY_RUN; then
-        log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION $playbook"
+        log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION --playbook disk-cleanup --log-to $DECISION_LOG"
         return 0
     fi
 
-    # Execute cleanup
-    if [[ -x "$APPLY_REMEDIATION" ]]; then
-        "$APPLY_REMEDIATION" "$playbook" 2>&1 || {
-            log ERROR "Disk cleanup playbook failed"
-            return 1
-        }
-    else
-        # Fallback: basic cleanup
-        log INFO "Running basic cleanup..."
-
-        # Clean podman
-        podman system prune -f 2>/dev/null || true
-
-        # Clean old logs
-        find "$CONTAINERS_DIR/data" -name "*.log" -mtime +30 -delete 2>/dev/null || true
-
-        # Rotate journal
-        journalctl --user --vacuum-time=7d 2>/dev/null || true
+    # Check if remediation script exists
+    if [[ ! -x "$APPLY_REMEDIATION" ]]; then
+        log ERROR "Remediation script not found or not executable: $APPLY_REMEDIATION"
+        return 1
     fi
 
-    log SUCCESS "Disk cleanup completed"
-    return 0
+    # Execute disk-cleanup playbook
+    if "$APPLY_REMEDIATION" --playbook disk-cleanup --log-to "$DECISION_LOG" 2>&1 | tee -a "$LOG_FILE"; then
+        log SUCCESS "Disk cleanup playbook completed successfully"
+        return 0
+    else
+        log ERROR "Disk cleanup playbook failed"
+        return 1
+    fi
 }
 
 execute_service_restart() {
     local service=$1
 
-    log INFO "Restarting service: $service"
+    log INFO "Restarting service: $service via remediation playbook..."
 
     if $DRY_RUN; then
-        log INFO "[DRY RUN] Would restart: systemctl --user restart $service.service"
+        log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION --playbook service-restart --service $service --log-to $DECISION_LOG"
         return 0
     fi
 
-    # Check if service exists
-    if ! systemctl --user list-unit-files "$service.service" >/dev/null 2>&1; then
-        log ERROR "Service not found: $service"
+    # Check if remediation script exists
+    if [[ ! -x "$APPLY_REMEDIATION" ]]; then
+        log ERROR "Remediation script not found or not executable: $APPLY_REMEDIATION"
         return 1
     fi
 
-    # Graceful restart
-    if systemctl --user restart "$service.service"; then
-        # Wait for health
-        sleep 5
-
-        if systemctl --user is-active "$service.service" >/dev/null 2>&1; then
-            log SUCCESS "Service $service restarted successfully"
-            return 0
-        else
-            log ERROR "Service $service failed to start after restart"
-            return 1
-        fi
+    # Execute service-restart playbook
+    if "$APPLY_REMEDIATION" --playbook service-restart --service "$service" --log-to "$DECISION_LOG" 2>&1 | tee -a "$LOG_FILE"; then
+        log SUCCESS "Service restart playbook completed successfully for: $service"
+        return 0
     else
-        log ERROR "Failed to restart service: $service"
+        log ERROR "Service restart playbook failed for: $service"
         return 1
     fi
 }
 
 execute_drift_reconciliation() {
-    log INFO "Reconciling configuration drift..."
+    log INFO "Reconciling configuration drift via remediation playbook..."
 
-    local playbook="$PLAYBOOK_DIR/drift-reconciliation.yml"
+    if $DRY_RUN; then
+        log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION --playbook drift-reconciliation --log-to $DECISION_LOG"
+        return 0
+    fi
 
-    if [[ ! -f "$playbook" ]]; then
-        log WARNING "Drift reconciliation playbook not found"
-
-        if $DRY_RUN; then
-            log INFO "[DRY RUN] Would reload systemd and restart drifted services"
-            return 0
-        fi
-
+    # Check if remediation script exists
+    if [[ ! -x "$APPLY_REMEDIATION" ]]; then
+        log WARNING "Remediation script not found, falling back to basic reconciliation"
         # Basic reconciliation: reload systemd
         systemctl --user daemon-reload
-
         log SUCCESS "Systemd reloaded (basic reconciliation)"
         return 0
     fi
 
-    if $DRY_RUN; then
-        log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION $playbook"
+    # Execute drift-reconciliation playbook
+    if "$APPLY_REMEDIATION" --playbook drift-reconciliation --log-to "$DECISION_LOG" 2>&1 | tee -a "$LOG_FILE"; then
+        log SUCCESS "Drift reconciliation playbook completed successfully"
         return 0
+    else
+        log ERROR "Drift reconciliation playbook failed"
+        return 1
     fi
-
-    if [[ -x "$APPLY_REMEDIATION" ]]; then
-        "$APPLY_REMEDIATION" "$playbook" 2>&1 || {
-            log ERROR "Drift reconciliation failed"
-            return 1
-        }
-    fi
-
-    log SUCCESS "Drift reconciliation completed"
-    return 0
 }
 
 execute_action() {
@@ -720,6 +688,74 @@ EOF
         '.statistics.success_rate = $rate')
 
     save_state "$state"
+
+    # Log successful actions to issue history
+    if [[ "$outcome" == "success" ]]; then
+        log_issue_to_context "$action" "$details"
+    fi
+}
+
+log_issue_to_context() {
+    local action="$1"
+    local details="$2"
+    local context_script="$HOME/containers/.claude/context/scripts/append-issue.sh"
+
+    # Skip if context logging not available
+    if [[ ! -x "$context_script" ]]; then
+        return 0
+    fi
+
+    # Extract action details
+    local action_type=$(echo "$action" | jq -r '.type')
+    local action_service=$(echo "$action" | jq -r '.service // "system"')
+    local action_reason=$(echo "$action" | jq -r '.reason')
+
+    # Generate issue ID (AUTO-YYYYMMDD format)
+    local issue_id="AUTO-$(date +%Y%m%d)"
+
+    # Map action type to category and title
+    local category="operations"
+    local title=""
+    local description=""
+    local severity="medium"
+
+    case "$action_type" in
+        disk-cleanup)
+            category="disk-space"
+            title="Automated disk cleanup executed"
+            description="$action_reason. Autonomous operations executed disk cleanup playbook."
+            severity="medium"
+            ;;
+        service-restart)
+            category="operations"
+            title="Automated service restart: $action_service"
+            description="$action_reason. Autonomous operations restarted service."
+            severity="low"
+            ;;
+        drift-reconciliation)
+            category="deployment"
+            title="Automated drift reconciliation: $action_service"
+            description="$action_reason. Autonomous operations reconciled configuration drift."
+            severity="medium"
+            ;;
+        *)
+            category="operations"
+            title="Automated action: $action_type"
+            description="$action_reason. Details: $details"
+            severity="low"
+            ;;
+    esac
+
+    # Log to context (suppress errors - non-critical)
+    "$context_script" \
+        "$issue_id" \
+        "$title" \
+        "$category" \
+        "$severity" \
+        "$(date +%Y-%m-%d)" \
+        "$description" \
+        "Executed successfully via autonomous operations (OODA loop)" \
+        "resolved" 2>/dev/null || true
 }
 
 ##############################################################################

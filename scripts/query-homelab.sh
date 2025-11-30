@@ -21,7 +21,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTEXT_DIR="$HOME/.claude/context"
+CONTEXT_DIR="$HOME/containers/.claude/context"
 PATTERNS_FILE="$CONTEXT_DIR/query-patterns.json"
 CACHE_FILE="$CONTEXT_DIR/query-cache.json"
 

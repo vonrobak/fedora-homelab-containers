@@ -63,7 +63,7 @@ for entry in "${DIRECT_EXECUTORS[@]}"; do
         source '$QUERY_SCRIPT' 2>/dev/null || exit 1
 
         # Call executor and cache result
-        CONTEXT_DIR=\"\$HOME/.claude/context\"
+        CONTEXT_DIR=\"\$HOME/containers/.claude/context\"
         CACHE_FILE=\"\$CONTEXT_DIR/query-cache.json\"
 
         # Get result from executor

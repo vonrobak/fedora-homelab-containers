@@ -62,7 +62,7 @@ Every action creates a BTRFS snapshot before execution for instant rollback.
 
 ## Configuration
 
-Settings in `~/.claude/context/preferences.yml`:
+Settings in `~/containers/.claude/context/preferences.yml`:
 
 ```yaml
 risk_tolerance: medium  # low | medium | high
@@ -84,16 +84,16 @@ service_overrides:
 
 ```bash
 # Last 10 decisions
-~/.claude/context/scripts/query-decisions.sh
+~/containers/.claude/context/scripts/query-decisions.sh
 
 # Last 7 days
-~/.claude/context/scripts/query-decisions.sh --last 7d
+~/containers/.claude/context/scripts/query-decisions.sh --last 7d
 
 # Only failures
-~/.claude/context/scripts/query-decisions.sh --outcome failure
+~/containers/.claude/context/scripts/query-decisions.sh --outcome failure
 
 # Statistics
-~/.claude/context/scripts/query-decisions.sh --stats
+~/containers/.claude/context/scripts/query-decisions.sh --stats
 ```
 
 ## Monitoring
@@ -119,7 +119,7 @@ The autonomous operations OBSERVE phase uses cached query results for improved p
 3. `autonomous-check.sh` reads cache (if fresh) or falls back to direct calls
 
 **Cache locations:**
-- Cache file: `~/.claude/context/query-cache.json`
+- Cache file: `~/containers/.claude/context/query-cache.json`
 - TTL: 60 seconds for most queries
 - See: `docs/40-monitoring-and-documentation/guides/natural-language-queries.md`
 
@@ -164,6 +164,60 @@ The autonomous operations DECIDE phase includes skill recommendations based on o
 | High disk usage | homelab-intelligence |
 
 **See:** `docs/10-services/guides/skill-recommendation.md`
+
+### Remediation Framework Integration
+
+The autonomous operations ACT phase executes actions via the remediation framework:
+
+**Architecture:**
+```
+DECIDE phase (autonomous-execute.sh)
+  ↓ Identifies action needed
+  ↓ Calculates confidence score
+  ↓
+ACT phase calls remediation playbook
+  ↓
+apply-remediation.sh --playbook disk-cleanup --log-to decision-log.json
+  ↓
+Remediation playbook executes
+  ↓
+Result logged to decision-log.json
+```
+
+**Benefits:**
+- **Single source of truth:** Remediation logic only in playbooks
+- **Consistency:** Same behavior whether manual or autonomous
+- **Testability:** Test playbooks independently of autonomous operations
+- **Maintainability:** Update remediation logic in one place
+
+**Implementation (2025-11-30):**
+- Refactored 3 execute functions to call remediation playbooks
+- Eliminated 85 lines of duplicated remediation logic
+- Added --log-to parameter for decision log integration
+- All autonomous actions now use remediation framework
+
+**Execution Flow:**
+```bash
+# Disk cleanup example
+execute_disk_cleanup() {
+    "$APPLY_REMEDIATION" \
+        --playbook disk-cleanup \
+        --log-to "$DECISION_LOG" \
+        2>&1 | tee -a "$LOG_FILE"
+}
+```
+
+**Available Remediation Actions:**
+| Playbook | Risk | Used By Autonomous Ops |
+|----------|------|------------------------|
+| disk-cleanup | Low | ✅ Yes |
+| service-restart | Low | ✅ Yes |
+| drift-reconciliation | Medium | ✅ Yes |
+| resource-pressure | Medium | ⏳ Playbook pending |
+
+**See:**
+- Remediation framework: `~/containers/.claude/remediation/README.md`
+- Implementation report: `docs/99-reports/2025-11-30-remediation-integration-implementation.md`
 
 ## Troubleshooting
 

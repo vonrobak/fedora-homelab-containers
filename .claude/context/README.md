@@ -21,18 +21,29 @@ The Context Framework provides Claude with **persistent memory** of your homelab
 
 ### Data Files
 
+**Session 4A - Core Context:**
 - **`system-profile.json`** - Current system state (20 services, 5 networks, hardware specs)
 - **`issue-history.json`** - Historical issues (12 tracked, 7 resolved)
 - **`deployment-log.json`** - Deployment history (20 services)
-- **`preferences.yml`** - User preferences and risk tolerance (created in Session 4B)
+
+**Session 4B - Preferences:**
+- **`preferences.yml`** - User preferences, risk tolerance, deployment defaults
+
+**Session 6 - Autonomous Operations:**
+- **`autonomous-state.json`** - Autonomous operations state (circuit breaker, statistics, cooldowns)
+- **`decision-log.json`** - Audit trail of autonomous decisions and actions
 
 ### Scripts
 
+**Context Generation:**
 - **`scripts/generate-system-profile.sh`** - Generate fresh system profile
 - **`scripts/populate-issue-history.sh`** - Rebuild issue history
 - **`scripts/build-deployment-log.sh`** - Rebuild deployment log
+
+**Context Queries:**
 - **`scripts/query-issues.sh`** - Query issues by category/severity/status
 - **`scripts/query-deployments.sh`** - Query deployments by service/pattern/method
+- **`scripts/query-decisions.sh`** - Query autonomous operations decision history (Session 6)
 
 ---
 
@@ -79,6 +90,29 @@ cd .claude/context/scripts
 
 **Available methods:** pattern-based, manual quadlet, deploy script, multi-container stack, custom script
 
+### Querying Autonomous Decisions
+
+```bash
+cd .claude/context/scripts
+
+# View last 10 decisions
+./query-decisions.sh
+
+# Last 7 days
+./query-decisions.sh --last 7d
+
+# Only failures
+./query-decisions.sh --outcome failure
+
+# Only executed actions
+./query-decisions.sh --outcome success
+
+# Statistics summary
+./query-decisions.sh --stats
+```
+
+**Outcome types:** success, failure, skipped, queued
+
 ### Updating Context
 
 ```bash
@@ -93,6 +127,35 @@ cd .claude/context/scripts
 # Rebuild deployment log (run after new deployments)
 ./build-deployment-log.sh
 ```
+
+---
+
+## Unified Context Directory (2025-12-01)
+
+**Location:** `~/containers/.claude/context/` (all context files unified here)
+
+All context data is now stored in a single location under version control:
+
+**Session 5C - Natural Language Queries:**
+- `query-cache.json` (12KB) - Pre-computed query results (TTL: 60-300s)
+- `query-patterns.json` (6.5KB) - Pattern matching database (10 patterns)
+
+**Session 5D - Skill Recommendations:**
+- `task-skill-map.json` (7.2KB) - Maps task categories to skills
+- `skill-usage.json` (1.7KB) - Tracks skill invocation and success rates
+
+**Session 5B - Predictive Analytics:**
+- `~/containers/data/predictions.json` - Resource exhaustion forecasts (separate location)
+
+**Backward Compatibility:**
+A symlink exists at `~/.claude/context/` → `~/containers/.claude/context/` for backward compatibility with external scripts.
+
+**All scripts now use unified location:**
+- `~/containers/scripts/query-homelab.sh` (Session 5C)
+- `~/containers/scripts/recommend-skill.sh` (Session 5D)
+- `~/containers/scripts/autonomous-check.sh` (Session 6)
+- `~/containers/scripts/analyze-skill-usage.sh` (Session 5D)
+- `~/containers/scripts/precompute-queries.sh` (Session 5C)
 
 ---
 
@@ -229,41 +292,85 @@ Then run `./build-deployment-log.sh` to regenerate.
 
 ---
 
-## Statistics (as of 2025-11-18)
+## Statistics (as of 2025-11-30)
 
 **System Profile:**
-- Services: 20 running containers
+- Services: ~20 running containers
 - Networks: 5 (auth_services, media_services, monitoring, photos, reverse_proxy)
-- System SSD: 84% used (critical)
-- BTRFS Pool: 65% used
+- System SSD: 75% used (improved from 84%)
+- BTRFS Pool: 77% used
 
 **Issue History:**
-- Total issues: 12
+- Total issues: 12 documented
 - Resolved: 7
 - Ongoing: 1
 - Mitigated: 2
 - Investigating: 2
+- **Note:** Needs update - recent work not reflected
 
 **Deployment Log:**
-- Total deployments: 20 services
+- Total deployments: 20 services (last updated 2025-11-22)
 - Pattern-based: 14 (70%)
-- Manual quadlets: 2
-- Deploy scripts: 1
-- Multi-container: 2
-- Custom scripts: 1
+- **Note:** Needs update - recent deployments not logged
+
+**Autonomous Operations:**
+- Total checks: 11
+- Total actions: 0
+- Circuit breaker: Not triggered
+- Success rate: 100% (no failures yet)
+
+**Global Context (Sessions 5-6):**
+- Query patterns: 10 implemented
+- Query cache: 12KB (warm)
+- Skill recommendations: 6 skills mapped to 8 categories
+- Predictions: Active forecasting
 
 ---
 
-## Next Steps (Session 4B)
+## Integration Status
 
-- [ ] Create auto-remediation playbooks
-- [ ] Build remediation execution engine
-- [ ] Enhance skills to use context
-- [ ] Create user preferences file
-- [ ] Test context-aware recommendations
+**Session 4 (Context Framework):**
+- ✅ Core context files created and maintained
+- ✅ Query scripts functional
+- ⚠️ Manual updates required (not automated)
+
+**Session 5C (Natural Language Queries):**
+- ✅ Fully integrated with global context
+- ✅ Used by autonomous operations for fast OBSERVE phase
+
+**Session 5D (Skill Recommendations):**
+- ✅ Implemented and functional
+- ✅ Task-skill mapping active
+- ✅ Usage analytics collecting data
+
+**Session 6 (Autonomous Operations):**
+- ✅ Uses preferences.yml for risk tolerance
+- ✅ Maintains autonomous-state.json and decision-log.json
+- ✅ Reads query-cache.json for performance
+- ⚠️ Doesn't auto-update issue-history or deployment-log
+
+---
+
+## Known Gaps & Future Work
+
+**Priority 1: Automate Context Updates**
+- Deployment hooks to update deployment-log.json
+- Autonomous operations should log resolved issues to issue-history.json
+- Periodic refresh of system-profile.json (cron job)
+
+**Priority 2: Improve Integration**
+- Skills should query context for recommendations
+- homelab-intelligence could reference issue-history for suggested fixes
+- Drift detection could use deployment-log for auto-reconciliation
+
+**Priority 3: Analytics & Insights**
+- Visualize deployment patterns over time
+- Track issue resolution effectiveness
+- Correlate autonomous decisions with outcomes
 
 ---
 
 **Maintainer:** patriark
-**Status:** Active (Session 4A complete)
-**Documentation:** See main Session 4 plan in `docs/99-reports/2025-11-15-session-4-hybrid-plan.md`
+**Status:** Active - Sessions 4, 5C, 5D, 6 complete
+**Last Updated:** 2025-11-30
+**Analysis:** See `docs/99-reports/2025-11-30-context-remediation-analysis.md`

@@ -1,0 +1,415 @@
+{
+  "top_memory_users": {
+    "timestamp": "2025-11-30T20:05:20+01:00",
+    "ttl": 300,
+    "result": [
+      {
+        "name": "jellyfin",
+        "memory_mb": 1620
+      },
+      {
+        "name": "prometheus",
+        "memory_mb": 523
+      },
+      {
+        "name": "immich-server",
+        "memory_mb": 458
+      },
+      {
+        "name": "immich-ml",
+        "memory_mb": 266
+      },
+      {
+        "name": "loki",
+        "memory_mb": 158
+      }
+    ]
+  },
+  "disk_usage": {
+    "timestamp": "2025-11-30T20:22:17+01:00",
+    "ttl": 600,
+    "result": {
+      "filesystems": [
+        {
+          "mount": "/",
+          "usage_pct": "75%"
+        },
+        {
+          "mount": "/mnt/btrfs-pool",
+          "usage_pct": "77%"
+        }
+      ]
+    }
+  },
+  "top_cpu_users": {
+    "timestamp": "2025-11-30T20:04:44+01:00",
+    "ttl": 60,
+    "result": [
+      {
+        "name": "cadvisor",
+        "cpu_pct": 3.66
+      },
+      {
+        "name": "immich-ml",
+        "cpu_pct": 0.70
+      },
+      {
+        "name": "traefik",
+        "cpu_pct": 0.69
+      },
+      {
+        "name": "prometheus",
+        "cpu_pct": 0.55
+      },
+      {
+        "name": "node_exporter",
+        "cpu_pct": 0.47
+      }
+    ]
+  },
+  "recent_restarts": {
+    "timestamp": "2025-11-21T17:41:09+01:00",
+    "ttl": 300,
+    "result": [
+      {
+        "service": "0774819709df99e154471b7aa72ad3de405cb788ac3efd9c6d385011ec8f26dd-5fb5ebc8d6361d06",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "205a7be1b89a38a4d7fe2f77bf83e764d9ca9edaa20d25c1fe3875a0a2bf0438-49dbad2905a23d15",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "20bab4540ae3544c05b6b69370a4e7bc6ead49a8ebcefa70830875e29a1f4147-1e3d3689a29434e",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "2224603b71513699a4782a1d0cb35b1629b2bea4cf883848584d4304609affb2-32572aededf21c96",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "2516ae855a2829f3cd421b412aa1885d4afec2f2279eb6c58e6c4dcdfd69ae9b-5f1597d36acf47f2",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "65e0e8d6e0fe65d7e24ddf589c76191b77e7eb3426a4021c3fc1949c69bdc02f-4e3f13b185d549d3",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "68a90ba12e0218a2eb717042e6eaebf52ecfad7adba3973b82ae920a64cbabb9-27a44b1bb699cd1a",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "6b1b55e33c9438e44277514a8671a2779a7c410419437d4b39dbb88edbb0bfff-31cf45b125bcc9a1",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "74e3157b2e64cf9ef4308cd59ba2e9a448ce38bac67320c5b4de551e4de19327-55d2816705f5747f",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "77faab185b9610e5b32e00c43a26f4ffe4cc4c04c1e7a50408ce6023f06566b7-4060c2a0353bbfd7",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "81d465f580c84b73cc25e1d912327792b80b9b6c0d4d97286a5e1282e8d576bc-7f4b7bea53181295",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "82c7ec201a7febf0ac92bdb0aa5b4a8129545f2abb147cc3729f2b508859a13b-313f6f350c7641f5",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "8b1c5a3d532719b71fd9b0f1bd5b5c322de2c690bf014921d7f13f6688a60243-42dd955d8609090c",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "96576bd2800e0d9c20683e3659e22a98289119ca4e06c7fe7d80235e6209a23c-4ef1389f6c8aabcd",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "a4a13aceb1775d6f645b0403fe4b89d9b88a24b5d474ae865edfbf6a42bee1ab-5855e84a60656c98",
+        "status": "inactive",
+        "state": "dead",
+        "load": "loaded"
+      },
+      {
+        "service": "alert-discord-relay",
+        "status": "active",
+        "state": "running",
+        "load": "loaded"
+      },
+      {
+        "service": "alertmanager",
+        "status": "active",
+        "state": "running",
+        "load": "loaded"
+      },
+      {
+        "service": "at-spi-dbus-bus",
+        "status": "active",
+        "state": "running",
+        "load": "loaded"
+      },
+      {
+        "service": "auth_services-network",
+        "status": "active",
+        "state": "exited",
+        "load": "loaded"
+      },
+      {
+        "service": "authelia",
+        "status": "active",
+        "state": "running",
+        "load": "loaded"
+      }
+    ]
+  },
+  "all_services": {
+    "timestamp": "2025-11-30T19:31:41+01:00",
+    "ttl": 120,
+    "result": [
+      {
+        "name": "206eaed144683ac9479eaed778f6ae4c56b8cae6da68d4dc0038d489ac52dbf8-27bcef7921c1d806",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "27089bf7e1bed459ac184ad68947c8c4fc4a30a45696003eeca771dddd476c6c-12dd5fe656c9c85e",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "3277595a5692151bb2509cad296c3c7b7e3796f9c58eb23f2a710ef4b808d792-4b08a0f1cbdc627d",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "36888306c985084a8479127143cc404914aab206acffbb3bd30940593fdf9535-6a104e58071da849",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "414135572a5a5fc22090cb53e54ab9f15f4e5b7534d8e1e7601b6f6b72dd8f12-668c5cae58268915",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "42361c421f50b68a2459ca221d52231043681d3cd229e017e4a5ccb801776406-47398b3355978de3",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "44c897214fef2abcd0bf5a977261dcbdc6791d9c2a41e891f72928aa08d792f3-15c887cb6550e8b3",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "46d2ed0b0bdf4bba8906d1d9027aff10f1ecdcd1dba3ace892fc486102768850-14490d2f4e2ad8f",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "6621b125db90b2007713fd89ca3ba017fff57c138868a942c825af5cd7975301-506a51b7c1cfeeef",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "7d9bb30e30b7166e763cea442c0bbb8f3d84b1219c8e2bf25ebc17f26aab381b-ad66b9c8e3bc70f",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "8a267a0484eebdca7621d33b2754dea4c01432351d212099251f271605f57645-37201aca06ebf65b",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "993e0e687cbe802648c231f50e7096dbd0ea499fc1d1db2a1ebb0407bc2f2abc-22b7dd4f33258424",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "ac0b0519636e2eb7d3bbdcafae9e6dfca276616864e0e44a72483234b248b5c0-2211436134651ddf",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "alert-discord-relay",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "alertmanager",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "at-spi-dbus-bus",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "auth_services-network",
+        "status": "active",
+        "state": "exited"
+      },
+      {
+        "name": "authelia",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "autonomous-operations",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "b44d5836f92ad394249ee8b359869893e9caeda2e205c1cc972e42a2c2a11a4d-40b13da308717bb0",
+        "status": "inactive",
+        "state": "dead"
+      }
+    ]
+  },
+  "all_services_alt": {
+    "timestamp": "2025-11-30T19:38:14+01:00",
+    "ttl": 120,
+    "result": [
+      {
+        "name": "206eaed144683ac9479eaed778f6ae4c56b8cae6da68d4dc0038d489ac52dbf8-27bcef7921c1d806",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "27089bf7e1bed459ac184ad68947c8c4fc4a30a45696003eeca771dddd476c6c-12dd5fe656c9c85e",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "3277595a5692151bb2509cad296c3c7b7e3796f9c58eb23f2a710ef4b808d792-4b08a0f1cbdc627d",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "36888306c985084a8479127143cc404914aab206acffbb3bd30940593fdf9535-6a104e58071da849",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "414135572a5a5fc22090cb53e54ab9f15f4e5b7534d8e1e7601b6f6b72dd8f12-668c5cae58268915",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "42361c421f50b68a2459ca221d52231043681d3cd229e017e4a5ccb801776406-47398b3355978de3",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "44c897214fef2abcd0bf5a977261dcbdc6791d9c2a41e891f72928aa08d792f3-15c887cb6550e8b3",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "46d2ed0b0bdf4bba8906d1d9027aff10f1ecdcd1dba3ace892fc486102768850-14490d2f4e2ad8f",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "6621b125db90b2007713fd89ca3ba017fff57c138868a942c825af5cd7975301-506a51b7c1cfeeef",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "7d9bb30e30b7166e763cea442c0bbb8f3d84b1219c8e2bf25ebc17f26aab381b-ad66b9c8e3bc70f",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "8a267a0484eebdca7621d33b2754dea4c01432351d212099251f271605f57645-37201aca06ebf65b",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "993e0e687cbe802648c231f50e7096dbd0ea499fc1d1db2a1ebb0407bc2f2abc-22b7dd4f33258424",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "ac0b0519636e2eb7d3bbdcafae9e6dfca276616864e0e44a72483234b248b5c0-2211436134651ddf",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "alert-discord-relay",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "alertmanager",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "at-spi-dbus-bus",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "auth_services-network",
+        "status": "active",
+        "state": "exited"
+      },
+      {
+        "name": "authelia",
+        "status": "active",
+        "state": "running"
+      },
+      {
+        "name": "autonomous-operations",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "b44d5836f92ad394249ee8b359869893e9caeda2e205c1cc972e42a2c2a11a4d-40b13da308717bb0",
+        "status": "inactive",
+        "state": "dead"
+      }
+    ]
+  },
+  "unhealthy_services": {
+    "timestamp": "2025-11-30T20:05:21+01:00",
+    "ttl": 60,
+    "result": {
+      "unhealthy_services": []
+    }
+  }
+}
