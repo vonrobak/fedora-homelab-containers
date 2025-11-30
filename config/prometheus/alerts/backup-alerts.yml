@@ -1,0 +1,99 @@
+groups:
+  - name: backup_alerts
+    interval: 60s
+    rules:
+      # Critical: Backup failed completely
+      - alert: BackupFailed
+        expr: backup_success == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: backup
+          component: btrfs-snapshot-backup
+        annotations:
+          summary: "Backup failed for {{ $labels.subvolume }}"
+          description: "Last backup attempt for {{ $labels.subvolume }} failed. Check backup logs immediately."
+
+      # Critical: Backup hasn't run in 2+ days (for daily backups)
+      - alert: BackupStale
+        expr: (time() - backup_last_success_timestamp) > (86400 * 2)
+        for: 1h
+        labels:
+          severity: critical
+          category: backup
+          component: btrfs-snapshot-backup
+        annotations:
+          summary: "Backup stale for {{ $labels.subvolume }}"
+          description: "No successful backup for {{ $labels.subvolume }} in {{ $value | humanizeDuration }}. Last backup: {{ $labels.subvolume }}."
+
+      # Warning: Backup script hasn't run recently
+      - alert: BackupScriptNotRunning
+        expr: (time() - backup_script_last_run_timestamp) > (86400 * 2)
+        for: 6h
+        labels:
+          severity: warning
+          category: backup
+          component: btrfs-snapshot-backup
+        annotations:
+          summary: "Backup script hasn't run in 2+ days"
+          description: "Backup script last ran {{ $value | humanizeDuration }} ago. Check systemd timers."
+
+      # Critical: Restore test failed
+      - alert: RestoreTestFailed
+        expr: backup_restore_test_success == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: disaster-recovery
+          component: backup-restore-test
+        annotations:
+          summary: "Restore test failed for {{ $labels.subvolume }}"
+          description: "Backup restore test validation failed for {{ $labels.subvolume }}. Backups may be corrupted!"
+
+      # Warning: Restore test overdue (should run monthly)
+      - alert: RestoreTestOverdue
+        expr: (time() - backup_restore_test_last_run_timestamp) > (86400 * 35)
+        for: 6h
+        labels:
+          severity: warning
+          category: disaster-recovery
+          component: backup-restore-test
+        annotations:
+          summary: "Restore test overdue"
+          description: "Restore test hasn't run in {{ $value | humanizeDuration }}. Should run monthly (last Sunday)."
+
+      # Warning: Low snapshot count (may indicate cleanup issues)
+      - alert: LowSnapshotCount
+        expr: backup_snapshot_count{location="local"} < 2
+        for: 1h
+        labels:
+          severity: warning
+          category: backup
+          component: btrfs-snapshot-backup
+        annotations:
+          summary: "Low snapshot count for {{ $labels.subvolume }}"
+          description: "Only {{ $value }} local snapshots for {{ $labels.subvolume }}. Expected at least 3-7."
+
+      # Warning: External backup missing
+      - alert: ExternalBackupMissing
+        expr: backup_snapshot_count{location="external"} == 0
+        for: 12h
+        labels:
+          severity: warning
+          category: backup
+          component: btrfs-snapshot-backup
+        annotations:
+          summary: "No external backups for {{ $labels.subvolume }}"
+          description: "External backup drive may not be mounted or backups failing."
+
+      # Warning: Backup taking too long
+      - alert: BackupSlowDuration
+        expr: backup_duration_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+          category: backup
+          component: btrfs-snapshot-backup
+        annotations:
+          summary: "Backup taking unusually long for {{ $labels.subvolume }}"
+          description: "Last backup took {{ $value | humanizeDuration }}. May indicate performance issues."

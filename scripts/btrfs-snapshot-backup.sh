@@ -49,6 +49,10 @@ DATE_MONTHLY=$(date +%Y%m%d)
 LOG_DIR="$HOME/containers/data/backup-logs"
 LOG_FILE="$LOG_DIR/backup-$(date +%Y%m).log"
 
+# Prometheus metrics
+METRICS_DIR="$HOME/containers/data/backup-metrics"
+METRICS_FILE="$METRICS_DIR/backup.prom"
+
 # Dry run mode (set by --dry-run flag)
 DRY_RUN=false
 VERBOSE=false
@@ -56,6 +60,14 @@ LOCAL_ONLY=false
 EXTERNAL_ONLY=false
 TIER_FILTER=""
 SUBVOL_FILTER=""
+
+# Metrics tracking
+declare -A BACKUP_SUCCESS
+declare -A BACKUP_DURATION
+declare -A BACKUP_TIMESTAMP
+declare -A SNAPSHOT_COUNT_LOCAL
+declare -A SNAPSHOT_COUNT_EXTERNAL
+SCRIPT_START_TIME=$(date +%s)
 
 ################################################################################
 # TIER 1: CRITICAL - Daily local, Weekly external
@@ -336,15 +348,49 @@ find_common_parent() {
     return 1
 }
 
+record_backup_metrics() {
+    local subvol_name=$1
+    local start_time=$2
+    local success=$3  # 1 for success, 0 for failure
+    local local_snapshot_dir=$4
+    local external_snapshot_dir=$5
+    local pattern=$6
+
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+
+    BACKUP_SUCCESS["$subvol_name"]=$success
+    BACKUP_DURATION["$subvol_name"]=$duration
+
+    if [[ $success -eq 1 ]]; then
+        BACKUP_TIMESTAMP["$subvol_name"]=$end_time
+    fi
+
+    # Count snapshots
+    if [[ -d "$local_snapshot_dir" ]]; then
+        local local_count=$(find "$local_snapshot_dir" -maxdepth 1 -type d -name "$pattern" 2>/dev/null | wc -l)
+        SNAPSHOT_COUNT_LOCAL["$subvol_name"]=$local_count
+    fi
+
+    if [[ -d "$external_snapshot_dir" ]]; then
+        local external_count=$(find "$external_snapshot_dir" -maxdepth 1 -type d -name "$pattern" 2>/dev/null | wc -l)
+        SNAPSHOT_COUNT_EXTERNAL["$subvol_name"]=$external_count
+    else
+        SNAPSHOT_COUNT_EXTERNAL["$subvol_name"]=0
+    fi
+}
+
 ################################################################################
 # BACKUP FUNCTIONS BY TIER
 ################################################################################
 
 backup_tier1_home() {
+    local start_time=$(date +%s)
     log INFO "=== Processing Tier 1: htpc-home ==="
 
     if [[ "$TIER1_HOME_ENABLED" != "true" ]]; then
         log INFO "htpc-home backup disabled, skipping"
+        record_backup_metrics "htpc-home" "$start_time" 1 "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home"
         return 0
     fi
 
@@ -353,18 +399,27 @@ backup_tier1_home() {
 
     # Create local snapshot
     if [[ "$EXTERNAL_ONLY" != "true" ]]; then
-        create_snapshot "$TIER1_HOME_SOURCE" "$local_snapshot"
+        create_snapshot "$TIER1_HOME_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "htpc-home" "$start_time" 0 "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home"
+            return 1
+        }
     fi
 
     # Send to external (weekly)
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ "$TIER1_HOME_SCHEDULE" == "daily" ]]; then
         # Only send on the designated weekly backup day
         if [[ $(date +%u) -eq 6 ]]; then  # Saturday
-            check_external_mounted || return 1
+            check_external_mounted || {
+                record_backup_metrics "htpc-home" "$start_time" 0 "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home"
+                return 1
+            }
 
             # Find common parent that exists on both local and external (for incremental send)
             local parent=$(find_common_parent "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home")
-            send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_HOME_EXTERNAL_DIR"
+            send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_HOME_EXTERNAL_DIR" || {
+                record_backup_metrics "htpc-home" "$start_time" 0 "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home"
+                return 1
+            }
 
             # Cleanup external snapshots
             cleanup_old_snapshots "$TIER1_HOME_EXTERNAL_DIR" "$TIER1_HOME_EXTERNAL_RETENTION_WEEKLY" "*-htpc-home"
@@ -374,14 +429,17 @@ backup_tier1_home() {
     # Cleanup local snapshots
     cleanup_old_snapshots "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_LOCAL_RETENTION_DAILY" "*-htpc-home"
 
+    record_backup_metrics "htpc-home" "$start_time" 1 "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home"
     log SUCCESS "Completed Tier 1: htpc-home"
 }
 
 backup_tier1_opptak() {
+    local start_time=$(date +%s)
     log INFO "=== Processing Tier 1: subvol3-opptak ==="
 
     if [[ "$TIER1_OPPTAK_ENABLED" != "true" ]]; then
         log INFO "subvol3-opptak backup disabled, skipping"
+        record_backup_metrics "subvol3-opptak" "$start_time" 1 "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak"
         return 0
     fi
 
@@ -390,16 +448,25 @@ backup_tier1_opptak() {
 
     # Create local snapshot
     if [[ "$EXTERNAL_ONLY" != "true" ]]; then
-        create_snapshot "$TIER1_OPPTAK_SOURCE" "$local_snapshot"
+        create_snapshot "$TIER1_OPPTAK_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "subvol3-opptak" "$start_time" 0 "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak"
+            return 1
+        }
     fi
 
     # Send to external (weekly)
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
-        check_external_mounted || return 1
+        check_external_mounted || {
+            record_backup_metrics "subvol3-opptak" "$start_time" 0 "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak"
+            return 1
+        }
 
         # Find common parent that exists on both local and external (for incremental send)
         local parent=$(find_common_parent "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak")
-        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_OPPTAK_EXTERNAL_DIR"
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_OPPTAK_EXTERNAL_DIR" || {
+            record_backup_metrics "subvol3-opptak" "$start_time" 0 "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak"
+            return 1
+        }
 
         # Cleanup external snapshots
         cleanup_old_snapshots "$TIER1_OPPTAK_EXTERNAL_DIR" "$TIER1_OPPTAK_EXTERNAL_RETENTION_WEEKLY" "*-opptak"
@@ -408,14 +475,17 @@ backup_tier1_opptak() {
     # Cleanup local snapshots
     cleanup_old_snapshots "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_LOCAL_RETENTION_DAILY" "*-opptak"
 
+    record_backup_metrics "subvol3-opptak" "$start_time" 1 "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak"
     log SUCCESS "Completed Tier 1: subvol3-opptak"
 }
 
 backup_tier1_containers() {
+    local start_time=$(date +%s)
     log INFO "=== Processing Tier 1: subvol7-containers ==="
 
     if [[ "$TIER1_CONTAINERS_ENABLED" != "true" ]]; then
         log INFO "subvol7-containers backup disabled, skipping"
+        record_backup_metrics "subvol7-containers" "$start_time" 1 "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers"
         return 0
     fi
 
@@ -424,16 +494,25 @@ backup_tier1_containers() {
 
     # Create local snapshot
     if [[ "$EXTERNAL_ONLY" != "true" ]]; then
-        create_snapshot "$TIER1_CONTAINERS_SOURCE" "$local_snapshot"
+        create_snapshot "$TIER1_CONTAINERS_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "subvol7-containers" "$start_time" 0 "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers"
+            return 1
+        }
     fi
 
     # Send to external (weekly)
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
-        check_external_mounted || return 1
+        check_external_mounted || {
+            record_backup_metrics "subvol7-containers" "$start_time" 0 "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers"
+            return 1
+        }
 
         # Find common parent that exists on both local and external (for incremental send)
         local parent=$(find_common_parent "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers")
-        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_CONTAINERS_EXTERNAL_DIR"
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_CONTAINERS_EXTERNAL_DIR" || {
+            record_backup_metrics "subvol7-containers" "$start_time" 0 "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers"
+            return 1
+        }
 
         # Cleanup external snapshots
         cleanup_old_snapshots "$TIER1_CONTAINERS_EXTERNAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_RETENTION_WEEKLY" "*-containers"
@@ -442,14 +521,17 @@ backup_tier1_containers() {
     # Cleanup local snapshots
     cleanup_old_snapshots "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_LOCAL_RETENTION_DAILY" "*-containers"
 
+    record_backup_metrics "subvol7-containers" "$start_time" 1 "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers"
     log SUCCESS "Completed Tier 1: subvol7-containers"
 }
 
 backup_tier2_docs() {
+    local start_time=$(date +%s)
     log INFO "=== Processing Tier 2: subvol1-docs ==="
 
     if [[ "$TIER2_DOCS_ENABLED" != "true" ]]; then
         log INFO "subvol1-docs backup disabled, skipping"
+        record_backup_metrics "subvol1-docs" "$start_time" 1 "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs"
         return 0
     fi
 
@@ -458,16 +540,25 @@ backup_tier2_docs() {
 
     # Create local snapshot
     if [[ "$EXTERNAL_ONLY" != "true" ]]; then
-        create_snapshot "$TIER2_DOCS_SOURCE" "$local_snapshot"
+        create_snapshot "$TIER2_DOCS_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "subvol1-docs" "$start_time" 0 "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs"
+            return 1
+        }
     fi
 
     # Send to external (weekly)
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%u) -eq 6 ]]; then
-        check_external_mounted || return 1
+        check_external_mounted || {
+            record_backup_metrics "subvol1-docs" "$start_time" 0 "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs"
+            return 1
+        }
 
         # Find common parent that exists on both local and external (for incremental send)
         local parent=$(find_common_parent "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs")
-        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_DOCS_EXTERNAL_DIR"
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_DOCS_EXTERNAL_DIR" || {
+            record_backup_metrics "subvol1-docs" "$start_time" 0 "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs"
+            return 1
+        }
 
         # Cleanup external snapshots
         cleanup_old_snapshots "$TIER2_DOCS_EXTERNAL_DIR" "$TIER2_DOCS_EXTERNAL_RETENTION_WEEKLY" "*-docs"
@@ -476,20 +567,24 @@ backup_tier2_docs() {
     # Cleanup local snapshots
     cleanup_old_snapshots "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_LOCAL_RETENTION_DAILY" "*-docs"
 
+    record_backup_metrics "subvol1-docs" "$start_time" 1 "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs"
     log SUCCESS "Completed Tier 2: subvol1-docs"
 }
 
 backup_tier2_root() {
+    local start_time=$(date +%s)
     log INFO "=== Processing Tier 2: htpc-root ==="
 
     if [[ "$TIER2_ROOT_ENABLED" != "true" ]]; then
         log INFO "htpc-root backup disabled, skipping"
+        record_backup_metrics "htpc-root" "$start_time" 1 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
         return 0
     fi
 
     # Root is monthly only
     if [[ $(date +%d) -ne 01 ]]; then
         log INFO "htpc-root backup runs on 1st of month only, skipping"
+        record_backup_metrics "htpc-root" "$start_time" 1 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
         return 0
     fi
 
@@ -498,16 +593,25 @@ backup_tier2_root() {
 
     # Create local snapshot
     if [[ "$EXTERNAL_ONLY" != "true" ]]; then
-        create_snapshot "$TIER2_ROOT_SOURCE" "$local_snapshot"
+        create_snapshot "$TIER2_ROOT_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "htpc-root" "$start_time" 0 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
+            return 1
+        }
     fi
 
     # Send to external (monthly)
     if [[ "$LOCAL_ONLY" != "true" ]]; then
-        check_external_mounted || return 1
+        check_external_mounted || {
+            record_backup_metrics "htpc-root" "$start_time" 0 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
+            return 1
+        }
 
         # Find common parent that exists on both local and external (for incremental send)
         local parent=$(find_common_parent "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root")
-        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_ROOT_EXTERNAL_DIR"
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_ROOT_EXTERNAL_DIR" || {
+            record_backup_metrics "htpc-root" "$start_time" 0 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
+            return 1
+        }
 
         # Cleanup external snapshots
         cleanup_old_snapshots "$TIER2_ROOT_EXTERNAL_DIR" "$TIER2_ROOT_EXTERNAL_RETENTION_MONTHLY" "*-htpc-root"
@@ -516,20 +620,24 @@ backup_tier2_root() {
     # Cleanup local snapshots - keep only 1
     cleanup_old_snapshots "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_LOCAL_RETENTION_MONTHLY" "*-htpc-root"
 
+    record_backup_metrics "htpc-root" "$start_time" 1 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
     log SUCCESS "Completed Tier 2: htpc-root"
 }
 
 backup_tier3_pics() {
+    local start_time=$(date +%s)
     log INFO "=== Processing Tier 3: subvol2-pics ==="
 
     if [[ "$TIER3_PICS_ENABLED" != "true" ]]; then
         log INFO "subvol2-pics backup disabled, skipping"
+        record_backup_metrics "subvol2-pics" "$start_time" 1 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
         return 0
     fi
 
     # Weekly local snapshots
     if [[ $(date +%u) -ne 6 ]]; then
         log INFO "subvol2-pics local backup runs on Saturdays only, skipping"
+        record_backup_metrics "subvol2-pics" "$start_time" 1 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
         return 0
     fi
 
@@ -538,16 +646,25 @@ backup_tier3_pics() {
 
     # Create local snapshot
     if [[ "$EXTERNAL_ONLY" != "true" ]]; then
-        create_snapshot "$TIER3_PICS_SOURCE" "$local_snapshot"
+        create_snapshot "$TIER3_PICS_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "subvol2-pics" "$start_time" 0 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
+            return 1
+        }
     fi
 
     # Send to external (monthly)
     if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%d) -le 7 ]]; then  # First week of month
-        check_external_mounted || return 1
+        check_external_mounted || {
+            record_backup_metrics "subvol2-pics" "$start_time" 0 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
+            return 1
+        }
 
         # Find common parent that exists on both local and external (for incremental send)
         local parent=$(find_common_parent "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*")
-        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_PICS_EXTERNAL_DIR"
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_PICS_EXTERNAL_DIR" || {
+            record_backup_metrics "subvol2-pics" "$start_time" 0 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
+            return 1
+        }
 
         # Cleanup external snapshots
         cleanup_old_snapshots "$TIER3_PICS_EXTERNAL_DIR" "$TIER3_PICS_EXTERNAL_RETENTION_MONTHLY" "*-pics*"
@@ -556,6 +673,7 @@ backup_tier3_pics() {
     # Cleanup local snapshots
     cleanup_old_snapshots "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_LOCAL_RETENTION_WEEKLY" "*-pics*"
 
+    record_backup_metrics "subvol2-pics" "$start_time" 1 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
     log SUCCESS "Completed Tier 3: subvol2-pics"
 }
 
@@ -606,6 +724,63 @@ parse_args() {
     done
 }
 
+export_prometheus_metrics() {
+    # Export backup metrics in Prometheus format
+    mkdir -p "$METRICS_DIR"
+
+    local temp_file="${METRICS_FILE}.$$"
+
+    {
+        echo "# HELP backup_last_success_timestamp Unix timestamp of last successful backup"
+        echo "# TYPE backup_last_success_timestamp gauge"
+
+        for subvol in "${!BACKUP_TIMESTAMP[@]}"; do
+            echo "backup_last_success_timestamp{subvolume=\"$subvol\"} ${BACKUP_TIMESTAMP[$subvol]}"
+        done
+
+        echo ""
+        echo "# HELP backup_success Whether last backup succeeded (1) or failed (0)"
+        echo "# TYPE backup_success gauge"
+
+        for subvol in "${!BACKUP_SUCCESS[@]}"; do
+            echo "backup_success{subvolume=\"$subvol\"} ${BACKUP_SUCCESS[$subvol]}"
+        done
+
+        echo ""
+        echo "# HELP backup_duration_seconds Time taken for last backup"
+        echo "# TYPE backup_duration_seconds gauge"
+
+        for subvol in "${!BACKUP_DURATION[@]}"; do
+            echo "backup_duration_seconds{subvolume=\"$subvol\"} ${BACKUP_DURATION[$subvol]}"
+        done
+
+        echo ""
+        echo "# HELP backup_snapshot_count Number of snapshots present"
+        echo "# TYPE backup_snapshot_count gauge"
+
+        for subvol in "${!SNAPSHOT_COUNT_LOCAL[@]}"; do
+            echo "backup_snapshot_count{subvolume=\"$subvol\",location=\"local\"} ${SNAPSHOT_COUNT_LOCAL[$subvol]}"
+        done
+
+        for subvol in "${!SNAPSHOT_COUNT_EXTERNAL[@]}"; do
+            echo "backup_snapshot_count{subvolume=\"$subvol\",location=\"external\"} ${SNAPSHOT_COUNT_EXTERNAL[$subvol]}"
+        done
+
+        echo ""
+        echo "# HELP backup_script_last_run_timestamp Unix timestamp when script last ran"
+        echo "# TYPE backup_script_last_run_timestamp gauge"
+        echo "backup_script_last_run_timestamp $(date +%s)"
+
+    } > "$temp_file"
+
+    # Atomic move
+    mv "$temp_file" "$METRICS_FILE"
+
+    if [[ "$VERBOSE" == "true" ]]; then
+        log INFO "Metrics exported to: $METRICS_FILE"
+    fi
+}
+
 main() {
     parse_args "$@"
 
@@ -646,6 +821,11 @@ main() {
     log INFO "=========================================="
     log SUCCESS "BTRFS Snapshot & Backup Script Completed"
     log INFO "=========================================="
+
+    # Export metrics (unless dry-run)
+    if [[ "$DRY_RUN" != "true" ]]; then
+        export_prometheus_metrics
+    fi
 }
 
 main "$@"

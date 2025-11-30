@@ -412,21 +412,25 @@ sudo btrfs subvolume delete ~/.snapshots/htpc-home/20251101-home
 
 ---
 
-**Project Status:** Phase 1-2 Complete ✓
+**Project Status:** Phase 1-3 Complete ✓
 
 - [x] Automated restore testing script
 - [x] Monthly test schedule (systemd timer)
 - [x] All 4 DR runbooks (DR-001, DR-002, DR-003, DR-004)
-- [ ] Prometheus alerting integration
-- [ ] Grafana dashboard
+- [x] Prometheus alerting integration (8 alert rules)
+- [x] Backup metrics export (via node_exporter textfile collector)
+- [ ] Grafana dashboard (metrics available, dashboard creation pending)
 - [ ] RTO measurement for all subvolumes
-- [ ] **Off-site backup implementation (CRITICAL!)**
+- [x] **Off-site backup implementation** ✓ Quarterly rotation of 18TB encrypted drive
+
+**Off-Site Backup Status:**
+- Method: Quarterly cloning of 18TB backup drive to secondary 18TB drive
+- Storage: Physical off-site location
+- Encryption: LUKS encrypted
+- Status: Implemented and operational
 
 **Next Steps:**
 1. Let automated tests run for 3 months to establish baseline
-2. Implement Prometheus alerting for backup failures (Phase 3)
-3. Build Grafana backup health dashboard (Phase 3)
-4. Measure actual RTO for each subvolume (Phase 4)
-5. **Implement off-site backup strategy (Phase 5) - HIGHEST PRIORITY**
-   - Estimated cost: ~$4/month for critical data (photos, docs, configs)
-   - See DR-004 for detailed implementation plan
+2. Build Grafana backup health dashboard (Phase 3 - optional enhancement)
+3. Measure actual RTO for each subvolume (Phase 4)
+4. Document off-site backup rotation procedure (Phase 5)
