@@ -366,14 +366,14 @@ record_backup_metrics() {
         BACKUP_TIMESTAMP["$subvol_name"]=$end_time
     fi
 
-    # Count snapshots
+    # Count snapshots (use -mindepth 1 to exclude the search directory itself)
     if [[ -d "$local_snapshot_dir" ]]; then
-        local local_count=$(find "$local_snapshot_dir" -maxdepth 1 -type d -name "$pattern" 2>/dev/null | wc -l)
+        local local_count=$(find "$local_snapshot_dir" -mindepth 1 -maxdepth 1 -type d -name "$pattern" 2>/dev/null | wc -l)
         SNAPSHOT_COUNT_LOCAL["$subvol_name"]=$local_count
     fi
 
     if [[ -d "$external_snapshot_dir" ]]; then
-        local external_count=$(find "$external_snapshot_dir" -maxdepth 1 -type d -name "$pattern" 2>/dev/null | wc -l)
+        local external_count=$(find "$external_snapshot_dir" -mindepth 1 -maxdepth 1 -type d -name "$pattern" 2>/dev/null | wc -l)
         SNAPSHOT_COUNT_EXTERNAL["$subvol_name"]=$external_count
     else
         SNAPSHOT_COUNT_EXTERNAL["$subvol_name"]=0
