@@ -106,7 +106,7 @@ export_dependency_counts() {
             strength: .[0].strength,
             count: length
         } |
-        "homelab_service_dependency_count{service=\"\(.service)\",type=\"\(.strength)\"} \(.count)"
+        "homelab_service_dependency_count{homelab_service=\"\(.service)\",type=\"\(.strength)\"} \(.count)"
     ' "$GRAPH_FILE"
 
     echo ""
@@ -120,7 +120,7 @@ export_dependent_counts() {
 
     jq -r '
         .services | to_entries[] |
-        "homelab_service_dependent_count{service=\"\(.key)\"} \(.value.dependents | length)"
+        "homelab_service_dependent_count{homelab_service=\"\(.key)\"} \(.value.dependents | length)"
     ' "$GRAPH_FILE"
 
     echo ""
@@ -134,7 +134,7 @@ export_blast_radius() {
 
     jq -r '
         .services | to_entries[] |
-        "homelab_service_blast_radius{service=\"\(.key)\"} \(.value.blast_radius)"
+        "homelab_service_blast_radius{homelab_service=\"\(.key)\"} \(.value.blast_radius)"
     ' "$GRAPH_FILE"
 
     echo ""
@@ -153,16 +153,24 @@ export_dependency_health() {
         local deps=$(jq -r ".services[\"$service\"].dependencies[].target" "$GRAPH_FILE" 2>/dev/null || echo "")
 
         for dep in $deps; do
-            # Check if dependency service is running
             local health=1
-            if ! systemctl --user is-active "$dep.service" >/dev/null 2>&1; then
-                # Try without .service suffix (might be a network)
-                if ! podman ps --format '{{.Names}}' | grep -qw "^$dep$"; then
-                    health=0
-                fi
+
+            # Check if it's a network dependency (networks are stored without systemd- prefix)
+            if podman network exists "systemd-$dep" 2>/dev/null; then
+                # Network exists, consider it healthy
+                health=1
+            elif systemctl --user is-active "$dep.service" >/dev/null 2>&1; then
+                # Service is running
+                health=1
+            elif podman ps --format '{{.Names}}' 2>/dev/null | grep -qw "^$dep$"; then
+                # Container is running (for non-systemd services)
+                health=1
+            else
+                # Dependency is not available
+                health=0
             fi
 
-            echo "homelab_dependency_health{service=\"$service\",dependency=\"$dep\"} $health"
+            echo "homelab_dependency_health{homelab_service=\"$service\",dependency=\"$dep\"} $health"
         done
     done
 
@@ -195,7 +203,7 @@ export_drift_detection() {
     local services=$(jq -r '.services | keys[]' "$GRAPH_FILE")
 
     for service in $services; do
-        echo "homelab_dependency_drift_detected{service=\"$service\",type=\"systemd\"} 0"
+        echo "homelab_dependency_drift_detected{homelab_service=\"$service\",type=\"systemd\"} 0"
     done
 
     echo ""
@@ -227,7 +235,7 @@ export_chain_depth() {
 
     jq -r '
         .services | to_entries[] |
-        "homelab_dependency_chain_depth{service=\"\(.key)\"} \((.value.dependencies // []) | length)"
+        "homelab_dependency_chain_depth{homelab_service=\"\(.key)\"} \((.value.dependencies // []) | length)"
     ' "$GRAPH_FILE"
 
     echo ""
@@ -250,7 +258,7 @@ export_critical_status() {
             status=1
         fi
 
-        echo "homelab_critical_service_status{service=\"$service\"} $status"
+        echo "homelab_critical_service_status{homelab_service=\"$service\"} $status"
     done
 
     echo ""

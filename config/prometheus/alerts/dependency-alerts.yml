@@ -19,7 +19,7 @@ groups:
           (
             homelab_dependency_health{} == 0
           )
-          and on(service) (
+          and on(homelab_service) (
             homelab_critical_service_status{} == 1
           )
         for: 2m
@@ -46,7 +46,7 @@ groups:
           (
             homelab_critical_service_status{} == 0
           )
-          and on(service) (
+          and on(homelab_service) (
             homelab_service_blast_radius{} > 3
           )
         for: 1m
@@ -100,7 +100,7 @@ groups:
           (
             homelab_critical_service_status{} == 0
           )
-          and on(service) (
+          and on(homelab_service) (
             homelab_service_blast_radius{} > 1 and homelab_service_blast_radius{} <= 3
           )
         for: 5m

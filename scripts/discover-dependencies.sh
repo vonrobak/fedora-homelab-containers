@@ -281,18 +281,15 @@ discover_network_topology() {
     for network in $network_names; do
         log "DEBUG" "Processing network: $network"
 
-        # Get network members
+        # Get network members (note: podman uses lowercase 'containers')
         local members=$(podman network inspect "$network" 2>/dev/null | \
-            jq -r '.[0].Containers // {} | keys[]' 2>/dev/null || echo "")
+            jq -r '.[0].containers // {} | to_entries[] | .value.name' 2>/dev/null || echo "")
 
-        # Build members array
+        # Build members array (names come directly from jq now)
         local members_json="["
         local first_member=true
-        for member in $members; do
-            # Get container name from ID
-            local container_name=$(podman inspect "$member" --format '{{.Name}}' 2>/dev/null || echo "")
-
-            # Skip if we couldn't get the name
+        for container_name in $members; do
+            # Skip if empty
             [[ -z "$container_name" ]] && continue
 
             if [[ "$first_member" == true ]]; then

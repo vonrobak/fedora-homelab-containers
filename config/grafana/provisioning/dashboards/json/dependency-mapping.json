@@ -357,7 +357,7 @@
             "uid": "prometheus"
           },
           "expr": "topk(10, homelab_service_blast_radius)",
-          "legendFormat": "{{service}}",
+          "legendFormat": "{{homelab_service}}",
           "refId": "A"
         }
       ],
@@ -475,7 +475,7 @@
           },
           "expr": "homelab_service_blast_radius",
           "format": "time_series",
-          "legendFormat": "{{service}}",
+          "legendFormat": "{{homelab_service}}",
           "refId": "A"
         }
       ],
