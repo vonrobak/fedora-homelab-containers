@@ -460,11 +460,38 @@ execute_disk_cleanup() {
 
 execute_service_restart() {
     local service=$1
+    local cascade=${2:-false}  # Phase 3: cascade restart dependents
+    local dep_graph="$CONTEXT_DIR/dependency-graph.json"
 
     log INFO "Restarting service: $service via remediation playbook..."
 
+    # Phase 3: Check for dependent services (cascade restart logic)
+    local blast_radius=0
+    local dependents=()
+    if [[ -f "$dep_graph" ]] && [[ "$cascade" == "true" ]]; then
+        blast_radius=$(jq -r ".services[\"$service\"].blast_radius // 0" "$dep_graph" 2>/dev/null || echo "0")
+
+        if (( blast_radius > 0 )); then
+            log INFO "Service $service has blast radius of $blast_radius - checking dependents..."
+
+            # Get list of dependent services
+            mapfile -t dependents < <(jq -r ".services[\"$service\"].dependents[]? // empty" "$dep_graph" 2>/dev/null)
+
+            if [[ ${#dependents[@]} -gt 0 ]]; then
+                log WARNING "Service $service has ${#dependents[@]} dependent(s): ${dependents[*]}"
+                log INFO "These services may need restart after $service recovers"
+            fi
+        fi
+    fi
+
     if $DRY_RUN; then
         log INFO "[DRY RUN] Would execute: $APPLY_REMEDIATION --playbook service-restart --service $service --log-to $DECISION_LOG"
+
+        if [[ ${#dependents[@]} -gt 0 ]] && [[ "$cascade" == "true" ]]; then
+            for dependent in "${dependents[@]}"; do
+                log INFO "[DRY RUN] Would cascade restart dependent: $dependent"
+            done
+        fi
         return 0
     fi
 
@@ -477,6 +504,32 @@ execute_service_restart() {
     # Execute service-restart playbook
     if "$APPLY_REMEDIATION" --playbook service-restart --service "$service" --log-to "$DECISION_LOG" 2>&1 | tee -a "$LOG_FILE"; then
         log SUCCESS "Service restart playbook completed successfully for: $service"
+
+        # Phase 3: Cascade restart dependents if requested
+        if [[ ${#dependents[@]} -gt 0 ]] && [[ "$cascade" == "true" ]]; then
+            log INFO "Cascade restarting ${#dependents[@]} dependent service(s)..."
+
+            local cascade_success=true
+            for dependent in "${dependents[@]}"; do
+                log INFO "Cascade restarting dependent: $dependent"
+
+                # Wait for primary service to be healthy before restarting dependents
+                sleep 5
+
+                # Recursively restart dependent (without further cascade to prevent infinite loops)
+                if ! execute_service_restart "$dependent" "false"; then
+                    log ERROR "Cascade restart failed for dependent: $dependent"
+                    cascade_success=false
+                fi
+            done
+
+            if [[ "$cascade_success" == "true" ]]; then
+                log SUCCESS "Cascade restart completed successfully for all dependents"
+            else
+                log WARNING "Some cascade restarts failed - check logs"
+            fi
+        fi
+
         return 0
     else
         log ERROR "Service restart playbook failed for: $service"
@@ -586,11 +639,26 @@ execute_action() {
             if [[ -z "$service" ]]; then
                 outcome="failure"
                 details="No service specified"
-            elif execute_service_restart "$service"; then
-                details="Service $service restarted"
             else
-                outcome="failure"
-                details="Failed to restart $service"
+                # Phase 3: Determine if cascade restart should be enabled
+                # Enable cascade if dep_safety_score is high (>0.8) and blast_radius > 0
+                local dep_safety_score
+                dep_safety_score=$(echo "$action" | jq -r '.dep_safety_score // 1.0')
+                local enable_cascade="false"
+
+                if (( $(awk "BEGIN {print ($dep_safety_score >= 0.8)}") )); then
+                    enable_cascade="true"
+                    log INFO "Dep safety score $dep_safety_score >= 0.8 - enabling cascade restart"
+                else
+                    log INFO "Dep safety score $dep_safety_score < 0.8 - cascade restart disabled"
+                fi
+
+                if execute_service_restart "$service" "$enable_cascade"; then
+                    details="Service $service restarted (cascade: $enable_cascade)"
+                else
+                    outcome="failure"
+                    details="Failed to restart $service"
+                fi
             fi
             ;;
         drift-reconciliation)
