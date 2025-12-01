@@ -263,6 +263,45 @@ execute_query() {
         list_all_services)
             list_all_services
             ;;
+        get_unhealthy_services)
+            get_unhealthy_services
+            ;;
+        get_service_dependencies)
+            local service=$(echo "$parameters" | jq -r '.service // empty')
+            if [[ -z "$service" ]]; then
+                echo '{"error": "No service specified"}'
+                return 1
+            fi
+            get_service_dependencies "$service"
+            ;;
+        get_service_dependents)
+            local service=$(echo "$parameters" | jq -r '.service // empty')
+            if [[ -z "$service" ]]; then
+                echo '{"error": "No service specified"}'
+                return 1
+            fi
+            get_service_dependents "$service"
+            ;;
+        get_blast_radius)
+            local service=$(echo "$parameters" | jq -r '.service // empty')
+            if [[ -z "$service" ]]; then
+                echo '{"error": "No service specified"}'
+                return 1
+            fi
+            get_blast_radius "$service"
+            ;;
+        get_critical_services)
+            get_critical_services
+            ;;
+        get_graph_staleness)
+            get_graph_staleness
+            ;;
+        get_top_blast_radius)
+            get_top_blast_radius
+            ;;
+        get_unhealthy_dependencies)
+            get_unhealthy_dependencies
+            ;;
         *)
             echo "{\"error\": \"Unknown executor: $executor\"}"
             return 1
@@ -436,6 +475,176 @@ get_unhealthy_services() {
         printf ']}'
     else
         echo '{"unhealthy_services": []}'
+    fi
+}
+
+# ==================== DEPENDENCY ANALYSIS EXECUTORS ====================
+
+# Get service dependencies
+get_service_dependencies() {
+    local service="$1"
+    local graph_file="$CONTEXT_DIR/dependency-graph.json"
+
+    if [[ ! -f "$graph_file" ]]; then
+        echo "{\"error\": \"Dependency graph not found. Run discover-dependencies.sh first.\"}"
+        return 1
+    fi
+
+    jq --arg service "$service" '{
+        service: $service,
+        dependencies: (.services[$service].dependencies // [])
+    }' "$graph_file"
+}
+
+# Get service dependents
+get_service_dependents() {
+    local service="$1"
+    local graph_file="$CONTEXT_DIR/dependency-graph.json"
+
+    if [[ ! -f "$graph_file" ]]; then
+        echo "{\"error\": \"Dependency graph not found. Run discover-dependencies.sh first.\"}"
+        return 1
+    fi
+
+    jq --arg service "$service" '{
+        service: $service,
+        dependents: (.services[$service].dependents // []),
+        blast_radius: (.services[$service].blast_radius // 0)
+    }' "$graph_file"
+}
+
+# Get blast radius for a service
+get_blast_radius() {
+    local service="$1"
+    local graph_file="$CONTEXT_DIR/dependency-graph.json"
+
+    if [[ ! -f "$graph_file" ]]; then
+        echo "{\"error\": \"Dependency graph not found. Run discover-dependencies.sh first.\"}"
+        return 1
+    fi
+
+    jq --arg service "$service" '{
+        service: $service,
+        blast_radius: (.services[$service].blast_radius // 0),
+        dependents: (.services[$service].dependents // []),
+        impact: (if (.services[$service].blast_radius // 0) > 5 then "critical" elif (.services[$service].blast_radius // 0) > 3 then "high" elif (.services[$service].blast_radius // 0) > 1 then "medium" else "low" end)
+    }' "$graph_file"
+}
+
+# Get all critical services
+get_critical_services() {
+    local graph_file="$CONTEXT_DIR/dependency-graph.json"
+
+    if [[ ! -f "$graph_file" ]]; then
+        echo "{\"error\": \"Dependency graph not found. Run discover-dependencies.sh first.\"}"
+        return 1
+    fi
+
+    jq '{
+        critical_services: [
+            .services | to_entries[] |
+            select(.value.critical == true) |
+            {
+                service: .key,
+                blast_radius: .value.blast_radius,
+                dependents: (.value.dependents | length)
+            }
+        ]
+    }' "$graph_file"
+}
+
+# Get dependency graph staleness
+get_graph_staleness() {
+    local graph_file="$CONTEXT_DIR/dependency-graph.json"
+
+    if [[ ! -f "$graph_file" ]]; then
+        echo "{\"error\": \"Dependency graph not found. Run discover-dependencies.sh first.\"}"
+        return 1
+    fi
+
+    local generated_at=$(jq -r '.generated_at' "$graph_file")
+    local generated_epoch=$(date -d "$generated_at" +%s 2>/dev/null || echo "0")
+    local now_epoch=$(date +%s)
+    local staleness=$((now_epoch - generated_epoch))
+    local hours=$((staleness / 3600))
+
+    local status="fresh"
+    if (( staleness > 90000 )); then
+        status="stale"
+    elif (( staleness > 86400 )); then
+        status="aging"
+    fi
+
+    echo "{
+        \"generated_at\": \"$generated_at\",
+        \"staleness_seconds\": $staleness,
+        \"staleness_hours\": $hours,
+        \"status\": \"$status\"
+    }"
+}
+
+# Get services with highest blast radius
+get_top_blast_radius() {
+    local graph_file="$CONTEXT_DIR/dependency-graph.json"
+
+    if [[ ! -f "$graph_file" ]]; then
+        echo "{\"error\": \"Dependency graph not found. Run discover-dependencies.sh first.\"}"
+        return 1
+    fi
+
+    jq '{
+        top_services: [
+            .services | to_entries[] |
+            select(.value.blast_radius != null) |
+            {
+                service: .key,
+                blast_radius: .value.blast_radius,
+                dependents: (.value.dependents | length)
+            }
+        ] | sort_by(-.blast_radius) | .[:10]
+    }' "$graph_file"
+}
+
+# Get unhealthy dependencies
+get_unhealthy_dependencies() {
+    local graph_file="$CONTEXT_DIR/dependency-graph.json"
+
+    if [[ ! -f "$graph_file" ]]; then
+        echo "{\"error\": \"Dependency graph not found. Run discover-dependencies.sh first.\"}"
+        return 1
+    fi
+
+    local unhealthy=()
+
+    # Get all services and their dependencies
+    local services=$(jq -r '.services | keys[]' "$graph_file")
+
+    for service in $services; do
+        local deps=$(jq -r ".services[\"$service\"].dependencies[].target" "$graph_file" 2>/dev/null || echo "")
+
+        for dep in $deps; do
+            # Check if dependency service is running
+            if ! systemctl --user is-active "$dep.service" >/dev/null 2>&1; then
+                # Try without .service suffix (might be a network)
+                if ! podman ps --format '{{.Names}}' | grep -qw "^$dep$"; then
+                    unhealthy+=("{\"service\": \"$service\", \"dependency\": \"$dep\", \"status\": \"down\"}")
+                fi
+            fi
+        done
+    done
+
+    # Output JSON array
+    if (( ${#unhealthy[@]} > 0 )); then
+        printf '{"unhealthy_dependencies": ['
+        local first=true
+        for item in "${unhealthy[@]}"; do
+            $first || printf ','
+            printf '%s' "$item"
+            first=false
+        done
+        printf ']}'
+    else
+        echo '{"unhealthy_dependencies": []}'
     fi
 }
 
