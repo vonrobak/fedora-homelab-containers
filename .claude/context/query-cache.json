@@ -26,13 +26,13 @@
     ]
   },
   "disk_usage": {
-    "timestamp": "2025-11-30T20:22:17+01:00",
+    "timestamp": "2025-12-01T06:33:33+01:00",
     "ttl": 600,
     "result": {
       "filesystems": [
         {
           "mount": "/",
-          "usage_pct": "75%"
+          "usage_pct": "56%"
         },
         {
           "mount": "/mnt/btrfs-pool",
