@@ -1,0 +1,176 @@
+################################################################################
+# Dependency Mapping Alerting Rules
+# Phase 2: Service Dependency Mapping & Impact Analysis
+#
+# These alerts monitor the health and state of service dependencies, detecting
+# critical issues that could cascade through the system.
+#
+# Created: 2025-12-01
+# Author: Claude (Service Dependency Mapping System)
+################################################################################
+
+groups:
+  - name: dependency_health
+    interval: 60s
+    rules:
+      # Alert when a critical service has an unhealthy dependency
+      - alert: CriticalServiceDependencyUnhealthy
+        expr: |
+          (
+            homelab_dependency_health{} == 0
+          )
+          and on(homelab_service) (
+            homelab_critical_service_status{} == 1
+          )
+        for: 2m
+        labels:
+          severity: critical
+          component: dependencies
+          category: health
+        annotations:
+          summary: "Critical service {{ $labels.service }} has unhealthy dependency"
+          description: |
+            Critical service {{ $labels.service }} depends on {{ $labels.dependency }} which is currently unhealthy.
+            This may cause service degradation or failures.
+
+            Affected service: {{ $labels.service }}
+            Unhealthy dependency: {{ $labels.dependency }}
+            Duration: {{ $value }}m
+
+            Action: Investigate dependency health immediately to prevent service impact.
+          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+
+      # Alert when a high blast radius service goes down
+      - alert: HighBlastRadiusServiceDown
+        expr: |
+          (
+            homelab_critical_service_status{} == 0
+          )
+          and on(homelab_service) (
+            homelab_service_blast_radius{} > 3
+          )
+        for: 1m
+        labels:
+          severity: critical
+          component: dependencies
+          category: availability
+        annotations:
+          summary: "High blast radius service {{ $labels.service }} is down"
+          description: |
+            Service {{ $labels.service }} is down and has a blast radius of {{ $value }} services.
+            This affects multiple dependent services across the system.
+
+            Blast radius: {{ $value }} services
+            Service: {{ $labels.service }}
+
+            Potentially affected services should be checked for cascading failures.
+
+            Action: Restart service immediately and assess impact on dependents.
+          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+
+      # Alert when dependency graph becomes stale
+      - alert: DependencyGraphStale
+        expr: homelab_dependency_graph_staleness_seconds > 90000
+        for: 5m
+        labels:
+          severity: warning
+          component: dependencies
+          category: maintenance
+        annotations:
+          summary: "Dependency graph is stale ({{ $value | humanizeDuration }})"
+          description: |
+            The dependency graph has not been updated in {{ $value | humanizeDuration }}.
+
+            Expected refresh: Daily at 06:00 (24h max staleness)
+            Current staleness: {{ $value | humanizeDuration }}
+
+            This may indicate:
+            - dependency-discovery.timer is not running
+            - discovery script is failing
+            - systemd timer configuration issues
+
+            Action: Check dependency-discovery.timer status and logs:
+              systemctl --user status dependency-discovery.timer
+              journalctl --user -u dependency-discovery.service -n 50
+          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+
+      # Alert when a medium blast radius service goes down (warning level)
+      - alert: MediumBlastRadiusServiceDown
+        expr: |
+          (
+            homelab_critical_service_status{} == 0
+          )
+          and on(homelab_service) (
+            homelab_service_blast_radius{} > 1 and homelab_service_blast_radius{} <= 3
+          )
+        for: 5m
+        labels:
+          severity: warning
+          component: dependencies
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.service }} with {{ $value }} dependents is down"
+          description: |
+            Service {{ $labels.service }} is down and has {{ $value }} dependent services.
+
+            Blast radius: {{ $value }} services
+            Service: {{ $labels.service }}
+
+            Monitor dependent services for potential issues.
+
+            Action: Investigate service failure and restart if needed.
+
+  - name: dependency_drift
+    interval: 300s
+    rules:
+      # Alert when dependency drift is detected (Phase 4 feature)
+      - alert: DependencyDriftDetected
+        expr: homelab_dependency_drift_detected{} == 1
+        for: 5m
+        labels:
+          severity: info
+          component: dependencies
+          category: configuration
+        annotations:
+          summary: "Dependency drift detected on {{ $labels.service }}"
+          description: |
+            Service {{ $labels.service }} has configuration drift in its dependencies.
+
+            Drift type: {{ $labels.type }}
+            Service: {{ $labels.service }}
+
+            This means the running configuration differs from the declared state in quadlet files.
+
+            Possible causes:
+            - Manual container modifications
+            - Network changes not reflected in quadlets
+            - Stack file updates not applied
+
+            Action: Review drift report and reconcile configuration:
+              ~/containers/.claude/skills/homelab-deployment/scripts/check-drift.sh {{ $labels.service }}
+          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+
+  - name: dependency_capacity
+    interval: 60s
+    rules:
+      # Alert when dependency chain depth is unusually high
+      - alert: DeepDependencyChain
+        expr: homelab_dependency_chain_depth{} > 5
+        for: 10m
+        labels:
+          severity: info
+          component: dependencies
+          category: architecture
+        annotations:
+          summary: "Service {{ $labels.service }} has deep dependency chain ({{ $value }})"
+          description: |
+            Service {{ $labels.service }} has a dependency chain depth of {{ $value }}.
+
+            Deep dependency chains can:
+            - Increase system complexity
+            - Slow down restart operations
+            - Make troubleshooting harder
+            - Increase failure cascade risk
+
+            Consider reviewing service architecture for potential simplification.
+          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/guides/dependency-management.md"

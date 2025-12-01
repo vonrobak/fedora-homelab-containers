@@ -1,0 +1,520 @@
+{
+  "version": "1.0",
+  "generated_at": "2025-12-01T22:02:27+01:00",
+  "services": {
+    "alert-discord-relay": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "alertmanager": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": true,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "authelia": {
+      "dependencies": [
+        {
+          "target": "redis-authelia",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "reverse_proxy",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "auth_services",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-auth_services"
+      ],
+      "external_access": false,
+      "critical": true,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "cadvisor": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "crowdsec": {
+      "dependencies": [],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy"
+      ],
+      "external_access": true,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "grafana": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "homepage": {
+      "dependencies": [
+        {
+          "target": "reverse_proxy",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy"
+      ],
+      "external_access": true,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "immich-ml": {
+      "dependencies": [
+        {
+          "target": "photos",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-photos"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "immich-server": {
+      "dependencies": [
+        {
+          "target": "photos",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "postgresql-immich",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "redis-immich",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-photos",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "jellyfin": {
+      "dependencies": [
+        {
+          "target": "reverse_proxy",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "media_services",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-media_services",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "loki": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "promtail"
+      ],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
+    },
+    "node_exporter": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "prometheus"
+      ],
+      "networks": [
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
+    },
+    "ocis": {
+      "dependencies": [
+        {
+          "target": "traefik",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "postgresql-immich": {
+      "dependencies": [
+        {
+          "target": "photos",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "immich-server"
+      ],
+      "networks": [
+        "systemd-photos"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
+    },
+    "prometheus": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "node_exporter",
+          "type": "optional",
+          "strength": "soft",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": true,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "promtail": {
+      "dependencies": [
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "loki",
+          "type": "optional",
+          "strength": "soft",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "redis-authelia": {
+      "dependencies": [
+        {
+          "target": "auth_services",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "authelia"
+      ],
+      "networks": [
+        "systemd-auth_services"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
+    },
+    "redis-immich": {
+      "dependencies": [
+        {
+          "target": "photos",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "immich-server"
+      ],
+      "networks": [
+        "systemd-photos"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
+    },
+    "traefik": {
+      "dependencies": [
+        {
+          "target": "reverse_proxy",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "auth_services",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        },
+        {
+          "target": "monitoring",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "ocis",
+        "vaultwarden"
+      ],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-auth_services",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": true,
+      "restart_priority": 0,
+      "blast_radius": 2
+    },
+    "vaultwarden": {
+      "dependencies": [
+        {
+          "target": "traefik",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy.network"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
+    "monitoring": {
+      "dependents": [
+        "alert-discord-relay",
+        "alertmanager",
+        "cadvisor",
+        "grafana",
+        "jellyfin",
+        "loki",
+        "node_exporter",
+        "prometheus",
+        "promtail",
+        "traefik"
+      ],
+      "blast_radius": 10
+    },
+    "auth_services": {
+      "dependents": [
+        "authelia",
+        "redis-authelia",
+        "traefik"
+      ],
+      "blast_radius": 3
+    },
+    "reverse_proxy": {
+      "dependents": [
+        "authelia",
+        "homepage",
+        "jellyfin",
+        "traefik"
+      ],
+      "blast_radius": 4
+    },
+    "photos": {
+      "dependents": [
+        "immich-ml",
+        "immich-server",
+        "postgresql-immich",
+        "redis-immich"
+      ],
+      "blast_radius": 4
+    },
+    "media_services": {
+      "dependents": [
+        "jellyfin"
+      ],
+      "blast_radius": 1
+    }
+  },
+  "networks": {
+    "systemd-auth_services": {
+      "members": [],
+      "gateway": false
+    },
+    "systemd-media_services": {
+      "members": [],
+      "gateway": false
+    },
+    "systemd-monitoring": {
+      "members": [],
+      "gateway": false
+    },
+    "systemd-photos": {
+      "members": [],
+      "gateway": false
+    },
+    "systemd-reverse_proxy": {
+      "members": [],
+      "gateway": true
+    }
+  },
+  "metadata": {
+    "total_services": 25,
+    "total_dependencies": 29,
+    "sources": [
+      "quadlets",
+      "networks"
+    ]
+  }
+}

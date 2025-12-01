@@ -416,6 +416,105 @@ observe_disk() {
     echo "{\"root_usage_pct\": $root_pct, \"btrfs_usage_pct\": $btrfs_pct}"
 }
 
+observe_dependencies() {
+    log DEBUG "Analyzing service dependencies..."
+
+    local dep_graph="$CONTEXT_DIR/dependency-graph.json"
+    local analyze_impact="$SCRIPT_DIR/analyze-impact.sh"
+
+    if $DRY_RUN; then
+        echo '{"graph_exists": false, "critical_services": [], "unhealthy_dependencies": [], "high_risk_services": []}'
+        return
+    fi
+
+    # Check if dependency graph exists
+    if [[ ! -f "$dep_graph" ]]; then
+        log WARNING "Dependency graph not found at $dep_graph"
+        echo '{"graph_exists": false, "critical_services": [], "unhealthy_dependencies": [], "high_risk_services": []}'
+        return
+    fi
+
+    # Check graph staleness
+    local generated_at staleness_seconds
+    generated_at=$(jq -r '.generated_at' "$dep_graph" 2>/dev/null || echo "")
+
+    if [[ -n "$generated_at" ]]; then
+        local generated_epoch now_epoch
+        generated_epoch=$(date -d "$generated_at" +%s 2>/dev/null || echo "0")
+        now_epoch=$(date +%s)
+        staleness_seconds=$((now_epoch - generated_epoch))
+    else
+        staleness_seconds=999999
+    fi
+
+    # Get critical services
+    local critical_services
+    critical_services=$(jq -c '[.services | to_entries[] | select(.value.critical == true) | {
+        service: .key,
+        blast_radius: .value.blast_radius,
+        running: false
+    }]' "$dep_graph" 2>/dev/null || echo "[]")
+
+    # Check which critical services are running
+    local critical_array=()
+    while IFS= read -r svc_obj; do
+        local svc_name
+        svc_name=$(echo "$svc_obj" | jq -r '.service')
+
+        local running=false
+        if systemctl --user is-active "$svc_name.service" >/dev/null 2>&1 || \
+           podman ps --format '{{.Names}}' 2>/dev/null | grep -qw "^$svc_name$"; then
+            running=true
+        fi
+
+        svc_obj=$(echo "$svc_obj" | jq --argjson running "$running" '.running = $running')
+        critical_array+=("$svc_obj")
+    done < <(echo "$critical_services" | jq -c '.[]')
+
+    # Rebuild critical services array
+    critical_services="["
+    local first=true
+    for item in "${critical_array[@]}"; do
+        if [[ "$first" == true ]]; then
+            first=false
+        else
+            critical_services+=","
+        fi
+        critical_services+="$item"
+    done
+    critical_services+="]"
+
+    # Find services with high blast radius (>3) that could cause cascading failures
+    local high_risk_services
+    high_risk_services=$(jq -c '[.services | to_entries[] | select(.value.blast_radius > 3) | {
+        service: .key,
+        blast_radius: .value.blast_radius,
+        dependents: (.value.dependents | length)
+    }]' "$dep_graph" 2>/dev/null || echo "[]")
+
+    # Use query-homelab.sh to check for unhealthy dependencies
+    local unhealthy_deps="[]"
+    if [[ -x "$QUERY_HOMELAB" ]]; then
+        unhealthy_deps=$("$QUERY_HOMELAB" "unhealthy dependencies" --json 2>/dev/null | \
+            jq -c '.unhealthy_dependencies // []' || echo "[]")
+    fi
+
+    # Output dependency observations
+    jq -n \
+        --argjson graph_exists true \
+        --argjson staleness "$staleness_seconds" \
+        --argjson critical "$critical_services" \
+        --argjson high_risk "$high_risk_services" \
+        --argjson unhealthy "$unhealthy_deps" \
+        '{
+            graph_exists: $graph_exists,
+            staleness_seconds: $staleness,
+            critical_services: $critical,
+            high_risk_services: $high_risk,
+            unhealthy_dependencies: $unhealthy
+        }'
+}
+
 ##############################################################################
 # ORIENT Phase - Apply Context
 ##############################################################################
@@ -443,18 +542,52 @@ get_historical_success_rate() {
 # DECIDE Phase - Calculate Confidence and Recommend Actions
 ##############################################################################
 
+calculate_dependency_safety() {
+    local service=$1
+    local dependencies_obs=$2
+
+    # Parse dependency observation data
+    local blast_radius unhealthy_count critical_down
+
+    blast_radius=$(echo "$dependencies_obs" | jq -r ".high_risk_services[] | select(.service == \"$service\") | .blast_radius" 2>/dev/null || echo "0")
+    unhealthy_count=$(echo "$dependencies_obs" | jq '[.unhealthy_dependencies[] | select(.service == "'"$service"'")] | length' 2>/dev/null || echo "0")
+    critical_down=$(echo "$dependencies_obs" | jq '[.critical_services[] | select(.service == "'"$service"'" and .running == false)] | length' 2>/dev/null || echo "0")
+
+    # Calculate safety score (0.0 - 1.0)
+    # - Start at 1.0 (perfect safety)
+    # - Subtract 0.05 per blast radius point
+    # - Subtract 0.20 per unhealthy dependency
+    # - Subtract 0.40 if service is critical and down
+
+    awk "BEGIN {
+        score = 1.0
+        score -= ($blast_radius * 0.05)
+        score -= ($unhealthy_count * 0.20)
+        score -= ($critical_down * 0.40)
+        if (score < 0) score = 0
+        printf \"%.2f\", score
+    }"
+}
+
 calculate_confidence() {
     local prediction_confidence=$1
     local historical_success=$2
     local impact_certainty=$3
     local rollback_feasibility=$4
+    local dep_safety_score=${5:-1.0}  # Default to 1.0 if not provided
 
-    # Weighted average
+    # Weighted average with dependency safety (Phase 3 integration)
+    # - prediction_confidence: 25% (reduced from 30%)
+    # - historical_success: 25% (reduced from 30%)
+    # - impact_certainty: 15% (reduced from 20%)
+    # - rollback_feasibility: 15% (reduced from 20%)
+    # - dep_safety_score: 20% (NEW - dependency safety)
     awk "BEGIN {
-        conf = ($prediction_confidence * 0.30) + \
-               ($historical_success * 0.30) + \
-               ($impact_certainty * 0.20) + \
-               ($rollback_feasibility * 0.20)
+        conf = ($prediction_confidence * 0.25) + \
+               ($historical_success * 0.25) + \
+               ($impact_certainty * 0.15) + \
+               ($rollback_feasibility * 0.15) + \
+               ($dep_safety_score * 0.20)
         printf \"%.2f\", conf
     }"
 }
@@ -573,12 +706,13 @@ EOF
     log INFO "=== OBSERVE Phase ==="
 
     # Collect observations
-    local health_obs predictions_obs drift_obs services_obs disk_obs
+    local health_obs predictions_obs drift_obs services_obs disk_obs dependencies_obs
     health_obs=$(observe_health)
     predictions_obs=$(observe_predictions)
     drift_obs=$(observe_drift)
     services_obs=$(observe_services)
     disk_obs=$(observe_disk)
+    dependencies_obs=$(observe_dependencies)
 
     local health_score
     health_score=$(echo "$health_obs" | jq '.health_score // 100')
@@ -589,6 +723,7 @@ EOF
     log DEBUG "Drift: $drift_obs"
     log DEBUG "Services: $services_obs"
     log DEBUG "Disk: $disk_obs"
+    log DEBUG "Dependencies: $dependencies_obs"
 
     log INFO "=== ORIENT Phase ==="
 
@@ -657,9 +792,13 @@ EOF
                 continue
             fi
 
+            # Calculate dependency safety score (Phase 3)
+            local dep_safety_score
+            dep_safety_score=$(calculate_dependency_safety "$service" "$dependencies_obs")
+
             local hist_success conf risk decision
             hist_success=$(get_historical_success_rate "service-restart")
-            conf=$(calculate_confidence 0.85 "$hist_success" 0.90 1.0)
+            conf=$(calculate_confidence 0.85 "$hist_success" 0.90 1.0 "$dep_safety_score")
             risk=$(get_risk_level "service-restart")
             decision=$(make_decision "$conf" "$risk" "$preferences")
 
@@ -669,6 +808,7 @@ EOF
               \"service\": \"$service\",
               \"reason\": \"Service unhealthy or not running\",
               \"confidence\": $conf,
+              \"dep_safety_score\": $dep_safety_score,
               \"risk\": \"$risk\",
               \"decision\": \"$decision\",
               \"priority\": \"medium\"

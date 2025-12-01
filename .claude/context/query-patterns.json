@@ -265,6 +265,137 @@
         "Which services are down?",
         "What services are not running?"
       ]
+    },
+    {
+      "id": "dependency_service_depends_on",
+      "description": "Show what a service depends on",
+      "match": [
+        "what",
+        "does",
+        "{service}",
+        "depend"
+      ],
+      "intent": "dependency_analysis",
+      "executor": "get_service_dependencies",
+      "parameters": [
+        "service"
+      ],
+      "cache_ttl": 3600,
+      "examples": [
+        "What does traefik depend on?",
+        "What are jellyfin dependencies?",
+        "Show me what authelia depends on"
+      ]
+    },
+    {
+      "id": "dependency_dependents_of_service",
+      "description": "Show what services depend on a service",
+      "match": [
+        "what",
+        "depends",
+        "on",
+        "{service}"
+      ],
+      "intent": "dependency_analysis",
+      "executor": "get_service_dependents",
+      "parameters": [
+        "service"
+      ],
+      "cache_ttl": 3600,
+      "examples": [
+        "What depends on traefik?",
+        "What services depend on prometheus?",
+        "Show me dependents of authelia"
+      ]
+    },
+    {
+      "id": "dependency_blast_radius",
+      "description": "Show blast radius of a service",
+      "match": [
+        "blast",
+        "radius",
+        "{service}"
+      ],
+      "intent": "dependency_analysis",
+      "executor": "get_blast_radius",
+      "parameters": [
+        "service"
+      ],
+      "cache_ttl": 3600,
+      "examples": [
+        "What is the blast radius of traefik?",
+        "Blast radius for monitoring network",
+        "Show me blast radius of authelia"
+      ]
+    },
+    {
+      "id": "dependency_critical_services",
+      "description": "List all critical services",
+      "match": [
+        "critical",
+        "services"
+      ],
+      "intent": "dependency_analysis",
+      "executor": "get_critical_services",
+      "cache_key": "critical_services",
+      "cache_ttl": 3600,
+      "examples": [
+        "Show me critical services",
+        "What services are critical?",
+        "List critical services"
+      ]
+    },
+    {
+      "id": "dependency_graph_staleness",
+      "description": "Check when dependency graph was last updated",
+      "match": [
+        "dependency",
+        "graph",
+        "stale"
+      ],
+      "intent": "dependency_analysis",
+      "executor": "get_graph_staleness",
+      "cache_key": "graph_staleness",
+      "cache_ttl": 60,
+      "examples": [
+        "When was dependency graph last updated?",
+        "Is the dependency graph stale?",
+        "Show me dependency graph staleness"
+      ]
+    },
+    {
+      "id": "dependency_top_blast_radius",
+      "description": "Show services with most dependents",
+      "match": [
+        "most",
+        "dependents"
+      ],
+      "intent": "dependency_analysis",
+      "executor": "get_top_blast_radius",
+      "cache_key": "top_blast_radius",
+      "cache_ttl": 3600,
+      "examples": [
+        "Which services have the most dependents?",
+        "Show me services with highest blast radius",
+        "Top services by dependents"
+      ]
+    },
+    {
+      "id": "dependency_unhealthy",
+      "description": "Show unhealthy dependencies",
+      "match": [
+        "unhealthy",
+        "dependencies"
+      ],
+      "intent": "dependency_analysis",
+      "executor": "get_unhealthy_dependencies",
+      "cache_key": "unhealthy_dependencies",
+      "cache_ttl": 60,
+      "examples": [
+        "Show me unhealthy dependencies",
+        "What dependencies are down?",
+        "List broken dependencies"
+      ]
     }
   ]
 }

@@ -72,6 +72,7 @@ What is checked:
   - Volume mounts
   - Environment variables
   - Traefik labels
+  - Dependency drift (quadlet vs observed)
   - Health check configuration
   - Restart policy
 
@@ -255,6 +256,61 @@ check_service_drift() {
         has_drift=true
     else
         [[ "$VERBOSE" == "true" ]] && echo -e "    ${GREEN}✓${NC} Match"
+    fi
+
+    # Check 6: Dependency drift (Phase 4)
+    local dep_graph="${HOME}/containers/.claude/context/dependency-graph.json"
+
+    if [[ -f "$dep_graph" ]]; then
+        # Get declared dependencies from quadlet (After=, Requires=, Wants=)
+        local quadlet_deps=$(grep -E "^(After|Requires|Wants)=" "$quadlet_file" | cut -d= -f2 | tr ' ' '\n' | sed 's/\.service$//' | sed 's/\.network$//' | sed 's/-network$//' | grep -v "\.target$" | sort -u | tr '\n' ' ' | sed 's/ $//')
+
+        # Get observed dependencies from dependency graph (quadlet + runtime + traefik sources)
+        local graph_deps=$(jq -r ".services[\"$service_name\"].dependencies[]? | .target" "$dep_graph" 2>/dev/null | sort -u | tr '\n' ' ' | sed 's/ $//')
+
+        if [[ "$VERBOSE" == "true" ]]; then
+            echo "  Dependencies:"
+            echo "    Quadlet declares: $quadlet_deps"
+            echo "    Graph observes: $graph_deps"
+        fi
+
+        # Check for undeclared dependencies (in graph but not in quadlet)
+        local undeclared=""
+        for dep in $graph_deps; do
+            if ! echo "$quadlet_deps" | grep -qw "$dep"; then
+                undeclared="$undeclared $dep"
+            fi
+        done
+
+        # Check for missing dependencies (in quadlet but not observed)
+        local missing=""
+        for dep in $quadlet_deps; do
+            if ! echo "$graph_deps" | grep -qw "$dep"; then
+                missing="$missing $dep"
+            fi
+        done
+
+        if [[ -n "$undeclared" ]]; then
+            echo -e "  ${YELLOW}⚠ WARNING:${NC} Undeclared dependencies detected"
+            echo "    Observed but not in quadlet: $undeclared"
+            echo "    These may be runtime connections or Traefik routes"
+            SERVICES_WARNING=$((SERVICES_WARNING + 1))
+        fi
+
+        if [[ -n "$missing" ]]; then
+            echo -e "  ${YELLOW}⚠ WARNING:${NC} Declared dependencies not observed"
+            echo "    In quadlet but not in graph: $missing"
+            echo "    May be startup-only or inactive services"
+            SERVICES_WARNING=$((SERVICES_WARNING + 1))
+        fi
+
+        if [[ -z "$undeclared" && -z "$missing" ]] && [[ "$VERBOSE" == "true" ]]; then
+            echo -e "    ${GREEN}✓${NC} Dependencies match"
+        fi
+    else
+        if [[ "$VERBOSE" == "true" ]]; then
+            echo "  Dependencies: Dependency graph not available (skipping)"
+        fi
     fi
 
     # Summary for this service

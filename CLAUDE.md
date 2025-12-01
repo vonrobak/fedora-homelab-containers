@@ -10,25 +10,17 @@ A learning-focused homelab project building production-ready, self-hosted infras
 
 ## Architecture
 
-### Container Orchestration Model
+### Container Orchestration
 
-This project uses **systemd quadlets** rather than docker-compose or Makefiles:
-
+**Core Stack:**
 - **Runtime:** Podman (rootless containers)
-- **Orchestration:** systemd user services (`~/.config/containers/systemd/`)
+- **Orchestration:** systemd quadlets (`~/.config/containers/systemd/`)
 - **Management:** `systemctl --user` commands
 - **Service Discovery:** Traefik Docker provider with Podman socket
 
-**Deployment Pattern:**
-1. Create container with `podman run` (including Traefik labels)
-2. Generate systemd units: `podman generate systemd --name <container> --files`
-3. Reload systemd: `systemctl --user daemon-reload`
-4. Enable/start: `systemctl --user enable --now <service.service>`
+### Security Architecture
 
-### Layered Security Architecture
-
-Requests flow through ordered middleware layers (fail-fast principle):
-
+**Layered Middleware** (fail-fast principle):
 ```
 Internet → Port Forward (80/443)
   ↓
@@ -43,11 +35,9 @@ Internet → Port Forward (80/443)
 Backend Service
 ```
 
-**Why this order matters:** Each layer is more expensive than the last. Reject malicious IPs immediately (CrowdSec) before wasting resources on auth checks.
+**Why this order matters:** Each layer is more expensive than the last. Reject malicious IPs immediately before wasting resources on auth checks.
 
-### Network Segmentation
-
-Services are isolated into logical networks:
+**Network Segmentation:**
 - `systemd-reverse_proxy` - Traefik and externally-accessible services
 - `systemd-media_services` - Jellyfin and media processing
 - `systemd-auth_services` - Authelia, Redis (session storage)
@@ -56,7 +46,7 @@ Services are isolated into logical networks:
 
 Services join networks based on trust/access requirements. Services can be on multiple networks.
 
-### Traefik Configuration Structure
+### Traefik Configuration
 
 **Static config:** `/config/traefik/traefik.yml` (entry points, providers, Let's Encrypt)
 
@@ -67,18 +57,9 @@ Services join networks based on trust/access requirements. Services can be on mu
 - `tls.yml` - TLS 1.2+ with modern ciphers
 - `rate-limit.yml` - Tiered rate limits (global: 50/min, auth: 10/min, API: 30/min)
 
-**Service autodiscovery:** Containers use labels for Traefik registration:
-```bash
---label "traefik.enable=true"
---label "traefik.http.routers.service-name.rule=Host(\`subdomain.domain.com\`)"
---label "traefik.http.services.service-name.loadbalancer.server.port=8096"
-```
+## Service Deployment
 
-## Common Commands
-
-### Service Deployment
-
-#### Pattern-Based Deployment (Recommended)
+### Pattern-Based Deployment (Recommended)
 
 Use battle-tested deployment patterns for consistent, validated deployments:
 
@@ -86,38 +67,18 @@ Use battle-tested deployment patterns for consistent, validated deployments:
 # Deploy using homelab-deployment skill patterns
 cd .claude/skills/homelab-deployment
 
-# Media server (Jellyfin, Plex)
+# Examples
 ./scripts/deploy-from-pattern.sh \
   --pattern media-server-stack \
   --service-name jellyfin \
   --hostname jellyfin.patriark.org \
   --memory 4G
 
-# Web application with database
 ./scripts/deploy-from-pattern.sh \
   --pattern web-app-with-database \
   --service-name wiki \
   --hostname wiki.patriark.org \
   --memory 2G
-
-# Database (PostgreSQL, MySQL)
-./scripts/deploy-from-pattern.sh \
-  --pattern database-service \
-  --service-name app-db \
-  --memory 2G
-
-# Cache (Redis, Memcached)
-./scripts/deploy-from-pattern.sh \
-  --pattern cache-service \
-  --service-name app-redis \
-  --memory 512M
-
-# Internal service (admin panels, APIs)
-./scripts/deploy-from-pattern.sh \
-  --pattern reverse-proxy-backend \
-  --service-name admin-panel \
-  --hostname admin.patriark.org \
-  --memory 512M
 
 # See all patterns
 ls -1 patterns/*.yml
@@ -137,109 +98,129 @@ cat docs/10-services/guides/pattern-selection-guide.md
 - `reverse-proxy-backend` - Internal services (strict auth required)
 - `monitoring-exporter` - Node exporter, cAdvisor (metrics collection)
 
-#### Manual Deployment (Legacy)
+### Manual Deployment (Legacy)
 
 For services without matching patterns:
 
 ```bash
-# Full Jellyfin + Traefik deployment
-./scripts/deploy-jellyfin-with-traefik.sh
-
-# Manual container creation with Traefik integration
-podman run -d \
-  --name jellyfin \
-  --network reverse_proxy \
-  --label "traefik.enable=true" \
-  --label "traefik.http.routers.jellyfin.rule=Host(\`jellyfin.example.com\`)" \
-  --label "traefik.http.routers.jellyfin.middlewares=crowdsec-bouncer@file,rate-limit@file,authelia@file" \
-  -v ./config/jellyfin/config:/config:Z \
-  jellyfin/jellyfin
-
+# Create container with podman run (Traefik labels excluded as they should be defined in Traefik dynamic files)
 # Generate systemd units
-cd ~/.config/containers/systemd/
-podman generate systemd --name jellyfin --files --new
+podman generate systemd --name <container> --files --new
 systemctl --user daemon-reload
-systemctl --user enable --now container-jellyfin.service
+systemctl --user enable --now <service>.service
 ```
+
+## Operations
 
 ### Service Management
 
 ```bash
-# Jellyfin management
+# Service-specific scripts
 ./scripts/jellyfin-manage.sh {start|stop|restart|status|logs|follow}
 
 # Generic systemd management
-systemctl --user status container-jellyfin.service
-systemctl --user restart container-traefik.service
-journalctl --user -u container-jellyfin.service -f
+systemctl --user status <service>.service
+systemctl --user restart <service>.service
+journalctl --user -u <service>.service -f
 
 # Container operations
 podman ps                           # List running containers
-podman logs -f jellyfin             # Follow logs
-podman healthcheck run jellyfin     # Check container health
+podman logs -f <service>            # Follow logs
+podman healthcheck run <service>    # Check container health
 ```
 
-### Diagnostics and Auditing
+### Network Management
+
+```bash
+podman network ls                              # List networks
+podman network inspect <network>               # Inspect network
+podman network connect <network> <container>   # Connect container
+```
+
+### Traefik Operations
+
+```bash
+# Dynamic config reloads automatically when files change
+# Just edit config/traefik/dynamic/*.yml and save
+
+podman logs -f traefik                         # View logs
+# Dashboard: traefik.patriark.org (requires auth)
+
+# Check Let's Encrypt certificates
+ls -lh /path/to/letsencrypt/acme.json
+```
+
+### Authelia Operations
+
+```bash
+# Logs and health
+podman logs -f authelia
+journalctl --user -u authelia.service -f
+podman healthcheck run authelia
+curl http://localhost:9091/api/health
+
+# User management
+podman exec -it authelia authelia crypto hash generate argon2 --password 'PASSWORD'
+# Edit ~/containers/config/authelia/users_database.yml, then restart
+
+# Session management (Redis)
+podman exec -it redis-authelia redis-cli
+KEYS authelia:session:*
+TTL authelia:session:<session-id>
+
+# Force logout all users (nuclear option)
+systemctl --user restart redis-authelia.service
+
+# Service management
+systemctl --user status authelia.service redis-authelia.service
+systemctl --user restart authelia.service
+```
+
+## Diagnostics & Monitoring
 
 **Full reference:** `docs/20-operations/guides/automation-reference.md` - Complete catalog of all scripts, schedules, and skill integrations.
 
+### Key Diagnostic Scripts
+
 ```bash
-# Comprehensive system diagnostics (generates timestamped report in docs/99-reports/)
-./scripts/homelab-diagnose.sh
+# System health and intelligence
+./scripts/homelab-intel.sh              # Health scoring + recommendations (0-100)
+./scripts/homelab-diagnose.sh           # Comprehensive system diagnostics
 
-# System intelligence report (health scoring + recommendations)
-./scripts/homelab-intel.sh
-# Output: Health score (0-100), critical issues, warnings, recommendations
-# JSON: docs/99-reports/intel-<timestamp>.json
-
-# Natural language system queries
+# Natural language queries (cached for speed)
 ./scripts/query-homelab.sh "what services are using the most memory?"
-./scripts/query-homelab.sh "show me disk usage"
 ./scripts/query-homelab.sh "is jellyfin running?"
+./scripts/query-homelab.sh "show me disk usage"
 
-# Autonomous operations assessment
-./scripts/autonomous-check.sh --verbose
-./scripts/autonomous-check.sh --json
+# Autonomous operations
+./scripts/autonomous-check.sh --verbose  # Assessment only
+./scripts/autonomous-execute.sh --status # Check autonomous status
 
 # Predictive analytics
-./scripts/predictive-analytics/predict-resource-exhaustion.sh
-./scripts/predictive-analytics/predict-resource-exhaustion.sh --all --output json
+./scripts/predictive-analytics/predict-resource-exhaustion.sh --all
 
-# Configuration drift detection (compare running vs declared state)
+# Configuration drift detection
 cd .claude/skills/homelab-deployment
-./scripts/check-drift.sh                    # Check all services
-./scripts/check-drift.sh jellyfin          # Check specific service
-./scripts/check-drift.sh --verbose         # Detailed comparison
-./scripts/check-drift.sh --json --output drift-report.json
+./scripts/check-drift.sh                 # Check all services
+./scripts/check-drift.sh jellyfin       # Check specific service
 
-# Health check before deployment (integrates with homelab-intel.sh)
+# Pre-deployment health check
 ./scripts/check-system-health.sh
 ./scripts/check-system-health.sh --verbose
-./scripts/check-system-health.sh --force   # Override health blocks
 
-# Security compliance audit
+# Security
 ./scripts/security-audit.sh
-
-# Vulnerability scanning
-./scripts/scan-vulnerabilities.sh
 ./scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
 
 # Skill usage analytics
 ./scripts/analyze-skill-usage.sh
-./scripts/analyze-skill-usage.sh --skill systematic-debugging
-./scripts/analyze-skill-usage.sh --monthly-report
+./scripts/recommend-skill.sh "jellyfin won't start"
 
-# Pod status with network/port info
-./scripts/show-pod-status.sh
-
-# System inventory (BTRFS, storage, firewall, versions)
-./scripts/survey.sh
-
-# Service-specific status
-./scripts/jellyfin-status.sh
-
-# Storage diagnostics
-./scripts/collect-storage-info.sh
+# System inventory
+./scripts/survey.sh                      # BTRFS, storage, firewall, versions
+./scripts/show-pod-status.sh            # Pod status with network/port info
+./scripts/jellyfin-status.sh            # Service-specific status
+./scripts/collect-storage-info.sh       # Storage diagnostics
 ```
 
 **Drift Detection Categories:**
@@ -249,128 +230,71 @@ cd .claude/skills/homelab-deployment
 
 **What is checked:** Image version, memory limits, networks, volumes, Traefik labels
 
-### Network Management
+### SLO Monitoring
+
+**Dashboard:** https://grafana.patriark.org/d/slo-dashboard
 
 ```bash
-# List networks
-podman network ls
-
-# Inspect network
-podman network inspect reverse_proxy
-
-# Connect container to network
-podman network connect media_services jellyfin
-```
-
-### Traefik Operations
-
-```bash
-# Reload dynamic configuration (Traefik watches for changes automatically)
-# Just edit files in config/traefik/dynamic/ and save
-
-# View Traefik logs
-podman logs -f traefik
-
-# Access Traefik dashboard
-# Navigate to traefik.patriark.org (requires authentication)
-
-# Test certificate renewal
-# Let's Encrypt auto-renews. Check acme.json modification time:
-ls -lh /path/to/letsencrypt/acme.json
-```
-
-### Authelia Operations
-
-```bash
-# View Authelia logs
-podman logs -f authelia
-journalctl --user -u authelia.service -f
-
-# Check authentication status
-podman healthcheck run authelia
-curl http://localhost:9091/api/health
-
-# Access SSO portal
-# Navigate to sso.patriark.org
-
-# Add new user (generate password hash)
-podman exec -it authelia authelia crypto hash generate argon2 --password 'USER_PASSWORD'
-# Then edit ~/containers/config/authelia/users_database.yml
-# Restart: systemctl --user restart authelia.service
-
-# View active sessions (Redis)
-podman exec -it redis-authelia redis-cli
-KEYS authelia:session:*
-TTL authelia:session:<session-id>
-
-# Force logout all users (nuclear option)
-systemctl --user restart redis-authelia.service
-
-# Update configuration
-nano ~/containers/config/authelia/configuration.yml
-systemctl --user restart authelia.service
-
-# View OTP codes (filesystem notifier)
-cat ~/containers/data/authelia/notification.txt
-
-# Service management
-systemctl --user status authelia.service redis-authelia.service
-systemctl --user restart authelia.service
-```
-
-### SLO Monitoring and Reports
-
-```bash
-# View SLO dashboard
-# Navigate to https://grafana.patriark.org/d/slo-dashboard
-
-# Query SLO metrics in Prometheus
+# Query SLO metrics
 curl 'http://localhost:9090/api/v1/query?query=slo:jellyfin:availability:actual'
-curl 'http://localhost:9090/api/v1/query?query=error_budget:jellyfin:availability:budget_remaining'
 
-# Check burn rate alerts
-curl http://localhost:9093/api/v2/alerts | jq '.[] | select(.labels.component=="slo")'
-
-# Run monthly SLO report manually
+# Run monthly SLO report
 ~/containers/scripts/monthly-slo-report.sh
 
-# Check monthly report schedule
+# Check schedule
 systemctl --user list-timers | grep monthly-slo-report
-systemctl --user status monthly-slo-report.timer
-
-# View report execution history
-journalctl --user -u monthly-slo-report.service
-
-# Available SLO targets (9 SLOs across 5 services):
-# - Jellyfin: 99.5% availability, 95% latency <500ms
-# - Immich: 99.9% availability, 99.5% upload success
-# - Authelia: 99.9% availability, 95% latency <200ms
-# - Traefik: 99.95% availability, 99% latency <100ms
-# - OCIS: 99.5% availability
 ```
+
+**SLO Targets (9 SLOs across 5 services):**
+- Jellyfin: 99.5% availability, 95% latency <500ms
+- Immich: 99.9% availability, 99.5% upload success
+- Authelia: 99.9% availability, 95% latency <200ms
+- Traefik: 99.95% availability, 99% latency <100ms
+- OCIS: 99.5% availability
 
 **Documentation:** `docs/40-monitoring-and-documentation/guides/slo-framework.md`
 
-### Autonomous Operations
+### System Health Reference
+
+**Critical Services (Must Be Running):**
+```bash
+systemctl --user is-active traefik.service       # Gateway to everything
+systemctl --user is-active authelia.service      # Needed to access protected services
+systemctl --user is-active prometheus.service    # Metrics collection
+systemctl --user is-active alertmanager.service  # Alert routing
+systemctl --user is-active grafana.service       # Monitoring dashboard
+```
+
+**Expected Resource Usage:**
+- **Memory:** Total ~2-3GB | Traefik: ~50MB | Jellyfin: ~200MB (idle) / 500MB-1GB (transcoding) | Prometheus: ~80MB | Grafana: ~120MB | Loki: ~60MB
+- **CPU:** Idle: >90% | Normal: 2-5% | Transcoding: 50-80% (normal spike)
+- **Disk:** System SSD: <60% (⚠️ >70%, 🚨 >80%) | BTRFS pool: Plenty of space
+
+**Health Checks:**
+```bash
+./scripts/homelab-intel.sh                     # Quick overall health
+podman healthcheck run <service>               # Individual service
+curl -f http://localhost:9090/-/healthy        # Prometheus
+curl -f http://localhost:3000/api/health       # Grafana
+curl -f http://localhost:3100/ready            # Loki
+```
+
+## Autonomous Operations
 
 **OODA Loop:** Daily automated Observe → Orient → Decide → Act cycle with safety controls.
 
 ```bash
-# Check autonomous operations status
+# Status and control
 ~/containers/scripts/autonomous-execute.sh --status
-
-# Run assessment only (no actions)
-~/containers/scripts/autonomous-check.sh --verbose
-
-# Run full cycle (dry-run)
+~/containers/scripts/autonomous-check.sh --verbose  # Assessment only
 ~/containers/scripts/autonomous-execute.sh --from-check --dry-run
 
 # Emergency controls
-~/containers/scripts/autonomous-execute.sh --pause    # Stop autonomous actions
-~/containers/scripts/autonomous-execute.sh --stop     # Full shutdown
-~/containers/scripts/autonomous-execute.sh --resume   # Resume operations
+~/containers/scripts/autonomous-execute.sh --pause   # Stop autonomous actions
+~/containers/scripts/autonomous-execute.sh --stop    # Full shutdown
+~/containers/scripts/autonomous-execute.sh --resume  # Resume operations
 
-# Query decision history
+# Decision history
 ~/containers/.claude/context/scripts/query-decisions.sh --last 7d
 ~/containers/.claude/context/scripts/query-decisions.sh --outcome failure
 ~/containers/.claude/context/scripts/query-decisions.sh --stats
@@ -387,46 +311,7 @@ journalctl --user -u monthly-slo-report.service
 
 **Documentation:** `docs/20-operations/guides/autonomous-operations.md`
 
-### Natural Language Queries
-
-**Ask system questions in plain English** - cached for instant responses.
-
-```bash
-# Query system state
-~/containers/scripts/query-homelab.sh "what services are using the most memory?"
-~/containers/scripts/query-homelab.sh "is jellyfin running?"
-~/containers/scripts/query-homelab.sh "show me disk usage"
-~/containers/scripts/query-homelab.sh "what's on the reverse_proxy network?"
-
-# JSON output for scripting
-~/containers/scripts/query-homelab.sh "top cpu users" --json
-
-# Pre-compute query cache (runs every 5 min via cron)
-~/containers/scripts/precompute-queries.sh
-```
-
-**Performance:**
-- Cache hit: <0.5s response time
-- Cache miss: <2s response time
-- TTL: 60-300 seconds (depending on query type)
-
-**Documentation:** `docs/40-monitoring-and-documentation/guides/natural-language-queries.md`
-
-### Skill Recommendations
-
-**Get context-aware skill suggestions** for complex tasks.
-
-```bash
-# Get skill recommendation
-~/containers/scripts/recommend-skill.sh "jellyfin won't start"
-~/containers/scripts/recommend-skill.sh "deploy new service"
-~/containers/scripts/recommend-skill.sh "check system health"
-
-# View skill usage analytics
-~/containers/scripts/analyze-skill-usage.sh
-~/containers/scripts/analyze-skill-usage.sh --skill systematic-debugging
-~/containers/scripts/analyze-skill-usage.sh --monthly-report
-```
+## Skills & Automation
 
 **Available Skills:**
 - `homelab-deployment` - Service deployment with validation
@@ -438,322 +323,70 @@ journalctl --user -u monthly-slo-report.service
 
 **Documentation:** `docs/10-services/guides/skill-recommendation.md`
 
+## Security & Runbooks
+
 ### Security Framework
 
 ```bash
-# Run comprehensive security audit
-~/containers/scripts/security-audit.sh
-
-# Scan for vulnerabilities (uses Trivy)
-~/containers/scripts/scan-vulnerabilities.sh
+# Security operations
+~/containers/scripts/security-audit.sh                          # Comprehensive audit
 ~/containers/scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
-
-# View vulnerability reports
 ls -lh ~/containers/data/security-reports/
-
-# Check security audit schedule
-systemctl --user status vulnerability-scan.timer
+systemctl --user status vulnerability-scan.timer                # Check schedule
 ```
 
 **Automated Security:**
 - Weekly vulnerability scanning (Sundays 06:00)
 - ADR compliance validation
 - Security baseline enforcement in deployments
-- Incident response runbooks (IR-001 through IR-004)
 
-**Documentation:**
-- `docs/30-security/runbooks/IR-001-brute-force-attack.md`
-- `docs/30-security/runbooks/IR-002-unauthorized-port.md`
-- `docs/30-security/runbooks/IR-003-critical-cve.md`
-- `docs/30-security/runbooks/IR-004-compliance-failure.md`
+### Runbooks
 
-## Runbooks
+**Disaster Recovery** (`docs/20-operations/runbooks/`):
+- **DR-001:** System SSD Failure
+- **DR-002:** BTRFS Pool Corruption
+- **DR-003:** Accidental Deletion
+- **DR-004:** Total Catastrophe (bare metal rebuild)
 
-The homelab includes comprehensive runbooks for disaster recovery and incident response scenarios.
+**Incident Response** (`docs/30-security/runbooks/`):
+- **IR-001:** Brute Force Attack
+- **IR-002:** Unauthorized Port Exposed
+- **IR-003:** Critical CVE in Running Container
+- **IR-004:** Compliance Failure
 
-### Disaster Recovery Runbooks
+Each runbook includes detection criteria, step-by-step procedures, recovery time estimates, and verification steps.
 
-Located in `docs/20-operations/runbooks/`:
-
-- **DR-001: System SSD Failure** - Recovery when system SSD (128GB) fails
-- **DR-002: BTRFS Pool Corruption** - Recovery from BTRFS filesystem corruption
-- **DR-003: Accidental Deletion** - Restore services/data after accidental deletion
-- **DR-004: Total Catastrophe** - Full homelab rebuild from bare metal
-
-Each runbook includes:
-- Detection criteria and symptoms
-- Step-by-step recovery procedures
-- Estimated recovery time
-- Required resources and prerequisites
-- Verification steps
-
-### Incident Response Runbooks
-
-Located in `docs/30-security/runbooks/`:
-
-- **IR-001: Brute Force Attack** - Response to authentication brute force attempts
-- **IR-002: Unauthorized Port Exposed** - Handling unexpected open ports
-- **IR-003: Critical CVE in Running Container** - Patching vulnerable containers
-- **IR-004: Compliance Failure** - Addressing ADR compliance violations
-
-Each runbook includes:
-- Trigger conditions and detection
-- Automated response steps
-- Manual remediation procedures
-- Post-incident actions
-
-## Troubleshooting Workflow
+## Troubleshooting
 
 ### Service Not Accessible Externally
 
-1. **Check service is running:**
-   ```bash
-   podman ps | grep <service>
-   systemctl --user status <service>.service
-   ```
-
-2. **Check Traefik routing:**
-   - Dashboard: http://localhost:8080/dashboard/
-   - Look for service in HTTP Routers section
-   - Verify router rule matches expected hostname
-
-3. **Check DNS resolution:**
-   ```bash
-   dig <subdomain>.patriark.org
-   # Should return your public IP
-   ```
-
-4. **Check firewall:**
-   ```bash
-   sudo firewall-cmd --list-all
-   # Ports 80/443 must be open
-   ```
-
-5. **Check logs:**
-   ```bash
-   journalctl --user -u <service>.service -n 50
-   podman logs <service> --tail 50
-   ```
+1. **Check service running:** `podman ps | grep <service>` and `systemctl --user status <service>.service`
+2. **Check Traefik routing:** Dashboard at http://localhost:8080/dashboard/ - verify router rule
+3. **Check DNS:** `dig <subdomain>.patriark.org` (should return public IP)
+4. **Check firewall:** `sudo firewall-cmd --list-all` (ports 80/443 must be open)
+5. **Check logs:** `journalctl --user -u <service>.service -n 50` and `podman logs <service> --tail 50`
 
 ### High Disk Usage
 
-1. **Check system SSD (128GB limit):**
-   ```bash
-   df -h /
-   # If >80%, investigate immediately
-   ```
-
-2. **Check BTRFS pool:**
-   ```bash
-   btrfs fi usage -T /mnt/btrfs-pool
-   ```
-
-3. **Check container data:**
-   ```bash
-   du -sh ~/containers/data/*
-   du -sh ~/containers/config/*
-   ```
-
-4. **Check logs:**
-   ```bash
-   du -sh ~/containers/data/backup-logs/
-   journalctl --user --disk-usage
-   ```
-
-5. **Cleanup options:**
-   ```bash
-   # Prune unused containers/images (CAREFUL!)
-   podman system prune -af
-
-   # Rotate old journal logs
-   journalctl --user --vacuum-time=7d
-
-   # Clean old backup logs
-   find ~/containers/data/backup-logs/ -name "*.log" -mtime +30 -delete
-   ```
+1. **System SSD:** `df -h /` (⚠️ if >80%)
+2. **BTRFS pool:** `btrfs fi usage -T /mnt/btrfs-pool`
+3. **Container data:** `du -sh ~/containers/data/*` and `du -sh ~/containers/config/*`
+4. **Logs:** `journalctl --user --disk-usage` and `du -sh ~/containers/data/backup-logs/`
+5. **Cleanup:** `podman system prune -af`, `journalctl --user --vacuum-time=7d`, `find ~/containers/data/backup-logs/ -name "*.log" -mtime +30 -delete`
 
 ### Container Won't Start
 
-1. **Check quadlet syntax:**
-   ```bash
-   systemctl --user daemon-reload
-   systemctl --user status <service>.service
-   # Look for syntax errors in output
-   ```
-
-2. **Check volume permissions:**
-   ```bash
-   ls -lZ ~/containers/config/<service>
-   # Verify SELinux context is correct
-   ```
-
-3. **Check network exists:**
-   ```bash
-   podman network ls | grep <network>
-   ```
-
-4. **Check for port conflicts:**
-   ```bash
-   ss -tulnp | grep <port>
-   ```
-
-5. **Review recent changes:**
-   ```bash
-   git log --oneline -10
-   git diff HEAD~1
-   ```
+1. **Quadlet syntax:** `systemctl --user daemon-reload` then `systemctl --user status <service>.service`
+2. **Volume permissions:** `ls -lZ ~/containers/config/<service>` (verify SELinux context)
+3. **Network exists:** `podman network ls | grep <network>`
+4. **Port conflicts:** `ss -tulnp | grep <port>`
+5. **Recent changes:** `git log --oneline -10` and `git diff HEAD~1`
 
 ### Monitoring Stack Issues
 
-1. **Prometheus not scraping:**
-   - Check targets: http://localhost:9090/targets
-   - Verify network connectivity between Prometheus and targets
-   - Check service is on `systemd-monitoring` network
-
-2. **Grafana dashboard empty:**
-   - Verify datasource configured: http://localhost:3000/datasources
-   - Check Prometheus UID matches in provisioning
-   - Test query in Explore view
-
-3. **Loki logs not appearing:**
-   - Check Promtail status: `systemctl --user status promtail.service`
-   - Verify Promtail can reach Loki: `podman logs promtail | grep error`
-   - Check log file paths in promtail-config.yml
-
-## System Health Reference
-
-### Critical Services (Must Be Running)
-
-These services are essential for system operation:
-
-```bash
-# Check critical services
-systemctl --user is-active traefik.service       # Gateway to everything
-systemctl --user is-active prometheus.service    # Metrics collection
-systemctl --user is-active alertmanager.service  # Alert routing
-systemctl --user is-active grafana.service       # Monitoring dashboard
-```
-
-### Expected Resource Usage (Normal Operation)
-
-**Memory:**
-- Total containers: ~2-3GB
-- Individual services:
-  - Traefik: ~50MB
-  - Jellyfin: ~200MB (idle), 500MB-1GB (transcoding)
-  - Prometheus: ~80MB
-  - Grafana: ~120MB
-  - Loki: ~60MB
-
-**CPU:**
-- Idle: >90% available
-- Normal operation: 2-5% usage
-- Transcoding: Can spike to 50-80% (normal)
-
-**Disk:**
-- System SSD: <60% (⚠️ if >70%, 🚨 if >80%)
-- BTRFS pool: Plenty of space for media/data
-
-### Health Check Commands
-
-```bash
-# Quick overall health
-./scripts/homelab-intel.sh
-
-# Individual service health
-podman healthcheck run jellyfin
-curl -f http://localhost:9090/-/healthy        # Prometheus
-curl -f http://localhost:3000/api/health       # Grafana
-curl -f http://localhost:3100/ready            # Loki
-
-# All running containers
-podman ps --format "table {{.Names}}\t{{.Status}}\t{{.State}}"
-
-# Service status summary
-systemctl --user list-units --type=service --state=running | grep -E '(traefik|jellyfin|prometheus|grafana|loki)'
-```
-
-## Git Workflow
-
-**Branch naming:**
-- Features: `feature/description`
-- Bugfixes: `bugfix/description`
-- Documentation: `docs/description`
-- Hotfixes: `hotfix/description`
-
-**Standard workflow:**
-```bash
-# Start new work
-git checkout main
-git pull origin main
-git checkout -b feature/your-feature
-
-# Commit changes
-git add <files>
-git commit -m "Descriptive message"  # GPG signing enabled
-
-# Push and create PR
-git push -u origin feature/your-feature
-# Then create PR on GitHub
-```
-
-**Merging strategy:**
-- "Squash and merge" for small changes
-- "Create merge commit" for feature branches
-- Auto-delete branches after merge
-
-**Security:** SSH authentication (Ed25519), GPG commit signing, strict host key checking enabled.
-
-## Documentation Structure
-
-The `docs/` directory uses a **hybrid structure** combining topical reference with chronological learning logs.
-
-### Directory Organization
-
-- `00-foundation/` - Podman, networking, pods, quadlets fundamentals
-- `10-services/` - Service-specific guides and deployment logs
-- `20-operations/` - Operational procedures, architecture, backup strategy
-- `30-security/` - Security configurations, incidents, hardening
-- `40-monitoring-and-documentation/` - Monitoring stack, project state
-- `90-archive/` - Superseded documentation (with archival metadata)
-- `99-reports/` - Point-in-time system state snapshots
-
-### Subdirectory Structure
-
-Each category directory contains:
-- **`guides/`** - Living reference documentation (updated in place, no date prefix)
-- **`journal/`** - Dated learning logs and progress reports (immutable, dated)
-- **`decisions/`** - Architecture Decision Records / ADRs (immutable, dated)
-
-### Document Types & Naming
-
-**Living Documents (guides/):**
-```
-<topic>.md
-Examples: jellyfin.md, backup-strategy.md, middleware-patterns.md
-```
-
-**Dated Documents (journal/, decisions/):**
-```
-YYYY-MM-DD-<description>.md
-Examples: 2025-11-07-monitoring-deployment.md
-```
-
-**Reports (99-reports/):**
-```
-YYYY-MM-DD-<type>-<description>.md
-Examples: 2025-11-07-system-state.md
-```
-
-### Documentation Policies
-
-1. **Guides are living** - Update in place when information changes
-2. **Journals are immutable** - Never edit after creation (append-only log)
-3. **ADRs are permanent** - Architecture decisions never edited, only superseded
-4. **Reports are snapshots** - Point-in-time system state, never updated
-5. **Archive with metadata** - Include archival reason and superseding document
-
-**Full guide:** See `docs/CONTRIBUTING.md` for detailed conventions and templates.
+1. **Prometheus not scraping:** Check http://localhost:9090/targets and verify service on `systemd-monitoring` network
+2. **Grafana dashboard empty:** Verify datasource at http://localhost:3000/datasources and test in Explore view
+3. **Loki logs missing:** `systemctl --user status promtail.service` and `podman logs promtail | grep error`
 
 ## Key Design Principles
 
@@ -770,116 +403,17 @@ Examples: 2025-11-07-system-state.md
 
 ## Architecture Decision Records (ADRs)
 
-**Key decisions shaping this homelab:**
+**Key decisions shaping this homelab** (see `docs/*/decisions/` for full details):
 
-### ADR-001: Rootless Containers
-**File:** `docs/00-foundation/decisions/2025-10-20-decision-001-rootless-containers.md`
+- **ADR-001: Rootless Containers** - All containers run as unprivileged user (UID 1000), not root. Requires `:Z` SELinux labels. ✅ Production
+- **ADR-002: Systemd Quadlets Over Docker Compose** - Native systemd integration for unified logging and dependency management. ✅ Production
+- **ADR-003: Monitoring Stack (Prometheus + Grafana + Loki)** - Industry-standard observability with ~340MB RAM overhead. ✅ Production
+- **ADR-005: Authelia SSO with YubiKey-First Authentication** - Phishing-resistant hardware auth via FIDO2/WebAuthn, replacing TinyAuth. ✅ Production
 
-**Decision:** All containers run as unprivileged user (UID 1000), not root.
-
-**Rationale:**
-- Security through principle of least privilege
-- Container escape = unprivileged user access (not root)
-- Works seamlessly with SELinux enforcing mode
-
-**Impact:**
-- ✅ Enhanced security, clear permission model
-- ⚠️ Requires `:Z` SELinux labels on all volume mounts
-- ⚠️ Can't bind to ports <1024 (solved via Traefik reverse proxy)
-- ⚠️ UID mapping can be tricky (use `podman unshare` for debugging)
-
-**Status:** ✅ Production, no regrets. Would choose again.
-
-### ADR-002: Systemd Quadlets Over Docker Compose
-**File:** `docs/00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md`
-
-**Decision:** Use systemd quadlets (`.container` files) instead of docker-compose.
-
-**Rationale:**
-- Native systemd integration (no abstraction layer)
-- Unified logging via journalctl
-- First-class dependency management
-- More transferable to enterprise environments
-- Better learning value
-
-**Impact:**
-- ✅ Service management feels natural (`systemctl --user`)
-- ✅ Bulletproof dependency handling
-- ⚠️ One file per service vs stack files (preference)
-- ⚠️ Initial learning curve (systemd syntax)
-
-**Workflow:**
-```bash
-# Edit quadlet file
-nano ~/.config/containers/systemd/service.container
-
-# Apply changes
-systemctl --user daemon-reload
-systemctl --user restart service.service
-```
-
-**Status:** ✅ Production. Quadlets are the right abstraction level.
-
-### ADR-003: Monitoring Stack (Prometheus + Grafana + Loki)
-**File:** `docs/40-monitoring-and-documentation/decisions/2025-11-06-decision-001-monitoring-stack-architecture.md`
-
-**Decision:** Deploy Prometheus + Grafana + Loki + Alertmanager for observability.
-
-**Rationale:**
-- Industry-standard, transferable skills
-- Open source, self-hosted, no vendor lock-in
-- Perfect scale for homelab (lightweight but powerful)
-- Single pane of glass (Grafana) for metrics + logs
-
-**Impact:**
-- ✅ Complete visibility into system health
-- ✅ Historical analysis ("what happened last Tuesday?")
-- ✅ Proactive alerting (Discord notifications)
-- ⚠️ ~340MB RAM overhead
-- ⚠️ Need to manage retention policies
-
-**Key Components:**
-- Prometheus: Metrics (15-day retention)
-- Grafana: Dashboards and visualization
-- Loki: Log aggregation (7-day retention)
-- Alertmanager: Alert routing to Discord
-
-**Status:** ✅ Production. Highest-value addition to homelab.
-
-### ADR-005: Authelia SSO with YubiKey-First Authentication
-**File:** `docs/30-security/decisions/2025-11-11-decision-005-authelia-sso-yubikey-deployment.md`
-
-**Decision:** Deploy Authelia as SSO server with YubiKey/WebAuthn as primary 2FA, replacing TinyAuth.
-
-**Rationale:**
-- Phishing-resistant authentication via hardware FIDO2/WebAuthn keys
-- Single sign-on improves user experience across services
-- Industry-standard solution with active development
-- Granular per-service access control policies
-- TOTP fallback for mobile device compatibility
-
-**Impact:**
-- ✅ YubiKey-protected admin access (Grafana, Prometheus, Traefik)
-- ✅ SSO session management (Redis-backed, 1h expiration)
-- ✅ Mobile app compatibility (API bypass pattern for Jellyfin)
-- ⚠️ Increased complexity (Authelia + Redis vs TinyAuth alone)
-- ⚠️ ~200MB RAM overhead (Authelia + Redis)
-- ⚠️ Password still required (Authelia limitation - cannot go fully passwordless)
-
-**Key Decisions:**
-- **Authentication methods:** YubiKey primary, TOTP fallback, password base
-- **Service tiers:** Admin services require YubiKey, media services conditional
-- **Immich decision:** Removed from Authelia (dual-auth UX issues) - uses native auth
-- **Mobile pattern:** Bypass Authelia for API endpoints, protect web UI only
-
-**Status:** ✅ Production. TinyAuth deprecated, all services migrated.
-
-### Using ADRs When Making Changes
-
-**Before proposing architectural changes:**
-1. Check if an ADR exists explaining the current approach
+**Using ADRs:**
+1. Check if an ADR exists explaining the current approach before proposing changes
 2. Understand the rationale and trade-offs already considered
-3. If suggesting an alternative, reference the ADR and explain what changed
+3. Reference the ADR and explain what changed if suggesting alternatives
 4. Document new decisions in a new ADR (don't edit existing ones)
 
 **ADR supersession pattern:**
@@ -894,42 +428,27 @@ due to [reason for change].
 
 ### Permission Denied on Volume Mounts
 
-**Symptom:**
-```
-Error: OCI runtime error: permission denied
-```
+**Symptom:** `Error: OCI runtime error: permission denied`
 
 **Cause:** Rootless containers + SELinux enforcing mode
 
 **Solution:** Add `:Z` SELinux label to all bind mounts:
 ```bash
-# Wrong
--v ~/containers/config/jellyfin:/config
-
-# Correct
--v ~/containers/config/jellyfin:/config:Z
+# Wrong: -v ~/containers/config/jellyfin:/config
+# Correct: -v ~/containers/config/jellyfin:/config:Z
 ```
-
-**Why:** The `:Z` label tells SELinux to relabel the content for container access.
 
 ### Port Already in Use
 
-**Symptom:**
-```
-Error: cannot listen on port 8080: address already in use
-```
+**Symptom:** `Error: cannot listen on port 8080: address already in use`
 
-**Solution:** Find what's using the port:
-```bash
-ss -tulnp | grep 8080
-podman ps --format "{{.Names}}\t{{.Ports}}" | grep 8080
-```
+**Solution:** `ss -tulnp | grep 8080` or `podman ps --format "{{.Names}}\t{{.Ports}}" | grep 8080`
 
-**Remember:** Rootless containers can't bind to ports <1024 without special capabilities. Use Traefik as reverse proxy instead.
+**Remember:** Rootless containers can't bind to ports <1024. Use Traefik as reverse proxy.
 
 ### Quadlet Changes Not Applying
 
-**Symptom:** Modified `.container` file but service behavior unchanged.
+**Symptom:** Modified `.container` file but service behavior unchanged
 
 **Solution:** Must reload systemd daemon:
 ```bash
@@ -937,15 +456,13 @@ systemctl --user daemon-reload
 systemctl --user restart <service>.service
 ```
 
-**Why:** Systemd caches unit files. Daemon-reload forces re-read.
-
 ### First Network Determines Default Route
 
-**Symptom:** Container can't reach internet despite being on multiple networks.
+**Symptom:** Container can't reach internet despite being on multiple networks
 
-**Cause:** In quadlets with multiple `Network=` lines, **first one gets default route**.
+**Cause:** In quadlets with multiple `Network=` lines, **first one gets default route**
 
-**Example:**
+**Solution:** Put the network with internet access first:
 ```ini
 # Container CAN reach internet (reverse_proxy first)
 Network=systemd-reverse_proxy.network
@@ -956,30 +473,20 @@ Network=systemd-monitoring.network
 Network=systemd-reverse_proxy.network
 ```
 
-**Solution:** Put the network with internet access first.
-
 ### BTRFS Databases Need NOCOW
 
-**Symptom:** Prometheus/Loki/Grafana database performance is terrible.
+**Symptom:** Prometheus/Loki/Grafana database performance is terrible
 
-**Cause:** BTRFS Copy-on-Write (COW) causes fragmentation on database write patterns.
+**Cause:** BTRFS Copy-on-Write (COW) causes fragmentation on database write patterns
 
-**Solution:** Disable COW for database directories:
+**Solution:** Disable COW for database directories (only works on empty directories):
 ```bash
-# Before first use
 mkdir -p /mnt/btrfs-pool/subvol7-containers/prometheus
 chattr +C /mnt/btrfs-pool/subvol7-containers/prometheus
-
-# Verify
-lsattr -d /mnt/btrfs-pool/subvol7-containers/prometheus
-# Should show 'C' flag
+lsattr -d /mnt/btrfs-pool/subvol7-containers/prometheus  # Verify 'C' flag
 ```
 
-**Note:** Only works on empty directories. Can't retroactively fix existing databases.
-
 ### Podman Generate vs Quadlets Service Names
-
-**Issue:** Service names change between generated units and quadlets.
 
 **Generated units:** `container-jellyfin.service`
 **Quadlet units:** `jellyfin.service`
@@ -988,24 +495,75 @@ lsattr -d /mnt/btrfs-pool/subvol7-containers/prometheus
 
 ### System SSD Space Exhaustion
 
-**Symptom:** System suddenly fills up despite moving data to BTRFS pool.
-
 **Common causes:**
-1. Journal logs growing (check: `journalctl --user --disk-usage`)
-2. Old container layers (check: `podman system df`)
-3. Backup logs accumulating (check: `du -sh ~/containers/data/backup-logs/`)
+1. Journal logs: `journalctl --user --disk-usage`
+2. Container layers: `podman system df`
+3. Backup logs: `du -sh ~/containers/data/backup-logs/`
 
 **Quick fixes:**
 ```bash
-# Rotate journal
-journalctl --user --vacuum-time=7d
-
-# Prune unused container data
-podman system prune -f
-
-# Clean old backup logs
+journalctl --user --vacuum-time=7d           # Rotate journal
+podman system prune -f                       # Prune unused container data
 find ~/containers/data/backup-logs/ -name "*.log" -mtime +30 -delete
 ```
+
+## Documentation & Git Workflow
+
+### Documentation Structure
+
+The `docs/` directory uses a **hybrid structure** combining topical reference with chronological learning logs.
+
+**Directory Organization:**
+- `00-foundation/` - Podman, networking, pods, quadlets fundamentals
+- `10-services/` - Service-specific guides and deployment logs
+- `20-operations/` - Operational procedures, architecture, backup strategy
+- `30-security/` - Security configurations, incidents, hardening
+- `40-monitoring-and-documentation/` - Monitoring stack, project state
+- `90-archive/` - Superseded documentation (with archival metadata)
+- `99-reports/` - Point-in-time system state snapshots
+
+**Subdirectory Structure:**
+- **`guides/`** - Living reference documentation (updated in place, no date prefix)
+- **`journal/`** - Dated learning logs and progress reports (immutable, dated)
+- **`decisions/`** - Architecture Decision Records / ADRs (immutable, dated)
+
+**Documentation Policies:**
+1. **Guides are living** - Update in place when information changes
+2. **Journals are immutable** - Never edit after creation (append-only log)
+3. **ADRs are permanent** - Architecture decisions never edited, only superseded
+4. **Reports are snapshots** - Point-in-time system state, never updated
+5. **Archive with metadata** - Include archival reason and superseding document
+
+**Full guide:** See `docs/CONTRIBUTING.md` for detailed conventions and templates.
+
+### Git Workflow
+
+**Branch naming:**
+- Features: `feature/description`
+- Bugfixes: `bugfix/description`
+- Documentation: `docs/description`
+- Hotfixes: `hotfix/description`
+
+**Standard workflow:**
+```bash
+# Start new work
+git checkout main && git pull origin main
+git checkout -b feature/your-feature
+
+# Commit changes
+git add <files>
+git commit -m "Descriptive message"  # GPG signing enabled
+
+# Push and create PR
+git push -u origin feature/your-feature
+```
+
+**Merging strategy:**
+- "Squash and merge" for small changes
+- "Create merge commit" for feature branches
+- Auto-delete branches after merge
+
+**Security:** SSH authentication (Ed25519), GPG commit signing, strict host key checking enabled.
 
 ## Secrets Management
 
@@ -1016,4 +574,4 @@ Secrets are excluded from Git via `.gitignore`:
 - `*.db`, `*.sqlite*` (databases)
 - `*.mmdb` (CrowdSec data)
 
-Store secrets outside the repository or use environment variables.
+Store secrets outside the repository or use podman secrets or environment variables.
