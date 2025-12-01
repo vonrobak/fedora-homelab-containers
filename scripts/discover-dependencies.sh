@@ -438,15 +438,292 @@ mark_critical_services() {
 }
 
 ################################################################################
+# Phase 4: Runtime TCP Connection Discovery
+################################################################################
+
+discover_runtime_connections() {
+    log "INFO" "Discovering runtime TCP connections..."
+
+    local connections_json="{}"
+
+    # Get all running containers
+    local containers=$(podman ps --format '{{.Names}}' 2>/dev/null || echo "")
+
+    for container in $containers; do
+        # Get container PID namespace
+        local pid=$(podman inspect "$container" --format '{{.State.Pid}}' 2>/dev/null || echo "")
+
+        if [[ -z "$pid" || "$pid" == "0" ]]; then
+            continue
+        fi
+
+        # Use nsenter to get connections inside container's network namespace
+        # Look for ESTABLISHED TCP connections
+        local conns=$(nsenter -t "$pid" -n ss -tnp 2>/dev/null | \
+            awk 'NR>1 && /ESTABLISHED/ {
+                # Extract remote IP and port
+                split($5, remote, ":")
+                print remote[1] ":" remote[length(remote)]
+            }' | sort -u || echo "")
+
+        if [[ -z "$conns" ]]; then
+            continue
+        fi
+
+        # Build connections array for this container
+        local conn_array="["
+        local first_conn=true
+
+        for conn in $conns; do
+            local remote_ip=$(echo "$conn" | cut -d: -f1)
+            local remote_port=$(echo "$conn" | cut -d: -f2)
+
+            # Try to resolve IP to container name via podman network inspect
+            local target_container=$(podman ps --format '{{.Names}}' | while read -r target; do
+                local target_ip=$(podman inspect "$target" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null | head -1)
+                if [[ "$target_ip" == "$remote_ip" ]]; then
+                    echo "$target"
+                    break
+                fi
+            done)
+
+            # Skip if we couldn't resolve to a container
+            if [[ -z "$target_container" ]]; then
+                continue
+            fi
+
+            if [[ "$first_conn" == true ]]; then
+                first_conn=false
+            else
+                conn_array+=","
+            fi
+
+            conn_array+=$(cat <<JSON
+{
+  "target": "$target_container",
+  "remote_ip": "$remote_ip",
+  "remote_port": $remote_port,
+  "type": "runtime",
+  "strength": "observed",
+  "source": "tcp-connections"
+}
+JSON
+)
+        done
+
+        conn_array+="]"
+
+        # Add to connections object
+        if [[ "$first_conn" == false ]]; then
+            connections_json=$(echo "$connections_json" | jq \
+                --arg container "$container" \
+                --argjson conns "$conn_array" \
+                '. + {($container): $conns}')
+        fi
+    done
+
+    echo "$connections_json"
+}
+
+################################################################################
+# Phase 4: Traefik Routing Discovery
+################################################################################
+
+discover_traefik_routing() {
+    log "INFO" "Discovering Traefik routing dependencies..."
+
+    local routing_json='{"traefik": []}'
+    local traefik_config_dir="$PROJECT_ROOT/config/traefik/dynamic"
+
+    # Check if Traefik config exists
+    if [[ ! -d "$traefik_config_dir" ]]; then
+        log "DEBUG" "Traefik config directory not found: $traefik_config_dir"
+        echo "{}"
+        return
+    fi
+
+    # Check if yq is available
+    if ! command -v yq &> /dev/null; then
+        log "WARNING" "yq not found - skipping Traefik routing discovery"
+        echo "{}"
+        return
+    fi
+
+    # Parse all router YAML files
+    local yaml_files=$(find "$traefik_config_dir" -name "*.yml" -o -name "*.yaml" 2>/dev/null || echo "")
+
+    for yaml_file in $yaml_files; do
+        [[ ! -f "$yaml_file" ]] && continue
+
+        # Extract routers and their service mappings using yq
+        # Format: http.routers.<name>.service: <service-name>
+        local routers=$(yq eval '.http.routers // {}' "$yaml_file" 2>/dev/null || echo "{}")
+
+        if [[ "$routers" == "{}" || "$routers" == "null" ]]; then
+            continue
+        fi
+
+        # Process each router
+        local router_names=$(echo "$routers" | yq eval 'keys | .[]' - 2>/dev/null || echo "")
+
+        while IFS= read -r router_name; do
+            [[ -z "$router_name" ]] && continue
+
+            # Get service name for this router
+            local service_name=$(echo "$routers" | yq eval ".[\"$router_name\"].service" - 2>/dev/null || echo "")
+
+            # Skip if no service or if service is internal (api@internal)
+            if [[ -z "$service_name" || "$service_name" == "null" || "$service_name" == *"@internal"* ]]; then
+                continue
+            fi
+
+            # Traefik routes traffic TO services, so traefik depends ON backend services
+            # Build dependency: traefik -> backend service
+            local dep=$(cat <<JSON
+{
+  "target": "$service_name",
+  "type": "routing",
+  "strength": "soft",
+  "source": "traefik-router",
+  "router": "$router_name"
+}
+JSON
+)
+
+            # Add to routing_json under "traefik"
+            routing_json=$(echo "$routing_json" | jq --argjson dep "$dep" '.traefik += [$dep]')
+
+            log "DEBUG" "Found Traefik routing: traefik -> $service_name (router: $router_name)"
+
+        done <<< "$router_names"
+    done
+
+    echo "$routing_json"
+}
+
+################################################################################
+# Phase 4: Merge Runtime Connections with Declared Dependencies
+################################################################################
+
+merge_runtime_connections() {
+    local services=$1
+    local runtime_conns=$2
+
+    log "INFO" "Merging runtime connections with declared dependencies..."
+
+    # Iterate through services and add runtime connections if not already declared
+    local service_names=$(echo "$services" | jq -r 'keys[]')
+
+    for service in $service_names; do
+        # Get runtime connections for this service
+        local conns=$(echo "$runtime_conns" | jq -c ".\"$service\" // []")
+
+        if [[ "$conns" == "[]" ]]; then
+            continue
+        fi
+
+        # Get existing dependencies
+        local existing_deps=$(echo "$services" | jq -c ".\"$service\".dependencies")
+
+        # Merge runtime connections with existing dependencies
+        # Only add if target doesn't already exist in dependencies
+        local runtime_conn_array=$(echo "$conns" | jq -c '.[]')
+
+        while IFS= read -r conn; do
+            [[ -z "$conn" ]] && continue
+
+            local target=$(echo "$conn" | jq -r '.target')
+
+            # Check if this target already exists
+            local exists=$(echo "$existing_deps" | jq -r "any(.[]; .target == \"$target\")" 2>/dev/null)
+
+            if [[ "$exists" == "false" ]]; then
+                # Add runtime connection to dependencies
+                existing_deps=$(echo "$existing_deps" | jq --argjson conn "$conn" '. += [$conn]')
+                log "DEBUG" "Added runtime connection: $service -> $target"
+            fi
+        done <<< "$runtime_conn_array"
+
+        # Update services with merged dependencies
+        services=$(echo "$services" | jq ".\"$service\".dependencies = $existing_deps")
+    done
+
+    echo "$services"
+}
+
+merge_traefik_routing() {
+    local services=$1
+    local traefik_routing=$2
+
+    log "INFO" "Merging Traefik routing with declared dependencies..."
+
+    # Similar to merge_runtime_connections, add traefik routing if not already declared
+    local service_names=$(echo "$traefik_routing" | jq -r 'keys[]')
+
+    for service in $service_names; do
+        # Get routing dependencies for this service
+        local routes=$(echo "$traefik_routing" | jq -c ".\"$service\" // []")
+
+        if [[ "$routes" == "[]" ]]; then
+            continue
+        fi
+
+        # Check if service exists in services (might not if it's external)
+        if ! echo "$services" | jq -e ".\"$service\"" >/dev/null 2>&1; then
+            log "DEBUG" "Service $service from Traefik routing not found in quadlets - skipping"
+            continue
+        fi
+
+        # Get existing dependencies
+        local existing_deps=$(echo "$services" | jq -c ".\"$service\".dependencies")
+
+        # Merge routing with existing dependencies
+        local route_array=$(echo "$routes" | jq -c '.[]')
+
+        while IFS= read -r route; do
+            [[ -z "$route" ]] && continue
+
+            local target=$(echo "$route" | jq -r '.target')
+
+            # Check if this target already exists
+            local exists=$(echo "$existing_deps" | jq -r "any(.[]; .target == \"$target\")" 2>/dev/null)
+
+            if [[ "$exists" == "false" ]]; then
+                # Add traefik routing to dependencies
+                existing_deps=$(echo "$existing_deps" | jq --argjson route "$route" '. += [$route]')
+                log "DEBUG" "Added traefik routing: $service -> $target"
+            fi
+        done <<< "$route_array"
+
+        # Update services with merged dependencies
+        services=$(echo "$services" | jq ".\"$service\".dependencies = $existing_deps")
+    done
+
+    echo "$services"
+}
+
+################################################################################
 # Phase 1: Build Complete Dependency Graph
 ################################################################################
 
 build_dependency_graph() {
     log "INFO" "Building complete dependency graph..."
 
-    # Discover from all sources (Phase 1: quadlets + networks)
+    # Discover from all sources (Phase 1: quadlets + networks, Phase 4: runtime + traefik)
     local services=$(discover_quadlet_dependencies)
     local networks=$(discover_network_topology)
+
+    # Phase 4: Discover runtime TCP connections
+    local runtime_conns=$(discover_runtime_connections)
+
+    # Phase 4: Discover Traefik routing
+    local traefik_routing=$(discover_traefik_routing)
+
+    # Phase 4: Merge runtime connections with declared dependencies
+    services=$(merge_runtime_connections "$services" "$runtime_conns")
+
+    # Phase 4: Merge Traefik routing with declared dependencies
+    services=$(merge_traefik_routing "$services" "$traefik_routing")
 
     # Compute reverse dependencies
     services=$(compute_dependents "$services")
@@ -471,7 +748,7 @@ build_dependency_graph() {
   "metadata": {
     "total_services": $total_services,
     "total_dependencies": $total_dependencies,
-    "sources": ["quadlets", "networks"]
+    "sources": ["quadlets", "networks", "runtime-connections", "traefik-routing"]
   }
 }
 JSON
