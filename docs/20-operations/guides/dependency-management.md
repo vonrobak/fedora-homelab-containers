@@ -465,6 +465,148 @@ podman exec service1 ss -tn | grep ESTABLISHED
 ~/containers/scripts/discover-dependencies.sh
 ```
 
+### Corrupted Dependency Graph
+
+**Symptom:** Invalid JSON errors, autonomous operations failing, queries returning empty results
+
+**Causes:**
+- Partial write if discovery script was killed mid-execution (pre-Phase 4 fix)
+- Disk space exhaustion during write
+- Manual editing introduced syntax errors
+
+**Check:**
+```bash
+# Validate JSON syntax
+jq empty ~/.claude/context/dependency-graph.json
+echo $?  # Should be 0 if valid
+
+# Check file size
+ls -lh ~/.claude/context/dependency-graph.json
+# Expected: ~50-80KB. If 0 bytes or >500KB, something is wrong
+
+# Check last modification time
+stat ~/.claude/context/dependency-graph.json
+# Should match daily discovery schedule (06:00)
+```
+
+**Fix:**
+```bash
+# Backup corrupted file (for debugging)
+cp ~/.claude/context/dependency-graph.json ~/.claude/context/dependency-graph.json.corrupted
+
+# Force regeneration
+~/containers/scripts/discover-dependencies.sh
+
+# Verify new graph is valid
+jq '.metadata.total_services' ~/.claude/context/dependency-graph.json
+# Should show number of services (e.g., 25)
+
+# If still failing, check disk space
+df -h /
+# System SSD must have free space
+```
+
+**Prevention:**
+- Phase 4+ uses atomic write pattern (write to temp, then rename)
+- Monitor `homelab_dependency_graph_staleness_seconds` metric
+- Alert on `DependencyGraphStale` (>25 hours)
+
+### Runtime Connection Discovery Not Working
+
+**Symptom:** Runtime TCP connections not discovered, warnings in logs: "nsenter not available (insufficient privileges)"
+
+**Causes:**
+- nsenter requires CAP_SYS_ADMIN or root in rootless Podman
+- nsenter binary not installed
+- User namespace restrictions
+
+**Check:**
+```bash
+# Check if nsenter exists
+command -v nsenter
+# Should return path like /usr/bin/nsenter
+
+# Test nsenter capability
+nsenter --help
+# Should show help text, not permission errors
+
+# Check user namespaces enabled
+cat /proc/sys/kernel/unprivileged_userns_clone
+# Should be 1
+
+# Run discovery with verbose logging
+~/containers/scripts/discover-dependencies.sh 2>&1 | grep -i nsenter
+```
+
+**Expected Behavior (Phase 4+):**
+- If nsenter unavailable, discovery continues WITHOUT runtime connections
+- Warning logged: "nsenter not available - skipping runtime TCP connection discovery"
+- Dependency graph still generated from quadlets, networks, Traefik
+- This is graceful degradation, not a failure
+
+**Fix (if nsenter needed):**
+```bash
+# Install nsenter (Fedora)
+sudo dnf install util-linux
+
+# Verify installation
+nsenter --version
+
+# Re-run discovery
+~/containers/scripts/discover-dependencies.sh
+
+# Check for runtime connections in graph
+jq '.services.jellyfin.dependencies[] | select(.source=="tcp-connections")' ~/.claude/context/dependency-graph.json
+```
+
+**When to worry:**
+- Only if you specifically need runtime connection tracking
+- Most dependencies come from quadlets and Traefik (more reliable sources)
+- Runtime connections are supplementary, not critical
+
+### Discovery Timer Not Running
+
+**Symptom:** Graph staleness growing beyond 24 hours, no automatic updates
+
+**Check:**
+```bash
+# Timer enabled?
+systemctl --user is-enabled dependency-discovery.timer
+# Should output: enabled
+
+# Timer active?
+systemctl --user is-active dependency-discovery.timer
+# Should output: active
+
+# Next scheduled run
+systemctl --user list-timers | grep dependency-discovery
+# Should show next run time (daily at 06:00)
+
+# Last service run status
+systemctl --user status dependency-discovery.service
+# Check for errors in recent runs
+```
+
+**Fix:**
+```bash
+# Enable and start timer
+systemctl --user enable --now dependency-discovery.timer
+
+# Verify timer is scheduled
+systemctl --user list-timers dependency-discovery.timer
+
+# Manually trigger one run to test
+systemctl --user start dependency-discovery.service
+
+# Check logs
+journalctl --user -u dependency-discovery.service -n 50
+```
+
+**Root Causes:**
+- Timer not enabled after installation
+- User session not persistent (need `loginctl enable-linger`)
+- Service failed and timer gave up (check exit codes)
+
 ## Best Practices
 
 ### When Adding New Services

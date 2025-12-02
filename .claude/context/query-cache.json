@@ -26,7 +26,7 @@
     ]
   },
   "disk_usage": {
-    "timestamp": "2025-12-01T06:33:33+01:00",
+    "timestamp": "2025-12-02T00:19:47+01:00",
     "ttl": 600,
     "result": {
       "filesystems": [
@@ -36,7 +36,7 @@
         },
         {
           "mount": "/mnt/btrfs-pool",
-          "usage_pct": "77%"
+          "usage_pct": "88%"
         }
       ]
     }
@@ -300,7 +300,7 @@
     ]
   },
   "all_services_alt": {
-    "timestamp": "2025-11-30T19:38:14+01:00",
+    "timestamp": "2025-12-01T22:29:26+01:00",
     "ttl": 120,
     "result": [
       {
@@ -339,11 +339,6 @@
         "state": "dead"
       },
       {
-        "name": "46d2ed0b0bdf4bba8906d1d9027aff10f1ecdcd1dba3ace892fc486102768850-14490d2f4e2ad8f",
-        "status": "inactive",
-        "state": "dead"
-      },
-      {
         "name": "6621b125db90b2007713fd89ca3ba017fff57c138868a942c825af5cd7975301-506a51b7c1cfeeef",
         "status": "inactive",
         "state": "dead"
@@ -360,11 +355,6 @@
       },
       {
         "name": "993e0e687cbe802648c231f50e7096dbd0ea499fc1d1db2a1ebb0407bc2f2abc-22b7dd4f33258424",
-        "status": "inactive",
-        "state": "dead"
-      },
-      {
-        "name": "ac0b0519636e2eb7d3bbdcafae9e6dfca276616864e0e44a72483234b248b5c0-2211436134651ddf",
         "status": "inactive",
         "state": "dead"
       },
@@ -402,6 +392,16 @@
         "name": "b44d5836f92ad394249ee8b359869893e9caeda2e205c1cc972e42a2c2a11a4d-40b13da308717bb0",
         "status": "inactive",
         "state": "dead"
+      },
+      {
+        "name": "backup-restore-test",
+        "status": "inactive",
+        "state": "dead"
+      },
+      {
+        "name": "btrfs-backup-daily",
+        "status": "inactive",
+        "state": "dead"
       }
     ]
   },
@@ -410,6 +410,210 @@
     "ttl": 60,
     "result": {
       "unhealthy_services": []
+    }
+  },
+  "critical_services": {
+    "timestamp": "2025-12-01T22:30:16+01:00",
+    "ttl": 3600,
+    "result": {
+      "critical_services": [
+        {
+          "service": "alertmanager",
+          "blast_radius": 0,
+          "dependents": 0
+        },
+        {
+          "service": "authelia",
+          "blast_radius": 0,
+          "dependents": 0
+        },
+        {
+          "service": "prometheus",
+          "blast_radius": 0,
+          "dependents": 0
+        },
+        {
+          "service": "traefik",
+          "blast_radius": 2,
+          "dependents": 2
+        }
+      ]
+    }
+  },
+  "top_blast_radius": {
+    "timestamp": "2025-12-01T22:30:28+01:00",
+    "ttl": 3600,
+    "result": {
+      "top_services": [
+        {
+          "service": "monitoring",
+          "blast_radius": 10,
+          "dependents": 10
+        },
+        {
+          "service": "reverse_proxy",
+          "blast_radius": 4,
+          "dependents": 4
+        },
+        {
+          "service": "photos",
+          "blast_radius": 4,
+          "dependents": 4
+        },
+        {
+          "service": "auth_services",
+          "blast_radius": 3,
+          "dependents": 3
+        },
+        {
+          "service": "traefik",
+          "blast_radius": 2,
+          "dependents": 2
+        },
+        {
+          "service": "loki",
+          "blast_radius": 1,
+          "dependents": 1
+        },
+        {
+          "service": "node_exporter",
+          "blast_radius": 1,
+          "dependents": 1
+        },
+        {
+          "service": "postgresql-immich",
+          "blast_radius": 1,
+          "dependents": 1
+        },
+        {
+          "service": "redis-authelia",
+          "blast_radius": 1,
+          "dependents": 1
+        },
+        {
+          "service": "redis-immich",
+          "blast_radius": 1,
+          "dependents": 1
+        }
+      ]
+    }
+  },
+  "unhealthy_dependencies": {
+    "timestamp": "2025-12-02T00:19:49+01:00",
+    "ttl": 60,
+    "result": {
+      "unhealthy_dependencies": [
+        {
+          "service": "alert-discord-relay",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "alertmanager",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "authelia",
+          "dependency": "reverse_proxy",
+          "status": "down"
+        },
+        {
+          "service": "authelia",
+          "dependency": "auth_services",
+          "status": "down"
+        },
+        {
+          "service": "cadvisor",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "grafana",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "homepage",
+          "dependency": "reverse_proxy",
+          "status": "down"
+        },
+        {
+          "service": "immich-ml",
+          "dependency": "photos",
+          "status": "down"
+        },
+        {
+          "service": "immich-server",
+          "dependency": "photos",
+          "status": "down"
+        },
+        {
+          "service": "jellyfin",
+          "dependency": "reverse_proxy",
+          "status": "down"
+        },
+        {
+          "service": "jellyfin",
+          "dependency": "media_services",
+          "status": "down"
+        },
+        {
+          "service": "jellyfin",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "loki",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "node_exporter",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "postgresql-immich",
+          "dependency": "photos",
+          "status": "down"
+        },
+        {
+          "service": "prometheus",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "promtail",
+          "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "redis-authelia",
+          "dependency": "auth_services",
+          "status": "down"
+        },
+        {
+          "service": "redis-immich",
+          "dependency": "photos",
+          "status": "down"
+        },
+        {
+          "service": "traefik",
+          "dependency": "reverse_proxy",
+          "status": "down"
+        },
+        {
+          "service": "traefik",
+          "dependency": "auth_services",
+          "status": "down"
+        },
+        {
+          "service": "traefik",
+          "dependency": "monitoring",
+          "status": "down"
+        }
+      ]
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-01T22:02:27+01:00",
+  "generated_at": "2025-12-02T00:34:51+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -59,7 +59,9 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
         "systemd-reverse_proxy",
         "systemd-auth_services"
@@ -67,7 +69,7 @@
       "external_access": false,
       "critical": true,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "cadvisor": {
       "dependencies": [
@@ -107,7 +109,9 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
         "systemd-reverse_proxy",
         "systemd-monitoring"
@@ -115,7 +119,7 @@
       "external_access": false,
       "critical": false,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "homepage": {
       "dependencies": [
@@ -126,14 +130,16 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
         "systemd-reverse_proxy"
       ],
       "external_access": true,
       "critical": false,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "immich-ml": {
       "dependencies": [
@@ -206,7 +212,9 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
         "systemd-reverse_proxy",
         "systemd-media_services",
@@ -215,7 +223,7 @@
       "external_access": false,
       "critical": false,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "loki": {
       "dependencies": [
@@ -227,7 +235,8 @@
         }
       ],
       "dependents": [
-        "promtail"
+        "promtail",
+        "traefik"
       ],
       "networks": [
         "systemd-reverse_proxy",
@@ -236,7 +245,7 @@
       "external_access": false,
       "critical": false,
       "restart_priority": 0,
-      "blast_radius": 1
+      "blast_radius": 2
     },
     "node_exporter": {
       "dependencies": [
@@ -267,7 +276,9 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
         "systemd-reverse_proxy",
         "systemd-monitoring"
@@ -275,7 +286,7 @@
       "external_access": false,
       "critical": false,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "postgresql-immich": {
       "dependencies": [
@@ -312,7 +323,9 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
         "systemd-reverse_proxy",
         "systemd-monitoring"
@@ -320,7 +333,7 @@
       "external_access": false,
       "critical": true,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "promtail": {
       "dependencies": [
@@ -405,6 +418,69 @@
           "type": "runtime",
           "strength": "hard",
           "source": "quadlet"
+        },
+        {
+          "target": "ocis",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "ocis-secure"
+        },
+        {
+          "target": "homepage",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "root-redirect"
+        },
+        {
+          "target": "authelia",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "authelia-portal"
+        },
+        {
+          "target": "vaultwarden",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "vaultwarden-secure"
+        },
+        {
+          "target": "jellyfin",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "jellyfin-secure"
+        },
+        {
+          "target": "immich",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "immich-secure"
+        },
+        {
+          "target": "grafana",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "grafana-secure"
+        },
+        {
+          "target": "prometheus",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "prometheus-secure"
+        },
+        {
+          "target": "loki",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "loki-secure"
         }
       ],
       "dependents": [
@@ -430,14 +506,16 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
         "systemd-reverse_proxy.network"
       ],
       "external_access": false,
       "critical": false,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "monitoring": {
       "dependents": [
@@ -471,6 +549,12 @@
       ],
       "blast_radius": 4
     },
+    "immich": {
+      "dependents": [
+        "traefik"
+      ],
+      "blast_radius": 1
+    },
     "photos": {
       "dependents": [
         "immich-ml",
@@ -489,32 +573,70 @@
   },
   "networks": {
     "systemd-auth_services": {
-      "members": [],
+      "members": [
+        "authelia",
+        "traefik",
+        "redis-authelia"
+      ],
       "gateway": false
     },
     "systemd-media_services": {
-      "members": [],
+      "members": [
+        "jellyfin"
+      ],
       "gateway": false
     },
     "systemd-monitoring": {
-      "members": [],
+      "members": [
+        "alertmanager",
+        "alert-discord-relay",
+        "ocis",
+        "immich-server",
+        "cadvisor",
+        "traefik",
+        "prometheus",
+        "promtail",
+        "grafana",
+        "node_exporter",
+        "loki",
+        "jellyfin"
+      ],
       "gateway": false
     },
     "systemd-photos": {
-      "members": [],
+      "members": [
+        "immich-server",
+        "immich-ml",
+        "postgresql-immich",
+        "redis-immich"
+      ],
       "gateway": false
     },
     "systemd-reverse_proxy": {
-      "members": [],
+      "members": [
+        "authelia",
+        "ocis",
+        "immich-server",
+        "homepage",
+        "traefik",
+        "prometheus",
+        "grafana",
+        "crowdsec",
+        "loki",
+        "vaultwarden",
+        "jellyfin"
+      ],
       "gateway": true
     }
   },
   "metadata": {
-    "total_services": 25,
-    "total_dependencies": 29,
+    "total_services": 26,
+    "total_dependencies": 38,
     "sources": [
       "quadlets",
-      "networks"
+      "networks",
+      "runtime-connections",
+      "traefik-routing"
     ]
   }
 }

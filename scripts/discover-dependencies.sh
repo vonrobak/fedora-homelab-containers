@@ -446,8 +446,36 @@ discover_runtime_connections() {
 
     local connections_json="{}"
 
+    # Check if nsenter is available and we have sufficient privileges
+    # nsenter requires CAP_SYS_ADMIN or root in rootless Podman
+    if ! command -v nsenter &> /dev/null; then
+        log "WARNING" "nsenter not found - skipping runtime TCP connection discovery"
+        echo "{}"
+        return
+    fi
+
+    # Test nsenter capability with a simple command
+    if ! nsenter --help &> /dev/null; then
+        log "WARNING" "nsenter not available (insufficient privileges) - skipping runtime TCP connection discovery"
+        echo "{}"
+        return
+    fi
+
     # Get all running containers
     local containers=$(podman ps --format '{{.Names}}' 2>/dev/null || echo "")
+
+    # Build IP to container name mapping (Performance fix: O(n) instead of O(n²))
+    log "DEBUG" "Building IP to container name map..."
+    declare -A ip_to_container
+    while IFS= read -r container_name; do
+        [[ -z "$container_name" ]] && continue
+
+        # Get all IPs for this container
+        local ips=$(podman inspect "$container_name" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' 2>/dev/null || echo "")
+        for ip in $ips; do
+            [[ -n "$ip" ]] && ip_to_container["$ip"]="$container_name"
+        done
+    done <<< "$containers"
 
     for container in $containers; do
         # Get container PID namespace
@@ -459,6 +487,7 @@ discover_runtime_connections() {
 
         # Use nsenter to get connections inside container's network namespace
         # Look for ESTABLISHED TCP connections
+        # Gracefully handle nsenter failures (rootless limitations)
         local conns=$(nsenter -t "$pid" -n ss -tnp 2>/dev/null | \
             awk 'NR>1 && /ESTABLISHED/ {
                 # Extract remote IP and port
@@ -478,14 +507,8 @@ discover_runtime_connections() {
             local remote_ip=$(echo "$conn" | cut -d: -f1)
             local remote_port=$(echo "$conn" | cut -d: -f2)
 
-            # Try to resolve IP to container name via podman network inspect
-            local target_container=$(podman ps --format '{{.Names}}' | while read -r target; do
-                local target_ip=$(podman inspect "$target" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null | head -1)
-                if [[ "$target_ip" == "$remote_ip" ]]; then
-                    echo "$target"
-                    break
-                fi
-            done)
+            # Lookup container name from IP map (O(1) instead of O(n))
+            local target_container="${ip_to_container[$remote_ip]:-}"
 
             # Skip if we couldn't resolve to a container
             if [[ -z "$target_container" ]]; then
@@ -874,7 +897,11 @@ main() {
     if [[ "$OUTPUT_MODE" == "stdout" ]]; then
         echo "$graph_json" | jq '.'
     else
-        echo "$graph_json" | jq '.' > "$OUTPUT_FILE"
+        # FIX 3: Use atomic write pattern to prevent race conditions
+        # Write to temp file, then atomic rename
+        local temp_file="${OUTPUT_FILE}.tmp.$$"
+        echo "$graph_json" | jq '.' > "$temp_file"
+        mv "$temp_file" "$OUTPUT_FILE"
         log "SUCCESS" "Dependency graph written to $OUTPUT_FILE"
 
         # Log summary
