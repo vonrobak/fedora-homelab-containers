@@ -1,6 +1,6 @@
 # Storage Layout and Strategy
 
-**Last Updated:** 2025-11-14
+**Last Updated:** 2025-12-09
 **Status:** Authoritative Guide
 **Review Cycle:** Monthly or when system drive >75%
 
@@ -14,7 +14,7 @@ This homelab operates under a **critical constraint: 128GB system drive** (118GB
 
 **Storage Architecture:**
 - **System SSD (NVMe):** 128GB BTRFS - OS, containers, critical configs
-- **BTRFS Pool (HDD Array):** 13TB BTRFS - Media, bulk data, container volumes
+- **BTRFS Pool (HDD Array):** 14.56 TiB BTRFS Single profile - Media, bulk data, container volumes
 
 ---
 
@@ -56,13 +56,14 @@ Filesystem      Size  Used Avail Use% Mounted on
 
 ```
 Filesystem      Size  Used Avail Use% Mounted on
-/dev/sdc         13T  8.2T  4.6T  65% /mnt/btrfs-pool
+/dev/sdc        14.6T  8.2T  6.4T  56% /mnt/btrfs-pool
 ```
 
-**✅ Healthy: BTRFS pool at 65%**
-- 4.6TB free space available
-- Physical Devices: 1x2TB + 3x4TB (13TB total, single-disk mode)
-- Planned: Upgrade 2TB → 4TB and enable RAID5
+**✅ Healthy: BTRFS pool at 56%**
+- 6.37 TiB free space available (increased from RAID5 → Single conversion)
+- Physical Devices: 4x 3.64 TiB (14.56 TiB total)
+- **Profile:** Single (data), RAID1 (metadata/system)
+- **Conversion:** Migrated from RAID5 to Single on 2025-12-06 due to operational issues
 - Future: Consider 2x 4TB Samsung SSDs for system drive expansion
 
 ---
@@ -139,6 +140,42 @@ alloy:            8KB
 
 ## BTRFS Pool Architecture
 
+### Profile Configuration
+
+**Data Profile:** Single
+- 1.0x storage ratio (no redundancy)
+- All disks independently allocatable
+- Provides maximum capacity
+- **Risk:** Single disk failure = data loss
+- **Mitigation:** Daily local snapshots + weekly external backups
+
+**Metadata Profile:** RAID1
+- 2.0x storage ratio (2 copies on different disks)
+- Filesystem metadata survives single disk failure
+- Provides filesystem-level redundancy
+- Critical for maintaining filesystem integrity
+
+**System Profile:** RAID1 (32 MiB total)
+- Stores BTRFS superblock and critical structures
+- Survives single disk failure
+
+**Why Single Profile?**
+- Previous RAID5 had operational issues (chunk allocation deadlocks)
+- RAID1 didn't fit (would need 16.36 TiB for 8.18 TiB data, have 14.56 TiB total)
+- Hardware limited to 4 SATA ports (no expansion possible)
+- Strong backup strategy makes Single profile viable
+
+**Physical Layout:**
+```
+Device       DevID   Total    Data     Metadata  Unallocated
+/dev/sdc     1       3.64T    1.69T    4.00G     1.94T
+/dev/sda     3       3.64T    1.69T    4.00G     1.94T
+/dev/sdb     4       3.64T    2.40T    7.00G     1.23T
+/dev/sdd     5       3.64T    2.40T    7.00G     1.23T
+─────────────────────────────────────────────────────────
+Total:               14.56T   8.19T    22.00G    6.37T
+```
+
 ### Subvolume Structure
 
 Location: `/mnt/btrfs-pool/`
@@ -151,9 +188,9 @@ Location: `/mnt/btrfs-pool/`
 | **subvol4-multimedia** | 5.2TB | Jellyfin media files | ✅ Yes | **Consider READ-ONLY mounts** |
 | **subvol5-music** | 1.1TB | Music library | ✅ Yes | **Consider READ-ONLY mounts** |
 | **subvol6-tmp** | 6.5GB | Temporary files, cache | ❌ No | Jellyfin transcoding cache |
-| **subvol7-containers** | 3.0GB | Container persistent data | ❌ No | ⚠️ **Underutilized** |
+| **subvol7-containers** | 3.0GB | Container persistent data | ❌ No | Database volumes with NOCOW |
 
-**Total Used:** 8.3TB / 13TB (65%)
+**Total Used:** 8.19 TiB / 14.56 TiB (56%)
 
 **Network Access:** Subvolumes 1-5 are SMB shared on local network.
 
@@ -235,11 +272,12 @@ START: New service needs storage
 - **Best For:** OS, quadlets, hot configs, small databases, Podman images
 - **Avoid:** Large media, bulk storage, anything >500MB
 
-**BTRFS Pool (HDD Array - BTRFS):**
-- **Pros:** 13TB capacity, cheap, good sequential reads (media streaming), snapshots
-- **Cons:** ~150 MB/s sequential, ~10ms seek latency, poor random I/O
+**BTRFS Pool (HDD Array - BTRFS Single):**
+- **Pros:** 14.56 TiB capacity, cheap, good sequential reads (media streaming), snapshots, maximum usable space
+- **Cons:** ~150 MB/s sequential, ~10ms seek latency, poor random I/O, **no data redundancy**
 - **Best For:** Media, bulk storage, large databases (with NOCOW), archives
 - **Avoid:** OS files, small frequently-accessed configs
+- **Critical:** Relies entirely on backup strategy for data protection
 
 ---
 
@@ -637,6 +675,8 @@ Add to Alertmanager configuration:
 
 ## Backup Strategy
 
+**⚠️ CRITICAL FOR SINGLE PROFILE:** With no data redundancy in the BTRFS pool, the backup strategy is the **ONLY** protection against data loss.
+
 **Method:** BTRFS Read-Only Snapshots → `btrfs send` to external drives
 
 ### Backup Hardware
@@ -644,18 +684,42 @@ Add to Alertmanager configuration:
 - **Primary:** 18TB WD External Drive (`/run/media/patriark/WD-18TB/.snapshots`)
 - **Secondary:** 18TB Clone Drive (annual off-site backup)
 
+### Single Profile Risk Mitigation
+
+**Data Protection Layers:**
+1. **RAID1 Metadata** - Filesystem survives single disk failure (can still mount read-only)
+2. **Daily Local Snapshots** - Quick recovery from accidental deletion (RPO: 24 hours)
+3. **Weekly External Backups** - Protection from disk failure (RPO: 7 days)
+4. **Annual Off-Site Clone** - Disaster recovery (fire, theft, catastrophic failure)
+
+**Recovery Time Objectives (RTO):**
+- Accidental deletion: ~5 minutes (snapshot rollback)
+- Single disk failure: 6-24 hours (restore from external backup)
+- Total pool failure: 24-48 hours (full restore from external backup)
+
+**Recovery Point Objectives (RPO):**
+- Tier 1 (Home, Opptak, Containers): 12-24 hours (daily backups)
+- Tier 2 (Docs, Pics): 7 days (weekly backups)
+- Tier 3 (Multimedia, Music): 30 days (monthly backups)
+
+**SMART Monitoring (Mandatory):**
+- Weekly disk health checks required
+- Early warning of disk failure critical
+- See `~/containers/scripts/weekly-intelligence-report.sh`
+
 ### Snapshot Schedule
 
 **System Drive Subvolumes:**
 - `/` (root)
 - `/home`
+- **Schedule:** Weekly on Saturdays at 04:00
 - **Last exported:** 2025-10-23
 
 **BTRFS Pool Subvolumes:**
-- subvol1-docs through subvol7-containers (all)
-- **Last exported:** 2025-04-20 ⚠️ **Outdated (7 months old)**
-
-**Action Needed:** Update BTRFS pool snapshots (subvol7-containers has new data)
+- **Tier 1** (subvol1-home, subvol3-opptak, subvol7-containers): Daily at 02:00
+- **Tier 2** (subvol1-docs, subvol2-pics): Weekly on Saturdays
+- **Tier 3** (subvol4-multimedia, subvol5-music): Monthly
+- **Last external backup:** 2025-12-06 (completed successfully)
 
 ### Backup Commands
 
@@ -782,11 +846,18 @@ podman system prune --all --force && journalctl --user --vacuum-size=500M
 | | Documented NOCOW requirements | Loki missing NOCOW optimization |
 | | Added decision matrices | Provide clear guidance for future |
 | | Created migration priorities | Urgent cleanup plan established |
+| 2025-12-09 | **BTRFS RAID5 → Single profile conversion** | Major storage architecture change |
+| | Updated capacity: 14.56 TiB total, 6.37 TiB free | RAID5 → Single freed 1.8 TiB |
+| | Documented Single profile with RAID1 metadata | Metadata redundancy critical |
+| | Enhanced backup strategy section | Backups now primary data protection |
+| | Added RTO/RPO targets | Single profile requires clear recovery expectations |
+| | Updated physical layout table | Shows current chunk distribution |
+| | Explained RAID5 → Single migration rationale | Operational issues + capacity constraints |
 
 ---
 
 **Status:** Authoritative guide for all storage decisions
 **Owner:** Homelab infrastructure (patriark)
-**Next Review:** 2025-12-14 (monthly) or when system drive >75%
+**Next Review:** 2026-01-09 (monthly) or when system drive >75%
 
-**URGENT NEXT ACTION:** Execute Priority 1 (Move Jellyfin config to BTRFS to free 4.6GB)
+**Storage Profile:** Single (data) + RAID1 (metadata) - Backups are primary data protection

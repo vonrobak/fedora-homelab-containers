@@ -1,8 +1,8 @@
 # Backup Automation Setup Guide
 
-**Date:** 2025-11-12
+**Date:** 2025-11-12 (Updated: 2025-12-09)
 **Purpose:** Enable automated daily BTRFS snapshots via systemd timer
-**Status:** ✅ Timer files created, awaiting activation
+**Status:** ✅ Production - Daily and weekly backups running successfully
 
 ---
 
@@ -11,14 +11,72 @@
 The backup system uses a comprehensive BTRFS snapshot script with systemd timer automation:
 
 - **Script:** `scripts/btrfs-snapshot-backup.sh`
-- **Service:** `~/.config/systemd/user/btrfs-snapshot-backup.service`
-- **Timer:** `~/.config/systemd/user/btrfs-snapshot-backup.timer`
+- **Daily Service:** `~/.config/systemd/user/btrfs-backup-daily.service`
+- **Daily Timer:** `~/.config/systemd/user/btrfs-backup-daily.timer`
+- **Weekly Service:** `~/.config/systemd/user/btrfs-backup-weekly.service`
+- **Weekly Timer:** `~/.config/systemd/user/btrfs-backup-weekly.timer`
 
 **Schedule:**
-- Daily local snapshots at **02:00 AM**
-- Tier 1 (critical): home, opptak, containers
-- Tier 2 (important): docs, root (monthly only)
-- Tier 3 (standard): pics (weekly only)
+- **Daily** local snapshots at **02:00 AM** (Tier 1: home, opptak, containers)
+- **Weekly** external backups on **Saturdays at 04:00 AM** (all tiers to WD-18TB drive)
+
+**⚠️ CRITICAL FOR SINGLE PROFILE:**
+With the BTRFS pool now running in **Single profile** (no data redundancy), this backup system is the **ONLY** protection against data loss from disk failure. The backup automation must be monitored closely and maintained rigorously.
+
+---
+
+## Single Profile Considerations
+
+**Storage Profile Change (2025-12-06):**
+The BTRFS pool was converted from RAID5 to Single profile due to operational issues with RAID5 chunk allocation. This has significant implications for backup strategy:
+
+### Data Protection Layers
+
+**Before (RAID5):**
+1. RAID5 parity (survives 1 disk failure)
+2. Daily local snapshots
+3. Weekly external backups
+
+**After (Single):**
+1. ~~RAID5 parity~~ **REMOVED**
+2. RAID1 metadata (filesystem survives disk failure, can mount read-only)
+3. Daily local snapshots (on same disks - no hardware failure protection)
+4. Weekly external backups (**PRIMARY PROTECTION**)
+
+### Recovery Expectations
+
+**Recovery Time Objective (RTO):**
+- Accidental deletion: ~5 minutes (local snapshot rollback)
+- Single disk failure: **6-24 hours** (restore from WD-18TB external)
+- Multiple disk failure: **24-48 hours** (full rebuild + restore)
+- External drive failure: **DATA LOSS** (no backup!)
+
+**Recovery Point Objective (RPO):**
+- Tier 1 (critical data): 12-24 hours (daily backups to external drive weekly)
+- Tier 2 (important data): 7 days (weekly backups)
+- Tier 3 (replaceable media): 30 days (monthly backups)
+
+### Critical Requirements
+
+**1. Weekly External Backup MUST Succeed**
+- Monitor `btrfs-backup-weekly.service` status closely
+- Current timeout: 6 hours (may be insufficient for subvol3-opptak at 2TB+)
+- **Recommendation:** Increase timeout to 12 hours
+
+**2. SMART Monitoring is Mandatory**
+- Weekly disk health checks via `weekly-intelligence-report.sh`
+- Early warning of disk failure is critical
+- Any SMART warnings = immediate backup verification
+
+**3. External Drive Must Be Reliable**
+- WD-18TB is single point of failure for recovery
+- Test drive health monthly
+- Consider annual clone to secondary drive
+
+**4. Backup Verification**
+- Cannot assume backups are good
+- Quarterly test restore recommended
+- Verify backup completion in logs weekly
 
 ---
 
@@ -287,6 +345,95 @@ sudo btrfs subvolume delete /mnt/btrfs-pool/subvol7-containers.old
 
 ---
 
+## Current Production Status
+
+**As of 2025-12-09:**
+
+**Daily Backups (btrfs-backup-daily.timer):**
+- ✅ Running successfully
+- Schedule: Daily at 02:00
+- Last run: 2025-12-08 02:00 (successful)
+- Duration: ~3 minutes
+- Creates snapshots for: htpc-home, subvol3-opptak, subvol7-containers
+
+**Weekly External Backups (btrfs-backup-weekly.timer):**
+- ✅ Running successfully (with timeout warnings)
+- Schedule: Saturdays at 04:00
+- Last run: 2025-12-06 04:00 → 13:40 (9h 40m total)
+- **Issue:** subvol3-opptak (2.1 TiB) took 9h 40m but timeout set to 6h
+- **Status:** Backup completed successfully despite timeout warning
+- **Action needed:** Increase timeout to 12 hours
+
+**Retention Status:**
+- Local snapshots: 7 days for Tier 1 (working as designed)
+- External snapshots: 8 weeks for Tier 1 (working as designed)
+- Oldest snapshot: 2025-04-20 (needs cleanup review)
+
+---
+
+## Proposed Improvements
+
+Based on Single profile deployment and operational experience:
+
+### HIGH PRIORITY
+
+**1. Increase Weekly Backup Timeout**
+```bash
+# Edit weekly service file
+nano ~/.config/systemd/user/btrfs-backup-weekly.service
+
+# Change TimeoutStartSec from 6h to 12h
+TimeoutStartSec=12h
+
+# Reload and restart
+systemctl --user daemon-reload
+systemctl --user restart btrfs-backup-weekly.timer
+```
+**Reason:** subvol3-opptak (2.1 TiB) requires 9h 40m for incremental backup
+
+**2. Add SMART Monitoring Alerts**
+- Weekly SMART checks already run via `weekly-intelligence-report.sh`
+- Add Prometheus alert for SMART failures
+- Alert on: Reallocated sectors, pending sectors, offline uncorrectable
+
+**3. Test External Drive Restore**
+- Document: Last restore test date
+- Procedure: Restore test file from snapshot to verify integrity
+- Frequency: Quarterly
+
+### MEDIUM PRIORITY
+
+**4. Consider Midday Snapshots for Tier 1**
+- Current RPO: 24 hours (backup at 02:00)
+- With midday snapshot (14:00): RPO: 12 hours
+- Minimal cost (snapshots are cheap with BTRFS COW)
+- Only for critical data (subvol7-containers with Vaultwarden)
+
+**5. Implement Backup Verification**
+- Checksum verification of external backups
+- Compare snapshot sizes (source vs destination)
+- Alert on size mismatch (potential corruption)
+
+**6. Export Backup Metrics to Prometheus**
+- Add node_exporter textfile collector
+- Metrics: backup duration, snapshot count, backup size
+- Enable Grafana dashboards for backup health
+
+### LOW PRIORITY
+
+**7. Update Documentation**
+- ✅ This document updated (2025-12-09)
+- ✅ storage-layout.md updated (2025-12-09)
+- Consider: Restore procedure runbook
+
+**8. Add Backup Dashboard to Grafana**
+- Panel: Last successful backup timestamp
+- Panel: Backup duration trend
+- Panel: Snapshot disk usage
+- Panel: Days since last backup
+
+---
+
 ## Integration with Monitoring
 
 ### Add Prometheus Alert for Backup Failures
@@ -361,3 +508,27 @@ Create panel showing:
 - **Backup Strategy:** `docs/20-operations/guides/backup-strategy.md`
 - **Storage Layout:** `docs/20-operations/guides/storage-layout.md`
 - **BTRFS Script:** `scripts/btrfs-snapshot-backup.sh`
+
+---
+
+## Revision History
+
+| Date | Change | Reason |
+|------|--------|--------|
+| 2025-11-12 | Initial version created | Document backup automation setup |
+| 2025-12-09 | **Major update for Single profile** | BTRFS pool converted from RAID5 to Single |
+| | Added Single Profile Considerations section | Backups now primary data protection |
+| | Documented RTO/RPO expectations | Clear recovery time/point objectives |
+| | Added Current Production Status | Document operational experience |
+| | Added Proposed Improvements | 8 improvements across 3 priorities |
+| | Updated service/timer names | Corrected to actual production names |
+| | Documented timeout issue | subvol3-opptak requires 9h 40m for backup |
+| | Recommended timeout increase to 12h | Prevent false failures on large backups |
+
+---
+
+**Status:** Production operational guide
+**Owner:** Homelab infrastructure (patriark)
+**Next Review:** 2026-01-09 or after backup system changes
+
+**Critical:** Weekly external backups are PRIMARY protection for Single profile storage
