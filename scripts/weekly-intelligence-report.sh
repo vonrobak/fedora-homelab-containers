@@ -363,6 +363,118 @@ EOF
 }
 
 # ============================================================================
+# Persistent Warning Analysis
+# ============================================================================
+
+analyze_persistent_warnings() {
+    log_section "Analyzing Persistent Warnings"
+
+    # Load known issues
+    local known_issues_file="${HOME}/containers/.claude/context/known-issues.yml"
+    declare -A known_issues
+
+    if [[ -f "$known_issues_file" ]]; then
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*code:[[:space:]]*([WCI][0-9]+) ]]; then
+                local code="${BASH_REMATCH[1]}"
+                known_issues["$code"]=1
+            fi
+        done < "$known_issues_file"
+        log "Loaded ${#known_issues[@]} known issues from known-issues.yml"
+    fi
+
+    # Get last 7 daily intel reports
+    local intel_files=$(find ~/containers/docs/99-reports -name "intel-*.json" -type f | sort -r | head -7)
+    local file_count=$(echo "$intel_files" | wc -l)
+
+    if [ "$file_count" -lt 7 ]; then
+        log "${YELLOW}⚠ Only $file_count daily reports available (need 7 for persistence check)${NC}"
+        return
+    fi
+
+    # Check each warning code for persistence across all 7 days
+    local persistent_warnings=()
+
+    for warning_code in W001 W002 W003 W004 W005 W006 W007 W008 W009; do
+        # Count how many of the last 7 reports contain this warning
+        local files_with_warning=$(echo "$intel_files" | xargs grep -l "\"code\":\"$warning_code\"" 2>/dev/null | wc -l)
+
+        if [ "$files_with_warning" -eq 7 ]; then
+            # Warning appears in all 7 reports
+            # Check if it's a known issue
+            if [[ -z "${known_issues[$warning_code]}" ]]; then
+                # Unknown persistent warning - needs investigation
+                persistent_warnings+=("$warning_code")
+                log "${YELLOW}⚠️  PERSISTENT UNKNOWN WARNING ($warning_code): 7+ consecutive days${NC}"
+
+                # Get the warning message from latest report
+                local latest_intel=$(echo "$intel_files" | head -1)
+                local warning_msg=$(jq -r ".warnings[] | select(.code==\"$warning_code\") | .message" "$latest_intel" 2>/dev/null || echo "Unknown issue")
+                log "   Message: $warning_msg"
+            else
+                log "${CYAN}Known issue $warning_code present (expected)${NC}"
+            fi
+        fi
+    done
+
+    # Send escalation to Discord if there are unknown persistent warnings
+    if [ ${#persistent_warnings[@]} -gt 0 ]; then
+        log "${RED}Found ${#persistent_warnings[@]} persistent unknown warning(s) - sending escalation${NC}"
+
+        local warning_list=$(printf ", %s" "${persistent_warnings[@]}")
+        warning_list=${warning_list:2}  # Remove leading ", "
+
+        send_persistent_warning_escalation "$warning_list"
+    else
+        log "${GREEN}✓ No persistent unknown warnings detected${NC}"
+    fi
+}
+
+send_persistent_warning_escalation() {
+    local warning_codes="$1"
+
+    read -r -d '' DISCORD_PAYLOAD <<EOF || true
+{
+  "embeds": [{
+    "title": "🚨 Persistent Warning Escalation",
+    "description": "The following warnings have persisted for 7+ days without being classified as known issues.",
+    "color": 15158332,
+    "fields": [
+      {
+        "name": "Warning Codes",
+        "value": "${warning_codes}",
+        "inline": false
+      },
+      {
+        "name": "Action Required",
+        "value": "Investigation recommended. If these are expected, add them to \`known-issues.yml\`.",
+        "inline": false
+      }
+    ],
+    "footer": {
+      "text": "Weekly Intelligence Report"
+    },
+    "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
+  }]
+}
+EOF
+
+    # Get Discord webhook URL and send
+    local DISCORD_WEBHOOK=$(podman exec alert-discord-relay env 2>/dev/null | grep DISCORD_WEBHOOK_URL | cut -d= -f2 || echo "")
+
+    if [ -n "$DISCORD_WEBHOOK" ]; then
+        if curl -s -o /dev/null -w "%{http_code}" \
+            -H "Content-Type: application/json" \
+            -d "$DISCORD_PAYLOAD" \
+            "$DISCORD_WEBHOOK" | grep -q "^20"; then
+            log "${GREEN}✓ Escalation sent to Discord${NC}"
+        else
+            log "${YELLOW}⚠ Discord escalation failed${NC}"
+        fi
+    fi
+}
+
+# ============================================================================
 # Main
 # ============================================================================
 
@@ -374,6 +486,7 @@ main() {
 
     collect_current_metrics
     calculate_trends
+    analyze_persistent_warnings
     send_discord_notification
 
     # Copy to reports directory for easy access

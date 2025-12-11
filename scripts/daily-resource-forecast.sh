@@ -31,12 +31,13 @@ WARNING_DAYS=14
 # Run prediction and capture JSON output
 PREDICT_OUTPUT=$(mktemp)
 
-if ! "$PREDICT_SCRIPT" --output json > "$PREDICT_OUTPUT" 2>&1; then
+# Capture only stdout (JSON), discard stderr (log messages)
+if ! "$PREDICT_SCRIPT" --output json 2>/dev/null > "$PREDICT_OUTPUT"; then
     echo "[$(date)] Warning: Prediction script had errors"
 fi
 
-# Parse disk prediction (look for days_until_critical)
-DISK_DAYS=$(jq -r '.disk.days_until_critical // "999"' "$PREDICT_OUTPUT" 2>/dev/null || echo "999")
+# Parse disk prediction (correct field name is days_until_90pct, not days_until_critical)
+DISK_DAYS=$(jq -r '.days_until_90pct // "999"' "$PREDICT_OUTPUT" 2>/dev/null || echo "999")
 
 # Determine alert level
 ALERT_LEVEL="none"

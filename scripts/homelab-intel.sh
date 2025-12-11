@@ -47,9 +47,34 @@ declare -a INFO_ITEMS
 # Metrics - simple array for JSON generation
 declare -A METRICS
 
+# Known issues - loaded from known-issues.yml
+declare -A KNOWN_ISSUES
+KNOWN_ISSUES_FILE="${HOME}/containers/.claude/context/known-issues.yml"
+
 ##############################################################################
 # Helper Functions
 ##############################################################################
+
+load_known_issues() {
+    # Load known issues from YAML file
+    if [[ ! -f "$KNOWN_ISSUES_FILE" ]]; then
+        return
+    fi
+
+    # Extract warning codes from known-issues.yml
+    # Simple grep-based parsing (YAML parser not needed for this simple case)
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*code:[[:space:]]*([WCI][0-9]+) ]]; then
+            local code="${BASH_REMATCH[1]}"
+            KNOWN_ISSUES["$code"]=1
+        fi
+    done < "$KNOWN_ISSUES_FILE"
+}
+
+is_known_issue() {
+    local code=$1
+    [[ -n "${KNOWN_ISSUES[$code]}" ]]
+}
 
 log() {
     [[ "$QUIET_MODE" == "true" ]] && return
@@ -266,7 +291,8 @@ check_certificates() {
     # Explicit path - user confirmed location
     local acme_file="/home/patriark/containers/config/traefik/letsencrypt/acme.json"
 
-    if [ -f "$acme_file" ]; then
+    # Try to check file (works if run with proper permissions)
+    if [ -r "$acme_file" ]; then
         local cert_age=$(( ($(date +%s) - $(stat -c %Y "$acme_file" 2>/dev/null || echo "0")) / 86400 ))
         local days_remaining=$((90 - cert_age))
 
@@ -281,9 +307,41 @@ check_certificates() {
             add_info "I003" "Certificate expires in $days_remaining days (will auto-renew)"
         fi
     else
-        add_warning "W006" "Certificate file not found" "Check Traefik Let's Encrypt configuration"
-        METRICS[cert_age_days]=0
-        METRICS[cert_days_remaining]=0
+        # Fallback: Check if HTTPS is working by querying the live certificate
+        # (acme.json has restricted permissions for security)
+        local cert_info=$(echo | openssl s_client -connect traefik.patriark.org:443 -servername traefik.patriark.org 2>/dev/null | openssl x509 -noout -dates 2>/dev/null)
+
+        if [ -n "$cert_info" ]; then
+            # Extract expiry date and calculate days remaining
+            local not_after=$(echo "$cert_info" | grep "notAfter" | cut -d= -f2)
+            if [ -n "$not_after" ]; then
+                local expiry_epoch=$(date -d "$not_after" +%s 2>/dev/null || echo "0")
+                local now_epoch=$(date +%s)
+                local days_remaining=$(( (expiry_epoch - now_epoch) / 86400 ))
+                local cert_age=$((90 - days_remaining))
+
+                METRICS[cert_age_days]=$cert_age
+                METRICS[cert_days_remaining]=$days_remaining
+
+                log "  Certificate expires in $days_remaining days (verified via HTTPS)"
+
+                if [ "$days_remaining" -lt 7 ]; then
+                    add_critical "C006" "Certificate expires in $days_remaining days" "Check Traefik logs for renewal errors"
+                elif [ "$days_remaining" -lt 30 ]; then
+                    add_info "I003" "Certificate expires in $days_remaining days (will auto-renew)"
+                else
+                    add_info "I003" "Let's Encrypt certificate valid ($days_remaining days remaining)"
+                fi
+            else
+                add_warning "W006" "Could not parse certificate expiry date" "Check Traefik Let's Encrypt configuration"
+                METRICS[cert_age_days]=0
+                METRICS[cert_days_remaining]=0
+            fi
+        else
+            add_warning "W006" "Could not verify HTTPS certificate" "Check Traefik Let's Encrypt configuration"
+            METRICS[cert_age_days]=0
+            METRICS[cert_days_remaining]=0
+        fi
     fi
 }
 
@@ -292,37 +350,76 @@ check_monitoring() {
 
     # Check via podman exec (more reliable than localhost for rootless containers)
 
+    # Helper function to check if we're in grace period
+    is_in_grace_period() {
+        local service_name=$1
+
+        # System boot grace period (15 minutes)
+        local uptime_minutes=$(awk '{print int($1/60)}' /proc/uptime)
+        if [ "$uptime_minutes" -lt 15 ]; then
+            return 0  # In grace period
+        fi
+
+        # Service start grace period (5 minutes)
+        if systemctl --user is-active "$service_name" &>/dev/null; then
+            local start_time=$(systemctl --user show "$service_name" -p ActiveEnterTimestamp --value)
+            local start_epoch=$(date -d "$start_time" +%s 2>/dev/null || echo 0)
+            local now_epoch=$(date +%s)
+            local running_seconds=$((now_epoch - start_epoch))
+
+            if [ "$running_seconds" -lt 300 ]; then
+                return 0  # Service started < 5 min ago
+            fi
+        fi
+
+        return 1  # Not in grace period
+    }
+
     # Prometheus
-    if podman exec prometheus curl -sf http://localhost:9090/-/healthy &>/dev/null; then
+    # Use podman's built-in healthcheck status
+    local prom_health=$(podman inspect prometheus --format '{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
+    if [[ "$prom_health" == "healthy" ]]; then
         METRICS[prometheus_healthy]=1
         add_info "I004" "Prometheus responding"
     else
         METRICS[prometheus_healthy]=0
-        # Only warn if service is running (network issue vs service down)
+        # Only warn if service is running and not in grace period
         if systemctl --user is-active prometheus.service &>/dev/null; then
-            add_warning "W007" "Prometheus health check failed (service running)" "May be network/startup delay"
+            if ! is_in_grace_period "prometheus.service"; then
+                add_warning "W007" "Prometheus health check failed (service running)" "May be network/startup delay"
+            fi
         fi
     fi
 
     # Grafana
-    if podman exec grafana curl -sf http://localhost:3000/api/health &>/dev/null; then
+    # Use podman's built-in healthcheck status
+    local grafana_health=$(podman inspect grafana --format '{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
+    if [[ "$grafana_health" == "healthy" ]]; then
         METRICS[grafana_healthy]=1
         add_info "I005" "Grafana responding"
     else
         METRICS[grafana_healthy]=0
+        # Only warn if service is running and not in grace period
         if systemctl --user is-active grafana.service &>/dev/null; then
-            add_warning "W008" "Grafana health check failed (service running)" "May be network/startup delay"
+            if ! is_in_grace_period "grafana.service"; then
+                add_warning "W008" "Grafana health check failed (service running)" "May be network/startup delay"
+            fi
         fi
     fi
 
     # Loki
-    if podman exec loki curl -sf http://localhost:3100/ready &>/dev/null; then
+    # Use podman's built-in healthcheck status
+    local loki_health=$(podman inspect loki --format '{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
+    if [[ "$loki_health" == "healthy" ]]; then
         METRICS[loki_healthy]=1
         add_info "I006" "Loki responding"
     else
         METRICS[loki_healthy]=0
+        # Only warn if service is running and not in grace period
         if systemctl --user is-active loki.service &>/dev/null; then
-            add_warning "W009" "Loki health check failed (service running)" "May be network/startup delay"
+            if ! is_in_grace_period "loki.service"; then
+                add_warning "W009" "Loki health check failed (service running)" "May be network/startup delay"
+            fi
         fi
     fi
 }
@@ -387,8 +484,13 @@ print_summary() {
         log "${YELLOW}⚠️  WARNINGS:${NC}"
         for item in "${WARNINGS[@]}"; do
             IFS='|' read -r code msg action <<< "$item"
-            echo -e "  ${YELLOW}[$code]${NC} $msg"
-            echo "      → $action"
+            if is_known_issue "$code"; then
+                echo -e "  ${YELLOW}[$code]${NC} $msg 🔕 ${CYAN}[KNOWN ISSUE]${NC}"
+                echo "      → $action"
+            else
+                echo -e "  ${YELLOW}[$code]${NC} $msg"
+                echo "      → $action"
+            fi
         done
     fi
 
@@ -463,6 +565,9 @@ generate_json() {
 ##############################################################################
 
 main() {
+    # Load known issues before running checks
+    load_known_issues
+
     # Run all checks
     check_system_basics
     check_disk_usage

@@ -18,7 +18,7 @@ remediation:
   service_restart_max_attempts: 3
 
   # Resource pressure - May restart services, requires confirmation
-  auto_resource_pressure: false
+  auto_resource_pressure: true
   resource_pressure_requires_confirmation: true
 
 # Risk Tolerance

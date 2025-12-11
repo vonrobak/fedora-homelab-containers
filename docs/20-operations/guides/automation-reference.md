@@ -1,6 +1,6 @@
 # Automation Reference Guide
 
-**Last Updated:** 2025-11-30
+**Last Updated:** 2025-12-11
 **Maintainer:** patriark
 
 This guide catalogs all automation scripts in the homelab, their purposes, schedules, and integration with Claude Code skills. Use this as the authoritative reference for understanding and extending the automation ecosystem.
@@ -61,14 +61,14 @@ These scripts run automatically via systemd timers. **Do not run manually unless
 |--------|-------|----------|---------|
 | `cloudflare-ddns.sh` | `cloudflare-ddns.timer` | Every 30 min | Update DNS when public IP changes |
 | `btrfs-snapshot-backup.sh` | `btrfs-backup-daily.timer` | Daily 02:00 | Create local BTRFS snapshots |
-| `btrfs-snapshot-backup.sh` | `btrfs-backup-weekly.timer` | Weekly Sun 03:00 | Sync to external drive |
+| `btrfs-snapshot-backup.sh` | `btrfs-backup-weekly.timer` | Weekly Sat 04:00 | Sync to external drive |
 | `maintenance-cleanup.sh` | `maintenance-cleanup.timer` | Weekly Sun 03:00 | Prune containers, rotate logs |
 | `daily-drift-check.sh` | `daily-drift-check.timer` | Daily 06:00 | Detect config drift → Discord alert |
 | `daily-resource-forecast.sh` | `daily-resource-forecast.timer` | Daily 06:05 | Predict exhaustion → Discord alert |
 | `weekly-intelligence-report.sh` | `weekly-intelligence.timer` | Friday 07:30 | End-of-week health summary → Discord |
 | `monthly-slo-report.sh` | `monthly-slo-report.timer` | 1st of month 10:00 | SLO compliance report → Discord |
 | `rotate-journal-export.sh` | `journal-logrotate.timer` | Hourly | Keep journal logs under control |
-| `precompute-queries.sh` | *(cron)* | Every 5 min | Pre-compute query cache for autonomous ops |
+| `precompute-queries.sh` | `query-cache-refresh.timer` | Every 6 hours (00, 06, 12, 18:00) | Pre-compute query cache for autonomous ops |
 
 **Timer management commands:**
 ```bash
@@ -111,6 +111,34 @@ Run these scripts interactively to assess system state.
 
 # Generate snapshot for documentation
 ./scripts/homelab-snapshot.sh
+```
+
+**Known Issues Framework** (Added 2025-12-11)
+
+The system now supports documenting expected/acceptable warnings to prevent alert fatigue:
+
+| Component | Purpose | Location |
+|-----------|---------|----------|
+| `known-issues.yml` | Document expected warnings (W004, etc.) | `~/.claude/context/known-issues.yml` |
+| Known-issues integration | Tags warnings with 🔕 [KNOWN ISSUE] | `homelab-intel.sh` |
+| Persistent warning detection | Escalates warnings lasting 7+ days | `weekly-intelligence-report.sh` |
+
+**Features:**
+- Warnings in `known-issues.yml` are tagged in daily reports
+- Weekly report checks for warnings persisting 7+ days
+- Unknown persistent warnings escalate to Discord
+- Known issues don't reduce health score impact
+
+**Example Usage:**
+```bash
+# View known issues
+cat ~/.claude/context/known-issues.yml
+
+# Check if warning is tagged
+./scripts/homelab-intel.sh | grep "KNOWN ISSUE"
+
+# Weekly report includes persistent warning analysis
+./scripts/weekly-intelligence-report.sh
 ```
 
 ### Tier 3: Deployment & Validation
@@ -217,7 +245,7 @@ Scripts created for specific fixes. Consider archiving or removing if obsolete.
 | `test-yubikey-ssh.sh` | Test YubiKey SSH auth | Testing |
 | `monitor-ssh-tests.sh` | Monitor SSH tests from another host | Testing |
 | `traefik-entrypoint.sh` | Traefik wrapper for secrets | Container entrypoint |
-| `precompute-queries.sh` | Pre-populate query cache | Could be scheduled |
+| `precompute-queries.sh` | Pre-populate query cache | ✅ Scheduled via query-cache-refresh.timer (every 6h) |
 | `investigate-memory-leak.sh` | Identify memory leak sources | Diagnostic |
 
 ### Tier 10: Archived Scripts
@@ -336,7 +364,7 @@ Intelligence-related scripts could potentially be consolidated under the homelab
 | Script | Suggested Schedule | Rationale | Blocker |
 |--------|-------------------|-----------|---------|
 | `security-audit.sh` | Weekly | Regular security posture check | Uses `sudo firewall-cmd` |
-| `precompute-queries.sh` | Every 5 min | Keep query cache fresh | Low value vs complexity |
+| `precompute-queries.sh` | Every 6 hours | Keep query cache fresh | ✅ IMPLEMENTED (2025-12-11) |
 
 ---
 
