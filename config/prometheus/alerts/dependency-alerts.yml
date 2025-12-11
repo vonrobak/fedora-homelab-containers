@@ -13,12 +13,13 @@ groups:
   - name: dependency_health
     interval: 60s
     rules:
-      # Alert when a critical service has an unhealthy dependency
+      # Alert when a critical service has an unhealthy RUNTIME dependency
       # FIXED 2025-12-06: Use homelab_service label to avoid collision with job="node_exporter"
+      # FIXED 2025-12-11: Exclude routing dependencies - they don't affect service functionality
       - alert: CriticalServiceDependencyUnhealthy
         expr: |
           (
-            homelab_dependency_health{} == 0
+            homelab_dependency_health{dependency_type!="routing"} == 0
           )
           and on(homelab_service) (
             homelab_critical_service_status{} == 1
@@ -29,17 +30,46 @@ groups:
           component: dependencies
           category: health
         annotations:
-          summary: "Critical service {{ $labels.homelab_service }} has unhealthy dependency"
+          summary: "Critical service {{ $labels.homelab_service }} has unhealthy runtime dependency"
           description: |
-            Critical service {{ $labels.homelab_service }} depends on {{ $labels.dependency }} which is currently unhealthy.
-            This may cause service degradation or failures.
+            Critical service {{ $labels.homelab_service }} has a runtime dependency on {{ $labels.dependency }} which is currently unhealthy.
+            This WILL cause service degradation or failures.
 
             Affected service: {{ $labels.homelab_service }}
             Unhealthy dependency: {{ $labels.dependency }}
-            Duration: {{ $value }}m
+            Dependency type: {{ $labels.dependency_type }}
+            Dependency strength: {{ $labels.dependency_strength }}
 
             Action: Investigate dependency health immediately to prevent service impact.
+              systemctl --user status {{ $labels.dependency }}.service
+              podman ps --filter name={{ $labels.dependency }}
           runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+
+      # Alert when a routing target is unhealthy (informational, not critical)
+      # Routing dependencies (e.g., Traefik -> Immich) don't affect the router's functionality
+      - alert: RoutingTargetUnhealthy
+        expr: |
+          homelab_dependency_health{dependency_type="routing"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: dependencies
+          category: availability
+        annotations:
+          summary: "Routing target {{ $labels.dependency }} is unhealthy"
+          description: |
+            Service {{ $labels.homelab_service }} routes traffic to {{ $labels.dependency }} which is currently unhealthy.
+            The routing service ({{ $labels.homelab_service }}) continues to function normally for other targets.
+
+            Router: {{ $labels.homelab_service }}
+            Unhealthy target: {{ $labels.dependency }}
+
+            Impact: Only {{ $labels.dependency }} is unavailable. Other services are unaffected.
+
+            Action: Investigate target service health:
+              systemctl --user status {{ $labels.dependency }}.service
+              podman ps --filter name={{ $labels.dependency }}
+              podman logs {{ $labels.dependency }} --tail 50
 
       # Alert when a high blast radius service goes down
       - alert: HighBlastRadiusServiceDown

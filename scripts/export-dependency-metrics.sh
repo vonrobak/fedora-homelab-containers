@@ -140,6 +140,56 @@ export_blast_radius() {
     echo ""
 }
 
+# Check health of a single dependency
+# Handles networks, services, containers, and logical groupings
+check_dependency_health() {
+    local dep=$1
+
+    # Check if it's a network dependency (networks are stored without systemd- prefix)
+    if podman network exists "systemd-$dep" 2>/dev/null; then
+        echo "1"
+        return
+    fi
+
+    # Check if it's a real systemd service
+    if systemctl --user is-active "$dep.service" >/dev/null 2>&1; then
+        echo "1"
+        return
+    fi
+
+    # Check if it's a running container (for non-systemd services)
+    if podman ps --format '{{.Names}}' 2>/dev/null | grep -qw "^$dep$"; then
+        echo "1"
+        return
+    fi
+
+    # Check if it's a logical grouping (has dependents but no real service)
+    # Look for services that start with this name (e.g., "immich" -> "immich-server", "immich-ml")
+    local has_dependents=$(jq -e ".services[\"$dep\"].dependents // [] | length > 0" "$GRAPH_FILE" 2>/dev/null)
+    if [[ "$has_dependents" == "true" ]]; then
+        # It's a logical group - check if ANY member service is healthy
+        # Member services typically have the pattern: groupname-servicename
+        local member_services=$(jq -r ".services | keys[] | select(startswith(\"${dep}-\"))" "$GRAPH_FILE" 2>/dev/null)
+
+        if [[ -n "$member_services" ]]; then
+            # Check if at least one member service is healthy
+            for member in $member_services; do
+                if systemctl --user is-active "$member.service" >/dev/null 2>&1; then
+                    echo "1"
+                    return
+                fi
+                if podman ps --format '{{.Names}}' 2>/dev/null | grep -qw "^$member$"; then
+                    echo "1"
+                    return
+                fi
+            done
+        fi
+    fi
+
+    # Dependency is not available
+    echo "0"
+}
+
 # Export dependency health metrics
 export_dependency_health() {
     log "INFO" "Exporting dependency health metrics..."
@@ -150,28 +200,23 @@ export_dependency_health() {
     local services=$(jq -r '.services | keys[]' "$GRAPH_FILE")
 
     for service in $services; do
-        local deps=$(jq -r ".services[\"$service\"].dependencies[].target" "$GRAPH_FILE" 2>/dev/null || echo "")
+        # Get dependencies with their metadata
+        local deps_json=$(jq -c ".services[\"$service\"].dependencies[]?" "$GRAPH_FILE" 2>/dev/null)
 
-        for dep in $deps; do
-            local health=1
+        if [[ -z "$deps_json" ]]; then
+            continue
+        fi
 
-            # Check if it's a network dependency (networks are stored without systemd- prefix)
-            if podman network exists "systemd-$dep" 2>/dev/null; then
-                # Network exists, consider it healthy
-                health=1
-            elif systemctl --user is-active "$dep.service" >/dev/null 2>&1; then
-                # Service is running
-                health=1
-            elif podman ps --format '{{.Names}}' 2>/dev/null | grep -qw "^$dep$"; then
-                # Container is running (for non-systemd services)
-                health=1
-            else
-                # Dependency is not available
-                health=0
-            fi
+        while IFS= read -r dep_obj; do
+            local target=$(echo "$dep_obj" | jq -r '.target')
+            local dep_type=$(echo "$dep_obj" | jq -r '.type // "runtime"')
+            local dep_strength=$(echo "$dep_obj" | jq -r '.strength // "hard"')
 
-            echo "homelab_dependency_health{homelab_service=\"$service\",dependency=\"$dep\"} $health"
-        done
+            # Check dependency health
+            local health=$(check_dependency_health "$target")
+
+            echo "homelab_dependency_health{homelab_service=\"$service\",dependency=\"$target\",dependency_type=\"$dep_type\",dependency_strength=\"$dep_strength\"} $health"
+        done <<< "$deps_json"
     done
 
     echo ""
