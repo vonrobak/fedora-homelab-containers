@@ -1,6 +1,7 @@
 # Prometheus Alert Rules
-# Critical: Immediate notification via ntfy.sh + email
-# Warning: Email only during waking hours (7am-11pm)
+# Updated: 2025-12-05 - Tuned thresholds to reduce noise
+# Critical: Immediate notification via Discord
+# Warning: Discord during waking hours only (7am-11pm)
 
 groups:
   - name: infrastructure_critical
@@ -69,15 +70,8 @@ groups:
           summary: "Disk space running low on {{ $labels.instance }}"
           description: "Root filesystem has less than 20% space available ({{ $value | humanizePercentage }})."
 
-      # Memory pressure
-      - alert: HighMemoryUsage
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High memory usage on {{ $labels.instance }}"
-          description: "Memory usage is above 85% ({{ $value | humanizePercentage }})."
+      # Removed HighMemoryUsage - duplicate of MemoryPressureHigh in disk-space.yml
+      # (that one uses >90% threshold which is more appropriate)
 
       # Certificate expiry warning (30 days)
       - alert: CertificateExpiryWarning
@@ -89,25 +83,27 @@ groups:
           summary: "TLS certificate expires in less than 30 days"
           description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}. Consider renewal."
 
-      # Container restarts
+      # Container restarts - only alert on MULTIPLE restarts (crash loop)
+      # Threshold raised from >0 to >0.1 to ignore single intentional restarts
       - alert: ContainerRestarting
-        expr: rate(container_restarts_total[15m]) > 0
-        for: 5m
+        expr: rate(container_restarts_total[15m]) > 0.1
+        for: 10m
         labels:
           severity: warning
         annotations:
-          summary: "Container {{ $labels.name }} is restarting frequently"
-          description: "Container has restarted {{ $value }} times in the last 15 minutes."
+          summary: "Container {{ $labels.name }} is crash-looping"
+          description: "Container has restarted {{ $value | humanize }} times in the last 15 minutes. This indicates a crash loop."
 
-      # High CPU usage
+      # High CPU usage - raised from 80% to 90%
+      # Jellyfin transcoding legitimately uses 50-80% CPU (per CLAUDE.md)
       - alert: HighCPUUsage
-        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
-        for: 15m
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 20m
         labels:
           severity: warning
         annotations:
           summary: "High CPU usage on {{ $labels.instance }}"
-          description: "CPU usage is above 80% ({{ $value | humanize }}%) for more than 15 minutes."
+          description: "CPU usage is above 90% ({{ $value | humanize }}%) for more than 20 minutes. This may indicate system overload."
 
       # Filesystem will fill in 4 hours
       - alert: FilesystemFillingUp

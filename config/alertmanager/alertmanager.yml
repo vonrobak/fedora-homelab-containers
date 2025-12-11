@@ -1,4 +1,5 @@
 # Alertmanager Configuration
+# Updated: 2025-12-05 - Added info routing, improved inhibition
 # Discord notifications via webhook relay
 
 global:
@@ -33,6 +34,12 @@ route:
       receiver: 'discord-warnings'
       active_time_intervals:
         - waking_hours
+
+    # Info alerts: Discord once per day maximum
+    - match:
+        severity: info
+      receiver: 'discord-default'
+      repeat_interval: 24h
 
 # Receivers
 receivers:
@@ -72,3 +79,18 @@ inhibit_rules:
       severity: 'warning'
       alertname: 'DiskSpaceWarning'
     equal: ['instance', 'mountpoint']
+
+  # Global: Critical alerts for a service silence warnings for same service
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['service', 'instance']
+
+  # If Traefik is down, suppress all service availability warnings
+  # (nothing is accessible anyway)
+  - source_match:
+      alertname: 'TraefikDown'
+    target_match_re:
+      alertname: '.*(Down|Unhealthy|Unavailable).*'
+    equal: ['instance']

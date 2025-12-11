@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-02T00:34:51+01:00",
+  "generated_at": "2025-12-11T06:04:44+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -593,8 +593,8 @@
         "ocis",
         "immich-server",
         "cadvisor",
-        "traefik",
         "prometheus",
+        "traefik",
         "promtail",
         "grafana",
         "node_exporter",
@@ -614,12 +614,12 @@
     },
     "systemd-reverse_proxy": {
       "members": [
+        "homepage",
         "authelia",
         "ocis",
         "immich-server",
-        "homepage",
-        "traefik",
         "prometheus",
+        "traefik",
         "grafana",
         "crowdsec",
         "loki",

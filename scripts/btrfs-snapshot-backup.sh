@@ -139,6 +139,36 @@ TIER3_PICS_LOCAL_RETENTION_WEEKLY=4
 TIER3_PICS_EXTERNAL_RETENTION_MONTHLY=12
 TIER3_PICS_SCHEDULE="weekly"
 
+# subvol4-multimedia (Jellyfin media - 5.8TB, replaceable but time-consuming)
+# NOTE: Initially disabled for external backup - do initial backup manually first!
+# Initial backup estimated at ~27 hours. After first backup, enable external.
+TIER3_MULTIMEDIA_ENABLED=true
+TIER3_MULTIMEDIA_SOURCE="/mnt/btrfs-pool/subvol4-multimedia"
+TIER3_MULTIMEDIA_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol4-multimedia"
+TIER3_MULTIMEDIA_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol4-multimedia"
+TIER3_MULTIMEDIA_EXTERNAL_ENABLED=false  # Set to true after initial manual backup
+TIER3_MULTIMEDIA_LOCAL_RETENTION_WEEKLY=4
+TIER3_MULTIMEDIA_EXTERNAL_RETENTION_MONTHLY=6
+TIER3_MULTIMEDIA_SCHEDULE="weekly"
+
+# subvol5-music (Music library - 1.1TB, replaceable)
+TIER3_MUSIC_ENABLED=true
+TIER3_MUSIC_SOURCE="/mnt/btrfs-pool/subvol5-music"
+TIER3_MUSIC_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol5-music"
+TIER3_MUSIC_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol5-music"
+TIER3_MUSIC_LOCAL_RETENTION_WEEKLY=4
+TIER3_MUSIC_EXTERNAL_RETENTION_MONTHLY=6
+TIER3_MUSIC_SCHEDULE="weekly"
+
+# subvol6-tmp (Temporary files/cache - 6.2GB, fully replaceable)
+TIER3_TMP_ENABLED=true
+TIER3_TMP_SOURCE="/mnt/btrfs-pool/subvol6-tmp"
+TIER3_TMP_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol6-tmp"
+TIER3_TMP_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol6-tmp"
+TIER3_TMP_LOCAL_RETENTION_WEEKLY=2  # Only 2 weeks (cache data)
+TIER3_TMP_EXTERNAL_RETENTION_MONTHLY=3  # Only 3 months (cache data)
+TIER3_TMP_SCHEDULE="weekly"
+
 ################################################################################
 # END OF CONFIGURATION SECTION
 ################################################################################
@@ -641,7 +671,7 @@ backup_tier3_pics() {
         return 0
     fi
 
-    local snapshot_name="${DATE_WEEKLY}-pics-weekly"
+    local snapshot_name="${DATE_WEEKLY}-pics"
     local local_snapshot="$TIER3_PICS_LOCAL_DIR/$snapshot_name"
 
     # Create local snapshot
@@ -675,6 +705,163 @@ backup_tier3_pics() {
 
     record_backup_metrics "subvol2-pics" "$start_time" 1 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
     log SUCCESS "Completed Tier 3: subvol2-pics"
+}
+
+backup_tier3_multimedia() {
+    local start_time=$(date +%s)
+    log INFO "=== Processing Tier 3: subvol4-multimedia ==="
+
+    if [[ "$TIER3_MULTIMEDIA_ENABLED" != "true" ]]; then
+        log INFO "subvol4-multimedia backup disabled, skipping"
+        record_backup_metrics "subvol4-multimedia" "$start_time" 1 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
+        return 0
+    fi
+
+    # Weekly local snapshots
+    if [[ $(date +%u) -ne 6 ]]; then
+        log INFO "subvol4-multimedia local backup runs on Saturdays only, skipping"
+        record_backup_metrics "subvol4-multimedia" "$start_time" 1 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
+        return 0
+    fi
+
+    local snapshot_name="${DATE_WEEKLY}-multimedia"
+    local local_snapshot="$TIER3_MULTIMEDIA_LOCAL_DIR/$snapshot_name"
+
+    # Create local snapshot
+    if [[ "$EXTERNAL_ONLY" != "true" ]]; then
+        create_snapshot "$TIER3_MULTIMEDIA_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "subvol4-multimedia" "$start_time" 0 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
+            return 1
+        }
+    fi
+
+    # Send to external (monthly) - only if TIER3_MULTIMEDIA_EXTERNAL_ENABLED=true
+    if [[ "$TIER3_MULTIMEDIA_EXTERNAL_ENABLED" == "true" ]] && [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%d) -le 7 ]]; then
+        log INFO "subvol4-multimedia external backup enabled (5.8TB - may take ~27h for initial backup)"
+        check_external_mounted || {
+            record_backup_metrics "subvol4-multimedia" "$start_time" 0 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
+            return 1
+        }
+
+        local parent=$(find_common_parent "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*")
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" || {
+            record_backup_metrics "subvol4-multimedia" "$start_time" 0 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
+            return 1
+        }
+
+        cleanup_old_snapshots "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_RETENTION_MONTHLY" "*-multimedia*"
+    elif [[ "$TIER3_MULTIMEDIA_EXTERNAL_ENABLED" != "true" ]]; then
+        log WARNING "subvol4-multimedia external backup is DISABLED (set TIER3_MULTIMEDIA_EXTERNAL_ENABLED=true to enable)"
+        log WARNING "Do initial manual backup first (see docs/20-operations/guides/tier3-initial-backup.md)"
+    fi
+
+    # Cleanup local snapshots
+    cleanup_old_snapshots "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_LOCAL_RETENTION_WEEKLY" "*-multimedia*"
+
+    record_backup_metrics "subvol4-multimedia" "$start_time" 1 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
+    log SUCCESS "Completed Tier 3: subvol4-multimedia"
+}
+
+backup_tier3_music() {
+    local start_time=$(date +%s)
+    log INFO "=== Processing Tier 3: subvol5-music ==="
+
+    if [[ "$TIER3_MUSIC_ENABLED" != "true" ]]; then
+        log INFO "subvol5-music backup disabled, skipping"
+        record_backup_metrics "subvol5-music" "$start_time" 1 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
+        return 0
+    fi
+
+    # Weekly local snapshots
+    if [[ $(date +%u) -ne 6 ]]; then
+        log INFO "subvol5-music local backup runs on Saturdays only, skipping"
+        record_backup_metrics "subvol5-music" "$start_time" 1 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
+        return 0
+    fi
+
+    local snapshot_name="${DATE_WEEKLY}-music"
+    local local_snapshot="$TIER3_MUSIC_LOCAL_DIR/$snapshot_name"
+
+    # Create local snapshot
+    if [[ "$EXTERNAL_ONLY" != "true" ]]; then
+        create_snapshot "$TIER3_MUSIC_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "subvol5-music" "$start_time" 0 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
+            return 1
+        }
+    fi
+
+    # Send to external (monthly)
+    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%d) -le 7 ]]; then
+        check_external_mounted || {
+            record_backup_metrics "subvol5-music" "$start_time" 0 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
+            return 1
+        }
+
+        local parent=$(find_common_parent "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*")
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_MUSIC_EXTERNAL_DIR" || {
+            record_backup_metrics "subvol5-music" "$start_time" 0 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
+            return 1
+        }
+
+        cleanup_old_snapshots "$TIER3_MUSIC_EXTERNAL_DIR" "$TIER3_MUSIC_EXTERNAL_RETENTION_MONTHLY" "*-music*"
+    fi
+
+    # Cleanup local snapshots
+    cleanup_old_snapshots "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_LOCAL_RETENTION_WEEKLY" "*-music*"
+
+    record_backup_metrics "subvol5-music" "$start_time" 1 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
+    log SUCCESS "Completed Tier 3: subvol5-music"
+}
+
+backup_tier3_tmp() {
+    local start_time=$(date +%s)
+    log INFO "=== Processing Tier 3: subvol6-tmp ==="
+
+    if [[ "$TIER3_TMP_ENABLED" != "true" ]]; then
+        log INFO "subvol6-tmp backup disabled, skipping"
+        record_backup_metrics "subvol6-tmp" "$start_time" 1 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
+        return 0
+    fi
+
+    # Weekly local snapshots
+    if [[ $(date +%u) -ne 6 ]]; then
+        log INFO "subvol6-tmp local backup runs on Saturdays only, skipping"
+        record_backup_metrics "subvol6-tmp" "$start_time" 1 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
+        return 0
+    fi
+
+    local snapshot_name="${DATE_WEEKLY}-tmp"
+    local local_snapshot="$TIER3_TMP_LOCAL_DIR/$snapshot_name"
+
+    # Create local snapshot
+    if [[ "$EXTERNAL_ONLY" != "true" ]]; then
+        create_snapshot "$TIER3_TMP_SOURCE" "$local_snapshot" || {
+            record_backup_metrics "subvol6-tmp" "$start_time" 0 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
+            return 1
+        }
+    fi
+
+    # Send to external (monthly)
+    if [[ "$LOCAL_ONLY" != "true" ]] && [[ $(date +%d) -le 7 ]]; then
+        check_external_mounted || {
+            record_backup_metrics "subvol6-tmp" "$start_time" 0 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
+            return 1
+        }
+
+        local parent=$(find_common_parent "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*")
+        send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_TMP_EXTERNAL_DIR" || {
+            record_backup_metrics "subvol6-tmp" "$start_time" 0 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
+            return 1
+        }
+
+        cleanup_old_snapshots "$TIER3_TMP_EXTERNAL_DIR" "$TIER3_TMP_EXTERNAL_RETENTION_MONTHLY" "*-tmp*"
+    fi
+
+    # Cleanup local snapshots
+    cleanup_old_snapshots "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_LOCAL_RETENTION_WEEKLY" "*-tmp*"
+
+    record_backup_metrics "subvol6-tmp" "$start_time" 1 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
+    log SUCCESS "Completed Tier 3: subvol6-tmp"
 }
 
 ################################################################################
@@ -815,6 +1002,15 @@ main() {
     if [[ -z "$TIER_FILTER" ]] || [[ "$TIER_FILTER" == "3" ]]; then
         if [[ -z "$SUBVOL_FILTER" ]] || [[ "$SUBVOL_FILTER" == "pics" ]]; then
             backup_tier3_pics
+        fi
+        if [[ -z "$SUBVOL_FILTER" ]] || [[ "$SUBVOL_FILTER" == "multimedia" ]]; then
+            backup_tier3_multimedia
+        fi
+        if [[ -z "$SUBVOL_FILTER" ]] || [[ "$SUBVOL_FILTER" == "music" ]]; then
+            backup_tier3_music
+        fi
+        if [[ -z "$SUBVOL_FILTER" ]] || [[ "$SUBVOL_FILTER" == "tmp" ]]; then
+            backup_tier3_tmp
         fi
     fi
 

@@ -14,6 +14,7 @@ groups:
     interval: 60s
     rules:
       # Alert when a critical service has an unhealthy dependency
+      # FIXED 2025-12-06: Use homelab_service label to avoid collision with job="node_exporter"
       - alert: CriticalServiceDependencyUnhealthy
         expr: |
           (
@@ -28,12 +29,12 @@ groups:
           component: dependencies
           category: health
         annotations:
-          summary: "Critical service {{ $labels.service }} has unhealthy dependency"
+          summary: "Critical service {{ $labels.homelab_service }} has unhealthy dependency"
           description: |
-            Critical service {{ $labels.service }} depends on {{ $labels.dependency }} which is currently unhealthy.
+            Critical service {{ $labels.homelab_service }} depends on {{ $labels.dependency }} which is currently unhealthy.
             This may cause service degradation or failures.
 
-            Affected service: {{ $labels.service }}
+            Affected service: {{ $labels.homelab_service }}
             Unhealthy dependency: {{ $labels.dependency }}
             Duration: {{ $value }}m
 
@@ -55,13 +56,13 @@ groups:
           component: dependencies
           category: availability
         annotations:
-          summary: "High blast radius service {{ $labels.service }} is down"
+          summary: "High blast radius service {{ $labels.homelab_service }} is down"
           description: |
-            Service {{ $labels.service }} is down and has a blast radius of {{ $value }} services.
+            Service {{ $labels.homelab_service }} is down and has a blast radius of {{ $value }} services.
             This affects multiple dependent services across the system.
 
             Blast radius: {{ $value }} services
-            Service: {{ $labels.service }}
+            Service: {{ $labels.homelab_service }}
 
             Potentially affected services should be checked for cascading failures.
 
@@ -109,12 +110,12 @@ groups:
           component: dependencies
           category: availability
         annotations:
-          summary: "Service {{ $labels.service }} with {{ $value }} dependents is down"
+          summary: "Service {{ $labels.homelab_service }} with {{ $value }} dependents is down"
           description: |
-            Service {{ $labels.service }} is down and has {{ $value }} dependent services.
+            Service {{ $labels.homelab_service }} is down and has {{ $value }} dependent services.
 
             Blast radius: {{ $value }} services
-            Service: {{ $labels.service }}
+            Service: {{ $labels.homelab_service }}
 
             Monitor dependent services for potential issues.
 
@@ -132,12 +133,12 @@ groups:
           component: dependencies
           category: configuration
         annotations:
-          summary: "Dependency drift detected on {{ $labels.service }}"
+          summary: "Dependency drift detected on {{ $labels.homelab_service }}"
           description: |
-            Service {{ $labels.service }} has configuration drift in its dependencies.
+            Service {{ $labels.homelab_service }} has configuration drift in its dependencies.
 
             Drift type: {{ $labels.type }}
-            Service: {{ $labels.service }}
+            Service: {{ $labels.homelab_service }}
 
             This means the running configuration differs from the declared state in quadlet files.
 
@@ -147,7 +148,7 @@ groups:
             - Stack file updates not applied
 
             Action: Review drift report and reconcile configuration:
-              ~/containers/.claude/skills/homelab-deployment/scripts/check-drift.sh {{ $labels.service }}
+              ~/containers/.claude/skills/homelab-deployment/scripts/check-drift.sh {{ $labels.homelab_service }}
           runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
 
   - name: dependency_capacity
@@ -162,9 +163,9 @@ groups:
           component: dependencies
           category: architecture
         annotations:
-          summary: "Service {{ $labels.service }} has deep dependency chain ({{ $value }})"
+          summary: "Service {{ $labels.homelab_service }} has deep dependency chain ({{ $value }})"
           description: |
-            Service {{ $labels.service }} has a dependency chain depth of {{ $value }}.
+            Service {{ $labels.homelab_service }} has a dependency chain depth of {{ $value }}.
 
             Deep dependency chains can:
             - Increase system complexity

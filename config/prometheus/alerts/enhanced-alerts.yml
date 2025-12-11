@@ -1,20 +1,22 @@
 # Enhanced Discord Alerts - Prospect #4
 # Created: 2025-11-24
-# Focus: Proactive monitoring and automated reporting
+# Updated: 2025-12-05 - Removed noisy scheduled alerts, tuned thresholds
+# Focus: Proactive monitoring
 
 groups:
   - name: container_health
     interval: 30s
     rules:
-      # Warning: Container memory pressure (using >90% of limit)
+      # Warning: Container memory pressure (using >95% of limit)
+      # Raised threshold from 90% to 95% - databases often run at 85-92% by design
       - alert: ContainerMemoryPressure
         expr: |
           (
             container_memory_working_set_bytes{name!~"POD|pause"}
             /
             container_spec_memory_limit_bytes{name!~"POD|pause"}
-          ) > 0.90 and container_spec_memory_limit_bytes > 0
-        for: 5m
+          ) > 0.95 and container_spec_memory_limit_bytes > 0
+        for: 15m
         labels:
           severity: warning
           component: container
@@ -36,19 +38,8 @@ groups:
           summary: "Container {{ $labels.name }} not running"
           description: "Container {{ $labels.name }} has not been seen for more than 5 minutes. It may have crashed or been stopped."
 
-  - name: certificate_health
-    interval: 6h
-    rules:
-      # Monthly health check: Certificate renewal working (45-60 days before expiry)
-      - alert: CertificateRenewalHealthCheck
-        expr: (traefik_tls_certs_not_after - time()) / 86400 < 60 and (traefik_tls_certs_not_after - time()) / 86400 >= 45
-        for: 24h
-        labels:
-          severity: info
-          component: security
-        annotations:
-          summary: "Certificate renewal health check - 45-60 days to expiry"
-          description: "Certificate for {{ $labels.cn }} expires in {{ $value }} days (normal - auto-renewal between 45-60 days). Alert confirms renewal system is working."
+  # Removed certificate_health group - CertificateRenewalHealthCheck was creating
+  # noise during normal operation. Actual cert expiry alerts remain in rules.yml
 
   - name: network_security
     interval: 5m
@@ -81,20 +72,8 @@ groups:
   - name: system_performance
     interval: 1m
     rules:
-      # Info: Weekly resource digest trigger (fires once per week for reporting)
-      # This alert is designed to be caught by a future enhancement that generates digests
-      - alert: WeeklyResourceDigest
-        expr: |
-          (
-            day_of_week() == 0 and hour() == 9
-          )
-        for: 5m
-        labels:
-          severity: info
-          component: reporting
-        annotations:
-          summary: "Weekly resource utilization digest"
-          description: "Automated weekly report trigger. System stats: CPU avg {{ $value | humanize }}%"
+      # Removed WeeklyResourceDigest - scheduled reports should use systemd timers,
+      # not Prometheus alerts. See: ~/containers/scripts/weekly-intelligence-report.sh
 
       # Warning: Sustained high system load
       - alert: HighSystemLoad

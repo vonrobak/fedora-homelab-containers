@@ -6,11 +6,11 @@
     "triggered": false,
     "consecutive_failures": 0
   },
-  "last_check": "2025-12-01T06:33:25+01:00",
+  "last_check": "2025-12-11T06:30:09+01:00",
   "pending_actions": [],
   "cooldowns": {},
   "statistics": {
-    "total_checks": 8,
+    "total_checks": 18,
     "total_actions": 0,
     "success_rate": 1.0
   }
