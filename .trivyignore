@@ -1,0 +1,46 @@
+# Trivy Ignore File - Filter False Positive Vulnerabilities
+# Created: 2025-12-15
+# Purpose: Reduce noise from vulnerabilities that are not exploitable in containers
+#
+# Reference: https://aquasecurity.github.io/trivy/latest/docs/configuration/filtering/
+#
+# Format:
+#   CVE-ID                    - Ignore specific CVE
+#   CVE-ID exp:2025-12-31     - Ignore until expiration date
+#   # comment                 - Comments for documentation
+
+# ==============================================================================
+# Build-time Dependencies (Not Used at Runtime)
+# ==============================================================================
+
+# Linux kernel headers (linux-libc-dev) - containers use host kernel, not these headers
+# These are compile-time dependencies only and pose no runtime risk
+# Package: linux-libc-dev
+# Justification: Build headers for kernel, container uses host kernel
+# Impact: ~300 false positives in Vaultwarden alone
+
+# Note: Trivy doesn't support package-based ignores directly in .trivyignore
+# We'll filter these in the scan script post-processing instead
+
+# ==============================================================================
+# Known False Positives with Low/No Risk
+# ==============================================================================
+
+# Example: CVE-2023-45853 (zlib) - only exploitable if processing malicious ZIP files
+# Keeping this for now as it's a real vulnerability, but low risk for most services
+# CVE-2023-45853
+
+# ==============================================================================
+# Accepted Risks / Waivers
+# ==============================================================================
+
+# Add any CVEs you've assessed and accepted the risk for here
+# Format: CVE-YYYY-XXXXX exp:YYYY-MM-DD  # Reason for acceptance
+
+# ==============================================================================
+# Placeholder
+# ==============================================================================
+
+# This file intentionally left mostly empty - we filter false positives
+# programmatically in the scan script based on package names
+# See: ~/containers/scripts/scan-vulnerabilities.sh

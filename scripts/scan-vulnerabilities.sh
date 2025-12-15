@@ -42,13 +42,23 @@ JSON_ONLY=false
 NOTIFY=false
 QUIET=false
 
-# Counters
+# Counters - Raw (all findings)
 CRITICAL_COUNT=0
 HIGH_COUNT=0
 MEDIUM_COUNT=0
 LOW_COUNT=0
 IMAGES_SCANNED=0
 IMAGES_WITH_VULNS=0
+
+# Counters - Actionable (filtered, real risks)
+ACTIONABLE_CRITICAL=0
+ACTIONABLE_HIGH=0
+ACTIONABLE_MEDIUM=0
+ACTIONABLE_LOW=0
+ACTIONABLE_IMAGES_WITH_VULNS=0
+
+# False positive packages (build-time only, not runtime risks)
+FALSE_POSITIVE_PACKAGES="linux-libc-dev"
 
 # ============================================================================
 # Helper Functions
@@ -143,6 +153,22 @@ fi
 mkdir -p "${REPORT_DIR}"
 
 # ============================================================================
+# Filtering Functions
+# ============================================================================
+
+filter_actionable_vulns() {
+    local report_file="$1"
+    local severity="$2"
+
+    # Count vulnerabilities excluding false positive packages
+    jq --arg severity "$severity" --arg false_pos "$FALSE_POSITIVE_PACKAGES" '[
+        .Results[]?.Vulnerabilities[]? |
+        select(.Severity == $severity) |
+        select(.PkgName | IN($false_pos | split(" ")[]) | not)
+    ] | length' "$report_file" 2>/dev/null || echo "0"
+}
+
+# ============================================================================
 # Scanning Functions
 # ============================================================================
 
@@ -161,22 +187,43 @@ scan_image() {
         --quiet \
         "$image" 2>/dev/null; then
 
-        # Parse results
+        # Parse results - RAW counts (all findings)
         local critical=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' "$report_file" 2>/dev/null || echo "0")
         local high=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$report_file" 2>/dev/null || echo "0")
         local medium=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="MEDIUM")] | length' "$report_file" 2>/dev/null || echo "0")
         local low=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="LOW")] | length' "$report_file" 2>/dev/null || echo "0")
 
-        # Update global counters
+        # Parse results - ACTIONABLE counts (filtered)
+        local actionable_critical=$(filter_actionable_vulns "$report_file" "CRITICAL")
+        local actionable_high=$(filter_actionable_vulns "$report_file" "HIGH")
+        local actionable_medium=$(filter_actionable_vulns "$report_file" "MEDIUM")
+        local actionable_low=$(filter_actionable_vulns "$report_file" "LOW")
+
+        # Update global counters - RAW
         CRITICAL_COUNT=$((CRITICAL_COUNT + critical))
         HIGH_COUNT=$((HIGH_COUNT + high))
         MEDIUM_COUNT=$((MEDIUM_COUNT + medium))
         LOW_COUNT=$((LOW_COUNT + low))
         IMAGES_SCANNED=$((IMAGES_SCANNED + 1))
 
+        # Update global counters - ACTIONABLE
+        ACTIONABLE_CRITICAL=$((ACTIONABLE_CRITICAL + actionable_critical))
+        ACTIONABLE_HIGH=$((ACTIONABLE_HIGH + actionable_high))
+        ACTIONABLE_MEDIUM=$((ACTIONABLE_MEDIUM + actionable_medium))
+        ACTIONABLE_LOW=$((ACTIONABLE_LOW + actionable_low))
+
         if [ "$critical" -gt 0 ] || [ "$high" -gt 0 ]; then
             IMAGES_WITH_VULNS=$((IMAGES_WITH_VULNS + 1))
             log "  ${RED}CRITICAL: $critical${NC} | ${YELLOW}HIGH: $high${NC} | MEDIUM: $medium | LOW: $low"
+
+            # Show actionable count if different
+            if [ "$actionable_critical" -ne "$critical" ] || [ "$actionable_high" -ne "$high" ]; then
+                log "  ${CYAN}Actionable:${NC} ${RED}CRIT: $actionable_critical${NC} | ${YELLOW}HIGH: $actionable_high${NC} (filtered false positives)"
+            fi
+        fi
+
+        if [ "$actionable_critical" -gt 0 ] || [ "$actionable_high" -gt 0 ]; then
+            ACTIONABLE_IMAGES_WITH_VULNS=$((ACTIONABLE_IMAGES_WITH_VULNS + 1))
 
             # Show top CVEs for critical/high
             if [ "$QUIET" = false ] && [ "$JSON_ONLY" = false ]; then
@@ -214,7 +261,32 @@ send_discord_notification() {
         return
     fi
 
-    if [ "$CRITICAL_COUNT" -eq 0 ] && [ "$HIGH_COUNT" -eq 0 ]; then
+    # Get trend data
+    local prev_date=$(date -d '7 days ago' '+%Y-%m-%d' 2>/dev/null || date -v-7d '+%Y-%m-%d' 2>/dev/null)
+    local prev_summary="${REPORT_DIR}/vulnerability-summary-${prev_date}.json"
+    local prev_actionable_critical=0
+    local prev_actionable_high=0
+
+    if [ -f "$prev_summary" ]; then
+        prev_actionable_critical=$(jq -r '.actionable_vulnerabilities.critical // 0' "$prev_summary" 2>/dev/null)
+        prev_actionable_high=$(jq -r '.actionable_vulnerabilities.high // 0' "$prev_summary" 2>/dev/null)
+    fi
+
+    local crit_change=$((ACTIONABLE_CRITICAL - prev_actionable_critical))
+    local high_change=$((ACTIONABLE_HIGH - prev_actionable_high))
+
+    # Only notify if:
+    # 1. Actionable vulnerabilities exist AND have increased, OR
+    # 2. Actionable critical vulnerabilities > 10
+    local should_notify=false
+    if [ "$ACTIONABLE_CRITICAL" -gt 10 ]; then
+        should_notify=true
+    elif [ "$crit_change" -gt 0 ] || [ "$high_change" -gt 5 ]; then
+        should_notify=true
+    fi
+
+    if [ "$should_notify" = false ]; then
+        log "${GREEN}No actionable increase in vulnerabilities, skipping Discord notification${NC}"
         return
     fi
 
@@ -226,12 +298,31 @@ send_discord_notification() {
         return
     fi
 
-    # Determine color based on severity
-    local color="16753920"  # Orange for high
+    # Determine color and emoji based on severity and trend
+    local color="16753920"  # Orange
     local emoji="⚠️"
-    if [ "$CRITICAL_COUNT" -gt 0 ]; then
-        color="15158332"  # Red for critical
+    local status_text="Actionable vulnerabilities found"
+
+    if [ "$ACTIONABLE_CRITICAL" -gt 10 ]; then
+        color="15158332"  # Red
         emoji="🚨"
+        status_text="High number of critical vulnerabilities"
+    elif [ "$crit_change" -gt 0 ]; then
+        color="15158332"  # Red
+        emoji="📈"
+        status_text="Critical vulnerabilities increased"
+    elif [ "$high_change" -gt 5 ]; then
+        color="16753920"  # Orange
+        emoji="📈"
+        status_text="High-severity vulnerabilities increased"
+    fi
+
+    # Build trend text
+    local trend_text=""
+    if [ "$crit_change" -ne 0 ] || [ "$high_change" -ne 0 ]; then
+        trend_text="**Trend (vs. ${prev_date}):**\n"
+        [ "$crit_change" -gt 0 ] && trend_text+="Critical: +${crit_change} ⬆️\n" || trend_text+="Critical: ${crit_change}\n"
+        [ "$high_change" -gt 0 ] && trend_text+="High: +${high_change} ⬆️" || trend_text+="High: ${high_change}"
     fi
 
     # Build payload
@@ -239,27 +330,32 @@ send_discord_notification() {
 {
   "embeds": [{
     "title": "${emoji} Vulnerability Scan Alert",
-    "description": "Trivy scan completed with findings requiring attention.",
+    "description": "${status_text}",
     "color": ${color},
     "fields": [
       {
-        "name": "Images Scanned",
-        "value": "${IMAGES_SCANNED}",
+        "name": "Actionable Vulnerabilities",
+        "value": "Critical: **${ACTIONABLE_CRITICAL}**\nHigh: **${ACTIONABLE_HIGH}**\nMedium: ${ACTIONABLE_MEDIUM}",
         "inline": true
       },
       {
-        "name": "Images with Issues",
-        "value": "${IMAGES_WITH_VULNS}",
+        "name": "Total Findings (Raw)",
+        "value": "Critical: ${CRITICAL_COUNT}\nHigh: ${HIGH_COUNT}\nFiltered: $((CRITICAL_COUNT + HIGH_COUNT - ACTIONABLE_CRITICAL - ACTIONABLE_HIGH))",
         "inline": true
       },
       {
-        "name": "Vulnerabilities",
-        "value": "Critical: ${CRITICAL_COUNT}\nHigh: ${HIGH_COUNT}\nMedium: ${MEDIUM_COUNT}",
+        "name": "Images",
+        "value": "Scanned: ${IMAGES_SCANNED}\nWith Issues: ${ACTIONABLE_IMAGES_WITH_VULNS}",
         "inline": true
-      }
+      }${trend_text:+,
+      {
+        "name": "Trend",
+        "value": "${trend_text}",
+        "inline": false
+      }}
     ],
     "footer": {
-      "text": "Homelab Security • Reports: ~/containers/data/security-reports/"
+      "text": "Homelab Security • Reports: ~/containers/data/security-reports/ • Filtered: ${FALSE_POSITIVE_PACKAGES}"
     },
     "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
   }]
@@ -271,7 +367,7 @@ EOF
         -d "$PAYLOAD" \
         "$DISCORD_WEBHOOK"
 
-    log "${GREEN}Discord notification sent${NC}"
+    log "${GREEN}Discord notification sent (actionable vulnerabilities: CRIT=${ACTIONABLE_CRITICAL}, HIGH=${ACTIONABLE_HIGH})${NC}"
 }
 
 # ============================================================================
@@ -280,6 +376,17 @@ EOF
 
 generate_summary() {
     local summary_file="${REPORT_DIR}/vulnerability-summary-${DATE_ONLY}.json"
+
+    # Get previous week's data for trend analysis
+    local prev_date=$(date -d '7 days ago' '+%Y-%m-%d' 2>/dev/null || date -v-7d '+%Y-%m-%d' 2>/dev/null)
+    local prev_summary="${REPORT_DIR}/vulnerability-summary-${prev_date}.json"
+
+    local prev_actionable_critical=0
+    local prev_actionable_high=0
+    if [ -f "$prev_summary" ]; then
+        prev_actionable_critical=$(jq -r '.actionable_vulnerabilities.critical // 0' "$prev_summary" 2>/dev/null)
+        prev_actionable_high=$(jq -r '.actionable_vulnerabilities.high // 0' "$prev_summary" 2>/dev/null)
+    fi
 
     cat > "$summary_file" <<EOF
 {
@@ -293,7 +400,21 @@ generate_summary() {
     "medium": ${MEDIUM_COUNT},
     "low": ${LOW_COUNT}
   },
+  "actionable_vulnerabilities": {
+    "critical": ${ACTIONABLE_CRITICAL},
+    "high": ${ACTIONABLE_HIGH},
+    "medium": ${ACTIONABLE_MEDIUM},
+    "low": ${ACTIONABLE_LOW},
+    "images_affected": ${ACTIONABLE_IMAGES_WITH_VULNS},
+    "false_positives_filtered": $((CRITICAL_COUNT + HIGH_COUNT - ACTIONABLE_CRITICAL - ACTIONABLE_HIGH))
+  },
+  "trend": {
+    "previous_scan_date": "${prev_date}",
+    "actionable_critical_change": $((ACTIONABLE_CRITICAL - prev_actionable_critical)),
+    "actionable_high_change": $((ACTIONABLE_HIGH - prev_actionable_high))
+  },
   "severity_filter": "${SEVERITY}",
+  "false_positive_packages": "${FALSE_POSITIVE_PACKAGES}",
   "reports_directory": "${REPORT_DIR}"
 }
 EOF
@@ -341,16 +462,30 @@ main() {
     # Generate summary
     generate_summary
 
+    # Get previous week's data for trend display
+    local prev_date=$(date -d '7 days ago' '+%Y-%m-%d' 2>/dev/null || date -v-7d '+%Y-%m-%d' 2>/dev/null)
+    local prev_summary="${REPORT_DIR}/vulnerability-summary-${prev_date}.json"
+    local prev_actionable_critical=0
+    local prev_actionable_high=0
+
+    if [ -f "$prev_summary" ]; then
+        prev_actionable_critical=$(jq -r '.actionable_vulnerabilities.critical // 0' "$prev_summary" 2>/dev/null)
+        prev_actionable_high=$(jq -r '.actionable_vulnerabilities.high // 0' "$prev_summary" 2>/dev/null)
+    fi
+
+    local crit_change=$((ACTIONABLE_CRITICAL - prev_actionable_critical))
+    local high_change=$((ACTIONABLE_HIGH - prev_actionable_high))
+
     # Print summary
     log_quiet ""
     log_quiet "${CYAN}═══════════════════════════════════════════════${NC}"
     log_quiet "${CYAN}                 SUMMARY${NC}"
     log_quiet "${CYAN}═══════════════════════════════════════════════${NC}"
     log_quiet ""
-    log_quiet "Images scanned:    ${IMAGES_SCANNED}"
-    log_quiet "Images with issues: ${IMAGES_WITH_VULNS}"
+    log_quiet "Images scanned:     ${IMAGES_SCANNED}"
+    log_quiet "Images with issues: ${IMAGES_WITH_VULNS} (raw) / ${ACTIONABLE_IMAGES_WITH_VULNS} (actionable)"
     log_quiet ""
-    log_quiet "Vulnerabilities found:"
+    log_quiet "RAW Vulnerabilities (all findings):"
     if [ "$CRITICAL_COUNT" -gt 0 ]; then
         log_quiet "  ${RED}CRITICAL: ${CRITICAL_COUNT}${NC}"
     else
@@ -364,18 +499,38 @@ main() {
     log_quiet "  MEDIUM: ${MEDIUM_COUNT}"
     log_quiet "  LOW: ${LOW_COUNT}"
     log_quiet ""
+    log_quiet "${CYAN}ACTIONABLE Vulnerabilities (filtered):${NC}"
+    if [ "$ACTIONABLE_CRITICAL" -gt 0 ]; then
+        local crit_trend=""
+        [ "$crit_change" -gt 0 ] && crit_trend=" (${RED}+${crit_change}⬆${NC})" || [ "$crit_change" -lt 0 ] && crit_trend=" (${GREEN}${crit_change}⬇${NC})"
+        log_quiet "  ${RED}CRITICAL: ${ACTIONABLE_CRITICAL}${NC}${crit_trend}"
+    else
+        log_quiet "  ${GREEN}CRITICAL: 0${NC}"
+    fi
+    if [ "$ACTIONABLE_HIGH" -gt 0 ]; then
+        local high_trend=""
+        [ "$high_change" -gt 0 ] && high_trend=" (${RED}+${high_change}⬆${NC})" || [ "$high_change" -lt 0 ] && high_trend=" (${GREEN}${high_change}⬇${NC})"
+        log_quiet "  ${YELLOW}HIGH: ${ACTIONABLE_HIGH}${NC}${high_trend}"
+    else
+        log_quiet "  ${GREEN}HIGH: 0${NC}"
+    fi
+    log_quiet "  MEDIUM: ${ACTIONABLE_MEDIUM}"
+    log_quiet "  LOW: ${ACTIONABLE_LOW}"
+    log_quiet ""
+    log_quiet "False positives filtered: $((CRITICAL_COUNT + HIGH_COUNT - ACTIONABLE_CRITICAL - ACTIONABLE_HIGH)) (${FALSE_POSITIVE_PACKAGES})"
+    log_quiet ""
     log_quiet "Reports: ${REPORT_DIR}/"
     log_quiet ""
 
     # Send Discord notification if enabled
     send_discord_notification
 
-    # Exit code based on findings
-    if [ "$CRITICAL_COUNT" -gt 0 ] || [ "$HIGH_COUNT" -gt 0 ]; then
-        log_quiet "${RED}Vulnerabilities requiring attention found!${NC}"
+    # Exit code based on ACTIONABLE findings (not raw count)
+    if [ "$ACTIONABLE_CRITICAL" -gt 0 ] || [ "$ACTIONABLE_HIGH" -gt 10 ]; then
+        log_quiet "${RED}Actionable vulnerabilities requiring attention found!${NC}"
         exit 1
     else
-        log_quiet "${GREEN}No critical or high vulnerabilities found.${NC}"
+        log_quiet "${GREEN}No actionable critical vulnerabilities (or <10 high-severity).${NC}"
         exit 0
     fi
 }
