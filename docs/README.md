@@ -1,21 +1,9 @@
 # Homelab Documentation
 
-**Last Updated:** 2025-11-10
+**Last Updated:** 2025-12-18
 **System:** fedora-htpc production environment
-**Documentation Files:** 90+ markdown files
-**Status:** 🎯 **100% Health Check & Resource Limit Coverage** | 🚀 **GPU Acceleration Ready** | 🔐 **SSO Architecture Planned**
-
----
-
-## 🎉 Recent Achievements (Force Multiplier Week)
-
-**Days 1-5 Complete:**
-- ✅ **AI Intelligence System** - Proactive trend analysis (detected -1,152MB memory improvement)
-- ✅ **100% Coverage** - All 16 services have health checks and resource limits
-- ✅ **GPU Acceleration** - AMD ROCm implementation ready for 5-10x ML performance
-- ✅ **Authelia SSO** - Architecture decision documented (ADR-004)
-
-See: [Force Multiplier Week Summary](40-monitoring-and-documentation/journal/2025-11-10-force-multiplier-week-days-1-5-summary.md)
+**Documentation Files:** 200+ files across structured directories
+**Status:** 🎯 Production | 🔐 SSO with YubiKey | 📊 Full Observability | 🤖 Autonomous Operations
 
 ---
 
@@ -24,56 +12,70 @@ See: [Force Multiplier Week Summary](40-monitoring-and-documentation/journal/202
 **New to this homelab?** Start here:
 1. Read this index (you are here)
 2. Review [CONTRIBUTING.md](CONTRIBUTING.md) for documentation conventions
-3. Check [99-reports/](99-reports/) for latest system state
-4. Browse [guides/](*/guides/) subdirectories for current operational documentation
+3. Browse [98-journals/](98-journals/) for chronological project history
+4. Check [97-plans/](97-plans/) for active planning documents
+5. Explore service guides in `*/guides/` subdirectories
 
-**Force Multiplier Week progress?** See:
-- Intelligence system: `scripts/intelligence/simple-trend-report.sh`
-- GPU deployment: `scripts/deploy-immich-gpu-acceleration.sh`
-- Authelia plan: [ADR-004](30-security/decisions/2025-11-10-decision-004-authelia-sso-mfa-architecture.md)
-
-**Making changes?** See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Documentation structure and conventions
-- Naming standards
-- When to update vs. create new
-- Templates for each document type
+**Common tasks:**
+- **Health check:** `./scripts/homelab-intel.sh`
+- **Natural language query:** `./scripts/query-homelab.sh "your question"`
+- **System diagnostics:** `./scripts/homelab-diagnose.sh`
 
 ---
 
 ## 📖 Documentation Structure
 
-### Hybrid Approach
+### Three-Tier Organization
 
-This documentation uses a **hybrid structure** that provides:
-- **Reference documentation** (`guides/`) - Current "how-to" information (living documents)
-- **Learning journal** (`journal/`) - Chronological project evolution (immutable logs)
-- **Architecture decisions** (`decisions/`) - ADRs documenting why choices were made
+This documentation uses a **clear separation of concerns**:
+
+1. **Forward-looking** (`97-plans/`) - Strategic plans and roadmaps
+2. **Historical** (`98-journals/`) - Chronological project timeline
+3. **Current state** (`*/guides/`) - Living reference documentation
 
 ### Directory Overview
 
 ```
 docs/
-├── 00-foundation/           # Core concepts and design patterns
-│   ├── guides/             # Podman, networking, middleware (living)
-│   ├── journal/            # Early learning experiments (dated)
-│   └── decisions/          # Fundamental architectural choices
-├── 10-services/            # Service-specific documentation
-│   ├── guides/             # Service operation guides (living)
-│   ├── journal/            # Deployment logs (dated)
-│   └── decisions/          # Service architecture choices
-├── 20-operations/          # Operational procedures
-│   ├── guides/             # Backup, recovery, maintenance (living)
-│   ├── journal/            # Operational changes log (dated)
-│   └── decisions/          # Operational policy decisions
-├── 30-security/            # Security configuration
-│   ├── guides/             # Security procedures (living)
-│   ├── incidents/          # Post-mortems (dated)
-│   └── decisions/          # Security architecture
-├── 40-monitoring-and-documentation/
-│   ├── guides/             # Monitoring stack guides (living)
-│   └── journal/            # Project state evolution (dated)
-├── 90-archive/             # Superseded documentation
-└── 99-reports/             # System state snapshots (dated)
+├── 97-plans/                           # Strategic planning documents
+│   ├── PROJECT-A-DISASTER-RECOVERY-PLAN.md
+│   ├── SESSION-5-MULTI-SERVICE-ORCHESTRATION-PLAN.md
+│   └── [Status: Proposed | In Progress | Implemented]
+│
+├── 98-journals/                        # Complete chronological history (FLAT)
+│   ├── 2025-10-20-day01-foundation-learnings.md
+│   ├── 2025-11-09-strategic-assessment.md
+│   ├── 2025-12-18-quarterly-documentation-review.md
+│   └── [92 entries - sessions, deployments, strategic thinking]
+│
+├── 99-reports/                         # System state snapshots
+│   ├── intel-*.json                    (94 automated health reports)
+│   ├── resource-forecast-*.json        (predictive analytics)
+│   └── SYSTEM-STATE-2025-11-06.md      (formal infrastructure snapshot)
+│
+├── 00-foundation/                      # Core concepts
+│   ├── guides/                         # Podman, networking, design patterns
+│   └── decisions/                      # Fundamental ADRs
+│
+├── 10-services/                        # Service documentation
+│   ├── guides/                         # Immich, Jellyfin, Traefik, etc.
+│   └── decisions/                      # Service architecture ADRs
+│
+├── 20-operations/                      # Operations procedures
+│   ├── guides/                         # Backup, monitoring, maintenance
+│   ├── decisions/                      # Operational policy ADRs
+│   └── runbooks/                       # DR and incident response
+│
+├── 30-security/                        # Security hardening
+│   ├── guides/                         # SSH, YubiKey, secrets management
+│   ├── decisions/                      # Security architecture ADRs
+│   └── runbooks/                       # Security incidents
+│
+├── 40-monitoring-and-documentation/    # Observability
+│   ├── guides/                         # Prometheus, Grafana, Loki, SLOs
+│   └── decisions/                      # Monitoring decisions
+│
+└── 90-archive/                         # Superseded documentation
 ```
 
 ---
@@ -82,152 +84,126 @@ docs/
 
 ### Current System Information
 
-**System State:** Latest in [99-reports/](99-reports/) (sorted by date, newest first)
+**System health:**
+```bash
+./scripts/homelab-intel.sh              # Health score (0-100) + recommendations
+./scripts/query-homelab.sh "status?"    # Natural language queries
+```
 
-**Running Services:** See monitoring guide
-- Location: `40-monitoring-and-documentation/guides/monitoring-stack.md`
-- Quick check: `podman ps`
-
-**Service Guides:**
-- **Immich:** `10-services/guides/immich.md` ✨ NEW - Complete guide with GPU acceleration
+**Service guides:** All in `*/guides/` subdirectories
+- **Immich:** `10-services/guides/immich.md`
 - **Jellyfin:** `10-services/guides/jellyfin.md`
 - **Traefik:** `10-services/guides/traefik.md`
-- **TinyAuth:** `10-services/guides/tinyauth.md`
-- **CrowdSec:** `10-services/guides/crowdsec.md`
+- **Authelia:** `10-services/guides/authelia.md` (SSO + YubiKey MFA)
 - **Monitoring:** `40-monitoring-and-documentation/guides/monitoring-stack.md`
 - **Backup:** `20-operations/guides/backup-strategy.md`
 
-### Understanding How We Got Here
+### Understanding Project History
 
-**Learning Journey:** Browse `journal/` subdirectories chronologically
+**Chronological timeline:** Browse `98-journals/` sorted by date
+```bash
+# What happened in November?
+ls -1 98-journals/2025-11-*.md
 
-**Key Milestones:**
-1. **Foundation** (`00-foundation/journal/`) - Podman, networking, pods
-2. **Services** (`10-services/journal/`) - Traefik, Jellyfin, monitoring deployments
-3. **Security** (`30-security/journal/`) - SSH hardening, YubiKey setup
-4. **Backup** (`20-operations/journal/`) - BTRFS snapshot automation
+# Recent work (last 10 entries)
+ls -1t 98-journals/*.md | head -10
+
+# Find strategic assessments
+grep -l "strategic" 98-journals/*.md
+```
+
+**Key milestones:**
+- 2025-10-20: Foundation learnings (Podman, networking)
+- 2025-10-23: First service deployment (Jellyfin)
+- 2025-11-06: Monitoring stack operational
+- 2025-11-11: Authelia SSO with YubiKey deployed
+- 2025-11-28: Autonomous operations activated
+- 2025-12-18: Documentation structure reorganized
+
+### Planning Documents
+
+**Active plans:** See `97-plans/`
+- Disaster recovery testing framework
+- Security hardening roadmap
+- Autonomous operations expansion
+- Multi-service orchestration
+
+Plans include status metadata (Proposed | In Progress | Implemented).
 
 ### Architecture Decisions
 
-**Why certain choices were made:** See `decisions/` subdirectories
+**Why certain choices were made:** See `*/decisions/` subdirectories
 
 **Key ADRs:**
-- **ADR-001:** `00-foundation/decisions/2025-10-20-decision-001-rootless-containers.md` - Rootless containers
-- **ADR-002:** `00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md` - Systemd quadlets
-- **ADR-003:** `40-monitoring-and-documentation/decisions/2025-11-06-decision-001-monitoring-stack-architecture.md` - Monitoring stack
-- **ADR-004:** `30-security/decisions/2025-11-10-decision-004-authelia-sso-mfa-architecture.md` ✨ NEW - Authelia SSO & MFA
+- **ADR-001:** Rootless containers (00-foundation)
+- **ADR-002:** Systemd quadlets over Docker Compose (00-foundation)
+- **ADR-003:** Monitoring stack architecture (40-monitoring)
+- **ADR-004:** Authelia SSO with YubiKey-first authentication (30-security)
+- **ADR-006:** Service dependency mapping (20-operations)
+- **ADR-008:** Autonomous operations alert quality (20-operations)
 
 ---
 
-## 📂 Category Guides
+## 📂 Directory Details
 
-### 00-foundation: Core Concepts
+### 97-plans: Strategic Planning
 
-**What's here:** Fundamental homelab concepts and design patterns
+**Purpose:** Forward-looking plans, proposals, and roadmaps
 
-**Key guides:**
-- Podman fundamentals (rootless, networking, volumes)
-- Middleware ordering and security layers
-- Configuration design principles
-- Network architecture
+**Contents:**
+- Project proposals (PROJECT-A, PROJECT-B, etc.)
+- Session planning documents
+- Implementation roadmaps
+- Strategic initiatives
 
-**When to read:** Before deploying new services or making architectural changes
+**Lifecycle:**
+- Plans stay in 97-plans throughout their lifecycle
+- Status updated via metadata in file header
+- Implementation documented in 98-journals
+- Manually archived by user when no longer relevant
 
----
+**Naming:** Will be migrating to `YYYY-MM-DD-description.md` format
 
-### 10-services: Service Documentation
+### 98-journals: Chronological History
 
-**What's here:** Deployment and operation of individual services
+**Purpose:** Complete project timeline in one place
 
-**Services documented:**
-- **Immich** (photo management with GPU acceleration) ✨ NEW
-- Traefik (reverse proxy)
-- Jellyfin (media server)
-- TinyAuth (authentication - to be replaced by Authelia)
-- CrowdSec (IP reputation and bot protection)
-- Monitoring stack (Prometheus, Grafana, Loki)
-- Alertmanager (alerting + Discord relay)
+**Contents:**
+- Daily/weekly work logs
+- Deployment summaries
+- Strategic assessments
+- Implementation notes
+- Session summaries
+- Troubleshooting logs
+- Incident reports
 
-**When to read:** When deploying, troubleshooting, or modifying a service
+**Characteristics:**
+- **Flat structure** - All 92 files in one directory
+- **Chronologically sorted** - YYYY-MM-DD prefix enables natural sorting
+- **Immutable** - Never edited after creation (append-only log)
+- **Complete timeline** - Shows both tactical work AND strategic thinking
 
----
-
-### 20-operations: Day-to-Day Operations
-
-**What's here:** Operational procedures and maintenance
-
-**Key guides:**
-- Backup and restore strategy
-- BTRFS snapshot automation
-- System diagnostics and health checks
-- Maintenance schedules
-
-**When to read:** During regular maintenance or incident response
-
----
-
-### 30-security: Security Hardening
-
-**What's here:** Security configuration, incidents, hardening procedures
-
-**Key guides:**
-- SSH infrastructure and YubiKey setup
-- Secrets management policy
-- Traefik middleware configuration
-- Security audit procedures
-
-**Incidents:** Post-mortems in `incidents/` subdirectory
-
-**When to read:** Before exposing services to internet, during security reviews
-
----
-
-### 40-monitoring-and-documentation: Observability
-
-**What's here:** Monitoring stack and project documentation
-
-**Key guides:**
-- Monitoring stack operation (Prometheus, Grafana, Loki)
-- Alert configuration and management
-- Documentation contribution guide
-
-**Project state:** Evolution tracked in `journal/` subdirectory
-
-**When to read:** Setting up monitoring, creating alerts, or documenting work
-
----
-
-### 90-archive: Historical Documentation
-
-**What's here:** Superseded documentation preserved for historical context
-
-**Structure:** Files retain original names with archival metadata header
-
-**When to read:** Researching why old approaches were abandoned
-
-**Note:** See `90-archive/ARCHIVE-INDEX.md` for comprehensive archival catalog
-
----
+**Why flat?**
+- Easier to browse chronologically: `ls 98-journals/2025-11-*.md`
+- Single source of truth for "what happened when"
+- Simplifies navigation vs. multi-directory search
 
 ### 99-reports: System State Snapshots
 
-**What's here:** Point-in-time system state documentation
+**Purpose:** Machine-generated reports and formal state documentation
 
-**Naming:** `YYYY-MM-DD-<type>-<description>.md`
+**Contents:**
+- **Automated JSON reports:**
+  - `intel-YYYYMMDD-HHMMSS.json` - Daily system health (used by automation)
+  - `resource-forecast-YYYYMMDD-HHMMSS.json` - Predictive analytics
+  - `weekly-latest.json` - Weekly rollup
+- **Formal snapshots:**
+  - `SYSTEM-STATE-YYYY-MM-DD.md` - Infrastructure state documentation
 
-**Types:**
-- `system-state` - Complete infrastructure snapshot
-- `deployment-summary` - Service deployment reports
-- `storage-architecture` - Storage configuration snapshots
-
-**When to read:** Understanding system evolution or preparing for changes
-
-**Latest reports:**
-- `2025-11-10-day4-5-gpu-acceleration.md` ✨ - AMD ROCm GPU acceleration guide
-- `2025-11-09-day3-100-percent-deployment.md` ✨ - 100% coverage achievement
-- `2025-11-09-strategic-direction-next-week.md` - Force Multiplier Week planning
-- `2025-11-07-backup-implementation-summary.md` - Backup automation
-- `2025-11-06-system-state.md` - System state snapshot
+**Automation dependencies:**
+- `weekly-intelligence-report.sh` reads last 7 `intel-*.json` files
+- `autonomous-check.sh` reads latest `intel-*.json`
+- **DO NOT rename JSON files** - glob patterns are hardcoded
 
 ---
 
@@ -236,24 +212,17 @@ docs/
 ### Deploying a New Service
 
 1. Check architectural fit (networking, security, resources)
-2. Create deployment journal entry: `10-services/journal/YYYY-MM-DD-<service>-deployment.md`
-3. Deploy and test
+2. Create journal entry: `98-journals/YYYY-MM-DD-<service>-deployment.md`
+3. Deploy and test (use deployment patterns from `.claude/skills/homelab-deployment/`)
 4. Create/update service guide: `10-services/guides/<service>.md`
-5. Update system state report: `99-reports/YYYY-MM-DD-system-state.md`
-6. If architectural decision made, create ADR: `10-services/decisions/YYYY-MM-DD-decision-NNN-<title>.md`
+5. If architectural decision made, create ADR: `*/decisions/YYYY-MM-DD-decision-NNN-<title>.md`
 
-### Updating Operational Procedure
+### Planning a New Project
 
-1. Update the guide: `20-operations/guides/<procedure>.md`
-2. Create journal entry explaining why: `20-operations/journal/YYYY-MM-DD-<change>.md`
-3. If old procedure fundamentally different, archive it with metadata
-
-### Responding to Security Incident
-
-1. Resolve the incident first (document later)
-2. Create incident post-mortem: `30-security/incidents/YYYY-MM-DD-incident-<description>.md`
-3. Update affected guides: `30-security/guides/<relevant-guide>.md`
-4. If policy change needed, create ADR: `30-security/decisions/YYYY-MM-DD-decision-NNN-<title>.md`
+1. Create plan: `97-plans/<descriptive-name>.md` (will migrate to dated format)
+2. Add status metadata in file header
+3. As work progresses, document in `98-journals/YYYY-MM-DD-<work-log>.md`
+4. Update plan status when completed
 
 ### Regular Maintenance
 
@@ -264,13 +233,13 @@ docs/
 
 **Monthly:**
 - Update service guides if configurations changed
-- Review and update system state report
+- Review planning documents for progress
 - Check for documentation needing archival
 
 **Quarterly:**
 - Full documentation audit (review all guides for accuracy)
 - Update documentation index (this file)
-- Clean up archive (ensure metadata is complete)
+- Review and clean up journals for potential archival
 
 ---
 
@@ -285,8 +254,8 @@ grep -r "traefik" docs/ --include="*.md"
 # Find all guides
 find docs/*/guides -name "*.md"
 
-# Find journal entries from specific month
-find docs/ -name "2025-11-*.md"
+# Find journals from specific month
+ls -1 docs/98-journals/2025-11-*.md
 
 # Find all ADRs
 find docs/*/decisions -name "*.md"
@@ -298,11 +267,11 @@ find docs/*/decisions -name "*.md"
 # Most recently updated files
 find docs/ -name "*.md" -type f -mtime -7
 
-# Latest system state report
-ls -t docs/99-reports/*system-state*.md | head -1
+# Latest system health report
+./scripts/homelab-intel.sh
 
 # Most recent journal entries
-find docs/*/journal -name "*.md" -type f | sort -r | head -10
+ls -1t docs/98-journals/*.md | head -10
 ```
 
 ---
@@ -314,15 +283,13 @@ find docs/*/journal -name "*.md" -type f | sort -r | head -10
 - **CONTRIBUTING.md** - Documentation contribution guide
 - **README.md** - This file
 
-### Scripts
-- `scripts/homelab-diagnose.sh` - Comprehensive system diagnostics
-- `scripts/btrfs-snapshot-backup.sh` - Automated backup system
-- `scripts/security-audit.sh` - Security compliance check
+### Key Scripts
+- `scripts/homelab-intel.sh` - System health scoring + recommendations
+- `scripts/homelab-diagnose.sh` - Comprehensive diagnostics
+- `scripts/query-homelab.sh` - Natural language queries (cached)
+- `scripts/autonomous-check.sh` - OODA loop assessment
 
-### Configuration
-- `config/traefik/` - Reverse proxy configuration
-- `config/prometheus/` - Metrics and alerting rules
-- `config/grafana/` - Dashboard provisioning
+See `docs/20-operations/guides/automation-reference.md` for complete script catalog.
 
 ---
 
@@ -330,108 +297,77 @@ find docs/*/journal -name "*.md" -type f | sort -r | head -10
 
 ### New to Homelabs
 
-1. **Foundation concepts** (`00-foundation/journal/`)
-   - Start with early "day" numbered files
-   - Read in chronological order to follow learning journey
+Read journals chronologically to follow the learning journey:
 
-2. **First service deployment** (`10-services/journal/`)
-   - See how Jellyfin was deployed
-   - Understand Traefik reverse proxy integration
+1. **Foundation** (Oct 20-22, 2025)
+   - 2025-10-20: Day 1 foundation learnings
+   - 2025-10-21: Day 2 networking exploration
+   - 2025-10-22: Day 3 pods exploration
 
-3. **Security hardening** (`30-security/journal/`)
-   - SSH infrastructure evolution
-   - YubiKey hardware authentication setup
+2. **First Services** (Oct 23-25)
+   - 2025-10-23: Jellyfin deployment
+   - 2025-10-25: Traefik quadlet migration
 
-4. **Operational maturity** (`20-operations/journal/`)
-   - Backup automation development
-   - Monitoring stack deployment
+3. **Security** (Oct 26-30)
+   - 2025-10-26: YubiKey inventory
+   - 2025-10-30: YubiKey success summary
 
-### Experienced with Containers
-
-Skip the learning journey and go straight to guides:
-- `00-foundation/guides/` - Architecture patterns
-- `10-services/guides/` - Service operation
-- `20-operations/guides/` - Operational procedures
-- `30-security/guides/` - Security configuration
-
-### Contributing to Project
-
-1. Read `CONTRIBUTING.md` first
-2. Follow naming conventions
-3. Place documentation in appropriate category and subdirectory
-4. Create dated journal entries for changes, update living guides for corrections
-5. Write ADRs for architectural decisions
+4. **Operational Maturity** (Nov 2025)
+   - 2025-11-06: Monitoring stack deployment
+   - 2025-11-07: Backup automation
+   - 2025-11-11: Authelia SSO deployment
+   - 2025-11-28: Autonomous operations activated
 
 ---
 
 ## ❓ FAQ
 
 **Q: Where do I find the latest system state?**
-A: `docs/99-reports/` sorted by date (newest first)
-
-**Q: How do I know if a service guide is current?**
-A: All guides in `*/guides/` subdirectories are living documents kept current. Check "Last Updated" date at top.
+A: Run `./scripts/homelab-intel.sh` for current health, or check latest `99-reports/intel-*.json`
 
 **Q: Should I update an existing doc or create a new one?**
 A: Update guides (living docs), create new journal entries (dated logs). See CONTRIBUTING.md for details.
 
 **Q: Where do I document a new service deployment?**
-A: Create journal entry in `10-services/journal/YYYY-MM-DD-<service>-deployment.md`, then create guide in `10-services/guides/<service>.md`
+A: Create journal entry in `98-journals/YYYY-MM-DD-<service>-deployment.md`, then create/update guide in `10-services/guides/<service>.md`
 
-**Q: What if I find outdated documentation?**
-A: If it's a guide, update it. If it's a journal/report, leave it (it's historical). If it's completely obsolete, move to archive with metadata.
-
-**Q: Where do I find architecture decision rationale?**
-A: Check `*/decisions/` subdirectories for ADRs explaining why choices were made.
+**Q: What's the difference between plans and journals?**
+A: Plans are forward-looking (what we'll do). Journals are historical (what we did). Plans stay in 97-plans; implementation gets documented in 98-journals.
 
 ---
 
 ## 🎯 Documentation Maturity
 
-**Current Status:**
-- ✅ Hybrid structure implemented
-- ✅ Category directories with subdirectories created
-- ✅ Contribution guide (CONTRIBUTING.md) written
-- ✅ CLAUDE.md updated with new structure
-- ✅ Archive cleanup complete (ARCHIVE-INDEX.md created)
-- ✅ Key ADRs written (ADR-001 through ADR-004)
-- ✅ Core service guides created (Immich, Jellyfin, Traefik, TinyAuth, CrowdSec)
-- ✅ Force Multiplier Week achievements documented
-- ⏳ Additional service guides (alertmanager, monitoring components)
-- ⏳ Automated documentation linting
-
-**Recent Additions (Nov 7-10):**
-1. ✅ Comprehensive Immich guide with GPU acceleration
-2. ✅ ADR-004: Authelia SSO & MFA architecture
-3. ✅ Force Multiplier Week summary journal
-4. ✅ GPU acceleration deployment guides and scripts
-5. ✅ Intelligence system documentation
-
-**Next Steps:**
-1. Deploy GPU acceleration on fedora-htpc (validate docs)
-2. Create Authelia deployment guides (Week 6+)
-3. Add alertmanager and monitoring component guides
-4. Quarterly documentation audit (Dec 2025)
+**Current Status (Dec 18, 2025):**
+- ✅ Three-tier structure implemented (plans / journals / reports)
+- ✅ Flat journal directory for chronological browsing
+- ✅ 92 journal entries consolidated
+- ✅ 13 planning documents organized
+- ✅ Automated reports separated from human docs
+- ✅ Core service guides complete
+- ✅ Key ADRs written (ADR-001 through ADR-008)
+- ⏳ Plan files need YYYY-MM-DD prefix migration
+- ⏳ Next quarterly audit: March 2026
 
 ---
 
 ## 📞 Getting Help
 
-**Documentation issues?** Check CONTRIBUTING.md or examine existing files for examples
+**System issues:**
+- `./scripts/homelab-intel.sh` for health assessment
+- `./scripts/homelab-diagnose.sh` for diagnostics
+- Service guides in `10-services/guides/`
 
-**System issues?** See:
-- Latest system state report in `99-reports/`
-- Troubleshooting sections in service guides
-- `scripts/homelab-diagnose.sh` for diagnostic information
-
-**Security concerns?** See:
-- `30-security/guides/` for current security posture
-- `30-security/incidents/` for past incident learnings
+**Natural language queries:**
+```bash
+./scripts/query-homelab.sh "what services are using the most memory?"
+./scripts/query-homelab.sh "is jellyfin running?"
+```
 
 ---
 
 **Remember:** Documentation is a love letter to your future self. Keep it current, clear, and kind. 💙
 
-**Last maintained:** 2025-11-10 by Claude Code
-**Review frequency:** Monthly
-**Next review:** 2025-12-10
+**Last maintained:** 2025-12-18 by Claude Code
+**Review frequency:** Quarterly
+**Next review:** 2026-03-18

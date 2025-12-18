@@ -514,25 +514,33 @@ find ~/containers/data/backup-logs/ -name "*.log" -mtime +30 -delete
 The `docs/` directory uses a **hybrid structure** combining topical reference with chronological learning logs.
 
 **Directory Organization:**
+- `97-plans/` - Strategic planning documents (forward-looking)
+- `98-journals/` - Complete chronological history (flat, all dated entries)
+- `99-reports/` - Automated system reports + formal snapshots
 - `00-foundation/` - Podman, networking, pods, quadlets fundamentals
-- `10-services/` - Service-specific guides and deployment logs
+- `10-services/` - Service-specific guides
 - `20-operations/` - Operational procedures, architecture, backup strategy
-- `30-security/` - Security configurations, incidents, hardening
-- `40-monitoring-and-documentation/` - Monitoring stack, project state
+- `30-security/` - Security configurations, hardening, runbooks
+- `40-monitoring-and-documentation/` - Monitoring stack, SLO framework
 - `90-archive/` - Superseded documentation (with archival metadata)
-- `99-reports/` - Point-in-time system state snapshots
 
-**Subdirectory Structure:**
+**Three-Tier Documentation:**
+1. **Forward-looking** (`97-plans/`) - Strategic plans and roadmaps
+2. **Historical** (`98-journals/`) - Chronological project timeline
+3. **Current state** (`*/guides/`) - Living reference documentation
+
+**Subdirectory Structure (for 00-40 categories):**
 - **`guides/`** - Living reference documentation (updated in place, no date prefix)
-- **`journal/`** - Dated learning logs and progress reports (immutable, dated)
 - **`decisions/`** - Architecture Decision Records / ADRs (immutable, dated)
+- **`runbooks/`** - Disaster recovery and incident response (where applicable)
 
 **Documentation Policies:**
 1. **Guides are living** - Update in place when information changes
 2. **Journals are immutable** - Never edit after creation (append-only log)
-3. **ADRs are permanent** - Architecture decisions never edited, only superseded
-4. **Reports are snapshots** - Point-in-time system state, never updated
-5. **Archive with metadata** - Include archival reason and superseding document
+3. **Plans include status** - Updated with progress, archived manually
+4. **ADRs are permanent** - Architecture decisions never edited, only superseded
+5. **Reports are automated** - JSON reports or formal infrastructure snapshots
+6. **Archive with metadata** - Include archival reason and superseding document
 
 **Full guide:** See `docs/CONTRIBUTING.md` for detailed conventions and templates.
 

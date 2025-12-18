@@ -1,6 +1,6 @@
 # Documentation Contribution Guide
 
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-12-18
 **Purpose:** Standards and conventions for homelab documentation
 
 ---
@@ -8,10 +8,10 @@
 ## Quick Start
 
 **Before adding documentation:**
-1. Choose the appropriate category directory (00-foundation, 10-services, etc.)
-2. Determine document type (guide, journal, decision, report)
+1. Determine document type (guide, journal, plan, decision)
+2. Choose the appropriate directory
 3. Follow naming conventions below
-4. Place in correct subdirectory
+4. Place in correct location
 
 ---
 
@@ -19,27 +19,39 @@
 
 ```
 docs/
-├── 00-foundation/          # Core concepts and design patterns
-│   ├── guides/            # Living reference documentation
-│   ├── journal/           # Learning logs and experiments
-│   └── decisions/         # Architecture Decision Records
-├── 10-services/           # Service-specific documentation
-│   ├── guides/            # Service operation guides
-│   ├── journal/           # Deployment and evolution logs
-│   └── decisions/         # Service architecture decisions
-├── 20-operations/         # Operational procedures and architecture
-│   ├── guides/            # How-to operational documentation
-│   ├── journal/           # Operational changes log
-│   └── decisions/         # Operational policy decisions
-├── 30-security/           # Security configuration and incidents
-│   ├── guides/            # Security procedures and policies
-│   ├── incidents/         # Post-mortems (dated)
-│   └── decisions/         # Security architecture decisions
+├── 97-plans/              # Strategic planning documents
+│   └── [forward-looking plans and roadmaps]
+│
+├── 98-journals/           # Chronological project history (FLAT)
+│   └── [all dated logs, sessions, deployments]
+│
+├── 99-reports/            # System state snapshots
+│   ├── intel-*.json      # Automated health reports
+│   └── SYSTEM-STATE-*.md # Formal infrastructure snapshots
+│
+├── 00-foundation/         # Core concepts and design patterns
+│   ├── guides/           # Living reference documentation
+│   └── decisions/        # Architecture Decision Records
+│
+├── 10-services/          # Service-specific documentation
+│   ├── guides/           # Service operation guides
+│   └── decisions/        # Service architecture decisions
+│
+├── 20-operations/        # Operational procedures and architecture
+│   ├── guides/           # How-to operational documentation
+│   ├── decisions/        # Operational policy decisions
+│   └── runbooks/         # Disaster recovery procedures
+│
+├── 30-security/          # Security configuration and incidents
+│   ├── guides/           # Security procedures and policies
+│   ├── decisions/        # Security architecture decisions
+│   └── runbooks/         # Incident response procedures
+│
 ├── 40-monitoring-and-documentation/
-│   ├── guides/            # Monitoring and documentation guides
-│   └── journal/           # Project state and progress
-├── 90-archive/            # Superseded documentation
-└── 99-reports/            # Point-in-time system state snapshots
+│   ├── guides/           # Monitoring and documentation guides
+│   └── decisions/        # Monitoring decisions
+│
+└── 90-archive/           # Superseded documentation
 ```
 
 ---
@@ -94,8 +106,9 @@ Examples:
 - Never updated after creation (append-only)
 - Always has date prefix
 - Records the journey and decision context
+- Includes session logs, deployments, strategic assessments
 
-**Location:** `*/journal/`
+**Location:** `98-journals/` (flat directory, all entries together)
 
 **Naming:**
 ```
@@ -105,6 +118,8 @@ Examples:
 - 2025-11-07-monitoring-deployment.md
 - 2025-10-26-middleware-ordering-experiment.md
 - 2025-11-05-project-state-crossroads.md
+- 2025-11-12-session-summary.md
+- 2025-11-09-strategic-assessment.md
 ```
 
 **Template:**
@@ -126,7 +141,61 @@ Examples:
 
 ---
 
-### 3. Architecture Decision Records (ADRs)
+### 3. Plans (Strategic Documents)
+
+**Purpose:** Forward-looking plans, proposals, and roadmaps
+
+**Characteristics:**
+- Living documents (status updated as work progresses)
+- Always has date prefix
+- Includes status metadata
+- Not archived automatically (user decides)
+
+**Location:** `97-plans/`
+
+**Naming:**
+```
+YYYY-MM-DD-<description>.md
+
+Examples:
+- 2025-11-22-disaster-recovery-plan.md
+- 2025-11-28-autonomous-operations-expansion.md
+- 2025-12-01-multi-service-orchestration.md
+```
+
+**Template:**
+```markdown
+# <Plan Title>
+
+**Date Created:** YYYY-MM-DD
+**Status:** Proposed | In Progress | Implemented
+**Last Updated:** YYYY-MM-DD
+
+## Objective
+[What are we trying to achieve?]
+
+## Approach
+[How will we do it?]
+
+## Success Criteria
+[How will we know it worked?]
+
+## Implementation Timeline
+[Key milestones - no specific dates]
+
+## Progress Log
+[Update as work progresses]
+```
+
+**Lifecycle:**
+- Plans stay in 97-plans throughout their lifecycle
+- Update status metadata as work progresses
+- Document implementation in 98-journals
+- Archive manually when no longer relevant
+
+---
+
+### 4. Architecture Decision Records (ADRs)
 
 **Purpose:** Document significant architectural decisions and their rationale
 
@@ -169,30 +238,36 @@ Examples:
 
 ---
 
-### 4. Reports (Point-in-Time Snapshots)
+### 5. Reports (System State Snapshots)
 
-**Purpose:** System state documentation at a specific moment
+**Purpose:** Automated system reports and formal infrastructure snapshots
 
 **Characteristics:**
 - Immutable historical record
-- Always dated
-- Useful for tracking evolution
+- Machine-generated (JSON) or formal snapshots (markdown)
+- Consumed by automation or used as authoritative reference
 
 **Location:** `99-reports/`
 
-**Naming:**
-```
-YYYY-MM-DD-<type>-<description>.md
+**Contents:**
+- **Automated JSON:** `intel-*.json`, `resource-forecast-*.json` (do not modify)
+- **Formal snapshots:** `SYSTEM-STATE-YYYY-MM-DD.md` (rare, authoritative)
 
-Examples:
-- 2025-11-06-system-state.md
-- 2025-11-07-backup-implementation-summary.md
-- 2025-10-25-storage-architecture-authoritative.md
+**Note:** Most dated markdown documentation now goes in `98-journals/`. Only use `99-reports/` for:
+- Automated system output (JSON)
+- Formal infrastructure state snapshots (rare)
+
+**Naming for formal snapshots:**
+```
+SYSTEM-STATE-YYYY-MM-DD.md
+
+Example:
+- SYSTEM-STATE-2025-11-06.md
 ```
 
 ---
 
-### 5. Incident Post-Mortems
+### 6. Incident Post-Mortems
 
 **Purpose:** Document security incidents and operational failures
 
@@ -246,14 +321,14 @@ Examples:
 
 ## Naming Conventions Summary
 
-| Document Type | Date Prefix? | Example |
-|---------------|--------------|---------|
-| Guide | No | `jellyfin.md` |
-| Procedure | No | `backup-restore.md` |
-| Journal Entry | Yes | `2025-11-07-deployment-log.md` |
-| ADR | Yes | `2025-11-07-decision-001-title.md` |
-| Report | Yes | `2025-11-07-system-state.md` |
-| Incident | Yes | `2025-11-07-incident-description.md` |
+| Document Type | Date Prefix? | Location | Example |
+|---------------|--------------|----------|---------|
+| Guide | No | `*/guides/` | `jellyfin.md` |
+| Journal | Yes | `98-journals/` | `2025-11-07-deployment-log.md` |
+| Plan | Yes | `97-plans/` | `2025-11-22-disaster-recovery.md` |
+| ADR | Yes | `*/decisions/` | `2025-11-07-decision-001-title.md` |
+| Report | N/A | `99-reports/` | `SYSTEM-STATE-2025-11-06.md` or `intel-*.json` |
+| Incident | Yes | `98-journals/` | `2025-11-23-immich-data-loss-incident.md` |
 
 ---
 
@@ -265,11 +340,13 @@ Examples:
 - Architectural diagram needs correction
 - Best practices evolved
 
-### Create New (Journal/ADR/Report)
-- Documenting a change or deployment
-- Recording a decision
-- Capturing current system state
-- Learning log from experimentation
+### Create New (Journal/Plan/ADR)
+- Documenting a change or deployment → journal
+- Planning a new project or initiative → plan
+- Recording an architectural decision → ADR
+- Session work log → journal
+- Strategic assessment → journal
+- Learning log from experimentation → journal
 
 ---
 
@@ -318,8 +395,7 @@ Update `docs/90-archive/ARCHIVE-INDEX.md` when archiving:
 
 Before committing documentation:
 
-- [ ] File is in correct category directory
-- [ ] File is in correct subdirectory (guides/ journal/ decisions/)
+- [ ] File is in correct directory (97-plans/, 98-journals/, */guides/, */decisions/)
 - [ ] Filename follows naming convention
 - [ ] Date prefix is present (if required for document type)
 - [ ] Document has required metadata header
@@ -363,14 +439,14 @@ done
 
 ### List Files Violating Naming Convention
 ```bash
-# Find files in journal/ or decisions/ without date prefix
-find docs/*/journal docs/*/decisions -name "*.md" ! -name "20[0-9][0-9]-*"
+# Find files in 98-journals/, 97-plans/, or decisions/ without date prefix
+find docs/98-journals docs/97-plans docs/*/decisions -name "*.md" ! -name "20[0-9][0-9]-*"
 ```
 
 ### Identify Archival Candidates
 ```bash
 # Find journal entries older than 1 year
-find docs/*/journal -name "*.md" -mtime +365
+find docs/98-journals -name "*.md" -mtime +365
 ```
 
 ---
@@ -380,23 +456,31 @@ find docs/*/journal -name "*.md" -mtime +365
 ### Example 1: Deploying New Service
 
 **Steps:**
-1. Create deployment journal entry: `docs/10-services/journal/2025-11-07-vaultwarden-deployment.md`
+1. Create deployment journal entry: `docs/98-journals/2025-11-07-vaultwarden-deployment.md`
 2. Create/update service guide: `docs/10-services/guides/vaultwarden.md`
 3. If architectural decision made: `docs/10-services/decisions/2025-11-07-decision-004-vaultwarden-database-choice.md`
 4. Update `CLAUDE.md` if needed
 
-### Example 2: Security Incident
+### Example 2: Planning a New Project
 
 **Steps:**
-1. Create incident post-mortem: `docs/30-security/incidents/2025-11-07-incident-exposed-api-key.md`
+1. Create plan: `docs/97-plans/2025-11-22-disaster-recovery-testing.md`
+2. Add status metadata in file header
+3. As work progresses, document in journals: `docs/98-journals/2025-11-23-dr-testing-phase1.md`
+4. Update plan status when milestones complete
+
+### Example 3: Security Incident
+
+**Steps:**
+1. Create incident journal: `docs/98-journals/2025-11-07-incident-exposed-api-key.md`
 2. Update security guide if process changed: `docs/30-security/guides/secrets-management.md`
 3. Create ADR if policy changed: `docs/30-security/decisions/2025-11-07-decision-005-mandatory-vault.md`
 
-### Example 3: Operational Procedure Change
+### Example 4: Operational Procedure Change
 
 **Steps:**
 1. Update procedure guide: `docs/20-operations/guides/backup-restore.md`
-2. Create journal entry explaining why: `docs/20-operations/journal/2025-11-07-backup-procedure-improvement.md`
+2. Create journal entry explaining why: `docs/98-journals/2025-11-07-backup-procedure-improvement.md`
 3. Archive old procedure if completely replaced
 
 ---

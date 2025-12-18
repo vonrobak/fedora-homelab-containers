@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-11T06:04:44+01:00",
+  "generated_at": "2025-12-18T06:03:03+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -588,43 +588,43 @@
     },
     "systemd-monitoring": {
       "members": [
-        "alertmanager",
-        "alert-discord-relay",
-        "ocis",
         "immich-server",
+        "ocis",
+        "node_exporter",
+        "alert-discord-relay",
         "cadvisor",
+        "promtail",
+        "alertmanager",
+        "grafana",
+        "jellyfin",
         "prometheus",
         "traefik",
-        "promtail",
-        "grafana",
-        "node_exporter",
-        "loki",
-        "jellyfin"
+        "loki"
       ],
       "gateway": false
     },
     "systemd-photos": {
       "members": [
         "immich-server",
+        "redis-immich",
         "immich-ml",
-        "postgresql-immich",
-        "redis-immich"
+        "postgresql-immich"
       ],
       "gateway": false
     },
     "systemd-reverse_proxy": {
       "members": [
-        "homepage",
-        "authelia",
-        "ocis",
         "immich-server",
-        "prometheus",
-        "traefik",
+        "ocis",
+        "authelia",
         "grafana",
-        "crowdsec",
-        "loki",
         "vaultwarden",
-        "jellyfin"
+        "jellyfin",
+        "homepage",
+        "prometheus",
+        "crowdsec",
+        "traefik",
+        "loki"
       ],
       "gateway": true
     }
