@@ -2,9 +2,20 @@ groups:
   - name: disk_space
     interval: 60s
     rules:
-      # System SSD disk space alerts
+      # System SSD disk space alerts (with hysteresis to prevent flapping)
       - alert: SystemDiskSpaceWarning
-        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.25
+        expr: |
+          (
+            (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.25
+            and
+            ALERTS{alertname="SystemDiskSpaceWarning"} != 1
+          )
+          or
+          (
+            (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.30
+            and
+            ALERTS{alertname="SystemDiskSpaceWarning"} == 1
+          )
         for: 5m
         labels:
           severity: warning
@@ -34,9 +45,20 @@ groups:
           summary: "BTRFS pool space low"
           description: "BTRFS pool {{ $labels.instance }} has {{ $value | humanizePercentage }} free space remaining (Warning threshold: <20%)"
 
-      # Memory pressure alerts
+      # Memory pressure alerts (with hysteresis: fire >90%, resolve <85%)
       - alert: MemoryPressureHigh
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.90
+        expr: |
+          (
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.90
+            and
+            ALERTS{alertname="MemoryPressureHigh"} != 1
+          )
+          or
+          (
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
+            and
+            ALERTS{alertname="MemoryPressureHigh"} == 1
+          )
         for: 5m
         labels:
           severity: warning
@@ -45,16 +67,17 @@ groups:
           summary: "Memory pressure high"
           description: "System memory usage is {{ $value | humanizePercentage }}. May cause OOM kills."
 
-      # Swap usage alerts
-      - alert: SwapUsageHigh
-        expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) > 0.80
-        for: 10m
-        labels:
-          severity: warning
-          component: system
-        annotations:
-          summary: "Swap usage high ({{ $value | humanizePercentage }})"
-          description: "System is swapping heavily ({{ $value | humanizePercentage }} used). Consider investigating memory pressure."
+      # Swap usage alerts - DISABLED for zram (compressed swap is always near-full)
+      # zram swap at 99% is NORMAL - alert on thrashing instead (see SwapThrashing below)
+      # - alert: SwapUsageHigh
+      #   expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) > 0.80
+      #   for: 10m
+      #   labels:
+      #     severity: warning
+      #     component: system
+      #   annotations:
+      #     summary: "Swap usage high ({{ $value | humanizePercentage }})"
+      #     description: "System is swapping heavily ({{ $value | humanizePercentage }} used). Consider investigating memory pressure."
 
       # Swap thrashing (performance degradation indicator)
       - alert: SwapThrashing

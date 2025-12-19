@@ -35,11 +35,12 @@ route:
       active_time_intervals:
         - waking_hours
 
-    # Info alerts: Discord once per day maximum
+    # Info alerts: Notify once per week max (architectural facts, not incidents)
     - match:
         severity: info
-      receiver: 'discord-default'
-      repeat_interval: 24h
+      receiver: 'discord-info'
+      repeat_interval: 168h  # 1 week - effectively never repeat for transient info alerts
+      group_interval: 5m
 
 # Receivers
 receivers:
@@ -53,13 +54,19 @@ receivers:
   - name: 'discord-warnings'
     webhook_configs:
       - url: 'http://alert-discord-relay:9095/webhook'
-        send_resolved: true
+        send_resolved: false  # Don't spam "resolved" notifications for warnings
 
   # Default receiver (fallback) - Discord
   - name: 'discord-default'
     webhook_configs:
       - url: 'http://alert-discord-relay:9095/webhook'
         send_resolved: true
+
+  # Info alerts (notify once, no repeat, no resolved notifications)
+  - name: 'discord-info'
+    webhook_configs:
+      - url: 'http://alert-discord-relay:9095/webhook'
+        send_resolved: false  # Don't spam "resolved" for info alerts
 
 # Inhibition rules (prevent alert spam)
 inhibit_rules:

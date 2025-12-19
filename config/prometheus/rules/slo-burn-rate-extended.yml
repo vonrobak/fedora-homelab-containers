@@ -1,0 +1,132 @@
+# Extended Burn Rate Recording Rules
+# Created: 2025-12-19
+# Purpose: Add longer time windows for multi-tier burn rate detection
+#
+# Burn Rate Tiers (Google SRE Book methodology):
+# - 1h + 5m: Critical (page) - Budget exhausts in <3 hours
+# - 6h + 30m: High (ticket) - Budget exhausts in <1 day
+# - 1d + 2h: Medium (ticket) - Budget exhausts in <1 week
+# - 3d + 6h: Low (info) - Budget exhausts in <2 weeks
+
+groups:
+  - name: burn_rate_extended
+    interval: 5m
+    rules:
+      # ===========================================================================
+      # JELLYFIN - Extended burn rate windows
+      # ===========================================================================
+
+      # 1-day burn rate (medium-term trend)
+      - record: burn_rate:jellyfin:availability:1d
+        expr: |
+          (1 - avg_over_time(sli:jellyfin:availability:ratio[1d]))
+          / error_budget:jellyfin:availability:budget_total
+
+      # 2-hour burn rate (medium-term confirmation)
+      - record: burn_rate:jellyfin:availability:2h
+        expr: |
+          (1 - avg_over_time(sli:jellyfin:availability:ratio[2h]))
+          / error_budget:jellyfin:availability:budget_total
+
+      # 3-day burn rate (long-term trend)
+      - record: burn_rate:jellyfin:availability:3d
+        expr: |
+          (1 - avg_over_time(sli:jellyfin:availability:ratio[3d]))
+          / error_budget:jellyfin:availability:budget_total
+
+      # ===========================================================================
+      # IMMICH - Extended burn rate windows
+      # ===========================================================================
+
+      - record: burn_rate:immich:availability:1d
+        expr: |
+          (1 - avg_over_time(sli:immich:availability:ratio[1d]))
+          / error_budget:immich:availability:budget_total
+
+      - record: burn_rate:immich:availability:2h
+        expr: |
+          (1 - avg_over_time(sli:immich:availability:ratio[2h]))
+          / error_budget:immich:availability:budget_total
+
+      - record: burn_rate:immich:availability:3d
+        expr: |
+          (1 - avg_over_time(sli:immich:availability:ratio[3d]))
+          / error_budget:immich:availability:budget_total
+
+      # ===========================================================================
+      # AUTHELIA - Extended burn rate windows
+      # ===========================================================================
+
+      - record: burn_rate:authelia:availability:1d
+        expr: |
+          (1 - avg_over_time(sli:authelia:availability:ratio[1d]))
+          / error_budget:authelia:availability:budget_total
+
+      - record: burn_rate:authelia:availability:2h
+        expr: |
+          (1 - avg_over_time(sli:authelia:availability:ratio[2h]))
+          / error_budget:authelia:availability:budget_total
+
+      - record: burn_rate:authelia:availability:3d
+        expr: |
+          (1 - avg_over_time(sli:authelia:availability:ratio[3d]))
+          / error_budget:authelia:availability:budget_total
+
+      # ===========================================================================
+      # TRAEFIK - Extended burn rate windows
+      # ===========================================================================
+
+      - record: burn_rate:traefik:availability:1d
+        expr: |
+          (1 - avg_over_time(sli:traefik:availability:ratio[1d]))
+          / error_budget:traefik:availability:budget_total
+
+      - record: burn_rate:traefik:availability:2h
+        expr: |
+          (1 - avg_over_time(sli:traefik:availability:ratio[2h]))
+          / error_budget:traefik:availability:budget_total
+
+      - record: burn_rate:traefik:availability:3d
+        expr: |
+          (1 - avg_over_time(sli:traefik:availability:ratio[3d]))
+          / error_budget:traefik:availability:budget_total
+
+      # ===========================================================================
+      # ERROR BUDGET FORECASTING
+      # ===========================================================================
+
+      # Jellyfin - Predict when error budget will exhaust based on current burn rate
+      - record: error_budget:jellyfin:availability:days_remaining
+        expr: |
+          (
+            error_budget:jellyfin:availability:budget_remaining
+            /
+            clamp_min(burn_rate:jellyfin:availability:3d, 0.001)
+          ) * 30
+
+      # Immich - Days until budget exhaustion
+      - record: error_budget:immich:availability:days_remaining
+        expr: |
+          (
+            error_budget:immich:availability:budget_remaining
+            /
+            clamp_min(burn_rate:immich:availability:3d, 0.001)
+          ) * 30
+
+      # Authelia - Days until budget exhaustion
+      - record: error_budget:authelia:availability:days_remaining
+        expr: |
+          (
+            error_budget:authelia:availability:budget_remaining
+            /
+            clamp_min(burn_rate:authelia:availability:3d, 0.001)
+          ) * 30
+
+      # Traefik - Days until budget exhaustion
+      - record: error_budget:traefik:availability:days_remaining
+        expr: |
+          (
+            error_budget:traefik:availability:budget_remaining
+            /
+            clamp_min(burn_rate:traefik:availability:3d, 0.001)
+          ) * 30

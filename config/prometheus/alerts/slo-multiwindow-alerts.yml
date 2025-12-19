@@ -1,0 +1,364 @@
+# Multi-Window SLO Burn Rate Alerts
+# Created: 2025-12-19
+# Based on: Google SRE Book - Multi-Window, Multi-Burn-Rate Alerts
+#
+# Philosophy: Alert at multiple time scales to catch both fast catastrophes
+# and slow degradations BEFORE they exhaust the error budget.
+#
+# Four-Tier Approach:
+# ┌─────────┬──────────────┬───────────────┬──────────────┬─────────────┐
+# │ Tier    │ Windows      │ Budget Left   │ Severity     │ Action      │
+# ├─────────┼──────────────┼───────────────┼──────────────┼─────────────┤
+# │ Tier 1  │ 1h + 5m      │ 2% (58 min)   │ Critical     │ Page        │
+# │ Tier 2  │ 6h + 30m     │ 5% (2.4 hrs)  │ Warning      │ Ticket      │
+# │ Tier 3  │ 1d + 2h      │ 10% (3 days)  │ Warning      │ Ticket      │
+# │ Tier 4  │ 3d + 6h      │ 20% (7 days)  │ Info         │ Review      │
+# └─────────┴──────────────┴───────────────┴──────────────┴─────────────┘
+
+groups:
+  # ===========================================================================
+  # JELLYFIN - Multi-Window Burn Rate Alerts
+  # ===========================================================================
+  - name: slo_multiwindow_jellyfin
+    interval: 1m
+    rules:
+      # TIER 1: CRITICAL - Fast Burn (Page immediately)
+      # Budget exhausts in <3 hours at this rate
+      - alert: SLOBurnRateTier1_Jellyfin
+        expr: |
+          (
+            burn_rate:jellyfin:availability:1h > 14.4
+            and
+            burn_rate:jellyfin:availability:5m > 14.4
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: jellyfin
+          slo: availability
+          tier: "1"
+          burn_rate: "fast"
+        annotations:
+          summary: "🚨 CRITICAL: Jellyfin error budget burning at 14.4x normal rate"
+          description: |
+            **IMMEDIATE ACTION REQUIRED**
+
+            Jellyfin availability is degrading rapidly. At this burn rate, the monthly error budget
+            will be exhausted in less than 3 hours.
+
+            **Current State:**
+            - Burn Rate (1h): {{ $value | humanize }}x normal
+            - Burn Rate (5m): {{ query "burn_rate:jellyfin:availability:5m" | first | value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:jellyfin:availability:budget_remaining * 100" | first | value | humanize }}%
+            - Days Until Exhaustion: {{ query "error_budget:jellyfin:availability:days_remaining" | first | value | humanize }} days
+
+            **Impact:** Users are experiencing service failures RIGHT NOW.
+
+            **Action:** Investigate and resolve immediately. Check:
+              systemctl --user status jellyfin.service
+              podman logs jellyfin --tail 100
+              ~/containers/scripts/homelab-intel.sh
+
+      # TIER 2: WARNING - Medium Burn (Create ticket)
+      # Budget exhausts in <1 day at this rate
+      - alert: SLOBurnRateTier2_Jellyfin
+        expr: |
+          (
+            burn_rate:jellyfin:availability:6h > 6
+            and
+            burn_rate:jellyfin:availability:30m > 6
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: jellyfin
+          slo: availability
+          tier: "2"
+          burn_rate: "medium"
+        annotations:
+          summary: "⚠️ Jellyfin error budget burning at 6x normal rate"
+          description: |
+            **Action needed within hours**
+
+            Jellyfin availability is degrading. At this burn rate, the monthly error budget
+            will be exhausted in less than 1 day.
+
+            **Current State:**
+            - Burn Rate (6h): {{ $value | humanize }}x normal
+            - Burn Rate (30m): {{ query "burn_rate:jellyfin:availability:30m" | first | value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:jellyfin:availability:budget_remaining * 100" | first | value | humanize }}%
+            - Days Until Exhaustion: {{ query "error_budget:jellyfin:availability:days_remaining" | first | value | humanize }} days
+
+            **Impact:** Increased error rate, degraded user experience.
+
+            **Action:** Investigate and plan remediation. This can wait until business hours
+            but should not be ignored.
+
+      # TIER 3: WARNING - Slow Burn (Plan remediation)
+      # Budget exhausts in <1 week at this rate
+      - alert: SLOBurnRateTier3_Jellyfin
+        expr: |
+          (
+            burn_rate:jellyfin:availability:1d > 3
+            and
+            burn_rate:jellyfin:availability:2h > 3
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 86400)
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: jellyfin
+          slo: availability
+          tier: "3"
+          burn_rate: "slow"
+        annotations:
+          summary: "📊 Jellyfin error budget burning at 3x normal rate"
+          description: |
+            **Trend to monitor**
+
+            Jellyfin availability is slowly degrading. At this burn rate, the monthly error budget
+            will be exhausted in less than 1 week.
+
+            **Current State:**
+            - Burn Rate (1d): {{ $value | humanize }}x normal
+            - Burn Rate (2h): {{ query "burn_rate:jellyfin:availability:2h" | first | value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:jellyfin:availability:budget_remaining * 100" | first | value | humanize }}%
+            - Days Until Exhaustion: {{ query "error_budget:jellyfin:availability:days_remaining" | first | value | humanize }} days
+
+            **Impact:** Gradual reliability degradation.
+
+            **Action:** Monitor trend. Consider freezing non-critical changes to preserve budget.
+
+      # TIER 4: INFO - Very Slow Burn (FYI only)
+      # Budget exhausts in <2 weeks at this rate
+      - alert: SLOBurnRateTier4_Jellyfin
+        expr: |
+          (
+            burn_rate:jellyfin:availability:3d > 1.5
+            and
+            burn_rate:jellyfin:availability:1d > 1.5
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 259200)
+        for: 6h
+        labels:
+          severity: info
+          component: slo
+          service: jellyfin
+          slo: availability
+          tier: "4"
+          burn_rate: "minimal"
+        annotations:
+          summary: "ℹ️ Jellyfin error budget trending above baseline"
+          description: |
+            **Informational - Long-term trend**
+
+            Jellyfin availability is slightly below target. At this burn rate, the monthly error budget
+            will be exhausted in approximately 2 weeks.
+
+            **Current State:**
+            - Burn Rate (3d): {{ $value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:jellyfin:availability:budget_remaining * 100" | first | value | humanize }}%
+            - Days Until Exhaustion: {{ query "error_budget:jellyfin:availability:days_remaining" | first | value | humanize }} days
+
+            **Action:** Review trends in monthly SLO report. No immediate action needed.
+
+  # ===========================================================================
+  # IMMICH - Multi-Window Burn Rate Alerts
+  # ===========================================================================
+  - name: slo_multiwindow_immich
+    interval: 1m
+    rules:
+      # TIER 1: CRITICAL
+      - alert: SLOBurnRateTier1_Immich
+        expr: |
+          (
+            burn_rate:immich:availability:1h > 14.4
+            and
+            burn_rate:immich:availability:5m > 14.4
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: immich
+          slo: availability
+          tier: "1"
+        annotations:
+          summary: "🚨 CRITICAL: Immich error budget burning at 14.4x normal rate"
+          description: |
+            **IMMEDIATE ACTION REQUIRED**
+
+            Immich availability is degrading rapidly. Error budget exhausts in <3 hours.
+
+            - Burn Rate (1h): {{ $value | humanize }}x
+            - Budget Remaining: {{ query "error_budget:immich:availability:budget_remaining * 100" | first | value | humanize }}%
+            - Days Left: {{ query "error_budget:immich:availability:days_remaining" | first | value | humanize }}
+
+            Action: systemctl --user status immich.service && podman logs immich --tail 100
+
+      # TIER 2: WARNING
+      - alert: SLOBurnRateTier2_Immich
+        expr: |
+          (
+            burn_rate:immich:availability:6h > 6
+            and
+            burn_rate:immich:availability:30m > 6
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: immich
+          slo: availability
+          tier: "2"
+        annotations:
+          summary: "⚠️ Immich error budget burning at 6x normal rate"
+          description: "Budget exhausts in <1 day. Burn: {{ $value | humanize }}x, Remaining: {{ query \"error_budget:immich:availability:budget_remaining * 100\" | first | value | humanize }}%"
+
+      # TIER 3: WARNING
+      - alert: SLOBurnRateTier3_Immich
+        expr: |
+          (
+            burn_rate:immich:availability:1d > 3
+            and
+            burn_rate:immich:availability:2h > 3
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 86400)
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: immich
+          slo: availability
+          tier: "3"
+        annotations:
+          summary: "📊 Immich error budget burning at 3x normal rate"
+          description: "Budget exhausts in <1 week. Trend monitoring needed."
+
+      # TIER 4: INFO
+      - alert: SLOBurnRateTier4_Immich
+        expr: |
+          (
+            burn_rate:immich:availability:3d > 1.5
+            and
+            burn_rate:immich:availability:1d > 1.5
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 259200)
+        for: 6h
+        labels:
+          severity: info
+          component: slo
+          service: immich
+          slo: availability
+          tier: "4"
+        annotations:
+          summary: "ℹ️ Immich error budget trending above baseline"
+          description: "Long-term trend - review in monthly report."
+
+  # ===========================================================================
+  # AUTHELIA - Multi-Window Burn Rate Alerts (Critical SSO service)
+  # ===========================================================================
+  - name: slo_multiwindow_authelia
+    interval: 1m
+    rules:
+      # TIER 1: CRITICAL
+      - alert: SLOBurnRateTier1_Authelia
+        expr: |
+          (
+            burn_rate:authelia:availability:1h > 14.4
+            and
+            burn_rate:authelia:availability:5m > 14.4
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: authelia
+          slo: availability
+          tier: "1"
+        annotations:
+          summary: "🚨 CRITICAL: Authelia (SSO) error budget burning at 14.4x normal rate"
+          description: |
+            **IMMEDIATE ACTION REQUIRED - SSO IS FAILING**
+
+            Authelia (SSO) availability is degrading. Users cannot authenticate!
+
+            - Burn Rate: {{ $value | humanize }}x
+            - Budget Remaining: {{ query "error_budget:authelia:availability:budget_remaining * 100" | first | value | humanize }}%
+
+            Action: systemctl --user status authelia.service redis-authelia.service
+
+      # TIER 2-4: Similar pattern for Authelia...
+      - alert: SLOBurnRateTier2_Authelia
+        expr: |
+          (
+            burn_rate:authelia:availability:6h > 6
+            and
+            burn_rate:authelia:availability:30m > 6
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: authelia
+          slo: availability
+          tier: "2"
+        annotations:
+          summary: "⚠️ Authelia error budget burning at 6x normal rate"
+
+      - alert: SLOBurnRateTier3_Authelia
+        expr: |
+          (
+            burn_rate:authelia:availability:1d > 3
+            and
+            burn_rate:authelia:availability:2h > 3
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 86400)
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: authelia
+          slo: availability
+          tier: "3"
+        annotations:
+          summary: "📊 Authelia error budget burning at 3x normal rate"
+
+      - alert: SLOBurnRateTier4_Authelia
+        expr: |
+          (
+            burn_rate:authelia:availability:3d > 1.5
+            and
+            burn_rate:authelia:availability:1d > 1.5
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 259200)
+        for: 6h
+        labels:
+          severity: info
+          component: slo
+          service: authelia
+          slo: availability
+          tier: "4"
+        annotations:
+          summary: "ℹ️ Authelia error budget trending above baseline"

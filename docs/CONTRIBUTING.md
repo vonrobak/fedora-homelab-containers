@@ -328,7 +328,7 @@ Examples:
 | Plan | Yes | `97-plans/` | `2025-11-22-disaster-recovery.md` |
 | ADR | Yes | `*/decisions/` | `2025-11-07-decision-001-title.md` |
 | Report | N/A | `99-reports/` | `SYSTEM-STATE-2025-11-06.md` or `intel-*.json` |
-| Incident | Yes | `98-journals/` | `2025-11-23-immich-data-loss-incident.md` |
+| Incident | Yes | `30-security/incidents` | `2025-11-23-immich-data-loss-incident.md` |
 
 ---
 
@@ -472,7 +472,7 @@ find docs/98-journals -name "*.md" -mtime +365
 ### Example 3: Security Incident
 
 **Steps:**
-1. Create incident journal: `docs/98-journals/2025-11-07-incident-exposed-api-key.md`
+1. Create incident journal: `docs/30-security/incidents/2025-11-07-incident-exposed-api-key.md`
 2. Update security guide if process changed: `docs/30-security/guides/secrets-management.md`
 3. Create ADR if policy changed: `docs/30-security/decisions/2025-11-07-decision-005-mandatory-vault.md`
 

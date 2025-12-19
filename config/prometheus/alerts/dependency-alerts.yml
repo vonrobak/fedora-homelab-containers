@@ -24,7 +24,7 @@ groups:
           and on(homelab_service) (
             homelab_critical_service_status{} == 1
           )
-        for: 2m
+        for: 5m  # Increased from 2m to reduce flapping on transient dependency issues
         labels:
           severity: critical
           component: dependencies
@@ -50,9 +50,9 @@ groups:
       - alert: RoutingTargetUnhealthy
         expr: |
           homelab_dependency_health{dependency_type="routing"} == 0
-        for: 5m
+        for: 10m  # Increased from 5m - routing targets being briefly down is less critical
         labels:
-          severity: warning
+          severity: info  # Downgraded from warning - router continues functioning for other targets
           component: dependencies
           category: availability
         annotations:
@@ -80,7 +80,7 @@ groups:
           and on(homelab_service) (
             homelab_service_blast_radius{} > 3
           )
-        for: 1m
+        for: 3m  # Increased from 1m to reduce flapping on transient health check failures
         labels:
           severity: critical
           component: dependencies
@@ -184,24 +184,6 @@ groups:
   - name: dependency_capacity
     interval: 60s
     rules:
-      # Alert when dependency chain depth is unusually high
-      - alert: DeepDependencyChain
-        expr: homelab_dependency_chain_depth{} > 5
-        for: 10m
-        labels:
-          severity: info
-          component: dependencies
-          category: architecture
-        annotations:
-          summary: "Service {{ $labels.homelab_service }} has deep dependency chain ({{ $value }})"
-          description: |
-            Service {{ $labels.homelab_service }} has a dependency chain depth of {{ $value }}.
-
-            Deep dependency chains can:
-            - Increase system complexity
-            - Slow down restart operations
-            - Make troubleshooting harder
-            - Increase failure cascade risk
-
-            Consider reviewing service architecture for potential simplification.
-          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/guides/dependency-management.md"
+      # DeepDependencyChain alert REMOVED - architectural metric, not an actionable incident
+      # Monitor this via Grafana dashboard instead of alerting
+      # Metric available: homelab_dependency_chain_depth{}

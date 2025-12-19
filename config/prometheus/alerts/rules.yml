@@ -94,10 +94,21 @@ groups:
           summary: "Container {{ $labels.name }} is crash-looping"
           description: "Container has restarted {{ $value | humanize }} times in the last 15 minutes. This indicates a crash loop."
 
-      # High CPU usage - raised from 80% to 90%
+      # High CPU usage - raised from 80% to 90% (with hysteresis: fire >90%, resolve <85%)
       # Jellyfin transcoding legitimately uses 50-80% CPU (per CLAUDE.md)
       - alert: HighCPUUsage
-        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        expr: |
+          (
+            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+            and
+            ALERTS{alertname="HighCPUUsage"} != 1
+          )
+          or
+          (
+            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+            and
+            ALERTS{alertname="HighCPUUsage"} == 1
+          )
         for: 20m
         labels:
           severity: warning
