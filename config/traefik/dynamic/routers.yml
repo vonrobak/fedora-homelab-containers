@@ -97,6 +97,38 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # Nextcloud - Uses native authentication (no Authelia SSO)
+    # CalDAV/CardDAV clients and web UI use Nextcloud's built-in auth
+    # NO security-headers middleware (Nextcloud sets own CSP)
+    # HSTS-only middleware (Nextcloud sets CSP, we add HSTS)
+    nextcloud-secure:
+      rule: "Host(`nextcloud.patriark.org`)"
+      service: "nextcloud"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-ocis@file         # Higher capacity for WebDAV sync
+        - circuit-breaker@file          # Prevent cascade failures
+        - retry@file                    # Retry transient errors
+        - nextcloud-caldav              # CalDAV/.well-known redirects
+        - hsts-only@file                # Add HSTS without conflicting with Nextcloud's CSP
+      tls:
+        certResolver: letsencrypt
+
+    # Collabora Online - Office suite for Nextcloud
+    # Authentication handled by Nextcloud
+    collabora-secure:
+      rule: "Host(`collabora.patriark.org`)"
+      service: "collabora"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-ocis@file
+      tls:
+        certResolver: letsencrypt
+
     # Grafana Monitoring Dashboard
     grafana-secure:
       rule: "Host(`grafana.patriark.org`)"
@@ -176,3 +208,21 @@ http:
       loadBalancer:
         servers:
           - url: "http://vaultwarden:80"
+
+    nextcloud:
+      loadBalancer:
+        servers:
+          - url: "http://nextcloud:80"
+
+    collabora:
+      loadBalancer:
+        servers:
+          - url: "http://collabora:9980"
+
+  middlewares:
+    # CalDAV/.well-known redirects for Nextcloud
+    nextcloud-caldav:
+      redirectRegex:
+        permanent: true
+        regex: "^https://(.*)/.well-known/(card|cal)dav"
+        replacement: "https://${1}/remote.php/dav/"

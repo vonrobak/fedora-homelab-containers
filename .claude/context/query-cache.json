@@ -1,69 +1,69 @@
 {
   "top_memory_users": {
-    "timestamp": "2025-12-19T00:02:00+01:00",
+    "timestamp": "2025-12-21T00:03:04+01:00",
     "ttl": 300,
     "result": [
       {
         "name": "jellyfin",
-        "memory_mb": 1154
+        "memory_mb": 2091
       },
       {
         "name": "immich-server",
-        "memory_mb": 302
+        "memory_mb": 253
       },
       {
-        "name": "loki",
-        "memory_mb": 226
+        "name": "nextcloud-db",
+        "memory_mb": 250
       },
       {
         "name": "cadvisor",
-        "memory_mb": 208
+        "memory_mb": 250
       },
       {
-        "name": "ocis",
-        "memory_mb": 160
+        "name": "nextcloud",
+        "memory_mb": 205
       }
     ]
   },
   "disk_usage": {
-    "timestamp": "2025-12-19T00:02:00+01:00",
+    "timestamp": "2025-12-21T00:03:04+01:00",
     "ttl": 600,
     "result": {
       "filesystems": [
         {
           "mount": "/",
-          "usage_pct": "75%"
+          "usage_pct": "80%"
         },
         {
           "mount": "/mnt/btrfs-pool",
-          "usage_pct": "69%"
+          "usage_pct": "71%"
         }
       ]
     }
   },
   "top_cpu_users": {
-    "timestamp": "2025-12-19T00:02:00+01:00",
+    "timestamp": "2025-12-21T00:03:04+01:00",
     "ttl": 60,
     "result": [
       {
         "name": "jellyfin",
-        "cpu_pct": 10.71
+        "cpu_pct": 10.49
+      },
+      {
+        "name": "nextcloud",
+        "cpu_pct": 5.88
       },
       {
         "name": "cadvisor",
-        "cpu_pct": 4.08
-      },
-      {
-        "name": "prometheus",
-        "cpu_pct": 1.09
-      },
-      {
-        "name": "immich-ml",
-        "cpu_pct": 0.78
+        "cpu_pct": 4.14
       },
       {
         "name": "traefik",
-        "cpu_pct": 0.70
+        "cpu_pct": 1.01
+      },
+      {
+        "name": "immich-ml",
+        "cpu_pct": 0.81
       }
     ]
   },
@@ -406,7 +406,7 @@
     ]
   },
   "unhealthy_services": {
-    "timestamp": "2025-12-19T00:02:01+01:00",
+    "timestamp": "2025-12-21T00:03:05+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_services": []
@@ -499,7 +499,7 @@
     }
   },
   "unhealthy_dependencies": {
-    "timestamp": "2025-12-18T23:24:24+01:00",
+    "timestamp": "2025-12-20T06:33:15+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_dependencies": [

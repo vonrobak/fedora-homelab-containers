@@ -1,0 +1,295 @@
+---
+# nextcloud.yml
+# Complete Nextcloud collaboration stack
+#
+# Services: 4 (mariadb, redis, nextcloud, collabora)
+# Deployment order:
+#   Phase 1 (parallel): nextcloud-db, nextcloud-redis
+#   Phase 2: nextcloud
+#   Phase 3: collabora
+#
+# Total memory: ~4.3GB
+# Estimated deployment time: 6-8 minutes
+
+stack:
+  name: nextcloud
+  description: "Nextcloud file sync and collaboration platform"
+  version: "1.0"
+
+shared:
+  networks:
+    - systemd-reverse_proxy
+    - systemd-nextcloud
+    - systemd-monitoring
+  resources:
+    total_memory_mb: 4352  # 512M + 256M + 1.5G + 2G
+  domain: nextcloud.patriark.org
+  storage_base: /mnt/btrfs-pool/subvol7-containers
+
+services:
+  # Phase 1: Database and cache
+  - name: nextcloud-db
+    pattern: database-service
+    dependencies: []
+    configuration:
+      image: docker.io/library/mariadb:11
+      memory: 512M
+      environment:
+        MYSQL_ROOT_PASSWORD: "${NEXTCLOUD_DB_PASSWORD}"
+        MYSQL_DATABASE: nextcloud
+        MYSQL_USER: nextcloud
+        MYSQL_PASSWORD: "${NEXTCLOUD_DB_PASSWORD}"
+        # MariaDB tuning for BTRFS + NOCOW
+        MYSQL_INNODB_FLUSH_METHOD: O_DIRECT
+        MYSQL_INNODB_FILE_PER_TABLE: "1"
+      volumes:
+        - ${storage_base}/nextcloud-db/data:/var/lib/mysql:Z
+      networks:
+        - systemd-nextcloud
+        - systemd-monitoring
+      healthcheck:
+        test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        - "prometheus.scrape=true"
+        - "prometheus.port=3306"
+    ready_criteria:
+      type: healthcheck
+      timeout: 120s
+
+  - name: nextcloud-redis
+    pattern: cache-service
+    dependencies: []
+    configuration:
+      image: docker.io/library/redis:7-alpine
+      memory: 256M
+      command: redis-server --requirepass "${REDIS_PASSWORD}"
+      volumes:
+        - ${storage_base}/nextcloud-redis/data:/data:Z
+      networks:
+        - systemd-nextcloud
+        - systemd-monitoring
+      healthcheck:
+        test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        - "prometheus.scrape=true"
+        - "prometheus.port=6379"
+    ready_criteria:
+      type: healthcheck
+      timeout: 60s
+
+  # Phase 2: Nextcloud application
+  - name: nextcloud
+    pattern: web-app-with-database
+    dependencies:
+      - nextcloud-db
+      - nextcloud-redis
+    configuration:
+      image: docker.io/library/nextcloud:30
+      memory: 1536M
+      environment:
+        # Database configuration
+        MYSQL_HOST: nextcloud-db
+        MYSQL_DATABASE: nextcloud
+        MYSQL_USER: nextcloud
+        MYSQL_PASSWORD: "${NEXTCLOUD_DB_PASSWORD}"
+        # Redis configuration
+        REDIS_HOST: nextcloud-redis
+        REDIS_HOST_PASSWORD: "${REDIS_PASSWORD}"
+        # Nextcloud configuration
+        NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.patriark.org localhost"
+        OVERWRITEPROTOCOL: https
+        OVERWRITEHOST: nextcloud.patriark.org
+        OVERWRITECLIURL: https://nextcloud.patriark.org
+        # Admin account (created on first run)
+        NEXTCLOUD_ADMIN_USER: admin
+        NEXTCLOUD_ADMIN_PASSWORD: "${NEXTCLOUD_ADMIN_PASSWORD}"
+        # Timezone
+        TZ: Europe/Oslo
+        # PHP tuning
+        PHP_MEMORY_LIMIT: 1G
+        PHP_UPLOAD_LIMIT: 10G
+      volumes:
+        - ${storage_base}/nextcloud/data:/var/www/html:Z
+        # External storage - read-only media mounts
+        - /mnt/btrfs-pool/subvol3-opptak:/external/opptak:ro,Z
+        - /mnt/btrfs-pool/subvol4-multimedia:/external/multimedia:ro,Z
+        - /mnt/btrfs-pool/subvol5-music:/external/music:ro,Z
+        # External storage - read-write Downloads
+        - /mnt/btrfs-pool/subvol6-tmp/Downloads:/external/downloads:Z
+        # Immich library (read-only)
+        - /mnt/btrfs-pool/subvol3-opptak/immich:/external/immich-photos:ro,Z
+      networks:
+        - systemd-reverse_proxy  # FIRST for internet access
+        - systemd-nextcloud
+        - systemd-monitoring
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:80/status.php"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+        start_period: 120s  # Initial setup takes time
+      labels:
+        # Traefik routing
+        - "traefik.enable=true"
+        - "traefik.http.routers.nextcloud.rule=Host(`${domain}`)"
+        - "traefik.http.routers.nextcloud.entrypoints=websecure"
+        - "traefik.http.routers.nextcloud.tls=true"
+        - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
+        - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+        # Middleware (NO Authelia - native auth like OCIS)
+        - "traefik.http.routers.nextcloud.middlewares=crowdsec-bouncer@file,rate-limit-ocis@file,circuit-breaker@file,retry@file,nextcloud-caldav"
+        # CalDAV/.well-known redirects (critical for device sync)
+        - "traefik.http.middlewares.nextcloud-caldav.redirectregex.permanent=true"
+        - "traefik.http.middlewares.nextcloud-caldav.redirectregex.regex=^https://(.*)/.well-known/(card|cal)dav"
+        - "traefik.http.middlewares.nextcloud-caldav.redirectregex.replacement=https://$${1}/remote.php/dav/"
+        # Prometheus
+        - "prometheus.scrape=true"
+        - "prometheus.port=80"
+        - "prometheus.path=/ocs/v2.php/apps/serverinfo/api/v1/info"
+    ready_criteria:
+      type: healthcheck
+      timeout: 300s  # Initial container setup + database migrations
+
+  # Phase 3: Collabora Online (Office suite)
+  - name: collabora
+    pattern: reverse-proxy-backend
+    dependencies:
+      - nextcloud
+    configuration:
+      image: docker.io/collabora/code:latest
+      memory: 2048M
+      environment:
+        # Nextcloud domain whitelist
+        aliasgroup1: https://nextcloud.patriark.org
+        # Collabora configuration
+        extra_params: --o:ssl.enable=false --o:ssl.termination=true
+        # Locale
+        dictionaries: "en_US no_NO"
+        # Security
+        username: admin
+        password: "${NEXTCLOUD_ADMIN_PASSWORD}"
+      # Capabilities for LibreOffice
+      capabilities:
+        - MKNOD
+      networks:
+        - systemd-reverse_proxy  # FIRST for internet access
+        - systemd-nextcloud
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:9980/hosting/discovery"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      labels:
+        # Traefik routing
+        - "traefik.enable=true"
+        - "traefik.http.routers.collabora.rule=Host(`collabora.patriark.org`)"
+        - "traefik.http.routers.collabora.entrypoints=websecure"
+        - "traefik.http.routers.collabora.tls=true"
+        - "traefik.http.routers.collabora.tls.certresolver=letsencrypt"
+        - "traefik.http.services.collabora.loadbalancer.server.port=9980"
+        # Middleware (NO Authelia - Nextcloud handles auth)
+        - "traefik.http.routers.collabora.middlewares=crowdsec-bouncer@file,rate-limit-ocis@file"
+    ready_criteria:
+      type: healthcheck
+      timeout: 180s
+
+# Deployment configuration
+deployment:
+  phases:
+    - phase: 1
+      parallel: true
+      services:
+        - nextcloud-db
+        - nextcloud-redis
+      wait_for_healthy: true
+
+    - phase: 2
+      parallel: false
+      services:
+        - nextcloud
+      wait_for_healthy: true
+
+    - phase: 3
+      parallel: false
+      services:
+        - collabora
+      wait_for_healthy: true
+
+# Post-deployment validation
+validation:
+  tests:
+    - name: "MariaDB connectivity"
+      type: sql_query
+      target: nextcloud-db
+      query: "SELECT 1"
+      expected_exit: 0
+
+    - name: "Redis connectivity"
+      type: redis_ping
+      target: nextcloud-redis
+
+    - name: "Nextcloud status"
+      type: http_get
+      url: "http://nextcloud:80/status.php"
+      expected_status: 200
+
+    - name: "Collabora discovery"
+      type: http_get
+      url: "http://collabora:9980/hosting/discovery"
+      expected_status: 200
+
+    - name: "External access via Traefik"
+      type: http_get
+      url: "https://nextcloud.patriark.org"
+      expected_status: 200
+
+# Documentation
+documentation:
+  pre_deployment:
+    - "Set environment variables: NEXTCLOUD_DB_PASSWORD, NEXTCLOUD_ADMIN_PASSWORD, REDIS_PASSWORD"
+    - "CRITICAL: Apply NOCOW to /mnt/btrfs-pool/subvol7-containers/nextcloud-db/data BEFORE deployment"
+    - "Create systemd-nextcloud network: podman network create systemd-nextcloud"
+    - "Ensure storage base exists and has correct permissions"
+    - "Verify networks exist: systemd-reverse_proxy, systemd-nextcloud, systemd-monitoring"
+    - "Estimated deployment time: 6-8 minutes"
+    - "Estimated memory usage: 4.3GB"
+
+  post_deployment:
+    - "Access Nextcloud at: https://nextcloud.patriark.org"
+    - "Admin credentials: admin / ${NEXTCLOUD_ADMIN_PASSWORD}"
+    - "Install Calendar and Contacts apps via Web UI"
+    - "Configure Collabora integration: Settings → Office → Use your own server → https://collabora.patriark.org"
+    - "Configure external storage: Settings → External Storage → Local → Mount Points"
+    - "Set up user quotas and groups"
+    - "Test CalDAV: https://nextcloud.patriark.org/remote.php/dav/"
+    - "Test CardDAV: https://nextcloud.patriark.org/remote.php/dav/addressbooks/"
+    - "Configure mobile/desktop clients"
+    - "Check logs: journalctl --user -u nextcloud.service"
+
+  troubleshooting:
+    - "If database connection fails: Check MariaDB logs and NOCOW attribute"
+    - "If Redis connection fails: Verify password and network connectivity"
+    - "If .well-known redirects fail: Check Traefik middleware labels"
+    - "If Collabora won't connect: Verify aliasgroup1 domain matches Nextcloud"
+    - "If external storage not visible: Check volume mount permissions and :Z labels"
+    - "If CalDAV/CardDAV fails on devices: Verify .well-known redirects work"
+
+# Rollback strategy
+rollback:
+  strategy: "Stop services in reverse dependency order"
+  preserves_data: true
+  data_locations:
+    - ${storage_base}/nextcloud-db/data (MariaDB database)
+    - ${storage_base}/nextcloud/data (Nextcloud files)
+    - ${storage_base}/nextcloud-redis/data (Redis cache - can be recreated)
+  steps:
+    - "Stop services: collabora, nextcloud, nextcloud-redis, nextcloud-db"
+    - "Remove quadlet files from ~/.config/containers/systemd/"
+    - "Reload systemd: systemctl --user daemon-reload"
+    - "Data remains intact for future re-deployment"

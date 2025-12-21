@@ -183,6 +183,12 @@ http:
         # More permissive CSP for public content
         contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:;"
 
+    # HSTS-only for Nextcloud (sets own CSP, just needs HSTS)
+    hsts-only:
+      headers:
+        customResponseHeaders:
+          Strict-Transport-Security: "max-age=31536000; includeSubDomains; preload"
+
     # ═══════════════════════════════════════════════════════════
     # IP WHITELISTING - For admin access
     # ═══════════════════════════════════════════════════════════

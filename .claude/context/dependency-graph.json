@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-19T00:05:16+01:00",
+  "generated_at": "2025-12-21T00:03:01+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -88,6 +88,27 @@
       "critical": false,
       "restart_priority": 0,
       "blast_radius": 0
+    },
+    "collabora": {
+      "dependencies": [
+        {
+          "target": "nextcloud",
+          "type": "startup",
+          "strength": "soft",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "traefik"
+      ],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-nextcloud"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
     },
     "crowdsec": {
       "dependencies": [],
@@ -246,6 +267,63 @@
       "critical": false,
       "restart_priority": 0,
       "blast_radius": 2
+    },
+    "nextcloud": {
+      "dependencies": [
+        {
+          "target": "nextcloud-db",
+          "type": "startup",
+          "strength": "soft",
+          "source": "quadlet"
+        },
+        {
+          "target": "nextcloud-redis",
+          "type": "startup",
+          "strength": "soft",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [
+        "collabora",
+        "traefik"
+      ],
+      "networks": [
+        "systemd-reverse_proxy",
+        "systemd-nextcloud",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 2
+    },
+    "nextcloud-db": {
+      "dependencies": [],
+      "dependents": [
+        "nextcloud"
+      ],
+      "networks": [
+        "systemd-nextcloud",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
+    },
+    "nextcloud-redis": {
+      "dependencies": [],
+      "dependents": [
+        "nextcloud"
+      ],
+      "networks": [
+        "systemd-nextcloud",
+        "systemd-monitoring"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 1
     },
     "node_exporter": {
       "dependencies": [
@@ -462,6 +540,20 @@
           "router": "immich-secure"
         },
         {
+          "target": "nextcloud",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "nextcloud-secure"
+        },
+        {
+          "target": "collabora",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "collabora-secure"
+        },
+        {
           "target": "grafana",
           "type": "routing",
           "strength": "soft",
@@ -588,25 +680,37 @@
     },
     "systemd-monitoring": {
       "members": [
-        "immich-server",
-        "ocis",
+        "nextcloud",
         "node_exporter",
-        "alertmanager",
         "alert-discord-relay",
         "cadvisor",
+        "nextcloud-db",
+        "ocis",
         "promtail",
-        "grafana",
-        "prometheus",
-        "jellyfin",
         "traefik",
-        "loki"
+        "grafana",
+        "immich-server",
+        "jellyfin",
+        "prometheus",
+        "loki",
+        "nextcloud-redis",
+        "alertmanager"
+      ],
+      "gateway": false
+    },
+    "systemd-nextcloud": {
+      "members": [
+        "nextcloud",
+        "nextcloud-db",
+        "collabora",
+        "nextcloud-redis"
       ],
       "gateway": false
     },
     "systemd-photos": {
       "members": [
-        "immich-server",
         "redis-immich",
+        "immich-server",
         "immich-ml",
         "postgresql-immich"
       ],
@@ -614,24 +718,26 @@
     },
     "systemd-reverse_proxy": {
       "members": [
-        "immich-server",
-        "ocis",
+        "nextcloud",
         "authelia",
+        "ocis",
+        "traefik",
         "grafana",
-        "prometheus",
-        "vaultwarden",
+        "immich-server",
         "jellyfin",
+        "prometheus",
         "homepage",
         "crowdsec",
-        "traefik",
-        "loki"
+        "loki",
+        "vaultwarden",
+        "collabora"
       ],
       "gateway": true
     }
   },
   "metadata": {
-    "total_services": 26,
-    "total_dependencies": 38,
+    "total_services": 30,
+    "total_dependencies": 43,
     "sources": [
       "quadlets",
       "networks",
