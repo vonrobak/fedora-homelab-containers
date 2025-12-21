@@ -9,13 +9,29 @@ groups:
     rules:
       # Warning: Container memory pressure (using >95% of limit)
       # Raised threshold from 90% to 95% - databases often run at 85-92% by design
+      # Hysteresis: Fire >95%, resolve <90% (prevents flapping)
       - alert: ContainerMemoryPressure
         expr: |
           (
-            container_memory_working_set_bytes{name!~"POD|pause"}
-            /
-            container_spec_memory_limit_bytes{name!~"POD|pause"}
-          ) > 0.95 and container_spec_memory_limit_bytes > 0
+            (
+              container_memory_working_set_bytes{name!~"POD|pause"}
+              /
+              container_spec_memory_limit_bytes{name!~"POD|pause"}
+            ) > 0.95
+            and
+            ALERTS{alertname="ContainerMemoryPressure"} != 1
+          )
+          or
+          (
+            (
+              container_memory_working_set_bytes{name!~"POD|pause"}
+              /
+              container_spec_memory_limit_bytes{name!~"POD|pause"}
+            ) > 0.90
+            and
+            ALERTS{alertname="ContainerMemoryPressure"} == 1
+          )
+          and container_spec_memory_limit_bytes > 0
         for: 15m
         labels:
           severity: warning
@@ -76,8 +92,20 @@ groups:
       # not Prometheus alerts. See: ~/containers/scripts/weekly-intelligence-report.sh
 
       # Warning: Sustained high system load
+      # Hysteresis: Fire >1.5x, resolve <1.3x (prevents flapping)
       - alert: HighSystemLoad
-        expr: node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.5
+        expr: |
+          (
+            node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.5
+            and
+            ALERTS{alertname="HighSystemLoad"} != 1
+          )
+          or
+          (
+            node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.3
+            and
+            ALERTS{alertname="HighSystemLoad"} == 1
+          )
         for: 15m
         labels:
           severity: warning

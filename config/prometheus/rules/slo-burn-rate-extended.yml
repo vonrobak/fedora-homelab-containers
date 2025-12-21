@@ -92,6 +92,25 @@ groups:
           / error_budget:traefik:availability:budget_total
 
       # ===========================================================================
+      # NEXTCLOUD - Extended burn rate windows
+      # ===========================================================================
+
+      - record: burn_rate:nextcloud:availability:1d
+        expr: |
+          (1 - avg_over_time(sli:nextcloud:availability:ratio[1d]))
+          / error_budget:nextcloud:availability:budget_total
+
+      - record: burn_rate:nextcloud:availability:2h
+        expr: |
+          (1 - avg_over_time(sli:nextcloud:availability:ratio[2h]))
+          / error_budget:nextcloud:availability:budget_total
+
+      - record: burn_rate:nextcloud:availability:3d
+        expr: |
+          (1 - avg_over_time(sli:nextcloud:availability:ratio[3d]))
+          / error_budget:nextcloud:availability:budget_total
+
+      # ===========================================================================
       # ERROR BUDGET FORECASTING
       # ===========================================================================
 
@@ -129,4 +148,13 @@ groups:
             error_budget:traefik:availability:budget_remaining
             /
             clamp_min(burn_rate:traefik:availability:3d, 0.001)
+          ) * 30
+
+      # Nextcloud - Days until budget exhaustion
+      - record: error_budget:nextcloud:availability:days_remaining
+        expr: |
+          (
+            error_budget:nextcloud:availability:budget_remaining
+            /
+            clamp_min(burn_rate:nextcloud:availability:3d, 0.001)
           ) * 30

@@ -51,6 +51,20 @@ groups:
       - record: sli:authelia:availability:ratio
         expr: slo:authelia:availability:actual
 
+      # Nextcloud - Total requests
+      - record: sli:nextcloud:requests:total
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m]))
+
+      # Nextcloud - Successful requests
+      - record: sli:nextcloud:requests:success
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[5m]))
+
+      # Nextcloud - Availability (use 30d SLO for current display)
+      - record: sli:nextcloud:availability:ratio
+        expr: slo:nextcloud:availability:actual
+
       # Traefik Gateway - Uptime
       - record: sli:traefik:availability:ratio
         expr: |
@@ -89,6 +103,20 @@ groups:
           sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="authelia@file", le="0.2"}[5m]))
           /
           sum(rate(traefik_service_request_duration_seconds_count{exported_service="authelia@file"}[5m]))
+
+      # Nextcloud - p95 latency
+      - record: sli:nextcloud:latency:p95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="nextcloud@file"}[5m])) by (le)
+          )
+
+      # Nextcloud - Requests under 1000ms target (file sync can be slower)
+      - record: sli:nextcloud:latency:fast_ratio
+        expr: |
+          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="nextcloud@file", le="1.0"}[5m]))
+          /
+          sum(rate(traefik_service_request_duration_seconds_count{exported_service="nextcloud@file"}[5m]))
 
       # Traefik - p99 entrypoint latency (all traffic)
       - record: sli:traefik:latency:p99
@@ -177,6 +205,22 @@ groups:
         expr: |
           slo:authelia:availability:actual >= slo:authelia:availability:target
 
+      # Nextcloud - 99.5% availability target over 30 days
+      - record: slo:nextcloud:availability:target
+        expr: 0.995
+
+      - record: slo:nextcloud:availability:actual
+        expr: |
+          (
+            sum(increase(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[30d]))
+            /
+            sum(increase(traefik_service_requests_total{exported_service="nextcloud@file"}[30d]))
+          )
+
+      - record: slo:nextcloud:availability:compliant
+        expr: |
+          slo:nextcloud:availability:actual >= slo:nextcloud:availability:target
+
       # Traefik - 99.95% availability target over 30 days
       - record: slo:traefik:availability:target
         expr: 0.9995
@@ -239,6 +283,21 @@ groups:
       - record: error_budget:authelia:availability:budget_remaining
         expr: |
           clamp_max(1 - error_budget:authelia:availability:budget_consumed, 1)
+
+      # Nextcloud - Error budget (0.5% allowed failure = 216 min/month)
+      - record: error_budget:nextcloud:availability:budget_total
+        expr: 0.005
+
+      - record: error_budget:nextcloud:availability:budget_consumed
+        expr: |
+          clamp_min(
+            (1 - slo:nextcloud:availability:actual) / (1 - slo:nextcloud:availability:target),
+            0
+          )
+
+      - record: error_budget:nextcloud:availability:budget_remaining
+        expr: |
+          clamp_max(1 - error_budget:nextcloud:availability:budget_consumed, 1)
 
       # Traefik - Error budget (0.05% = 21 min/month)
       - record: error_budget:traefik:availability:budget_total
@@ -326,6 +385,27 @@ groups:
         expr: |
           (1 - avg_over_time(sli:authelia:availability:ratio[30m]))
           / error_budget:authelia:availability:budget_total
+
+      # Nextcloud - Burn rates
+      - record: burn_rate:nextcloud:availability:1h
+        expr: |
+          (1 - avg_over_time(sli:nextcloud:availability:ratio[1h]))
+          / error_budget:nextcloud:availability:budget_total
+
+      - record: burn_rate:nextcloud:availability:5m
+        expr: |
+          (1 - avg_over_time(sli:nextcloud:availability:ratio[5m]))
+          / error_budget:nextcloud:availability:budget_total
+
+      - record: burn_rate:nextcloud:availability:6h
+        expr: |
+          (1 - avg_over_time(sli:nextcloud:availability:ratio[6h]))
+          / error_budget:nextcloud:availability:budget_total
+
+      - record: burn_rate:nextcloud:availability:30m
+        expr: |
+          (1 - avg_over_time(sli:nextcloud:availability:ratio[30m]))
+          / error_budget:nextcloud:availability:budget_total
 
       # Traefik - Burn rates
       - record: burn_rate:traefik:availability:1h

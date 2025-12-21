@@ -94,14 +94,5 @@ scrape_configs:
           instance: 'fedora-htpc'
           service: 'cadvisor'
 
-  # Nextcloud monitoring
-  - job_name: 'nextcloud'
-    scrape_interval: 60s  # Nextcloud metrics are expensive to generate
-    static_configs:
-      - targets: ['nextcloud:80']
-        labels:
-          instance: 'fedora-htpc'
-          service: 'nextcloud'
-    metrics_path: '/ocs/v2.php/apps/serverinfo/api/v1/info'
-    params:
-      format: ['json']
+  # Nextcloud monitoring removed - ServerInfo endpoint requires auth
+  # Nextcloud availability monitored via Traefik metrics (SLO recording rules)

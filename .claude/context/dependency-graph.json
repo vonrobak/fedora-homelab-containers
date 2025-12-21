@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-21T00:03:01+01:00",
+  "generated_at": "2025-12-21T06:00:49+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -345,27 +345,6 @@
       "restart_priority": 0,
       "blast_radius": 1
     },
-    "ocis": {
-      "dependencies": [
-        {
-          "target": "traefik",
-          "type": "runtime",
-          "strength": "hard",
-          "source": "quadlet"
-        }
-      ],
-      "dependents": [
-        "traefik"
-      ],
-      "networks": [
-        "systemd-reverse_proxy",
-        "systemd-monitoring"
-      ],
-      "external_access": false,
-      "critical": false,
-      "restart_priority": 0,
-      "blast_radius": 1
-    },
     "postgresql-immich": {
       "dependencies": [
         {
@@ -498,13 +477,6 @@
           "source": "quadlet"
         },
         {
-          "target": "ocis",
-          "type": "routing",
-          "strength": "soft",
-          "source": "traefik-router",
-          "router": "ocis-secure"
-        },
-        {
           "target": "homepage",
           "type": "routing",
           "strength": "soft",
@@ -576,7 +548,6 @@
         }
       ],
       "dependents": [
-        "ocis",
         "vaultwarden"
       ],
       "networks": [
@@ -587,7 +558,7 @@
       "external_access": false,
       "critical": true,
       "restart_priority": 0,
-      "blast_radius": 2
+      "blast_radius": 1
     },
     "vaultwarden": {
       "dependencies": [
@@ -681,18 +652,17 @@
     "systemd-monitoring": {
       "members": [
         "nextcloud",
+        "jellyfin",
         "node_exporter",
         "alert-discord-relay",
         "cadvisor",
         "nextcloud-db",
-        "ocis",
         "promtail",
         "traefik",
         "grafana",
         "immich-server",
-        "jellyfin",
-        "prometheus",
         "loki",
+        "prometheus",
         "nextcloud-redis",
         "alertmanager"
       ],
@@ -709,8 +679,8 @@
     },
     "systemd-photos": {
       "members": [
-        "redis-immich",
         "immich-server",
+        "redis-immich",
         "immich-ml",
         "postgresql-immich"
       ],
@@ -719,16 +689,15 @@
     "systemd-reverse_proxy": {
       "members": [
         "nextcloud",
+        "jellyfin",
         "authelia",
-        "ocis",
         "traefik",
         "grafana",
         "immich-server",
-        "jellyfin",
-        "prometheus",
         "homepage",
         "crowdsec",
         "loki",
+        "prometheus",
         "vaultwarden",
         "collabora"
       ],
@@ -736,8 +705,8 @@
     }
   },
   "metadata": {
-    "total_services": 30,
-    "total_dependencies": 43,
+    "total_services": 29,
+    "total_dependencies": 41,
     "sources": [
       "quadlets",
       "networks",
