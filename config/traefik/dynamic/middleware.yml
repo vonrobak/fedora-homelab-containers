@@ -105,6 +105,16 @@ http:
           ipStrategy:
             depth: 1
 
+    # Nextcloud (authenticated users - high capacity for WebDAV sync, bulk imports)
+    rate-limit-nextcloud:
+      rateLimit:
+        average: 400      # Higher sustained rate for file/calendar/contact sync
+        burst: 1400       # Support bulk operations (1300+ contact CSV imports)
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
     # ═══════════════════════════════════════════════════════════
     # AUTHENTICATION
     # ═══════════════════════════════════════════════════════════

@@ -108,7 +108,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit-ocis@file         # Higher capacity for WebDAV sync
+        - rate-limit-nextcloud@file     # High capacity for WebDAV sync, bulk imports (400/min, 1400 burst)
         - circuit-breaker@file          # Prevent cascade failures
         - retry@file                    # Retry transient errors
         - nextcloud-caldav              # CalDAV/.well-known redirects
