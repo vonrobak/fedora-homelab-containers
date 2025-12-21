@@ -408,7 +408,17 @@ Each runbook includes detection criteria, step-by-step procedures, recovery time
 - **ADR-001: Rootless Containers** - All containers run as unprivileged user (UID 1000), not root. Requires `:Z` SELinux labels. ✅ Production
 - **ADR-002: Systemd Quadlets Over Docker Compose** - Native systemd integration for unified logging and dependency management. ✅ Production
 - **ADR-003: Monitoring Stack (Prometheus + Grafana + Loki)** - Industry-standard observability with ~340MB RAM overhead. ✅ Production
-- **ADR-005: Authelia SSO with YubiKey-First Authentication** - Phishing-resistant hardware auth via FIDO2/WebAuthn, replacing TinyAuth. ✅ Production
+- **ADR-004: Immich Deployment Architecture** - Multi-container photo management with GPU transcoding and machine learning. ✅ Production
+- **ADR-005: Authelia SSO & MFA Architecture** - Initial SSO design with multi-factor authentication. ✅ Production (superseded by ADR-006)
+- **ADR-006: Authelia SSO with YubiKey-First Authentication** - Phishing-resistant hardware auth via FIDO2/WebAuthn, replacing TinyAuth. ✅ Production
+- **ADR-007: Vaultwarden Architecture** - Self-hosted password manager with Bitwarden compatibility. ✅ Production
+- **ADR-008: CrowdSec Security Architecture** - IP reputation and threat intelligence with fail-fast middleware ordering. ✅ Production
+- **ADR-009: Config vs Data Directory Strategy** - Storage organization principles for containers. ✅ Production
+- **ADR-010: Pattern-Based Deployment** - Automated service deployment with validation and health checks. ✅ Production
+- **ADR-011: Service Dependency Mapping** - Automated dependency discovery for autonomous operations. ✅ Production
+- **ADR-012: Autonomous Operations Alert Quality** - SLO-based alerting and prediction system with confidence-based decision making. ✅ Production
+- **ADR-013: Nextcloud Native Authentication** - CalDAV/CardDAV compatibility requires native auth instead of Authelia SSO. ✅ Production
+- **ADR-014: Nextcloud Passwordless Authentication** - FIDO2/WebAuthn passwordless authentication for superior security. ✅ Production
 
 **Using ADRs:**
 1. Check if an ADR exists explaining the current approach before proposing changes
