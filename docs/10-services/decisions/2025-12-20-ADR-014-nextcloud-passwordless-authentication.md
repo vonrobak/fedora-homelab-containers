@@ -1,4 +1,4 @@
-# ADR-008: Nextcloud Passwordless Authentication with FIDO2/WebAuthn
+# ADR-014: Nextcloud Passwordless Authentication with FIDO2/WebAuthn
 
 **Date:** 2025-12-20
 **Status:** Implemented
@@ -52,7 +52,7 @@ This decision impacts:
 
 ### Infrastructure Constraints
 
-- **Native authentication** - Nextcloud doesn't use Authelia SSO (see ADR-007)
+- **Native authentication** - Nextcloud doesn't use Authelia SSO (see ADR-013)
 - **FIDO2 support** - Nextcloud 30 includes WebAuthn passwordless support
 - **Device availability** - User has 3 YubiKey 5 series hardware keys
 - **Browser support** - Modern browsers support WebAuthn (Chrome, Firefox, Safari, Edge)
@@ -360,7 +360,7 @@ The user has **5 registered devices**, providing extensive redundancy:
 
 ## Related Decisions
 
-- **ADR-007**: Nextcloud Native Authentication (explains why no Authelia SSO)
+- **ADR-013**: Nextcloud Native Authentication (explains why no Authelia SSO)
 - **Migration-001**: Nextcloud Secrets Migration (credential security in infrastructure)
 - **ADR-005**: OCIS Native Authentication (same pattern: native auth for sync services)
 

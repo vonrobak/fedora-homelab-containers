@@ -1,4 +1,4 @@
-# ADR-007: Nextcloud Native Authentication Strategy
+# ADR-013: Nextcloud Native Authentication Strategy
 
 **Date:** 2025-12-20
 **Status:** Implemented
@@ -131,9 +131,9 @@ iOS Calendar Setup:
 - ✅ **Standards compliance** - RFC 4791/6352 CalDAV/CardDAV fully functional
 
 **Cons:**
-- ⚠️ **YubiKey via FIDO2 only** - Nextcloud supports WebAuthn/FIDO2 passwordless (see ADR-008), not Authelia's YubiKey integration
+- ⚠️ **YubiKey via FIDO2 only** - Nextcloud supports WebAuthn/FIDO2 passwordless (see ADR-014), not Authelia's YubiKey integration
 - ⚠️ **Separate user database** - Nextcloud users != Authelia users (manageable for family)
-- ⚠️ **Per-service passwords** - Users have different credentials for Nextcloud vs Jellyfin (or can use passwordless - see ADR-008)
+- ⚠️ **Per-service passwords** - Users have different credentials for Nextcloud vs Jellyfin (or can use passwordless - see ADR-014)
 
 **Security Mitigations:**
 1. **CrowdSec perimeter defense** - Malicious IPs blocked before reaching Nextcloud
@@ -256,13 +256,13 @@ Nextcloud Native Auth (HTTP Basic or session cookie)
 |-------|--------------|-------------|-------|
 | **Perimeter** | CrowdSec | CrowdSec | ✅ Equal |
 | **Rate Limiting** | 100 req/min | 200 req/min | Native has WebDAV headroom |
-| **Primary Auth** | Authelia (YubiKey) | Nextcloud (FIDO2/WebAuthn) | ✅ Equal (see ADR-008) |
-| **2FA** | YubiKey + TOTP | FIDO2 Passwordless (YubiKey) | ✅ Equal (ADR-008) |
+| **Primary Auth** | Authelia (YubiKey) | Nextcloud (FIDO2/WebAuthn) | ✅ Equal (see ADR-014) |
+| **2FA** | YubiKey + TOTP | FIDO2 Passwordless (YubiKey) | ✅ Equal (ADR-014) |
 | **Brute-Force** | Authelia throttle | Nextcloud throttle | ✅ Equal |
 | **Session Security** | Authelia Redis | Nextcloud Redis | ✅ Equal |
 | **Password Policy** | Authelia | Not applicable (passwordless) | Native advantage (no password) |
 
-**Security Trade-off UPDATE (2025-12-20):** Initial assessment assumed TOTP-only 2FA. **ADR-008** documents that Nextcloud 30 supports FIDO2/WebAuthn passwordless authentication, providing **superior security** to Authelia SSO:
+**Security Trade-off UPDATE (2025-12-20):** Initial assessment assumed TOTP-only 2FA. **ADR-014** documents that Nextcloud 30 supports FIDO2/WebAuthn passwordless authentication, providing **superior security** to Authelia SSO:
 1. ✅ YubiKey support via FIDO2 passwordless (3 YubiKeys + Vaultwarden + Touch ID)
 2. ✅ Complete phishing resistance (no password to phish)
 3. ✅ Zero credential storage risk (public keys only)
@@ -289,7 +289,7 @@ Nextcloud Native Auth (HTTP Basic or session cookie)
    - Nextcloud OCC CLI enables scriptable user provisioning
    - Group folders reduce per-user configuration
 
-2. **Authentication Strategy (UPDATE: See ADR-008):**
+2. **Authentication Strategy (UPDATE: See ADR-014):**
    - ✅ **YubiKey support available** via FIDO2/WebAuthn passwordless
    - ✅ **Hardware MFA implemented** - 3 YubiKeys + Vaultwarden + Touch ID
    - ✅ **Phishing-resistant** - FIDO2 provides superior security to Authelia
@@ -304,7 +304,7 @@ Nextcloud Native Auth (HTTP Basic or session cookie)
 
 **UPDATE (2025-12-20): FIDO2/WebAuthn Support Confirmed**
 - ✅ Nextcloud 30 supports FIDO2/WebAuthn passwordless authentication
-- ✅ Implementation documented in ADR-008
+- ✅ Implementation documented in ADR-014
 - ✅ Native auth decision validated - correct choice for CalDAV/CardDAV compatibility
 
 **If Authelia adds CalDAV/CardDAV proxy support:**
@@ -322,7 +322,7 @@ Nextcloud Native Auth (HTTP Basic or session cookie)
 
 ## Related Decisions
 
-- **ADR-008:** Nextcloud Passwordless Authentication (FIDO2/WebAuthn implementation - supersedes TOTP 2FA recommendation)
+- **ADR-014:** Nextcloud Passwordless Authentication (FIDO2/WebAuthn implementation - supersedes TOTP 2FA recommendation)
 - **ADR-005:** OCIS Native Authentication (same rationale applies)
 - **ADR-002:** Systemd Quadlets Over Docker Compose (deployment pattern)
 - **ADR-001:** Rootless Containers (security foundation)

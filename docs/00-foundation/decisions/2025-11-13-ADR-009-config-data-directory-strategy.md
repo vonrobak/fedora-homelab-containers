@@ -112,7 +112,7 @@ ln -s ~/containers/config/crowdsec/profiles.yaml \
 ### Files Tracked in data/
 
 **CrowdSec Custom Configs:**
-- `data/crowdsec/config/profiles.yaml` - Custom ban profiles (tiered strategy per ADR-006)
+- `data/crowdsec/config/profiles.yaml` - Custom ban profiles (tiered strategy per ADR-008)
 - `data/crowdsec/config/acquis.yaml` - Log acquisition configuration
 - `data/crowdsec/config/parsers/s02-enrich/local-whitelist.yaml` - Local network whitelist
 

@@ -129,6 +129,17 @@ podman logs -f <service>            # Follow logs
 podman healthcheck run <service>    # Check container health
 ```
 
+### Update Management
+
+**Update Strategy:**
+- **Most services:** Use `:latest` tags for automatic security patches
+- **Databases:** Pin major versions (PostgreSQL, MariaDB) - manual migration required
+- **Immich:** Pin to specific version (tight coupling with ML + postgres)
+- **Workflow:** `~/containers/scripts/update-before-reboot.sh` before DNF updates
+- **Rollback:** Automated BTRFS snapshots enable instant recovery
+
+**See:** `docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md`
+
 ### Network Management
 
 ```bash
@@ -419,6 +430,7 @@ Each runbook includes detection criteria, step-by-step procedures, recovery time
 - **ADR-012: Autonomous Operations Alert Quality** - SLO-based alerting and prediction system with confidence-based decision making. ✅ Production
 - **ADR-013: Nextcloud Native Authentication** - CalDAV/CardDAV compatibility requires native auth instead of Authelia SSO. ✅ Production
 - **ADR-014: Nextcloud Passwordless Authentication** - FIDO2/WebAuthn passwordless authentication for superior security. ✅ Production
+- **ADR-015: Container Update Strategy** - State-of-the-art approach with `:latest` tags for most services, strategic pinning for databases. ✅ Production
 
 **Using ADRs:**
 1. Check if an ADR exists explaining the current approach before proposing changes
