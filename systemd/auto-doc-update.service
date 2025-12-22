@@ -1,0 +1,18 @@
+[Unit]
+Description=Auto-Documentation Generator
+Documentation=file:///home/patriark/containers/docs/97-plans/PROJECT-C-AUTO-DOCUMENTATION-REVISED.md
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/patriark/containers
+ExecStart=/home/patriark/containers/scripts/auto-doc-orchestrator.sh
+StandardOutput=journal
+StandardError=journal
+
+# Optional: Auto-commit if docs changed
+# Uncomment to enable automatic git commits
+# ExecStartPost=/bin/bash -c 'cd /home/patriark/containers && if git diff --quiet docs/AUTO-*.md; then echo "No changes"; else git add docs/AUTO-*.md && git commit -m "docs: Auto-update documentation ($(date +%%Y-%%m-%%d))" && echo "Documentation updated and committed"; fi'
+
+[Install]
+WantedBy=default.target

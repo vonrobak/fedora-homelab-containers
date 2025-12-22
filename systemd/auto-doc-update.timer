@@ -1,0 +1,18 @@
+[Unit]
+Description=Auto-Documentation Update Timer
+Documentation=file:///home/patriark/containers/docs/97-plans/PROJECT-C-AUTO-DOCUMENTATION-REVISED.md
+Requires=auto-doc-update.service
+
+[Timer]
+# Run daily at 07:00
+OnCalendar=daily
+OnCalendar=*-*-* 07:00:00
+
+# Run 5 minutes after boot if system was down during scheduled time
+Persistent=true
+
+# Randomize start time by up to 5 minutes to avoid resource contention
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
