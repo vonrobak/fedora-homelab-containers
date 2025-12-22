@@ -3,6 +3,9 @@
 **Purpose:** Step-by-step checklist for deploying Immich photo management service
 **Reference:** ADR `docs/10-services/decisions/2025-11-08-immich-deployment-architecture.md`
 **Timeline:** Week 2 (4-6 hours total)
+**Status:** Historical deployment record (November 2025)
+
+**Note:** This checklist references TinyAuth, which was later replaced by Authelia (ADR-006, 2025-11-11). The deployment steps remain valid; substitute "authelia@file" for "tinyauth@file" in middleware configurations.
 
 ---
 

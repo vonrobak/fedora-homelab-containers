@@ -566,7 +566,7 @@ systemctl --user restart immich-ml.service
 
 **Current:** Immich-native authentication (separate from Traefik middleware)
 - Each user has their own Immich account
-- Not integrated with TinyAuth (by design - allows family sharing)
+- Not integrated with Authelia (by design - allows family sharing)
 
 **Future:** Authelia SSO integration (see ADR-004)
 - OIDC support in Immich

@@ -93,7 +93,7 @@ http:
 middlewares:
   - crowdsec-bouncer@file  # FIRST - fastest check
   - rate-limit@file
-  - tinyauth@file
+  - authelia@file
 ```
 
 ---

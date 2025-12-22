@@ -1,6 +1,6 @@
 # Traefik Reverse Proxy
 
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-12-22
 **Version:** v3.2
 **Status:** Production
 **Networks:** reverse_proxy, auth_services, monitoring
@@ -70,11 +70,11 @@ Traefik connects to **three networks** for different purposes:
 systemd-reverse_proxy (10.89.2.0/24)
 ├── Traefik (gateway)
 ├── Jellyfin
-└── TinyAuth
+└── Authelia
 
 systemd-auth_services (10.89.3.0/24)
-├── Traefik (can reach TinyAuth)
-└── TinyAuth (authentication backend)
+├── Traefik (can reach Authelia)
+└── Authelia (SSO authentication backend)
 
 systemd-monitoring (10.89.4.0/24)
 ├── Traefik (exports metrics)
@@ -84,7 +84,7 @@ systemd-monitoring (10.89.4.0/24)
 
 **Why multiple networks?**
 - `reverse_proxy`: Front services to internet
-- `auth_services`: Communicate with TinyAuth for authentication
+- `auth_services`: Communicate with Authelia for SSO authentication
 - `monitoring`: Export metrics to Prometheus
 
 ### Security Layers (Middleware Ordering)
@@ -98,7 +98,7 @@ Internet Request
   ↓
 [2] Rate Limiting (prevent abuse)
   ↓
-[3] TinyAuth (authentication)
+[3] Authelia (SSO authentication + MFA)
   ↓
 [4] Security Headers (CSP, HSTS, X-Frame-Options)
   ↓
@@ -158,7 +158,7 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit@file
-        - tinyauth@file
+        - authelia@file
         - security-headers@file
       service: jellyfin
       tls:
@@ -198,11 +198,11 @@ rate-limit:
     burst: 100
 ```
 
-**TinyAuth:**
+**Authelia:**
 ```yaml
-tinyauth:
+authelia:
   forwardAuth:
-    address: "http://tinyauth:3000/auth"
+    address: "http://authelia:3000/auth"
     trustForwardHeader: true
     authResponseHeaders:
       - X-Forwarded-User
@@ -255,7 +255,7 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit@file
-        - tinyauth@file
+        - authelia@file
         - security-headers@file
       service: myservice
       tls:
@@ -383,7 +383,7 @@ podman logs traefik | grep -i acme
 curl http://localhost:8080/api/http/routers/servicename@file | grep middlewares
 
 # Verify middleware exists
-curl http://localhost:8080/api/http/middlewares/tinyauth@file
+curl http://localhost:8080/api/http/middlewares/authelia@file
 ```
 
 **Common causes:**
@@ -394,7 +394,7 @@ curl http://localhost:8080/api/http/middlewares/tinyauth@file
 
 ### Dashboard 404 After Login
 
-**Problem:** TinyAuth login succeeds but dashboard returns 404
+**Problem:** Authelia login succeeds but dashboard returns 404
 
 **Cause:** Traefik not on `systemd-auth_services` network
 

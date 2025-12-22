@@ -670,7 +670,7 @@ Dashboard → Playback:
 - Set passwords (strong passwords recommended)
 - Enable/disable guest access
 
-**Future:** TinyAuth integration for SSO
+**Authentication:** Authelia SSO protects web UI access via Traefik middleware. Native Jellyfin authentication required for mobile apps.
 
 ### Network Exposure
 

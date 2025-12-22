@@ -1,6 +1,6 @@
 # Automation Reference Guide
 
-**Last Updated:** 2025-12-11
+**Last Updated:** 2025-12-22
 **Maintainer:** patriark
 
 This guide catalogs all automation scripts in the homelab, their purposes, schedules, and integration with Claude Code skills. Use this as the authoritative reference for understanding and extending the automation ecosystem.
@@ -43,6 +43,13 @@ What do you need to do?
 ├─ Manage backups?
 │   └─ ./scripts/btrfs-snapshot-backup.sh
 │
+├─ Regenerate documentation?
+│   ├─ All docs → ./scripts/auto-doc-orchestrator.sh (2s, runs all generators)
+│   ├─ Service catalog → ./scripts/generate-service-catalog-simple.sh
+│   ├─ Network diagrams → ./scripts/generate-network-topology.sh
+│   ├─ Dependencies → ./scripts/generate-dependency-graph.sh
+│   └─ Doc index → ./scripts/generate-doc-index.sh
+│
 └─ Security audit?
     └─ ./scripts/security-audit.sh
 ```
@@ -69,6 +76,7 @@ These scripts run automatically via systemd timers. **Do not run manually unless
 | `monthly-slo-report.sh` | `monthly-slo-report.timer` | 1st of month 10:00 | SLO compliance report → Discord |
 | `rotate-journal-export.sh` | `journal-logrotate.timer` | Hourly | Keep journal logs under control |
 | `precompute-queries.sh` | `query-cache-refresh.timer` | Every 6 hours (00, 06, 12, 18:00) | Pre-compute query cache for autonomous ops |
+| `auto-doc-orchestrator.sh` | `auto-doc-update.timer` | Daily 07:00 | Regenerate all auto-documentation (service catalog, network topology, dependencies, doc index) |
 
 **Timer management commands:**
 ```bash
@@ -100,6 +108,11 @@ Run these scripts interactively to assess system state.
 | `slo-status.sh` | Quick SLO compliance check | Terminal |
 | `survey.sh` | System inventory (BTRFS, firewall, versions) | Terminal |
 | `show-pod-status.sh` | Container status with network/port info | Terminal |
+| `auto-doc-orchestrator.sh` | Regenerate all auto-documentation (~2s) | 4 markdown files (AUTO-*.md) |
+| `generate-service-catalog-simple.sh` | Service inventory from podman/quadlets | AUTO-SERVICE-CATALOG.md |
+| `generate-network-topology.sh` | Network architecture Mermaid diagrams | AUTO-NETWORK-TOPOLOGY.md |
+| `generate-dependency-graph.sh` | 4-tier dependency analysis | AUTO-DEPENDENCY-GRAPH.md |
+| `generate-doc-index.sh` | Complete documentation catalog | AUTO-DOCUMENTATION-INDEX.md |
 
 **Examples:**
 ```bash
@@ -111,6 +124,9 @@ Run these scripts interactively to assess system state.
 
 # Generate snapshot for documentation
 ./scripts/homelab-snapshot.sh
+
+# Regenerate all architecture documentation
+./scripts/auto-doc-orchestrator.sh  # Completes in ~2 seconds
 ```
 
 **Known Issues Framework** (Added 2025-12-11)

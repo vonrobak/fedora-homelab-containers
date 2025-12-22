@@ -688,6 +688,17 @@ ls ~/.snapshots/htpc-home/
 5. **Review logs monthly** - Check for backup failures
 6. **Verify snapshot sizes** - Large unexpected growth may indicate issues
 7. **Test dry-run before changes** - Always use `--dry-run` when testing script modifications
+8. **Use NOCOW for database directories** - Disable Copy-on-Write for database workloads to prevent fragmentation:
+   ```bash
+   # For new database directories (must be empty)
+   mkdir -p /mnt/btrfs-pool/subvol7-containers/prometheus
+   chattr +C /mnt/btrfs-pool/subvol7-containers/prometheus
+   lsattr -d /mnt/btrfs-pool/subvol7-containers/prometheus  # Verify 'C' flag
+
+   # Apply to: PostgreSQL, MariaDB, Prometheus, Grafana, Loki databases
+   # WHY: COW causes severe fragmentation on database write patterns
+   # NOTE: Only works on empty directories - cannot convert existing data
+   ```
 
 ---
 
@@ -734,5 +745,5 @@ Consider implementing:
 
 ---
 
-**Last Updated:** 2025-11-12 (Added passwordless sudo documentation and troubleshooting)
+**Last Updated:** 2025-12-22 (Added NOCOW best practice for database directories)
 **Script Version:** 1.0
