@@ -232,6 +232,13 @@ cd .claude/skills/homelab-deployment
 ./scripts/show-pod-status.sh            # Pod status with network/port info
 ./scripts/jellyfin-status.sh            # Service-specific status
 ./scripts/collect-storage-info.sh       # Storage diagnostics
+
+# Auto-documentation (regenerate all architecture docs)
+./scripts/auto-doc-orchestrator.sh       # Run all generators (2s complete run)
+./scripts/generate-service-catalog-simple.sh   # Service inventory
+./scripts/generate-network-topology.sh         # Network diagrams (Mermaid)
+./scripts/generate-dependency-graph.sh         # Service dependencies
+./scripts/generate-doc-index.sh                # Documentation index (256 files)
 ```
 
 **Drift Detection Categories:**
@@ -563,6 +570,35 @@ The `docs/` directory uses a **hybrid structure** combining topical reference wi
 4. **ADRs are permanent** - Architecture decisions never edited, only superseded
 5. **Reports are automated** - JSON reports or formal infrastructure snapshots
 6. **Archive with metadata** - Include archival reason and superseding document
+
+**Auto-Generated Documentation:**
+
+Four key architecture documents are auto-generated from live system state:
+
+- **`AUTO-SERVICE-CATALOG.md`** - Running services inventory (21 services)
+  - Status, networks, images, resource usage
+  - Updated: Daily at 07:00 via systemd timer
+
+- **`AUTO-NETWORK-TOPOLOGY.md`** - Network architecture diagrams
+  - Mermaid network topology (5 networks)
+  - Request flow sequence diagram
+  - Network segmentation documentation
+
+- **`AUTO-DEPENDENCY-GRAPH.md`** - Service dependency analysis
+  - 4-tier dependency graph (Critical → Infrastructure → Applications → Data)
+  - Critical path identification
+  - Startup order recommendations
+  - Impact analysis for failures
+
+- **`AUTO-DOCUMENTATION-INDEX.md`** - Complete documentation catalog
+  - Comprehensive index of 256 documentation files
+  - Categorized by directory structure
+  - Recently updated tracking (last 7 days)
+  - Quick search by service
+
+**Regenerate manually:** `~/containers/scripts/auto-doc-orchestrator.sh` (completes in ~2 seconds)
+
+**Automation:** Scheduled daily at 07:00 via `auto-doc-update.timer` (see `systemd/README.md`)
 
 **Full guide:** See `docs/CONTRIBUTING.md` for detailed conventions and templates.
 
