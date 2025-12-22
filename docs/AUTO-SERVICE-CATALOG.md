@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2025-12-22 18:28:04 UTC
+**Generated:** 2025-12-22 22:21:04 UTC
 **System:** fedora-htpc
 
 ---
@@ -9,7 +9,7 @@
 
 | Service | Image | Status | Networks |
 |---------|-------|--------|----------|
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | monitoring,reverse_proxy,media_services |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | immich-ml | immich-app/immich-machine-learning:v2.3. | ✅ Up | photos |
@@ -20,10 +20,10 @@
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring |
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
-| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
-| loki | grafana/loki:latest | ✅ Up | reverse_proxy,monitoring |
+| grafana | grafana/grafana:latest | ✅ Up | reverse_proxy,monitoring |
+| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
-| traefik | traefik:latest | ✅ Up | monitoring,reverse_proxy,auth_services |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
@@ -37,7 +37,7 @@
 
 - **Total Running:** 21
 - **Total Defined:** 21
-- **System Load:**  0,65, 0,75, 0,79
+- **System Load:**  1,04, 1,26, 0,97
 
 ---
 
