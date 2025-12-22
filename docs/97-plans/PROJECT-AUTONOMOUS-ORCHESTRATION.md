@@ -1,9 +1,20 @@
 # The Orchestrator's Handbook
 ## Mastering the Art of Autonomous Infrastructure
 
+**Type:** Strategic Plan / Vision Document
+**Status:** Draft - Forward-Looking Blueprint
+**Created:** November 2025
+**Reclassified:** 2025-12-22 (moved from guides/ to plans/)
+**Implementation:** Progressive (multi-session journey)
+**Dependencies:** Current autonomous operations foundation (OODA loop, decision framework)
+
+**Original Context:** This document was created as a forward-looking vision for building a fully autonomous infrastructure orchestration system over 6 sessions. It represents the strategic roadmap and philosophical framework for autonomous operations, not current operational reality.
+
+**Current Reality:** Basic autonomous operations exist (see `docs/20-operations/guides/autonomous-operations.md`). This handbook describes the aspirational future state and learning path.
+
+---
+
 **Author**: Claude Code Planning System
-**Date**: November 2025
-**Status**: Vision & Mastery Guide
 **Audience**: You - The Architect of Self-Managing Systems
 
 ---

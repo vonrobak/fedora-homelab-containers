@@ -2,7 +2,8 @@
 
 **Current Config Analysis:** middleware.yml
 **Focus:** CrowdSec integration, interoperability, and advanced patterns
-**Last Updated:** October 26, 2025
+**Last Updated:** 2025-12-22
+**Status:** Updated for Authelia SSO (replaced TinyAuth references)
 
 ---
 
@@ -39,13 +40,14 @@ http:
         burst: 50
         period: 1m
     
-    tinyauth:
+    authelia:
       forwardAuth:
-        address: "http://tinyauth:3000/api/auth/traefik"
+        address: "http://authelia:9091/api/verify?rd=https://sso.patriark.org"
         authResponseHeaders:
           - "Remote-User"
           - "Remote-Email"
           - "Remote-Name"
+          - "Remote-Groups"
     
     security-headers:
       headers:
@@ -62,7 +64,7 @@ http:
 
 1. **Good security foundation** - All essential layers present
 2. **CrowdSec properly configured** - Plugin mode with LAPI connection
-3. **Forward auth working** - Tinyauth integration
+3. **Forward auth working** - Authelia SSO integration with YubiKey MFA
 4. **Basic security headers** - HSTS, XSS protection, frame options
 5. **Rate limiting** - Prevents basic abuse
 
@@ -176,22 +178,22 @@ http:
             depth: 1
 
     # ═══════════════════════════════════════════════════════════
-    # AUTHENTICATION
+    # AUTHENTICATION - Authelia SSO with YubiKey MFA
     # ═══════════════════════════════════════════════════════════
-    tinyauth:
+    authelia:
       forwardAuth:
-        address: "http://tinyauth:3000/api/auth/traefik"
-        
+        address: "http://authelia:9091/api/verify?rd=https://sso.patriark.org"
+
         # Trust forward headers from auth service
         trustForwardHeader: true
-        
-        # Headers to pass to backend
+
+        # Headers to pass to backend (Authelia provides these)
         authResponseHeaders:
           - "Remote-User"
-          - "Remote-Email"
+          - "Remote-Groups"
           - "Remote-Name"
-          - "Remote-Groups"      # For future RBAC
-        
+          - "Remote-Email"
+
         # Headers to pass in auth request
         authRequestHeaders:
           - "X-Forwarded-Method"
@@ -199,7 +201,9 @@ http:
           - "X-Forwarded-Host"
           - "X-Forwarded-Uri"
           - "X-Forwarded-For"
-        
+          - "Accept"
+          - "Content-Type"
+
         # TLS configuration (for future HTTPS to auth service)
         # tls:
         #   ca: /path/to/ca.crt
@@ -643,7 +647,7 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit@file
-        - tinyauth@file
+        - authelia@file
         - compression@file
         - security-headers@file
       service: jellyfin-service
@@ -657,7 +661,7 @@ http:
         - crowdsec-bouncer@file
         - admin-whitelist@file        # IP restriction
         - rate-limit-strict@file
-        - tinyauth@file
+        - authelia@file
         - security-headers-strict@file
       service: api@internal
     
@@ -670,22 +674,22 @@ http:
         - crowdsec-bouncer@file
         - rate-limit@file
         - cors-headers@file
-        - tinyauth@file
+        - authelia@file
         - compression@file
         - security-headers@file
       service: api-service
     
     # ════════════════════════════════════════════════════
-    # Authentication endpoint (very strict rate limit)
+    # SSO endpoint (very strict rate limit)
     # ════════════════════════════════════════════════════
-    auth-router:
-      rule: "Host(`auth.patriark.org`)"
+    sso-router:
+      rule: "Host(`sso.patriark.org`)"
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit-auth@file        # Very strict
         - compression@file
         - security-headers-strict@file
-      service: tinyauth-service
+      service: authelia-service
     
     # ════════════════════════════════════════════════════
     # Internal API (container network only)
@@ -715,7 +719,7 @@ nextcloud-router:
     - retry@file
     
     # Layer 3: Authentication
-    - tinyauth@file
+    - authelia@file
     
     # Layer 4: Performance
     - compression@file
@@ -739,16 +743,16 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit-strict@file
-        - tinyauth@file
+        - authelia@file
         - security-headers@file
       service: grafana-service
       priority: 100
-    
+
     grafana-internal:
       rule: "Host(`grafana.patriark.org`) && ClientIP(`192.168.1.0/24`)"
       middlewares:
         - rate-limit-public@file  # More lenient for internal
-        - tinyauth@file
+        - authelia@file
         - security-headers@file
       service: grafana-service
       priority: 101  # Higher priority = evaluated first
@@ -786,16 +790,16 @@ http:
       rule: "Host(`prometheus.patriark.org`)"
       middlewares:
         - prometheus-whitelist@file  # Internal only!
-        - tinyauth@file
+        - authelia@file
         - security-headers-strict@file
       service: prometheus-service
-    
+
     loki-router:
       rule: "Host(`loki.patriark.org`)"
       middlewares:
         - loki-whitelist@file
         - rate-limit@file
-        - tinyauth@file
+        - authelia@file
       service: loki-service
 ```
 
@@ -894,7 +898,7 @@ http:
         - crowdsec-bouncer@file
         - waf@file              # Add WAF
         - rate-limit@file
-        - tinyauth@file
+        - authelia@file
 ```
 
 ---
@@ -1069,7 +1073,7 @@ ADMIN PANEL:
 API ENDPOINT:
   crowdsec → rate-limit → cors → auth → compression → headers
 
-AUTH ENDPOINT:
+SSO ENDPOINT (Authelia):
   crowdsec → rate-limit-auth → compression → headers-strict
 
 INTERNAL ONLY:

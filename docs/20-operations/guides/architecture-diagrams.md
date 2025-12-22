@@ -1,5 +1,8 @@
 # Homelab Architecture - Visual Diagrams
 
+**Last Updated:** 2025-12-22
+**Status:** Updated for Authelia SSO (replaced TinyAuth)
+
 ## 🌐 Network Flow Diagram
 
 ```
@@ -54,8 +57,8 @@
                 │           │            │
                 │           ↓            │
                 │   ┌────────────────┐   │
-                │   │   Tinyauth     │   │ ← Authentication
-                │   │   :3000        │   │   ✓ Session / ✗ Login
+                │   │   Authelia     │   │ ← SSO Authentication
+                │   │   :9091        │   │   ✓ Session / ✗ YubiKey+TOTP
                 │   └────────────────┘   │
                 │           │            │
                 │           ↓            │
@@ -76,12 +79,13 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  LAYER 7: APPLICATION AUTH                               │
+│  LAYER 7: APPLICATION AUTH (Authelia SSO)                │
 │  ┌───────────────────────────────────────────────────┐  │
-│  │ Tinyauth SSO                                      │  │
-│  │ • Session-based authentication                    │  │
-│  │ • Bcrypt password hashing                         │  │
-│  │ • Cookie management                               │  │
+│  │ Authelia SSO + Multi-Factor Authentication        │  │
+│  │ • YubiKey/WebAuthn (phishing-resistant 2FA)       │  │
+│  │ • TOTP fallback (Microsoft Authenticator)         │  │
+│  │ • Argon2id password hashing                       │  │
+│  │ • Redis-backed session management (1h expiry)     │  │
 │  └───────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────┘
                          ↓
@@ -203,9 +207,9 @@ Host: fedora-htpc (192.168.1.70)
    │  └─ Check request rate
    │     ├─ Exceeded? → 429 Too Many (STOP)
    │     └─ OK? → Continue
-   ├─ Load Tinyauth middleware
+   ├─ Load Authelia middleware
    │  └─ Check authentication
-   │     ├─ No session? → 302 Redirect to auth.patriark.org
+   │     ├─ No session? → 302 Redirect to sso.patriark.org
    │     └─ Valid session? → Continue
    └─ Route to service
       └─ Forward to http://jellyfin:8096
@@ -246,9 +250,10 @@ Boot
      │   ├─ Start LAPI
      │   └─ Ready to accept bouncers
      │
-     ├─→ [3] Tinyauth
+     ├─→ [3] Authelia + Redis
      │   ├─ Load configuration
-     │   ├─ Start HTTP server
+     │   ├─ Start HTTP server (:9091)
+     │   ├─ Connect to Redis (session storage)
      │   └─ Ready for auth requests
      │
      ├─→ [4] Traefik
@@ -283,13 +288,14 @@ Boot
       │ 3. 302 Redirect
       ↓
 ┌─────────────┐
-│  Tinyauth   │ ← 4. Show login page
+│  Authelia   │ ← 4. Show SSO login page (sso.patriark.org)
 └─────┬───────┘
       │
-      │ 5. POST /login (credentials)
+      │ 5. POST /api/firstfactor (username + password)
+      │ 6. POST /api/secondfactor/webauthn (YubiKey touch)
       ↓
 ┌─────────────┐
-│  Tinyauth   │ ← 6. Validate password
+│  Authelia   │ ← 7. Validate credentials + 2FA
 └─────┬───────┘
       │
       │ 7. Set session cookie
@@ -299,10 +305,10 @@ Boot
 │  Traefik    │ ← 9. Request with cookie
 └─────┬───────┘
       │
-      │ 10. Verify with Tinyauth
+      │ 10. Verify with Authelia
       ↓
 ┌─────────────┐
-│  Tinyauth   │ ← 11. Validate session
+│  Authelia   │ ← 11. Validate session (check Redis)
 └─────┬───────┘
       │
       │ 12. Return: Valid
@@ -347,8 +353,8 @@ Boot
         ┌───────────────────┼───────────────────┐
         │                   │                   │
    ┌────▼─────┐      ┌──────▼─────┐      ┌─────▼────┐
-   │ Traefik  │◄─────│  CrowdSec  │      │ Tinyauth │
-   │ (Gateway)│      │ (Security) │      │  (Auth)  │
+   │ Traefik  │◄─────│  CrowdSec  │      │ Authelia │
+   │ (Gateway)│      │ (Security) │      │(SSO+MFA) │
    └────┬─────┘      └────────────┘      └─────┬────┘
         │                                       │
         │           ┌───────────────────────────┘
@@ -477,9 +483,10 @@ Legend:
 ├── auth_services.network           # podman bridge network - currently idle with no services
 ├── crowdsec.container              # CrowdSec service definition
 ├── jellyfin.container              # Jellyfin service definition
-├── media_services.network          # Media Services podman bridge network 
+├── media_services.network          # Media Services podman bridge network
 ├── reverse_proxy.network           # Reverse Proxy podman bridge network - members: all
-├── tinyauth.container              # Tinyauth service definition
+├── authelia.container              # Authelia SSO service definition
+├── redis-authelia.container        # Redis for Authelia sessions
 └── traefik.container               # Traefik service definition
 ```
 

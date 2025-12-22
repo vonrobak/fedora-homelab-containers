@@ -1,7 +1,20 @@
 # Pi-hole Backup and Restore Procedure
 
 **Last Updated:** 2025-11-05
+**Reclassified:** 2025-12-22 (moved to external-systems/)
 **Purpose:** Complete backup of Pi-hole/Raspberrypi configuration for disaster recovery
+
+---
+
+**⚠️ EXTERNAL INFRASTRUCTURE NOTE:**
+
+This guide applies to the **Raspberry Pi Pi-hole server** (192.168.1.69), which is **separate from the main homelab server** (fedora-htpc at 192.168.1.70).
+
+**System:** Raspberry Pi (separate hardware)
+**Role:** DNS server for local network
+**Not managed by:** Homelab container orchestration (this is a separate standalone system)
+
+---
 
 ## Overview
 

@@ -149,7 +149,7 @@ Host: fedora-htpc (192.168.1.70)
 | **CrowdSec** | Threat protection | CrowdSec latest | 8080 (internal) | Running ✅ |
 | **Authelia** | SSO + YubiKey MFA | Authelia 4.38 | 9091 (internal) | Running ✅ |
 | **Redis** | Session storage | Redis 7 Alpine | 6379 (internal) | Running ✅ |
-| **~~Tinyauth~~** | ~~SSO Authentication~~ | ~~Tinyauth v4~~ | ~~3000 (internal)~~ | Deprecated ⚠️ |
+| **~~TinyAuth~~** | ~~SSO Authentication~~ | ~~Tinyauth v4~~ | ~~3000 (internal)~~ | **Replaced by Authelia** ⚠️ |
 
 ### Application Services
 
@@ -420,7 +420,8 @@ Strict-Transport-Security: max-age=31536000
 ```
 /home/patriark/.config/containers/systemd/
 ├── traefik.container           # Traefik quadlet
-├── tinyauth.container          # Tinyauth quadlet
+├── authelia.container          # Authelia SSO quadlet
+├── redis-authelia.container    # Redis for Authelia sessions
 ├── jellyfin.container          # Jellyfin quadlet
 ├── crowdsec.container          # CrowdSec quadlet
 ├── cloudflare-ddns.service     # DDNS service - This seems like an error entry as cloudflare-ddns is run as a script in ~/containers/scripts with automations to run at timely intervals
@@ -437,7 +438,8 @@ Strict-Transport-Security: max-age=31536000
 sudo btrfs subvolume list / | grep home
 
 # Current snapshots - this list is NOT complete and should be updated
-/home-working-tinyauth-20251023  # After Tinyauth setup
+/home-before-authelia-20251111   # Before Authelia SSO migration
+/home-working-tinyauth-20251023  # Historical - After Tinyauth setup (now deprecated)
 /home-before-letsencrypt-*       # Before SSL setup
 ```
 
@@ -645,15 +647,16 @@ podman exec redis-authelia redis-cli DBSIZE
 
 ---
 
-### ~~Tinyauth~~ (DEPRECATED - Replaced by Authelia)
+### ~~TinyAuth~~ (DEPRECATED - Replaced by Authelia)
 
-**Status:** Running as safety net (decommission planned 1-2 weeks)
-**Superseded by:** Authelia (2025-11-11)
-**Current state:** No services protected (all migrated to Authelia)
+**Status:** Decommissioned (replaced 2025-11-11)
+**Superseded by:** Authelia SSO with YubiKey MFA
+**Migration Date:** 2025-11-11
+**Rationale:** Authelia provides superior security with hardware 2FA (YubiKey/WebAuthn), TOTP fallback, and better SSO capabilities
 
 **See:**
-- `/docs/10-services/guides/tinyauth.md` (deprecation notice)
-- `/docs/10-services/guides/authelia.md` (replacement documentation)
+- [Authelia Guide](../../10-services/guides/authelia.md) - Current SSO documentation
+- [ADR-006](../../30-security/decisions/2025-11-11-ADR-006-authelia-sso-yubikey-deployment.md) - Migration decision rationale
 
 ---
 
@@ -671,8 +674,9 @@ podman exec redis-authelia redis-cli DBSIZE
 - Mobile apps available
 
 **Access:**
-- Web: https://jellyfin.patriark.org (requires Tinyauth login first)
-- Internal login: Separate Jellyfin user account
+- Web: https://jellyfin.patriark.org (requires Authelia SSO login first)
+- SSO Portal: https://sso.patriark.org (YubiKey + TOTP authentication)
+- Internal login: Separate Jellyfin user account (after SSO)
 
 **Storage:**
 - Config: `~/containers/config/jellyfin/`
@@ -742,7 +746,7 @@ http:
       middlewares:
         - crowdsec-bouncer
         - rate-limit
-        - tinyauth@file  # If authentication needed
+        - authelia@file  # SSO authentication
       tls:
         certResolver: letsencrypt
   
@@ -814,7 +818,7 @@ curl -I https://SERVICE_NAME.patriark.org
 systemd-reverse_proxy network
 ├── traefik
 ├── crowdsec
-├── tinyauth
+├── authelia
 ├── jellyfin
 ├── nextcloud      ← Add here
 ├── vaultwarden    ← Add here
@@ -831,7 +835,7 @@ systemd-reverse_proxy network
 systemd-reverse_proxy (frontend)
 ├── traefik
 ├── crowdsec
-└── tinyauth
+└── authelia
 
 systemd-services (backend)
 ├── jellyfin
@@ -868,7 +872,7 @@ nextcloud → nextcloud_net only
 **Phase 1: Core Services** (Current)
 - ✅ Traefik
 - ✅ CrowdSec
-- ✅ Tinyauth
+- ✅ Authelia (SSO + YubiKey MFA)
 - ✅ Jellyfin
 
 **Phase 2: Add Utilities**
@@ -930,7 +934,7 @@ podman auto-update
 # Restart services after updates
 systemctl --user restart traefik.service
 systemctl --user restart crowdsec.service
-systemctl --user restart tinyauth.service
+systemctl --user restart authelia.service redis-authelia.service
 systemctl --user restart jellyfin.service
 
 # Create config backup
@@ -1055,14 +1059,17 @@ curl -I https://jellyfin.patriark.org
 #### Authentication Loop
 
 ```bash
-# Check Tinyauth is running
-podman ps | grep tinyauth
+# Check Authelia is running
+podman ps | grep authelia
 
-# Check Tinyauth logs
-podman logs tinyauth --tail 50
+# Check Authelia logs
+podman logs authelia --tail 50
 
-# Verify APP_URL is correct
-podman inspect tinyauth | grep APP_URL
+# Check Redis (session storage)
+podman logs redis-authelia --tail 50
+
+# Check Authelia health endpoint
+curl http://localhost:9091/api/health
 
 # Clear browser cookies and try again
 ```
@@ -1077,7 +1084,7 @@ podman inspect tinyauth | grep APP_URL
 # 1. Stop all services
 systemctl --user stop traefik.service
 systemctl --user stop crowdsec.service
-systemctl --user stop tinyauth.service
+systemctl --user stop authelia.service redis-authelia.service
 systemctl --user stop jellyfin.service
 
 # 2. Restore from BTRFS snapshot
@@ -1096,7 +1103,7 @@ podman ps
 
 ```bash
 # Stop all user services
-systemctl --user stop traefik.service crowdsec.service tinyauth.service jellyfin.service
+systemctl --user stop traefik.service crowdsec.service authelia.service redis-authelia.service jellyfin.service
 
 # Remove all containers
 podman rm -af
@@ -1108,7 +1115,7 @@ podman rmi -af
 systemctl --user daemon-reload
 systemctl --user start traefik.service
 systemctl --user start crowdsec.service
-systemctl --user start tinyauth.service
+systemctl --user start authelia.service redis-authelia.service
 systemctl --user start jellyfin.service
 
 # Containers will be re-pulled
@@ -1126,7 +1133,7 @@ echo "=== Homelab Health Check ==="
 echo ""
 
 echo "Services:"
-systemctl --user is-active traefik.service crowdsec.service tinyauth.service jellyfin.service
+systemctl --user is-active traefik.service crowdsec.service authelia.service redis-authelia.service jellyfin.service
 
 echo ""
 echo "Containers:"
@@ -1172,7 +1179,7 @@ echo "=== Health Check Complete ==="
 **Security:**
 - CrowdSec alerts and decisions
 - Traefik error logs
-- Failed authentication attempts (Tinyauth logs)
+- Failed authentication attempts (Authelia logs)
 
 **Metrics:**
 - CrowdSec metrics (`cscli metrics`)
@@ -1225,8 +1232,14 @@ Loki (Log aggregation)
 
 ## 📝 Change Log
 
+### 2025-11-11 - Authelia SSO Migration
+- Migrated from TinyAuth to Authelia
+- Implemented YubiKey/WebAuthn hardware 2FA
+- Added TOTP fallback (Microsoft Authenticator)
+- Deployed Redis for session storage
+
 ### 2025-10-23 - Initial Production Setup
-- Replaced Authelia with Tinyauth
+- Initial SSO deployment (TinyAuth - later replaced)
 - Configured Cloudflare DDNS
 - Implemented Let's Encrypt SSL
 - Added CrowdSec security
@@ -1282,15 +1295,15 @@ Loki (Log aggregation)
 
 | Service | URL | Authentication |
 |---------|-----|----------------|
-| Jellyfin | https://jellyfin.patriark.org | Tinyauth → Jellyfin |
-| Traefik Dashboard | https://traefik.patriark.org | Tinyauth |
-| Tinyauth Portal | https://auth.patriark.org | Direct login |
+| Jellyfin | https://jellyfin.patriark.org | Authelia SSO → Jellyfin |
+| Traefik Dashboard | https://traefik.patriark.org | Authelia SSO |
+| Authelia SSO Portal | https://sso.patriark.org | YubiKey + TOTP |
 
 ### Important Commands
 
 ```bash
 # Restart all services
-systemctl --user restart traefik.service crowdsec.service tinyauth.service jellyfin.service
+systemctl --user restart traefik.service crowdsec.service authelia.service redis-authelia.service jellyfin.service
 
 # View all logs
 journalctl --user -u traefik.service -f
