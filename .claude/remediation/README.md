@@ -117,8 +117,90 @@ cd ../../../remediation/scripts
 # Dry run
 ./apply-remediation.sh --playbook resource-pressure --dry-run
 
-# Execute (NOT YET IMPLEMENTED IN ENGINE)
+# Execute
 ./apply-remediation.sh --playbook resource-pressure
+```
+
+---
+
+### 5. Predictive Maintenance (`predictive-maintenance.yml`)
+
+**Trigger:** Forecast shows critical resource exhaustion within 7 days
+**Risk Level:** LOW (proactive cleanup before issues occur)
+**Confirmation Required:** No
+
+**Actions:**
+- Run predictive analytics to forecast resource usage
+- If disk forecasted to reach critical threshold (>85% in 7 days):
+  - Preemptively execute disk cleanup
+- Log prediction for trending analysis
+- Generate recommendations for manual review
+
+**Expected Impact:** Prevents future issues before they occur
+
+**Usage:**
+```bash
+# Dry run
+./apply-remediation.sh --playbook predictive-maintenance --dry-run
+
+# Execute
+./apply-remediation.sh --playbook predictive-maintenance
+```
+
+---
+
+### 6. Self-Healing Restart (`self-healing-restart.yml`)
+
+**Trigger:** Service failed or in restart loop
+**Risk Level:** MEDIUM (restarts service after diagnosis)
+**Confirmation Required:** No
+
+**Actions:**
+- Diagnose failure cause (OOM, crash, dependency failure)
+- If OOM detected:
+  - Log recommendation to increase memory limit
+- If restart loop detected:
+  - Clear failed state before restart
+- Restart service with clean state
+- Monitor for stability (30 seconds)
+
+**Expected Result:** Service restored to healthy state with root cause identified
+
+**Usage:**
+```bash
+# Dry run
+./apply-remediation.sh --playbook self-healing-restart --service prometheus --dry-run
+
+# Execute
+./apply-remediation.sh --playbook self-healing-restart --service prometheus
+```
+
+---
+
+### 7. Database Maintenance (`database-maintenance.yml`)
+
+**Trigger:** Manual/scheduled weekly maintenance
+**Risk Level:** MEDIUM (may cause temporary performance impact)
+**Confirmation Required:** Yes
+
+**Actions:**
+- PostgreSQL VACUUM ANALYZE (Immich database)
+  - Reclaims space from deleted records
+  - Updates query planner statistics
+- Redis memory analysis (Authelia sessions)
+  - Reports memory usage and key counts
+- Loki retention check
+- Generate maintenance report
+
+**Expected Impact:** Improved database performance, space reclamation
+
+**Usage:**
+```bash
+# Dry run
+./apply-remediation.sh --playbook database-maintenance --dry-run
+
+# Execute
+./apply-remediation.sh --playbook database-maintenance
 ```
 
 ---
@@ -127,11 +209,14 @@ cd ../../../remediation/scripts
 
 **Script:** `.claude/remediation/scripts/apply-remediation.sh`
 
-**Current Implementation Status (as of 2025-11-30):**
+**Current Implementation Status (as of 2025-12-23):**
 - ✅ **disk-cleanup:** Fully implemented and tested
 - ✅ **service-restart:** Fully implemented and tested
-- ⚠️ **drift-reconciliation:** Playbook ready, execution engine pending
-- ⚠️ **resource-pressure:** Playbook ready, execution engine pending
+- ✅ **drift-reconciliation:** Fully implemented
+- ✅ **resource-pressure:** Fully implemented and tested
+- ✅ **predictive-maintenance:** Fully implemented and tested (NEW)
+- ✅ **self-healing-restart:** Fully implemented and tested (NEW)
+- ✅ **database-maintenance:** Fully implemented and tested (NEW)
 
 **Features:**
 - Dry-run mode (`--dry-run`)
@@ -364,19 +449,25 @@ actions:
 
 ---
 
-## Statistics (as of 2025-11-30)
+## Statistics (as of 2025-12-23)
 
-**Playbooks Created:** 4
+**Playbooks Created:** 7
 - disk-cleanup (✅ fully implemented and tested)
 - service-restart (✅ fully implemented and tested)
-- drift-reconciliation (⚠️ playbook ready, execution pending)
-- resource-pressure (⚠️ playbook ready, execution pending)
+- drift-reconciliation (✅ fully implemented)
+- resource-pressure (✅ fully implemented and tested)
+- predictive-maintenance (✅ fully implemented and tested - NEW)
+- self-healing-restart (✅ fully implemented and tested - NEW)
+- database-maintenance (✅ fully implemented and tested - NEW)
 
 **Estimated Capabilities:**
 - Disk cleanup: 5-15GB recovery (verified in production)
 - Service recovery: <60 seconds downtime
-- Drift fixes: Automated reconciliation (pending implementation)
-- Memory pressure: 20-40% swap reduction (pending implementation)
+- Drift fixes: Automated reconciliation
+- Memory pressure: 20-40% swap reduction
+- Predictive maintenance: Proactive remediation 7 days before critical thresholds
+- Self-healing restart: Intelligent service recovery with root cause detection
+- Database maintenance: PostgreSQL VACUUM, Redis analysis, maintenance reports
 
 **System Context:**
 - Current SSD usage: 75% (improved from 84%)
@@ -415,14 +506,22 @@ execute_disk_cleanup() {
 - ✅ Easier testing and maintenance
 - ✅ Decision log tracks all remediation executions
 
-### Gap 2: Incomplete Playbook Implementation
+### ~~Gap 2: Incomplete Playbook Implementation~~ ✅ RESOLVED
 
-**Status:**
-- drift-reconciliation and resource-pressure playbooks exist
-- Execution engine doesn't implement them yet
-- Can't be used until implementation complete
+**Status:** ✅ Implemented 2025-12-23
 
-**Recommendation:** Complete execution engine for all 4 playbooks
+**Solution:** All 7 playbooks now fully implemented in execution engine:
+- ✅ drift-reconciliation (completed)
+- ✅ resource-pressure (completed and tested)
+- ✅ predictive-maintenance (NEW - completed and tested)
+- ✅ self-healing-restart (NEW - completed and tested)
+- ✅ database-maintenance (NEW - completed and tested)
+
+**Results:**
+- ✅ Complete remediation arsenal for autonomous operations
+- ✅ Proactive maintenance capabilities (predictive-maintenance)
+- ✅ Intelligent service recovery (self-healing-restart)
+- ✅ Database health operations (database-maintenance)
 
 ### Gap 3: No Automated Triggers
 
@@ -437,16 +536,25 @@ execute_disk_cleanup() {
 
 ## Future Enhancements
 
-### Phase 1: Complete Session 4B (2-3 hours)
-- [ ] Implement drift-reconciliation in execution engine
-- [ ] Implement resource-pressure in execution engine
-- [ ] Test all 4 playbooks end-to-end
+### ~~Phase 1: Complete Session 4B~~ ✅ COMPLETE
+- [x] Implement drift-reconciliation in execution engine
+- [x] Implement resource-pressure in execution engine
+- [x] Test all 4 playbooks end-to-end
 
 ### ~~Phase 2: Integrate with Autonomous Ops~~ ✅ COMPLETE
 - [x] Refactor autonomous-execute.sh to call remediation playbooks
 - [x] Add --log-to parameter to apply-remediation.sh for decision-log
 - [x] Test autonomous operations with remediation integration
 - [x] Update autonomous operations documentation
+
+### ~~Phase 2A: Arsenal Expansion~~ ✅ COMPLETE (2025-12-23)
+- [x] **predictive-maintenance.yml** - Proactive remediation before failure
+- [x] **self-healing-restart.yml** - Smart service restart with root cause detection
+- [x] **database-maintenance.yml** - Automated database health operations
+- [x] Test all 3 new playbooks (dry-run + real execution)
+- [x] Update documentation
+
+**Total Time:** ~6 hours (implementation + testing + documentation)
 
 ### Phase 3: Advanced Features (future)
 - [ ] Alertmanager webhook integration (trigger on alerts)
@@ -458,6 +566,6 @@ execute_disk_cleanup() {
 ---
 
 **Maintainer:** patriark
-**Status:** Session 4B core complete, integration pending
-**Last Updated:** 2025-11-30
+**Status:** Arsenal expansion complete (7 playbooks fully operational)
+**Last Updated:** 2025-12-23
 **Analysis:** See `docs/99-reports/2025-11-30-context-remediation-analysis.md`

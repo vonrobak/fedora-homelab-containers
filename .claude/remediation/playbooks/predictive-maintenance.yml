@@ -1,0 +1,61 @@
+name: "Predictive Maintenance"
+version: "1.0"
+created: "2025-12-22"
+risk_level: "low"
+requires_confirmation: false
+
+metadata:
+  category: "operations"
+  severity: "medium"
+  estimated_duration: "2-5 minutes"
+  affects: "Proactive cleanup, no service disruption"
+
+triggers:
+  - condition: "forecast_7d_pct > 85 && severity == 'critical'"
+    description: "Disk projected to reach 85% within 7 days"
+    priority: "high"
+  - condition: "days_until_90pct < 7"
+    description: "Critical threshold approaching within a week"
+    priority: "critical"
+  - condition: "confidence > 0.7"
+    description: "High confidence prediction"
+    priority: "medium"
+
+pre_checks:
+  - name: "Run predictive analytics"
+    command: "~/containers/scripts/predictive-analytics/predict-resource-exhaustion.sh --output json"
+    expected_exit: 0
+  - name: "Parse prediction severity"
+    command: "jq -r '.severity' /tmp/prediction.json"
+    expected: "critical"
+
+actions:
+  - name: "Preemptive disk cleanup"
+    command: "~/containers/.claude/remediation/scripts/apply-remediation.sh --playbook disk-cleanup"
+    expected_exit: 0
+    conditional: "resource == 'disk' && severity == 'critical'"
+    notes: "Run disk cleanup before reaching critical threshold"
+
+  - name: "Alert for manual review"
+    command: "echo 'Predictive alert: $(jq -r .recommendation /tmp/prediction.json)' >> ~/containers/data/remediation-logs/predictions.log"
+    expected_exit: 0
+
+  - name: "Log prediction for trending"
+    command: "jq -r '.forecast_7d_pct' /tmp/prediction.json"
+    expected_exit: 0
+
+post_checks:
+  - name: "Verify prediction addressed"
+    command: "~/containers/scripts/predictive-analytics/predict-resource-exhaustion.sh --output json | jq -r '.severity'"
+    expected_condition: "!= 'critical'"
+    allow_skip: true
+    notes: "Check if severity reduced after remediation"
+
+success_criteria:
+  - "Prediction captured and logged"
+  - "Preemptive action taken if severity critical"
+  - "No critical services impacted"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook predictive-maintenance --dry-run"
+  execute: "./apply-remediation.sh --playbook predictive-maintenance"

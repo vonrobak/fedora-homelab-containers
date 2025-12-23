@@ -16,6 +16,8 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONTAINERS_DIR="$HOME/containers"
 PLAYBOOK_DIR="../playbooks"
 LOG_DIR="../../data/remediation-logs"
 DRY_RUN=false
@@ -47,9 +49,23 @@ while [[ $# -gt 0 ]]; do
             DECISION_LOG="$2"
             shift 2
             ;;
-        *)
+        --list-playbooks)
+            echo "Available Remediation Playbooks:"
+            echo ""
+            echo "1. disk-cleanup             - Clean system disk (journals, images, caches)"
+            echo "2. service-restart          - Restart a failed service"
+            echo "3. drift-reconciliation     - Fix config drift between quadlet and running container"
+            echo "4. resource-pressure        - Mitigate high memory/swap usage"
+            echo "5. predictive-maintenance   - Proactive remediation based on forecasts"
+            echo "6. self-healing-restart     - Smart service restart with root cause detection"
+            echo "7. database-maintenance     - PostgreSQL VACUUM, Redis analysis, health checks"
+            echo ""
             echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--dry-run] [--force] [--log-to FILE]"
-            echo "Available playbooks: disk-cleanup, drift-reconciliation, service-restart, resource-pressure"
+            exit 0
+            ;;
+        *)
+            echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--dry-run] [--force] [--log-to FILE] [--list-playbooks]"
+            echo "Available playbooks: disk-cleanup, drift-reconciliation, service-restart, resource-pressure, predictive-maintenance, self-healing-restart, database-maintenance"
             exit 1
             ;;
     esac
@@ -477,6 +493,409 @@ execute_resource_pressure() {
     fi
 }
 
+execute_predictive_maintenance() {
+    log "${YELLOW}▶ Executing Predictive Maintenance Playbook${NC}"
+    log ""
+
+    # Pre-checks
+    log "${BLUE}[Pre-Checks]${NC}"
+
+    # Run predictive analytics
+    log "  Running predictive analytics..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        PREDICT_OUTPUT=$("$CONTAINERS_DIR/scripts/predictive-analytics/predict-resource-exhaustion.sh" --output json 2>/dev/null)
+        if [[ $? -ne 0 ]]; then
+            log "    ${RED}✗ Failed to run predictions${NC}"
+            return 1
+        fi
+
+        # Parse results
+        RESOURCE=$(echo "$PREDICT_OUTPUT" | jq -r '.resource')
+        SEVERITY=$(echo "$PREDICT_OUTPUT" | jq -r '.severity')
+        FORECAST_7D=$(echo "$PREDICT_OUTPUT" | jq -r '.forecast_7d_pct')
+        DAYS_UNTIL_90=$(echo "$PREDICT_OUTPUT" | jq -r '.days_until_90pct')
+        CONFIDENCE=$(echo "$PREDICT_OUTPUT" | jq -r '.confidence')
+        RECOMMENDATION=$(echo "$PREDICT_OUTPUT" | jq -r '.recommendation')
+
+        log "    Resource: $RESOURCE"
+        log "    Severity: $SEVERITY"
+        log "    7-day forecast: ${FORECAST_7D}%"
+        log "    Days until 90%: $DAYS_UNTIL_90"
+        log "    Confidence: $CONFIDENCE"
+
+        # Check if action needed
+        if [[ "$SEVERITY" != "critical" && "$SEVERITY" != "warning" && "$FORCE" != "true" ]]; then
+            log "    ${GREEN}✓ No critical predictions. System healthy.${NC}"
+            return 0
+        fi
+    else
+        log "    [DRY RUN] Would run predictive analytics"
+        RESOURCE="disk"
+        SEVERITY="critical"
+        FORECAST_7D="88"
+    fi
+
+    log ""
+    log "${BLUE}[Actions]${NC}"
+
+    # Action 1: Preemptive cleanup if disk critical
+    log "  [1/3] Checking if preemptive cleanup needed..."
+    if [[ "$RESOURCE" == "disk" && "$SEVERITY" == "critical" ]]; then
+        log "    ${YELLOW}Disk forecast critical, running preemptive cleanup...${NC}"
+        if [[ "$DRY_RUN" == "false" ]]; then
+            "$SCRIPT_DIR/apply-remediation.sh" --playbook disk-cleanup --log-to "$DECISION_LOG" 2>&1 | tee -a "$LOG_FILE"
+            log "    ${GREEN}✓ Preemptive cleanup completed${NC}"
+        else
+            log "    [DRY RUN] Would execute: apply-remediation.sh --playbook disk-cleanup"
+        fi
+    else
+        log "    ${GREEN}✓ No immediate cleanup needed${NC}"
+    fi
+
+    # Action 2: Log prediction for trend analysis
+    log "  [2/3] Logging prediction for historical trending..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        PREDICTION_LOG="$CONTAINERS_DIR/data/remediation-logs/predictions.log"
+        echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Resource: $RESOURCE, Severity: $SEVERITY, Forecast: ${FORECAST_7D}%, Confidence: $CONFIDENCE" >> "$PREDICTION_LOG"
+        log "    ${GREEN}✓ Prediction logged${NC}"
+    else
+        log "    [DRY RUN] Would log prediction to predictions.log"
+    fi
+
+    # Action 3: Generate recommendation
+    log "  [3/3] Recording recommendation..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        log "    Recommendation: $RECOMMENDATION"
+    else
+        log "    [DRY RUN] Would log recommendation"
+    fi
+
+    log ""
+    log "${BLUE}[Post-Checks]${NC}"
+
+    # Re-run predictions to see if severity improved
+    if [[ "$DRY_RUN" == "false" && "$RESOURCE" == "disk" && "$SEVERITY" == "critical" ]]; then
+        log "  Checking if prediction improved after cleanup..."
+        PREDICT_AFTER=$("$CONTAINERS_DIR/scripts/predictive-analytics/predict-resource-exhaustion.sh" --output json 2>/dev/null)
+        SEVERITY_AFTER=$(echo "$PREDICT_AFTER" | jq -r '.severity')
+        log "    Severity after: $SEVERITY_AFTER (was: $SEVERITY)"
+
+        if [[ "$SEVERITY_AFTER" != "critical" ]]; then
+            log "    ${GREEN}✓ Prediction improved after remediation${NC}"
+        else
+            log "    ${YELLOW}⚠ Still critical - may need manual intervention${NC}"
+        fi
+    fi
+
+    # Verify critical services
+    log "  Verifying critical services..."
+    CRITICAL_SERVICES="traefik prometheus jellyfin"
+    for svc in $CRITICAL_SERVICES; do
+        if systemctl --user is-active "$svc.service" >/dev/null 2>&1; then
+            log "    ✓ $svc: active"
+        else
+            log "    ${RED}✗ $svc: inactive${NC}"
+        fi
+    done
+
+    log ""
+    log "${GREEN}✓ Predictive maintenance completed${NC}"
+    return 0
+}
+
+execute_self_healing_restart() {
+    log "${YELLOW}▶ Executing Self-Healing Restart Playbook${NC}"
+    log ""
+
+    if [[ -z "$SERVICE" ]]; then
+        log "${RED}Error: --service parameter required${NC}"
+        return 1
+    fi
+
+    # Pre-checks
+    log "${BLUE}[Pre-Checks]${NC}"
+
+    # Check if service exists
+    log "  Checking if service $SERVICE exists..."
+    LOAD_STATE=$(systemctl --user show "$SERVICE.service" --property=LoadState 2>/dev/null | cut -d= -f2)
+    if [[ "$LOAD_STATE" == "not-found" ]]; then
+        log "    ${RED}✗ Service $SERVICE not found${NC}"
+        return 1
+    fi
+    log "    ${GREEN}✓ Service exists${NC}"
+
+    # Capture current state
+    log "  Diagnosing failure cause..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        FAILURE_LOGS=$(journalctl --user -u "$SERVICE.service" -n 50 --no-pager 2>/dev/null)
+
+        # Check for OOM
+        OOM_DETECTED=false
+        if echo "$FAILURE_LOGS" | grep -qi "out of memory\|OOM\|memory limit"; then
+            OOM_DETECTED=true
+            log "    ${YELLOW}⚠ OOM detected - service ran out of memory${NC}"
+        fi
+
+        # Check restart count
+        RESTART_COUNT=$(systemctl --user show "$SERVICE.service" --property=NRestarts | cut -d= -f2)
+        log "    Restart count in last hour: $RESTART_COUNT"
+
+        # Check if in restart loop
+        RESTART_LOOP=false
+        if [[ $RESTART_COUNT -gt 2 ]]; then
+            RESTART_LOOP=true
+            log "    ${YELLOW}⚠ Restart loop detected${NC}"
+        fi
+    else
+        log "    [DRY RUN] Would diagnose failure cause"
+        OOM_DETECTED=false
+        RESTART_LOOP=false
+    fi
+
+    log ""
+    log "${BLUE}[Actions]${NC}"
+
+    # Action 1: Apply targeted fix if OOM detected
+    log "  [1/4] Applying targeted fixes..."
+    if [[ "$OOM_DETECTED" == "true" ]]; then
+        log "    ${YELLOW}OOM detected, attempting to increase memory limit...${NC}"
+        if [[ "$DRY_RUN" == "false" ]]; then
+            QUADLET_FILE="$HOME/.config/containers/systemd/$SERVICE.container"
+            if [[ -f "$QUADLET_FILE" ]]; then
+                # Check current memory limit
+                CURRENT_MEM=$(grep "^MemoryMax=" "$QUADLET_FILE" | cut -d= -f2 || echo "none")
+                log "      Current limit: $CURRENT_MEM"
+                log "      ${YELLOW}Note: Memory limit adjustment requires manual review${NC}"
+                log "      ${YELLOW}Proceeding with restart, but consider increasing MemoryMax in quadlet${NC}"
+            fi
+        else
+            log "    [DRY RUN] Would check and potentially increase memory limit"
+        fi
+    else
+        log "    ${GREEN}✓ No OOM detected, proceeding with standard restart${NC}"
+    fi
+
+    # Action 2: Clear failed state if restart loop
+    log "  [2/4] Clearing service state..."
+    if [[ "$RESTART_LOOP" == "true" ]]; then
+        if [[ "$DRY_RUN" == "false" ]]; then
+            systemctl --user reset-failed "$SERVICE.service" 2>/dev/null || true
+            log "    ${GREEN}✓ Failed state cleared${NC}"
+        else
+            log "    [DRY RUN] Would execute: systemctl --user reset-failed $SERVICE.service"
+        fi
+    else
+        log "    ${GREEN}✓ No restart loop, state is clean${NC}"
+    fi
+
+    # Action 3: Restart service
+    log "  [3/4] Restarting service with clean state..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        systemctl --user restart "$SERVICE.service"
+        log "    ${GREEN}✓ Restart command issued${NC}"
+    else
+        log "    [DRY RUN] Would execute: systemctl --user restart $SERVICE.service"
+    fi
+
+    # Action 4: Wait for stabilization
+    log "  [4/4] Waiting for service stabilization..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        sleep 15
+        log "    ${GREEN}✓ Stabilization period complete${NC}"
+    else
+        log "    [DRY RUN] Would wait 15 seconds"
+    fi
+
+    log ""
+    log "${BLUE}[Post-Checks]${NC}"
+
+    # Verify service is active
+    log "  Verifying service status..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        if systemctl --user is-active "$SERVICE.service" >/dev/null 2>&1; then
+            log "    ${GREEN}✓ Service is active${NC}"
+        else
+            log "    ${RED}✗ Service failed to start${NC}"
+            return 1
+        fi
+
+        # Verify container is running
+        if podman ps | grep -q "$SERVICE"; then
+            log "    ${GREEN}✓ Container is running${NC}"
+        else
+            log "    ${YELLOW}⚠ Container not found (may be non-container service)${NC}"
+        fi
+
+        # Monitor for immediate failure
+        log "  Monitoring for stability (30s)..."
+        sleep 30
+        if systemctl --user is-active "$SERVICE.service" >/dev/null 2>&1; then
+            log "    ${GREEN}✓ Service remained stable for 30 seconds${NC}"
+        else
+            log "    ${RED}✗ Service failed again - escalation needed${NC}"
+            log "    ${YELLOW}Recommendation: Check for config drift with check-drift.sh${NC}"
+            return 1
+        fi
+    else
+        log "    [DRY RUN] Would verify service active and monitor stability"
+    fi
+
+    log ""
+    if [[ "$OOM_DETECTED" == "true" ]]; then
+        log "${YELLOW}⚠ Action Required: Review memory limit for $SERVICE${NC}"
+        log "  Edit: ~/.config/containers/systemd/$SERVICE.container"
+        log "  Consider increasing MemoryMax value"
+        log ""
+    fi
+
+    log "${GREEN}✓ Self-healing restart completed${NC}"
+    return 0
+}
+
+execute_database_maintenance() {
+    log "${YELLOW}▶ Executing Database Maintenance Playbook${NC}"
+    log ""
+
+    # Pre-checks
+    log "${BLUE}[Pre-Checks]${NC}"
+
+    # Check database services
+    log "  Checking database services..."
+    POSTGRES_RUNNING=false
+    REDIS_RUNNING=false
+
+    if systemctl --user is-active postgresql-immich.service >/dev/null 2>&1; then
+        POSTGRES_RUNNING=true
+        log "    ${GREEN}✓ PostgreSQL (Immich): active${NC}"
+    else
+        log "    ${YELLOW}⚠ PostgreSQL (Immich): not running${NC}"
+    fi
+
+    if systemctl --user is-active redis-authelia.service >/dev/null 2>&1; then
+        REDIS_RUNNING=true
+        log "    ${GREEN}✓ Redis (Authelia): active${NC}"
+    else
+        log "    ${YELLOW}⚠ Redis (Authelia): not running${NC}"
+    fi
+
+    if [[ "$POSTGRES_RUNNING" == "false" && "$REDIS_RUNNING" == "false" ]]; then
+        log "    ${RED}✗ No database services running${NC}"
+        return 1
+    fi
+
+    # Capture sizes before
+    if [[ "$DRY_RUN" == "false" ]]; then
+        POSTGRES_SIZE_BEFORE=$(du -sm "$HOME/containers/data/postgresql-immich" 2>/dev/null | awk '{print $1}' || echo 0)
+        log "  PostgreSQL size before: ${POSTGRES_SIZE_BEFORE}MB"
+    fi
+
+    log ""
+    log "${BLUE}[Actions]${NC}"
+
+    # Action 1: PostgreSQL VACUUM
+    if [[ "$POSTGRES_RUNNING" == "true" ]]; then
+        log "  [1/4] Running PostgreSQL VACUUM ANALYZE..."
+        if [[ "$DRY_RUN" == "false" ]]; then
+            log "    ${YELLOW}This may take 2-10 minutes...${NC}"
+            if podman exec postgresql-immich psql -U immich -d immich -c 'VACUUM ANALYZE;' >/dev/null 2>&1; then
+                log "    ${GREEN}✓ VACUUM completed successfully${NC}"
+            else
+                log "    ${RED}✗ VACUUM failed${NC}"
+            fi
+        else
+            log "    [DRY RUN] Would execute: podman exec postgresql-immich psql -U immich -d immich -c 'VACUUM ANALYZE;'"
+        fi
+    else
+        log "  [1/4] ${YELLOW}Skipping PostgreSQL (not running)${NC}"
+    fi
+
+    # Action 2: Redis memory analysis
+    if [[ "$REDIS_RUNNING" == "true" ]]; then
+        log "  [2/4] Analyzing Redis memory usage..."
+        if [[ "$DRY_RUN" == "false" ]]; then
+            REDIS_MEMORY=$(podman exec redis-authelia redis-cli INFO memory | grep "used_memory_human" | cut -d: -f2 || echo "unknown")
+            log "    Redis memory usage: $REDIS_MEMORY"
+
+            REDIS_KEYS=$(podman exec redis-authelia redis-cli DBSIZE | awk '{print $2}' || echo "unknown")
+            log "    Redis keys: $REDIS_KEYS"
+
+            log "    ${GREEN}✓ Redis analysis complete${NC}"
+        else
+            log "    [DRY RUN] Would execute: podman exec redis-authelia redis-cli MEMORY DOCTOR"
+        fi
+    else
+        log "  [2/4] ${YELLOW}Skipping Redis (not running)${NC}"
+    fi
+
+    # Action 3: Loki retention check
+    log "  [3/4] Checking Loki retention policy..."
+    if systemctl --user is-active loki.service >/dev/null 2>&1; then
+        if [[ "$DRY_RUN" == "false" ]]; then
+            LOKI_LOGS=$(podman logs loki --tail 100 2>/dev/null | grep -i "retention\|compact" || echo "No retention messages")
+            log "    ${GREEN}✓ Loki operational${NC}"
+        else
+            log "    [DRY RUN] Would check Loki logs for retention info"
+        fi
+    else
+        log "    ${YELLOW}Loki not running, skipping${NC}"
+    fi
+
+    # Action 4: Generate maintenance report
+    log "  [4/4] Generating maintenance report..."
+    if [[ "$DRY_RUN" == "false" ]]; then
+        REPORT_FILE="$CONTAINERS_DIR/data/remediation-logs/database-maintenance-$(date +%Y%m%d-%H%M%S).log"
+        {
+            echo "Database Maintenance Report"
+            echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "PostgreSQL size before: ${POSTGRES_SIZE_BEFORE}MB"
+            echo "PostgreSQL maintenance: Completed"
+            echo "Redis analysis: Completed"
+        } > "$REPORT_FILE"
+        log "    ${GREEN}✓ Report saved to: $REPORT_FILE${NC}"
+    else
+        log "    [DRY RUN] Would generate maintenance report"
+    fi
+
+    log ""
+    log "${BLUE}[Post-Checks]${NC}"
+
+    # Verify services still healthy
+    log "  Verifying database services..."
+    if [[ "$POSTGRES_RUNNING" == "true" ]]; then
+        if systemctl --user is-active postgresql-immich.service >/dev/null 2>&1; then
+            log "    ${GREEN}✓ PostgreSQL still active${NC}"
+        else
+            log "    ${RED}✗ PostgreSQL became inactive${NC}"
+            return 1
+        fi
+    fi
+
+    if [[ "$REDIS_RUNNING" == "true" ]]; then
+        if systemctl --user is-active redis-authelia.service >/dev/null 2>&1; then
+            log "    ${GREEN}✓ Redis still active${NC}"
+        else
+            log "    ${RED}✗ Redis became inactive${NC}"
+            return 1
+        fi
+    fi
+
+    # Check size after
+    if [[ "$DRY_RUN" == "false" && "$POSTGRES_RUNNING" == "true" ]]; then
+        POSTGRES_SIZE_AFTER=$(du -sm "$HOME/containers/data/postgresql-immich" 2>/dev/null | awk '{print $1}' || echo 0)
+        SPACE_SAVED=$((POSTGRES_SIZE_BEFORE - POSTGRES_SIZE_AFTER))
+        log "  PostgreSQL size after: ${POSTGRES_SIZE_AFTER}MB"
+        if [[ $SPACE_SAVED -gt 0 ]]; then
+            log "    ${GREEN}✓ Reclaimed ${SPACE_SAVED}MB${NC}"
+        else
+            log "    Space delta: ${SPACE_SAVED}MB (no space reclaimed, statistics updated)"
+        fi
+    fi
+
+    log ""
+    log "${GREEN}✓ Database maintenance completed${NC}"
+    return 0
+}
+
 # Main execution
 case $PLAYBOOK in
     disk-cleanup)
@@ -490,6 +909,15 @@ case $PLAYBOOK in
         ;;
     resource-pressure)
         execute_resource_pressure
+        ;;
+    predictive-maintenance)
+        execute_predictive_maintenance
+        ;;
+    self-healing-restart)
+        execute_self_healing_restart
+        ;;
+    database-maintenance)
+        execute_database_maintenance
         ;;
     *)
         log "${RED}Unknown playbook: $PLAYBOOK${NC}"

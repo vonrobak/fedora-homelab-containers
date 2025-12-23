@@ -1,0 +1,86 @@
+name: "Database Maintenance"
+version: "1.0"
+created: "2025-12-22"
+risk_level: "medium"
+requires_confirmation: true
+
+metadata:
+  category: "performance"
+  severity: "low"
+  estimated_duration: "5-15 minutes"
+  affects: "Database performance optimization"
+
+triggers:
+  - condition: "manual_trigger"
+    description: "Scheduled weekly maintenance"
+    priority: "low"
+  - condition: "database_size_growth > 20% in last week"
+    description: "Rapid database growth detected"
+    priority: "medium"
+
+pre_checks:
+  - name: "Verify PostgreSQL is running"
+    command: "systemctl --user is-active postgresql-immich.service"
+    expected: "active"
+    allow_skip: true
+
+  - name: "Verify Redis instances are running"
+    command: "systemctl --user is-active redis-authelia.service"
+    expected: "active"
+    allow_skip: true
+
+  - name: "Check database sizes before maintenance"
+    command: "du -sh ~/containers/data/postgresql-immich ~/containers/data/redis-*"
+    expected_exit: 0
+
+actions:
+  - name: "PostgreSQL VACUUM (Immich)"
+    command: "podman exec postgresql-immich psql -U immich -d immich -c 'VACUUM ANALYZE;'"
+    expected_exit: 0
+    estimated_duration: "2-10m"
+    reversible: false
+    notes: "Reclaims space and updates statistics"
+
+  - name: "Redis memory optimization (Authelia)"
+    command: "podman exec redis-authelia redis-cli MEMORY DOCTOR"
+    expected_exit: 0
+    notes: "Get memory usage recommendations"
+
+  - name: "Check Loki retention enforcement"
+    command: "podman logs loki --tail 100 | grep -i retention"
+    expected_exit: 0
+    allow_skip: true
+
+  - name: "Prometheus TSDB compaction check"
+    command: "podman exec prometheus promtool tsdb analyze /prometheus"
+    expected_exit: 0
+    allow_skip: true
+
+post_checks:
+  - name: "Verify PostgreSQL health"
+    command: "podman exec postgresql-immich pg_isready"
+    expected_exit: 0
+
+  - name: "Check database sizes after maintenance"
+    command: "du -sh ~/containers/data/postgresql-immich ~/containers/data/redis-*"
+    expected_exit: 0
+
+  - name: "Verify all database services still running"
+    command: "systemctl --user is-active postgresql-immich.service redis-authelia.service"
+    expected_exit: 0
+
+logging:
+  - metric: "postgres_size_before_mb"
+    command: "du -sm ~/containers/data/postgresql-immich | awk '{print $1}'"
+  - metric: "postgres_size_after_mb"
+    command: "du -sm ~/containers/data/postgresql-immich | awk '{print $1}'"
+
+success_criteria:
+  - "All database services remain healthy"
+  - "VACUUM completed without errors"
+  - "Space reclaimed or statistics updated"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook database-maintenance --dry-run"
+  execute: "./apply-remediation.sh --playbook database-maintenance"
+  scheduled: "systemctl --user start database-maintenance.service"

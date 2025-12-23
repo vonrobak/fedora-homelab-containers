@@ -1,0 +1,96 @@
+name: "Self-Healing Service Restart"
+version: "1.0"
+created: "2025-12-22"
+risk_level: "medium"
+requires_confirmation: false
+
+metadata:
+  category: "operations"
+  severity: "high"
+  estimated_duration: "1-3 minutes"
+  affects: "Restarts failed service after diagnosis"
+
+triggers:
+  - condition: "service_status == 'failed'"
+    description: "Service is in failed state"
+    priority: "high"
+  - condition: "restart_count > 2 in last hour"
+    description: "Service restart loop detected"
+    priority: "critical"
+
+pre_checks:
+  - name: "Verify service exists"
+    command: "systemctl --user show {{ service }}.service"
+    expected_exit: 0
+
+  - name: "Capture failure reason"
+    command: "systemctl --user status {{ service }}.service | grep -i 'Main PID.*code='"
+    expected_exit: 0
+
+  - name: "Check for OOM kills"
+    command: "journalctl --user -u {{ service }}.service --since '1 hour ago' | grep -i 'out of memory\\|OOM'"
+    expected_exit: 0
+    allow_skip: true
+
+  - name: "Check restart count"
+    command: "systemctl --user show {{ service }}.service --property=NRestarts"
+    expected_exit: 0
+
+actions:
+  - name: "Diagnose failure cause"
+    command: "journalctl --user -u {{ service }}.service -n 50 --no-pager"
+    expected_exit: 0
+
+  - name: "Apply targeted fix for OOM"
+    command: "sed -i 's/MemoryMax=.*/MemoryMax=2G/' ~/.config/containers/systemd/{{ service }}.container && systemctl --user daemon-reload"
+    expected_exit: 0
+    conditional: "oom_detected == true"
+    notes: "Increase memory limit if OOM detected"
+
+  - name: "Clear service state if restart loop"
+    command: "systemctl --user reset-failed {{ service }}.service"
+    expected_exit: 0
+    conditional: "restart_count > 2"
+
+  - name: "Restart service with clean state"
+    command: "systemctl --user restart {{ service }}.service"
+    expected_exit: 0
+
+  - name: "Wait for stabilization"
+    command: "sleep 15"
+    expected_exit: 0
+
+post_checks:
+  - name: "Verify service is active"
+    command: "systemctl --user is-active {{ service }}.service"
+    expected: "active"
+    retry_count: 3
+    retry_delay: 5
+
+  - name: "Verify container is running"
+    command: "podman ps | grep {{ service }}"
+    expected_exit: 0
+
+  - name: "Check health if healthcheck defined"
+    command: "podman healthcheck run {{ service }}"
+    expected_exit: 0
+    allow_skip: true
+
+  - name: "Monitor for immediate failure"
+    command: "sleep 30 && systemctl --user is-active {{ service }}.service"
+    expected: "active"
+    notes: "Ensure service stays up for 30 seconds"
+
+escalation:
+  - condition: "restart_count > 3 in last hour"
+    action: "trigger_drift_reconciliation"
+    notes: "If restarting doesn't help, check for config drift"
+
+success_criteria:
+  - "Service transitioned from failed to active"
+  - "No immediate restart loop"
+  - "Root cause identified and logged"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook self-healing-restart --service prometheus --dry-run"
+  execute: "./apply-remediation.sh --playbook self-healing-restart --service prometheus"
