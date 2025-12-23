@@ -1,6 +1,6 @@
 # Automation Reference Guide
 
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-23
 **Maintainer:** patriark
 
 This guide catalogs all automation scripts in the homelab, their purposes, schedules, and integration with Claude Code skills. Use this as the authoritative reference for understanding and extending the automation ecosystem.
@@ -200,6 +200,47 @@ Scripts for maintenance tasks and specific fixes.
 | `clear-swap-memory.sh` | Clear swap when under pressure | High swap usage |
 | `apply-resource-limits.sh` | Apply memory limits to services | After quadlet changes |
 | `migrate-to-container-slice.sh` | Add container.slice to quadlets | One-time migration |
+
+### Tier 4.5: Remediation Framework (Autonomous Operations)
+
+Intelligent remediation playbooks executed by autonomous operations or manually. Located in `.claude/remediation/`.
+
+| Playbook | Risk | Purpose | Typical Trigger |
+|----------|------|---------|-----------------|
+| `disk-cleanup` | Low | Prune containers, rotate logs, clean caches | Disk >75% |
+| `service-restart` | Low | Restart failed/unhealthy services | Service down |
+| `drift-reconciliation` | Medium | Reconcile config drift, restart service | Drift detected |
+| `resource-pressure` | Medium | Clear caches, mitigate memory/swap pressure | Swap >6GB |
+| `predictive-maintenance` | Low | Proactive cleanup based on forecasts | Forecast critical |
+| `self-healing-restart` | Low | Smart restart with root cause detection | Service restart loop |
+| `database-maintenance` | Medium | PostgreSQL VACUUM, Redis analysis | Weekly/manual |
+
+**Execution:**
+```bash
+cd .claude/remediation/scripts
+
+# List available playbooks
+./apply-remediation.sh --list-playbooks
+
+# Dry run (always test first)
+./apply-remediation.sh --playbook disk-cleanup --dry-run
+
+# Execute
+./apply-remediation.sh --playbook disk-cleanup
+
+# Service-specific (requires --service parameter)
+./apply-remediation.sh --playbook self-healing-restart --service prometheus
+```
+
+**Features:**
+- All playbooks support `--dry-run` mode
+- Detailed logging to `../../data/remediation-logs/`
+- Pre/post checks with metrics capture
+- Integration with autonomous operations via `--log-to` parameter
+
+**See:**
+- Framework documentation: `.claude/remediation/README.md`
+- Autonomous operations guide: `docs/20-operations/guides/autonomous-operations.md`
 
 ### Tier 5: Predictive Analytics
 
