@@ -1,6 +1,7 @@
 # Alertmanager Configuration
-# Updated: 2025-12-05 - Added info routing, improved inhibition
+# Updated: 2025-12-24 - Added remediation webhook integration (Phase 4)
 # Discord notifications via webhook relay
+# Remediation automation via webhook handler
 
 global:
   resolve_timeout: 5m
@@ -22,6 +23,56 @@ route:
   repeat_interval: 4h
 
   routes:
+    # Auto-remediation routes (continue: true allows fallthrough to Discord)
+    # These alerts trigger both remediation AND Discord notifications
+
+    # ========================================================================
+    # SLO BURN RATE ALERTS - HIGHEST PRIORITY (Confirmed User Impact)
+    # ========================================================================
+    # Tier 1: Critical burn rate (error budget exhausts in <3 hours)
+    # Tier 2: High burn rate (error budget exhausts in <1 day)
+
+    # SLO Tier 1 alerts (all services) → Remediation webhook
+    - matchers:
+        - alertname =~ "SLOBurnRateTier1_.*"
+      receiver: 'remediation-webhook'
+      repeat_interval: 30m  # Shorter repeat for critical
+      continue: true
+
+    # SLO Tier 2 alerts (all services) → Remediation webhook
+    - matchers:
+        - alertname =~ "SLOBurnRateTier2_.*"
+      receiver: 'remediation-webhook'
+      repeat_interval: 1h
+      continue: true
+
+    # ========================================================================
+    # SYMPTOM-BASED ALERTS (Being Phased Out - SLO Alerts Take Priority)
+    # ========================================================================
+
+    # Disk space alerts → Remediation webhook
+    - matchers:
+        - alertname =~ "SystemDiskSpace(Critical|Warning)|BtrfsPoolSpaceWarning"
+      receiver: 'remediation-webhook'
+      repeat_interval: 1h
+      continue: true  # Continue to Discord routes below
+
+    # Container health alerts → Remediation webhook
+    - matchers:
+        - alertname =~ "ContainerNotRunning|ContainerMemoryPressure"
+      receiver: 'remediation-webhook'
+      repeat_interval: 1h
+      continue: true
+
+    # CrowdSec down → Remediation webhook
+    - matchers:
+        - alertname = "CrowdSecDown"
+      receiver: 'remediation-webhook'
+      repeat_interval: 30m
+      continue: true
+
+    # Discord notification routes (standard behavior, unchanged)
+
     # Critical alerts: Discord for instant notifications
     - match:
         severity: critical
@@ -44,6 +95,14 @@ route:
 
 # Receivers
 receivers:
+  # Remediation webhook (Phase 4: Alert-Driven Remediation)
+  - name: 'remediation-webhook'
+    webhook_configs:
+      - url: 'http://host.containers.internal:9096/webhook'
+        send_resolved: false  # Only send firing alerts, not resolved
+        http_config:
+          follow_redirects: true
+
   # Critical alerts via Discord relay
   - name: 'discord-critical'
     webhook_configs:

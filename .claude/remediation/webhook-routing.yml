@@ -1,0 +1,290 @@
+# Alertmanager Webhook → Remediation Playbook Routing
+# Phase 4: Alert-Driven Remediation
+# Created: 2025-12-24
+# Updated: 2025-12-24 - Added SLO burn rate alert integration
+#
+# Maps Alertmanager alerts to remediation playbooks for automated incident response.
+#
+# ROUTING PHILOSOPHY:
+# 1. SLO alerts (Tier 1-2) = Confirmed user impact → Auto-remediate with high confidence
+# 2. Infrastructure alerts (disk, security) = Safe operations → Auto-remediate
+# 3. Symptom alerts (container down, memory pressure) = Being phased out in favor of SLO
+
+routes:
+  # ============================================================================
+  # SLO BURN RATE ALERTS - HIGHEST PRIORITY (Confirmed User Impact)
+  # ============================================================================
+  # These represent ACTUAL user-impacting service degradation, not just symptoms.
+  # Tier 1: Critical burn rate (error budget exhausts in <3 hours)
+  # Tier 2: High burn rate (error budget exhausts in <1 day)
+  # Tier 3/4: Investigation only (early warnings, no auto-remediation)
+
+  # Jellyfin SLO Violations
+  - alert: SLOBurnRateTier1_Jellyfin
+    playbook: slo-violation-remediation
+    parameter: "--service jellyfin --slo-target 99.5 --tier 1"
+    confidence: 95
+    priority: critical
+    description: "Jellyfin SLO violation - error budget exhausting in <3 hours"
+    notes: "Tier 1: 14.4x burn rate. Immediate service recovery required. Auto-restart with health validation."
+    requires_confirmation: false
+
+  - alert: SLOBurnRateTier2_Jellyfin
+    playbook: slo-violation-remediation
+    parameter: "--service jellyfin --slo-target 99.5 --tier 2"
+    confidence: 90
+    priority: high
+    description: "Jellyfin elevated burn rate - error budget exhausting in <1 day"
+    notes: "Tier 2: 6x burn rate. Investigate and remediate before critical."
+    requires_confirmation: false
+
+  # Immich SLO Violations
+  - alert: SLOBurnRateTier1_Immich
+    playbook: slo-violation-remediation
+    parameter: "--service immich --slo-target 99.9 --tier 1"
+    confidence: 95
+    priority: critical
+    description: "Immich SLO violation - error budget exhausting in <3 hours"
+    notes: "Tier 1: Critical photo service degradation. Auto-restart immich-server."
+    requires_confirmation: false
+
+  - alert: SLOBurnRateTier2_Immich
+    playbook: slo-violation-remediation
+    parameter: "--service immich --slo-target 99.9 --tier 2"
+    confidence: 90
+    priority: high
+    description: "Immich elevated burn rate - error budget exhausting in <1 day"
+    notes: "Tier 2: Monitor and investigate photo service performance."
+    requires_confirmation: false
+
+  # Authelia SLO Violations
+  - alert: SLOBurnRateTier1_Authelia
+    playbook: slo-violation-remediation
+    parameter: "--service authelia --slo-target 99.9 --tier 1"
+    confidence: 98
+    priority: critical
+    description: "Authelia SLO violation - authentication failures affecting users"
+    notes: "Tier 1: Auth is critical - users cannot log in. Immediate restart required."
+    requires_confirmation: false
+
+  - alert: SLOBurnRateTier2_Authelia
+    playbook: slo-violation-remediation
+    parameter: "--service authelia --slo-target 99.9 --tier 2"
+    confidence: 95
+    priority: high
+    description: "Authelia elevated burn rate - authentication degradation"
+    notes: "Tier 2: Auth performance degrading. Investigate before critical."
+    requires_confirmation: false
+
+  # Nextcloud SLO Violations
+  - alert: SLOBurnRateTier1_Nextcloud
+    playbook: slo-violation-remediation
+    parameter: "--service nextcloud-aio-mastercontainer --slo-target 99.5 --tier 1"
+    confidence: 90
+    priority: critical
+    description: "Nextcloud SLO violation - file sync/access failures"
+    notes: "Tier 1: Users experiencing file access issues. Restart AIO stack."
+    requires_confirmation: false
+
+  - alert: SLOBurnRateTier2_Nextcloud
+    playbook: slo-violation-remediation
+    parameter: "--service nextcloud-aio-mastercontainer --slo-target 99.5 --tier 2"
+    confidence: 85
+    priority: high
+    description: "Nextcloud elevated burn rate - performance degradation"
+    notes: "Tier 2: File operations slowing down. Investigate."
+    requires_confirmation: false
+
+  # Tier 3/4: Investigation Only (NO AUTO-REMEDIATION)
+  - alert: SLOBurnRateTier3_Jellyfin
+    playbook: none
+    confidence: 0
+    priority: medium
+    description: "Jellyfin error budget trending toward exhaustion (7-10 days)"
+    notes: "Tier 3: Early warning. Monitor trend, no immediate action."
+
+  - alert: SLOBurnRateTier4_Jellyfin
+    playbook: none
+    confidence: 0
+    priority: low
+    description: "Jellyfin error budget consumption above normal (>14 days remaining)"
+    notes: "Tier 4: Informational. Review in weekly operations meeting."
+
+  # (Repeat for other services - using same pattern)
+  - alert: SLOBurnRateTier3_Immich
+    playbook: none
+    confidence: 0
+    priority: medium
+    description: "Immich early warning - error budget trending"
+
+  - alert: SLOBurnRateTier4_Immich
+    playbook: none
+    confidence: 0
+    priority: low
+    description: "Immich informational - above-normal budget consumption"
+
+  - alert: SLOBurnRateTier3_Authelia
+    playbook: none
+    confidence: 0
+    priority: medium
+    description: "Authelia early warning - auth performance trending"
+
+  - alert: SLOBurnRateTier4_Authelia
+    playbook: none
+    confidence: 0
+    priority: low
+    description: "Authelia informational - auth metrics review"
+
+  - alert: SLOBurnRateTier3_Nextcloud
+    playbook: none
+    confidence: 0
+    priority: medium
+    description: "Nextcloud early warning - file service performance trending"
+
+  - alert: SLOBurnRateTier4_Nextcloud
+    playbook: none
+    confidence: 0
+    priority: low
+    description: "Nextcloud informational - weekly review recommended"
+
+  # ============================================================================
+  # INFRASTRUCTURE ALERTS (Disk, Security) - Keep for Direct Remediation
+  # ============================================================================
+
+  # Disk Space Alerts → Cleanup (SAFE: Non-destructive, well-tested)
+  - alert: SystemDiskSpaceCritical
+    playbook: disk-cleanup
+    confidence: 95
+    priority: high
+    description: "Critical disk space requires immediate cleanup"
+    notes: "Triggered when system SSD <20% free. Safe operation: removes logs, prunes containers."
+
+  - alert: SystemDiskSpaceWarning
+    playbook: disk-cleanup
+    confidence: 85
+    priority: medium
+    description: "Warning-level disk space triggers preemptive cleanup"
+    notes: "Triggered when system SSD <25% free (with hysteresis). Prevents critical threshold."
+
+  - alert: BtrfsPoolSpaceWarning
+    playbook: disk-cleanup
+    confidence: 80
+    priority: medium
+    description: "BTRFS pool space low - cleanup old snapshots and container data"
+    notes: "Triggered when BTRFS pool <20% free"
+
+  # Container Health → Self-Healing Restart (SAFE: systemd handles graceful restarts)
+  - alert: ContainerNotRunning
+    playbook: self-healing-restart
+    parameter: "--service {{.Labels.name}}"
+    confidence: 90
+    priority: high
+    description: "Restart container that stopped unexpectedly"
+    notes: "Extracts container name from alert labels. Safe: systemd restart is graceful."
+    requires_confirmation: false
+
+  - alert: ContainerMemoryPressure
+    playbook: service-restart
+    parameter: "--service {{.Labels.name}}"
+    confidence: 75
+    priority: medium
+    description: "Gentle restart for container approaching memory limit"
+    notes: "Triggered when container >95% of memory limit for 15m. Lower confidence = escalate for approval."
+    requires_confirmation: true  # Conservative: requires human approval
+
+  # Security: CrowdSec Down → Auto-Restart (CRITICAL: Security monitoring must be up)
+  - alert: CrowdSecDown
+    playbook: self-healing-restart
+    parameter: "--service crowdsec"
+    confidence: 95
+    priority: critical
+    description: "CrowdSec provides critical security - auto-restart if down"
+    notes: "Security monitoring must be restored immediately"
+
+  # Memory/Swap Pressure → NO AUTO-REMEDIATION (Investigation required)
+  # These alerts indicate problems but require human analysis:
+  # - MemoryPressureHigh: System memory >90% - needs investigation, not automatic cache clearing
+  # - SwapThrashing: High swap I/O - indicates actual problem, not solved by cache clearing
+  # - Note: zram swap being full (99%) is NORMAL - don't try to reduce swap usage!
+  - alert: MemoryPressureHigh
+    playbook: none
+    confidence: 0
+    priority: high
+    description: "Memory pressure requires investigation, not automatic remediation"
+    notes: "Alert only - human should investigate root cause (memory leak, under-provisioned, etc.)"
+
+  - alert: SwapThrashing
+    playbook: none
+    confidence: 0
+    priority: high
+    description: "Swap thrashing indicates performance issue requiring investigation"
+    notes: "Alert only - clearing caches won't fix thrashing. Investigate: memory leak, too many services, under-provisioned RAM."
+
+  # Security Alerts → Investigation Only (NO AUTO-REMEDIATION)
+  - alert: CrowdSecBanSpike
+    playbook: none
+    confidence: 0
+    priority: critical
+    description: "Security events require human investigation"
+    notes: "Alert only - potential attack or scan. Human should review CrowdSec logs."
+
+# Global Configuration
+config:
+  # Rate Limiting (prevent alert storms from triggering remediation spam)
+  rate_limit:
+    max_executions_per_hour: 5
+    max_executions_per_alert: 3  # Same alert type
+    cooldown_minutes: 15  # Minimum time between same playbook executions
+
+  # Idempotency (prevent duplicate execution for same alert)
+  idempotency:
+    window_minutes: 5  # Same alert within 5 minutes = single execution
+    key_fields: ["alertname", "instance", "service"]  # Fields used to identify "same" alert
+
+  # Security
+  security:
+    bind_address: "127.0.0.1"  # Localhost only
+    port: 9096  # Different from Discord relay (9095)
+    auth_token: "REPLACE_WITH_RANDOM_TOKEN"  # Shared secret for webhook auth
+
+  # Circuit Breaker
+  circuit_breaker:
+    failure_threshold: 3  # Consecutive failures before opening circuit
+    reset_timeout_minutes: 30  # How long circuit stays open
+    state_file: "/home/patriark/containers/.claude/context/webhook-circuit-breaker.json"
+
+  # Logging
+  logging:
+    webhook_log: "/home/patriark/containers/data/backup-logs/webhook-remediation.log"
+    decision_log: "/home/patriark/containers/.claude/context/decision-log.jsonl"
+    max_log_size_mb: 10
+    retain_days: 30
+
+# Service Overrides (never auto-remediate these services via webhook)
+service_overrides:
+  - traefik
+  - authelia
+  - prometheus
+  - alertmanager
+  - grafana
+  - loki
+
+# Philosophy:
+# - Only auto-remediate operations that are:
+#   1. Safe (non-destructive, reversible via BTRFS snapshots)
+#   2. Well-tested (proven effective in previous phases)
+#   3. Clear cause-effect (disk full → cleanup = obvious)
+#   4. Low risk (won't cause cascading failures)
+#
+# - Do NOT auto-remediate:
+#   1. Complex issues (memory pressure, performance degradation)
+#   2. Security events (require human analysis)
+#   3. Anything requiring investigation (memory leaks, etc.)
+#   4. Operations that might mask symptoms without fixing root cause
+#
+# Notes:
+# - {{.Labels.name}} extracts container name from Alertmanager payload
+# - Confidence values affect autonomous execution threshold (>90% = auto-execute)
+# - requires_confirmation: true = always escalate, never auto-execute
+# - priority affects execution order when multiple alerts fire simultaneously
+# - Conservative approach: Better to alert human than auto-remediate incorrectly

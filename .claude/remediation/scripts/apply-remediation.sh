@@ -8,6 +8,34 @@
 
 set -euo pipefail
 
+# Trap for error handling and metrics on failure
+trap 'handle_error $? $LINENO' ERR
+
+handle_error() {
+    local exit_code=$1
+    local line_number=$2
+
+    # Only write failure metrics if we've started execution (not during arg parsing)
+    if [[ -n "${PLAYBOOK:-}" ]] && [[ -n "${START_TIME:-}" ]] && [[ "${DRY_RUN:-false}" == "false" ]]; then
+        END_TIME=$(date +%s)
+        DURATION=$((END_TIME - START_TIME))
+
+        METRICS_WRITER="$HOME/containers/scripts/write-remediation-metrics.sh"
+        if [[ -x "$METRICS_WRITER" ]]; then
+            "$METRICS_WRITER" \
+                --playbook "${PLAYBOOK}" \
+                --status "failure" \
+                --duration "$DURATION" \
+                --disk-reclaimed "${METRICS_DISK_RECLAIMED:-0}" \
+                --services-restarted "${METRICS_SERVICES_RESTARTED:-}" \
+                --oom-detected "${METRICS_OOM_DETECTED:-0}" \
+                --root-cause "script_error_line_${line_number}" &>/dev/null || true
+        fi
+    fi
+
+    exit $exit_code
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -26,6 +54,13 @@ SERVICE=""
 FORCE=false
 DECISION_LOG=""
 
+# Metrics tracking
+START_TIME=$(date +%s)
+METRICS_DISK_RECLAIMED=0
+METRICS_SERVICES_RESTARTED=""
+METRICS_OOM_DETECTED=0
+METRICS_ROOT_CAUSE=""
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -35,6 +70,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --service)
             SERVICE="$2"
+            shift 2
+            ;;
+        --slo-target)
+            SLO_TARGET="$2"
+            shift 2
+            ;;
+        --tier)
+            TIER="$2"
             shift 2
             ;;
         --dry-run)
@@ -52,20 +95,21 @@ while [[ $# -gt 0 ]]; do
         --list-playbooks)
             echo "Available Remediation Playbooks:"
             echo ""
-            echo "1. disk-cleanup             - Clean system disk (journals, images, caches)"
-            echo "2. service-restart          - Restart a failed service"
-            echo "3. drift-reconciliation     - Fix config drift between quadlet and running container"
-            echo "4. resource-pressure        - Mitigate high memory/swap usage"
-            echo "5. predictive-maintenance   - Proactive remediation based on forecasts"
-            echo "6. self-healing-restart     - Smart service restart with root cause detection"
-            echo "7. database-maintenance     - PostgreSQL VACUUM, Redis analysis, health checks"
+            echo "1. disk-cleanup                - Clean system disk (journals, images, caches)"
+            echo "2. service-restart             - Restart a failed service"
+            echo "3. drift-reconciliation        - Fix config drift between quadlet and running container"
+            echo "4. resource-pressure           - Mitigate high memory/swap usage"
+            echo "5. predictive-maintenance      - Proactive remediation based on forecasts"
+            echo "6. self-healing-restart        - Smart service restart with root cause detection"
+            echo "7. database-maintenance        - PostgreSQL VACUUM, Redis analysis, health checks"
+            echo "8. slo-violation-remediation   - SLO-aware service recovery with burn rate measurement"
             echo ""
-            echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--dry-run] [--force] [--log-to FILE]"
+            echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--slo-target PCT] [--tier N] [--dry-run] [--force] [--log-to FILE]"
             exit 0
             ;;
         *)
-            echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--dry-run] [--force] [--log-to FILE] [--list-playbooks]"
-            echo "Available playbooks: disk-cleanup, drift-reconciliation, service-restart, resource-pressure, predictive-maintenance, self-healing-restart, database-maintenance"
+            echo "Usage: $0 --playbook PLAYBOOK [--service SERVICE] [--slo-target PCT] [--tier N] [--dry-run] [--force] [--log-to FILE] [--list-playbooks]"
+            echo "Available playbooks: disk-cleanup, drift-reconciliation, service-restart, resource-pressure, predictive-maintenance, self-healing-restart, database-maintenance, slo-violation-remediation"
             exit 1
             ;;
     esac
@@ -191,6 +235,12 @@ execute_disk_cleanup() {
     log "  System SSD usage after: ${DISK_AFTER}%"
     log "  Space freed: ${DISK_FREED}%"
 
+    # Calculate disk space freed in bytes for metrics
+    if [[ "$DRY_RUN" == "false" ]]; then
+        DISK_SIZE_BYTES=$(df / | awk 'NR==2 {print $2}')
+        METRICS_DISK_RECLAIMED=$(echo "$DISK_SIZE_BYTES * $DISK_FREED / 100" | bc)
+    fi
+
     # Verify critical services
     log "  Verifying critical services..."
     CRITICAL_SERVICES="traefik prometheus jellyfin"
@@ -262,6 +312,11 @@ execute_service_restart() {
             log "    ${RED}✗ Service failed to start${NC}"
             exit 1
         fi
+    fi
+
+    # Track metrics
+    if [[ "$DRY_RUN" == "false" ]]; then
+        METRICS_SERVICES_RESTARTED="$SERVICE"
     fi
 
     log ""
@@ -748,6 +803,19 @@ execute_self_healing_restart() {
         log ""
     fi
 
+    # Track metrics
+    if [[ "$DRY_RUN" == "false" ]]; then
+        METRICS_SERVICES_RESTARTED="$SERVICE"
+        if [[ "$OOM_DETECTED" == "true" ]]; then
+            METRICS_OOM_DETECTED=1
+            METRICS_ROOT_CAUSE="oom"
+        elif [[ "$RESTART_LOOP" == "true" ]]; then
+            METRICS_ROOT_CAUSE="restart_loop"
+        else
+            METRICS_ROOT_CAUSE="standard_restart"
+        fi
+    fi
+
     log "${GREEN}✓ Self-healing restart completed${NC}"
     return 0
 }
@@ -896,6 +964,154 @@ execute_database_maintenance() {
     return 0
 }
 
+# SLO Violation Remediation (Phase 4: SLO Integration)
+execute_slo_violation_remediation() {
+    log ""
+    log "${BLUE}[SLO Violation Remediation]${NC}"
+    log "Triggered by: SLO burn rate alert (Tier ${TIER:-1})"
+    log "Target service: ${SERVICE}"
+    log "SLO target: ${SLO_TARGET}%"
+    log ""
+
+    # This playbook uses YAML-based execution via generic runner
+    # The YAML file contains all logic for SLO-aware remediation
+    PLAYBOOK_YAML="$PLAYBOOK_DIR/slo-violation-remediation.yml"
+
+    if [[ ! -f "$PLAYBOOK_YAML" ]]; then
+        log "${RED}✗ Playbook YAML not found: $PLAYBOOK_YAML${NC}"
+        return 1
+    fi
+
+    log "Executing YAML-based playbook..."
+    log "(Note: YAML playbook execution not yet fully implemented)"
+    log ""
+    log "${YELLOW}For now, executing simplified SLO remediation:${NC}"
+    log ""
+
+    # Simplified SLO remediation logic (until YAML executor is built)
+    log "${BLUE}[Pre-Checks]${NC}"
+
+    # Capture baseline SLO state
+    log "  Capturing baseline SLO metrics..."
+    if command -v curl >/dev/null 2>&1; then
+        SLI_BEFORE=$(curl -s "http://localhost:9090/api/v1/query?query=sli:${SERVICE}:availability:ratio" | jq -r '.data.result[0].value[1] // "N/A"' 2>/dev/null || echo "N/A")
+        BURN_RATE_BEFORE=$(curl -s "http://localhost:9090/api/v1/query?query=burn_rate:${SERVICE}:availability:1h" | jq -r '.data.result[0].value[1] // "0"' 2>/dev/null || echo "0")
+        log "    SLI (before): ${SLI_BEFORE}"
+        log "    Burn rate (before): ${BURN_RATE_BEFORE}x"
+    else
+        log "    ${YELLOW}⚠ curl not available, skipping SLO metrics${NC}"
+        SLI_BEFORE="N/A"
+        BURN_RATE_BEFORE="0"
+    fi
+
+    # Check service status
+    log "  Checking service status..."
+    if systemctl --user is-active "${SERVICE}.service" >/dev/null 2>&1; then
+        log "    ${GREEN}✓ Service is active${NC}"
+    else
+        log "    ${YELLOW}⚠ Service is not active${NC}"
+    fi
+
+    log ""
+    log "${BLUE}[Remediation Action]${NC}"
+
+    # Apply tier-appropriate remediation
+    case "${TIER:-1}" in
+        1)
+            log "  Tier 1: Critical - Executing immediate service restart"
+            if [[ "$DRY_RUN" == "false" ]]; then
+                systemctl --user restart "${SERVICE}.service"
+                log "    ${GREEN}✓ Service restarted${NC}"
+                sleep 5
+            else
+                log "    [DRY RUN] Would restart ${SERVICE}.service"
+            fi
+            ;;
+        2)
+            log "  Tier 2: High - Attempting reload before restart"
+            if [[ "$DRY_RUN" == "false" ]]; then
+                if systemctl --user reload "${SERVICE}.service" 2>/dev/null; then
+                    log "    ${GREEN}✓ Service reloaded${NC}"
+                else
+                    log "    Reload not supported, performing restart..."
+                    systemctl --user restart "${SERVICE}.service"
+                    log "    ${GREEN}✓ Service restarted${NC}"
+                fi
+                sleep 3
+            else
+                log "    [DRY RUN] Would reload/restart ${SERVICE}.service"
+            fi
+            ;;
+        *)
+            log "  Tier ${TIER}: Investigation only (no automatic action)"
+            ;;
+    esac
+
+    log ""
+    log "${BLUE}[Post-Checks]${NC}"
+
+    # Wait for metrics to stabilize
+    if [[ "$DRY_RUN" == "false" ]]; then
+        log "  Waiting 60s for metrics to stabilize..."
+        sleep 60
+    else
+        log "  [DRY RUN] Would wait 60s for metrics"
+    fi
+
+    # Measure SLO improvement
+    log "  Measuring SLO improvement..."
+    if command -v curl >/dev/null 2>&1 && [[ "$DRY_RUN" == "false" ]]; then
+        SLI_AFTER=$(curl -s "http://localhost:9090/api/v1/query?query=sli:${SERVICE}:availability:ratio" | jq -r '.data.result[0].value[1] // "N/A"' 2>/dev/null || echo "N/A")
+        BURN_RATE_AFTER=$(curl -s "http://localhost:9090/api/v1/query?query=burn_rate:${SERVICE}:availability:5m" | jq -r '.data.result[0].value[1] // "0"' 2>/dev/null || echo "0")
+
+        log "    SLI (after): ${SLI_AFTER}"
+        log "    Burn rate (after): ${BURN_RATE_AFTER}x"
+
+        # Calculate improvement
+        if [[ "$SLI_AFTER" != "N/A" && "$SLI_BEFORE" != "N/A" ]]; then
+            SLI_DELTA=$(awk "BEGIN {printf \"%.4f\", $SLI_AFTER - $SLI_BEFORE}" 2>/dev/null || echo "0")
+            log "    SLI delta: ${SLI_DELTA} (positive = improvement)"
+            export SLI_DELTA
+        fi
+
+        if [[ "$BURN_RATE_AFTER" != "0" && "$BURN_RATE_BEFORE" != "0" ]]; then
+            BURN_DELTA=$(awk "BEGIN {printf \"%.2f\", $BURN_RATE_BEFORE - $BURN_RATE_AFTER}" 2>/dev/null || echo "0")
+            log "    Burn rate reduction: ${BURN_DELTA}x (positive = improvement)"
+            export BURN_DELTA
+        fi
+
+        # Export for metrics collection
+        export SLI_BEFORE
+        export SLI_AFTER
+        export BURN_RATE_BEFORE
+        export BURN_RATE_AFTER
+
+        # Verify improvement
+        if (( $(awk "BEGIN {print ($BURN_RATE_AFTER < 1.0)}" 2>/dev/null || echo 0) )); then
+            log "    ${GREEN}✓ SUCCESS: Burn rate normalized (<1.0x)${NC}"
+        elif (( $(awk "BEGIN {print ($BURN_RATE_AFTER < $BURN_RATE_BEFORE)}" 2>/dev/null || echo 0) )); then
+            log "    ${GREEN}✓ PARTIAL: Burn rate improved${NC}"
+        else
+            log "    ${YELLOW}⚠ Burn rate did not improve - further investigation required${NC}"
+        fi
+    else
+        log "    [DRY RUN] Would measure SLO metrics"
+    fi
+
+    # Verify service health
+    log "  Verifying service health..."
+    if systemctl --user is-active "${SERVICE}.service" >/dev/null 2>&1; then
+        log "    ${GREEN}✓ Service is active${NC}"
+    else
+        log "    ${RED}✗ Service is not active${NC}"
+        return 1
+    fi
+
+    log ""
+    log "${GREEN}✓ SLO violation remediation completed${NC}"
+    return 0
+}
+
 # Main execution
 case $PLAYBOOK in
     disk-cleanup)
@@ -918,6 +1134,9 @@ case $PLAYBOOK in
         ;;
     database-maintenance)
         execute_database_maintenance
+        ;;
+    slo-violation-remediation)
+        execute_slo_violation_remediation
         ;;
     *)
         log "${RED}Unknown playbook: $PLAYBOOK${NC}"
@@ -954,5 +1173,23 @@ EOF
     else
         rm -f "${DECISION_LOG}.tmp"
         log "${YELLOW}⚠ Could not append to decision log${NC}"
+    fi
+fi
+
+# Write metrics for Prometheus (skip in dry-run mode)
+if [[ "$DRY_RUN" == "false" ]]; then
+    END_TIME=$(date +%s)
+    DURATION=$((END_TIME - START_TIME))
+
+    METRICS_WRITER="$CONTAINERS_DIR/scripts/write-remediation-metrics.sh"
+    if [[ -x "$METRICS_WRITER" ]]; then
+        "$METRICS_WRITER" \
+            --playbook "$PLAYBOOK" \
+            --status "success" \
+            --duration "$DURATION" \
+            --disk-reclaimed "$METRICS_DISK_RECLAIMED" \
+            --services-restarted "$METRICS_SERVICES_RESTARTED" \
+            --oom-detected "$METRICS_OOM_DETECTED" \
+            --root-cause "$METRICS_ROOT_CAUSE" &>> "$LOG_FILE"
     fi
 fi

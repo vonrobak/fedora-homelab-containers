@@ -1,0 +1,34 @@
+[Unit]
+Description=Remediation Webhook Handler - Alert-Driven Remediation (Phase 4)
+Documentation=file:///home/patriark/containers/.claude/remediation/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/containers/.claude/remediation/scripts
+ExecStart=/usr/bin/python3 %h/containers/.claude/remediation/scripts/remediation-webhook-handler.py \
+    --config %h/containers/.claude/remediation/webhook-routing.yml \
+    --port 9096 \
+    --bind 127.0.0.1 \
+    --log-level INFO
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+
+# Resource limits (webhook handler is lightweight)
+MemoryMax=128M
+CPUQuota=10%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=remediation-webhook
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,89 @@
+# Database Health Chain
+# Comprehensive database maintenance and service recovery
+# Risk Level: MEDIUM - Includes service restart with rollback capability
+# Usage: execute-chain.sh --chain database-health
+
+name: database-health
+description: Database maintenance followed by service restart with health verification
+risk_level: medium
+requires_confirmation: yes  # Service restart requires confirmation
+
+# Sequential execution: Maintain → Restart → Verify
+playbooks:
+  # Step 1: Perform database maintenance (VACUUM, ANALYZE, memory optimization)
+  - name: database-maintenance
+    description: "VACUUM PostgreSQL databases and optimize Redis memory"
+    timeout: 600  # 10 minutes (VACUUM can be slow on large databases)
+    on_failure: abort  # Don't restart service if maintenance fails
+    priority: 1
+    notes: "Targets immich-postgres and redis-authelia"
+
+  # Step 2: Restart Immich PostgreSQL service
+  - name: self-healing-restart
+    description: "Restart PostgreSQL service to apply maintenance"
+    parameters:
+      service: postgres-immich
+    timeout: 120  # 2 minutes
+    on_failure: rollback  # Roll back to pre-restart state if restart fails
+    priority: 2
+
+  # Step 3: Verify database health after restart (future enhancement)
+  # - name: database-healthcheck
+  #   description: "Verify PostgreSQL connectivity and query performance"
+  #   timeout: 60
+  #   on_failure: rollback
+  #   priority: 3
+
+# Execution settings
+execution_strategy: sequential
+rollback_on_failure: true   # CRITICAL: Enable rollback for database operations
+max_duration: 900           # 15 minutes total
+stop_on_abort: true
+
+# Rollback strategy
+rollback:
+  enabled: true
+  strategy: "btrfs-snapshot"  # Use BTRFS snapshots for database rollback
+  snapshot_paths:
+    - "/home/patriark/containers/data/immich/postgres"
+  retention: "24h"  # Keep rollback snapshot for 24 hours
+
+# Metrics
+metrics:
+  track_duration: true
+  track_success_rate: true
+  track_database_performance: true  # Measure query time before/after
+  report_to_prometheus: true
+
+# Pre-flight checks (must pass before chain executes)
+pre_flight_checks:
+  - check: "immich_service_running"
+    description: "Immich service must be running"
+    required: true
+  - check: "postgres_backup_recent"
+    description: "PostgreSQL backup must be <24h old"
+    required: true
+    warn_only: true  # Warn but don't block execution
+
+# Post-execution verification
+post_checks:
+  - check: "postgres_responding"
+    description: "PostgreSQL must respond to queries"
+    required: true
+  - check: "immich_api_healthy"
+    description: "Immich API must return 200 OK"
+    required: true
+
+# Schedule recommendation
+schedule:
+  recommended: "Weekly on Sunday at 03:00 (low-traffic window)"
+  timer: "database-health-chain.timer"
+
+# Metadata
+created: "2025-12-24"
+version: "1.0"
+tags:
+  - database
+  - maintenance
+  - rollback-capable
+  - verified

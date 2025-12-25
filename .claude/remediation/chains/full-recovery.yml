@@ -1,0 +1,68 @@
+# Full System Recovery Chain
+# Complete multi-step recovery sequence for comprehensive system remediation
+# Risk Level: HIGH - Restarts services and performs aggressive cleanup
+# Usage: execute-chain.sh --chain full-recovery
+
+name: full-recovery
+description: Complete system recovery sequence (cleanup + pressure relief + service restart + drift fix)
+risk_level: high
+requires_confirmation: yes
+
+# Playbooks execute in sequential order
+# Each playbook has independent timeout and failure handling
+playbooks:
+  # Step 1: Free up disk space
+  - name: disk-cleanup
+    description: "Remove old logs, container layers, temp files"
+    timeout: 300  # 5 minutes
+    on_failure: continue  # Continue even if cleanup fails
+    priority: 1
+
+  # Step 2: Reduce memory/swap pressure (conditional)
+  - name: resource-pressure
+    description: "Clear caches and reduce swap usage if pressure detected"
+    timeout: 180  # 3 minutes
+    condition: "memory_pressure_detected"  # Only run if memory pressure exists
+    on_failure: skip  # Skip to next if this fails
+    priority: 2
+
+  # Step 3: Restart critical service
+  - name: self-healing-restart
+    description: "Restart Jellyfin service"
+    parameters:
+      service: jellyfin
+    timeout: 120  # 2 minutes
+    on_failure: abort  # Abort entire chain if service restart fails
+    priority: 3
+
+  # Step 4: Fix configuration drift
+  - name: drift-reconciliation
+    description: "Reconcile container config with quadlet definitions"
+    timeout: 300  # 5 minutes
+    on_failure: continue  # Continue even if drift check fails
+    priority: 4
+
+# Execution settings
+execution_strategy: sequential  # Run one at a time (future: parallel support)
+rollback_on_failure: false      # Don't rollback previous playbooks on failure
+max_duration: 900               # 15 minutes total chain timeout
+stop_on_abort: true             # Stop immediately if any playbook uses on_failure: abort
+
+# Metrics and reporting
+metrics:
+  track_duration: true
+  track_success_rate: true
+  report_to_prometheus: true
+
+# Conditions (evaluated before chain execution)
+# These are simple string checks that map to bash functions
+conditions:
+  memory_pressure_detected: "check_memory_pressure"
+
+# Metadata
+created: "2025-12-24"
+version: "1.0"
+tags:
+  - recovery
+  - comprehensive
+  - high-risk

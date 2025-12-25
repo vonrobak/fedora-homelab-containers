@@ -1,0 +1,337 @@
+---
+# slo-violation-remediation.yml
+# Auto-remediation playbook for SLO burn rate violations
+#
+# Trigger: SLO burn rate alerts (Tier 1-2 from multi-window detection)
+# Risk Level: MEDIUM (service restart causes brief unavailability)
+# Confirmation Required: false (Tier 1/2 auto-execute, Tier 3/4 don't route here)
+#
+# Philosophy: SLO violations represent CONFIRMED user impact. Remediation must:
+# 1. Measure SLO state before/after
+# 2. Apply graduated response based on tier severity
+# 3. Verify improvement (did burn rate decrease?)
+# 4. Log SLO impact metrics
+
+name: "SLO Violation Remediation"
+version: "1.0"
+created: "2025-12-24"
+risk_level: "medium"
+requires_confirmation: false  # Tier 1/2 auto-execute (high confidence)
+
+metadata:
+  category: "slo"
+  severity: "critical"
+  related_issues: []
+  estimated_duration: "30-90 seconds"
+  affects: "Brief service restart (8-15 seconds unavailability)"
+
+parameters:
+  - name: "service"
+    description: "Service name (e.g., jellyfin, immich, authelia)"
+    required: true
+  - name: "slo-target"
+    description: "SLO target percentage (e.g., 99.5, 99.9)"
+    required: true
+  - name: "tier"
+    description: "Alert tier (1=critical, 2=high, 3=warning, 4=info)"
+    required: true
+    default: "1"
+
+triggers:
+  - condition: "burn_rate > 14.4x"
+    description: "Tier 1: Error budget exhausts in <3 hours"
+    priority: "critical"
+  - condition: "burn_rate > 6x"
+    description: "Tier 2: Error budget exhausts in <1 day"
+    priority: "high"
+
+pre_checks:
+  - name: "Capture baseline SLO state"
+    command: |
+      echo "=== BASELINE SLO STATE ==="
+
+      # Query Prometheus for current SLO metrics
+      SLI=$(curl -s 'http://localhost:9090/api/v1/query?query=sli:${SERVICE}:availability:ratio' \
+        | jq -r '.data.result[0].value[1] // "N/A"')
+
+      BURN_RATE_1H=$(curl -s 'http://localhost:9090/api/v1/query?query=burn_rate:${SERVICE}:availability:1h' \
+        | jq -r '.data.result[0].value[1] // "0"')
+
+      BURN_RATE_5M=$(curl -s 'http://localhost:9090/api/v1/query?query=burn_rate:${SERVICE}:availability:5m' \
+        | jq -r '.data.result[0].value[1] // "0"')
+
+      BUDGET_REMAINING=$(curl -s 'http://localhost:9090/api/v1/query?query=error_budget:${SERVICE}:availability:budget_remaining' \
+        | jq -r '.data.result[0].value[1] // "N/A"')
+
+      BUDGET_DAYS=$(curl -s 'http://localhost:9090/api/v1/query?query=error_budget:${SERVICE}:availability:days_remaining' \
+        | jq -r '.data.result[0].value[1] // "N/A"')
+
+      echo "Service: ${SERVICE}"
+      echo "SLI (availability): ${SLI} (target: ${SLO_TARGET}%)"
+      echo "Burn rate (1h): ${BURN_RATE_1H}x"
+      echo "Burn rate (5m): ${BURN_RATE_5M}x"
+      echo "Error budget remaining: ${BUDGET_REMAINING}"
+      echo "Days until exhaustion: ${BUDGET_DAYS}"
+
+      # Export for later comparison
+      export SLI_BEFORE="$SLI"
+      export BURN_RATE_BEFORE="$BURN_RATE_1H"
+      export BUDGET_BEFORE="$BUDGET_REMAINING"
+    expected_exit: 0
+    exports:
+      - SLI_BEFORE
+      - BURN_RATE_BEFORE
+      - BUDGET_BEFORE
+
+  - name: "Check service health and recent errors"
+    command: |
+      echo "=== SERVICE DIAGNOSTICS ==="
+
+      # Service status
+      systemctl --user is-active ${SERVICE}.service || echo "Service not active"
+
+      # Container health check (if applicable)
+      if podman ps --format '{{.Names}}' | grep -q "^${SERVICE}$"; then
+        echo "Container running: yes"
+        podman healthcheck run ${SERVICE} 2>&1 || echo "Health check failed"
+      else
+        echo "Container running: no"
+      fi
+
+      # Recent errors in logs
+      echo "Recent errors (last 5 minutes):"
+      journalctl --user -u ${SERVICE}.service --since "5 minutes ago" --no-pager \
+        | grep -iE "(error|fail|exception)" | tail -10 || echo "No errors found"
+    expected_exit: 0
+
+  - name: "Check resource usage"
+    command: |
+      echo "=== RESOURCE USAGE ==="
+
+      if podman ps --format '{{.Names}}' | grep -q "^${SERVICE}$"; then
+        podman stats --no-stream ${SERVICE} --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}"
+      fi
+    expected_exit: 0
+
+actions:
+  - name: "Apply tier-appropriate remediation"
+    command: |
+      echo "=== REMEDIATION ACTION (Tier ${TIER}) ==="
+
+      case "${TIER}" in
+        1)
+          # TIER 1: CRITICAL - Immediate restart required
+          echo "Tier 1: Critical burn rate - executing immediate service restart"
+          systemctl --user restart ${SERVICE}.service
+
+          # Wait for service to come back up
+          echo "Waiting for service to restart..."
+          sleep 5
+
+          # Verify service is running
+          for i in {1..12}; do
+            if systemctl --user is-active ${SERVICE}.service >/dev/null 2>&1; then
+              echo "Service restarted successfully"
+              break
+            fi
+            echo "Waiting for service startup... ($i/12)"
+            sleep 5
+          done
+          ;;
+
+        2)
+          # TIER 2: HIGH - Gentle restart with reload attempt first
+          echo "Tier 2: Elevated burn rate - attempting reload before restart"
+
+          if systemctl --user reload ${SERVICE}.service 2>/dev/null; then
+            echo "Service reloaded successfully"
+            sleep 3
+          else
+            echo "Reload not supported, performing restart"
+            systemctl --user restart ${SERVICE}.service
+            sleep 5
+          fi
+          ;;
+
+        *)
+          # TIER 3/4: Should not reach here (routed to "none" playbook)
+          echo "Tier ${TIER}: No automatic action (investigation only)"
+          exit 1
+          ;;
+      esac
+    expected_exit: 0
+    estimated_downtime: "8-15 seconds"
+    reversible: true
+    notes: "Service restart causes brief unavailability but resolves most common issues"
+
+  - name: "Wait for metrics to stabilize"
+    command: |
+      echo "=== METRICS STABILIZATION ==="
+      echo "Waiting 60 seconds for Prometheus to scrape updated metrics..."
+      sleep 60
+    expected_exit: 0
+
+post_checks:
+  - name: "Measure SLO improvement"
+    command: |
+      echo "=== POST-REMEDIATION SLO STATE ==="
+
+      # Query updated metrics
+      SLI_AFTER=$(curl -s 'http://localhost:9090/api/v1/query?query=sli:${SERVICE}:availability:ratio' \
+        | jq -r '.data.result[0].value[1] // "N/A"')
+
+      BURN_RATE_AFTER=$(curl -s 'http://localhost:9090/api/v1/query?query=burn_rate:${SERVICE}:availability:5m' \
+        | jq -r '.data.result[0].value[1] // "0"')
+
+      BUDGET_AFTER=$(curl -s 'http://localhost:9090/api/v1/query?query=error_budget:${SERVICE}:availability:budget_remaining' \
+        | jq -r '.data.result[0].value[1] // "N/A"')
+
+      echo "SLI after: ${SLI_AFTER} (was: ${SLI_BEFORE})"
+      echo "Burn rate after: ${BURN_RATE_AFTER}x (was: ${BURN_RATE_BEFORE}x)"
+      echo "Error budget after: ${BUDGET_AFTER} (was: ${BUDGET_BEFORE})"
+
+      # Calculate improvement
+      if [[ "$SLI_AFTER" != "N/A" && "$SLI_BEFORE" != "N/A" ]]; then
+        SLI_DELTA=$(awk "BEGIN {printf \"%.4f\", $SLI_AFTER - $SLI_BEFORE}")
+        echo "SLI change: ${SLI_DELTA} (positive = improvement)"
+      fi
+
+      if [[ "$BURN_RATE_AFTER" != "0" && "$BURN_RATE_BEFORE" != "0" ]]; then
+        BURN_DELTA=$(awk "BEGIN {printf \"%.2f\", $BURN_RATE_BEFORE - $BURN_RATE_AFTER}")
+        echo "Burn rate reduction: ${BURN_DELTA}x (positive = improvement)"
+      fi
+
+      # Export for metrics logging
+      export SLI_AFTER
+      export BURN_RATE_AFTER
+      export BUDGET_AFTER
+      export SLI_DELTA="${SLI_DELTA:-0}"
+      export BURN_DELTA="${BURN_DELTA:-0}"
+    expected_exit: 0
+    exports:
+      - SLI_AFTER
+      - BURN_RATE_AFTER
+      - BUDGET_AFTER
+      - SLI_DELTA
+      - BURN_DELTA
+
+  - name: "Verify burn rate decreased"
+    command: |
+      echo "=== SUCCESS VERIFICATION ==="
+
+      # Success if burn rate decreased OR is now below 1.0x (normal)
+      if (( $(awk "BEGIN {print ($BURN_RATE_AFTER < 1.0)}") )); then
+        echo "✅ SUCCESS: Burn rate normalized (${BURN_RATE_AFTER}x < 1.0x)"
+        exit 0
+      elif (( $(awk "BEGIN {print ($BURN_RATE_AFTER < $BURN_RATE_BEFORE)}") )); then
+        echo "✅ PARTIAL SUCCESS: Burn rate improved (${BURN_RATE_BEFORE}x → ${BURN_RATE_AFTER}x)"
+        exit 0
+      else
+        echo "❌ FAILURE: Burn rate did not improve (${BURN_RATE_BEFORE}x → ${BURN_RATE_AFTER}x)"
+        echo "Further investigation required - service restart did not resolve SLO violation"
+        exit 1
+      fi
+    expected_condition: "burn_rate decreased OR burn_rate < 1.0"
+
+  - name: "Verify service is healthy"
+    command: |
+      echo "=== SERVICE HEALTH CHECK ==="
+
+      # Service must be active
+      if ! systemctl --user is-active ${SERVICE}.service >/dev/null 2>&1; then
+        echo "❌ Service not active after remediation"
+        exit 1
+      fi
+
+      echo "✅ Service is active"
+
+      # Container health check (if applicable)
+      if podman ps --format '{{.Names}}' | grep -q "^${SERVICE}$"; then
+        if podman healthcheck run ${SERVICE} >/dev/null 2>&1; then
+          echo "✅ Container health check passed"
+        else
+          echo "⚠️ Container health check failed (may need more time to warm up)"
+        fi
+      fi
+    expected: "active"
+
+logging:
+  - metric: "sli_before"
+    command: "echo $SLI_BEFORE"
+
+  - metric: "sli_after"
+    command: "echo $SLI_AFTER"
+
+  - metric: "sli_improvement"
+    command: "echo $SLI_DELTA"
+
+  - metric: "burn_rate_before"
+    command: "echo $BURN_RATE_BEFORE"
+
+  - metric: "burn_rate_after"
+    command: "echo $BURN_RATE_AFTER"
+
+  - metric: "burn_rate_reduction"
+    command: "echo $BURN_DELTA"
+
+  - metric: "error_budget_before"
+    command: "echo $BUDGET_BEFORE"
+
+  - metric: "error_budget_after"
+    command: "echo $BUDGET_AFTER"
+
+  - metric: "tier"
+    command: "echo $TIER"
+
+  - metric: "estimated_downtime_seconds"
+    value: "10"  # Average restart time
+
+rollback:
+  available: false
+  reason: "Service restart is the remediation - no rollback needed"
+  recovery: "If service fails to start, check logs: journalctl --user -u ${SERVICE}.service -n 100"
+
+success_criteria:
+  - "Burn rate decreased from baseline OR normalized to <1.0x"
+  - "Service is active and healthy"
+  - "SLI improved OR stabilized"
+
+failure_handling:
+  - action: "Log detailed SLO state and burn rate trends"
+  - action: "Escalate to human - service restart did not resolve SLO violation"
+  - action: "Recommend deeper investigation: application-level errors, database issues, external dependencies"
+
+recommendations:
+  - condition: "burn_rate still elevated after restart"
+    suggestion: "Investigate application-level issues (database performance, external API failures, memory leaks)"
+
+  - condition: "multiple restarts in short period"
+    suggestion: "Underlying issue not resolved by restart - check for configuration problems, resource exhaustion, or dependency failures"
+
+  - condition: "error budget critically low (<10%)"
+    suggestion: "Consider change freeze until budget recovers - any further incidents could breach SLO"
+
+safety_checks:
+  - "Always capture baseline SLO state before action"
+  - "Wait for metrics to stabilize (60s) before measuring improvement"
+  - "Verify service health after restart"
+  - "Fail fast if remediation doesn't improve burn rate"
+
+examples:
+  dry_run: "./apply-remediation.sh --playbook slo-violation-remediation --dry-run"
+  tier1: "./apply-remediation.sh --playbook slo-violation-remediation --service jellyfin --slo-target 99.5 --tier 1"
+  tier2: "./apply-remediation.sh --playbook slo-violation-remediation --service authelia --slo-target 99.9 --tier 2"
+
+notes: |
+  This playbook is SLO-aware and measures user impact, not just technical success.
+
+  Key differences from symptom-based playbooks:
+  1. Queries SLO metrics before/after (SLI, burn rate, error budget)
+  2. Graduated response based on tier severity
+  3. Success measured by burn rate decrease, not just exit code
+  4. Logs SLO impact metrics for effectiveness analysis
+
+  Integration with write-remediation-metrics.sh:
+  - Exports SLI_DELTA, BURN_DELTA for metrics collection
+  - Allows tracking "did remediation improve SLO?" over time
+  - Enables calculation of remediation ROI (error budget saved)
