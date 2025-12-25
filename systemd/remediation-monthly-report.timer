@@ -1,0 +1,17 @@
+[Unit]
+Description=Remediation Monthly Report Timer
+Documentation=file:///home/patriark/containers/.claude/remediation/README.md
+Requires=remediation-monthly-report.service
+
+[Timer]
+# Run on the 1st of each month at 08:00 (to generate previous month's report)
+OnCalendar=*-*-01 08:00:00
+
+# Run 10 minutes after boot if system was down during scheduled time
+Persistent=true
+
+# Randomize start time by up to 10 minutes to avoid resource contention
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

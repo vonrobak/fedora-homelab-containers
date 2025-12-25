@@ -299,6 +299,124 @@ All operations logged with metrics:
 
 ---
 
+## Analytics & Intelligence
+
+**Phase 6 (2025-12-25):** Comprehensive analytics suite for data-driven insights
+
+**Location:** `~/containers/scripts/analytics/`
+
+### Available Analytics Tools
+
+#### 1. Effectiveness Scoring (`remediation-effectiveness.sh`)
+
+Calculate 0-100 effectiveness scores for each playbook using weighted algorithm:
+- Success Rate (40%): Percentage of successful executions
+- Impact (30%): Disk reclaimed, services recovered (playbook-specific)
+- Execution Time (20%): Faster = higher score (<30s = perfect)
+- Prediction Accuracy (10%): For predictive-maintenance only
+
+**Score Interpretation:**
+- ≥80: Excellent
+- 60-79: Good
+- <60: Needs Improvement
+
+**Usage:**
+```bash
+# Summary table for all playbooks
+~/containers/scripts/analytics/remediation-effectiveness.sh --summary --days 30
+
+# Specific playbook details
+~/containers/scripts/analytics/remediation-effectiveness.sh --playbook disk-cleanup --days 7
+```
+
+#### 2. Trend Analysis (`remediation-trends.sh`)
+
+Identify patterns and trends over time:
+- Execution frequency trends (first half vs second half comparison)
+- Success rate trends (performance improvement/degradation)
+- Most common root causes (self-healing incidents)
+- Most active playbooks (execution volume ranking)
+
+**Usage:**
+```bash
+# Last 30 days analysis
+~/containers/scripts/analytics/remediation-trends.sh --last 30d
+
+# Weekly trends
+~/containers/scripts/analytics/remediation-trends.sh --last 7d
+```
+
+#### 3. ROI Calculation (`remediation-roi.sh`)
+
+Quantify return on investment for automation:
+- Time Savings: Manual (30 min/task) vs Automated (2 min/task)
+- Incidents Prevented: Predictive maintenance × 30% conversion rate
+- Services Recovered: Self-healing success count
+- Manual Interventions Avoided: Total successful remediations
+
+**Usage:**
+```bash
+# Monthly ROI report
+~/containers/scripts/analytics/remediation-roi.sh --last 30d
+
+# Quick summary
+~/containers/scripts/analytics/remediation-roi.sh --summary
+```
+
+#### 4. Recommendations (`remediation-recommendations.sh`)
+
+Generate actionable optimization suggestions:
+- Memory limit adjustments (>2 OOM events)
+- Disk cleanup frequency tuning (>2x per week)
+- Database maintenance effectiveness
+- Service override candidates (100% success rate)
+- Predictive maintenance underutilization
+- Low effectiveness playbooks (<60% success)
+
+**Usage:**
+```bash
+# Last 30 days recommendations
+~/containers/scripts/analytics/remediation-recommendations.sh --last 30d
+```
+
+#### 5. Monthly Reports (`generate-monthly-report.sh`)
+
+Generate comprehensive monthly markdown reports combining all analytics:
+- Executive summary with key metrics
+- Top performing playbooks
+- Incidents prevented
+- Effectiveness analysis
+- Trend analysis
+- ROI summary
+- Recommendations
+- Next steps
+
+**Output:** `~/containers/docs/99-reports/remediation-monthly-YYYYMM.md`
+
+**Usage:**
+```bash
+# Generate report for last month (default)
+~/containers/scripts/analytics/generate-monthly-report.sh
+
+# Generate report for specific month
+~/containers/scripts/analytics/generate-monthly-report.sh --month 2025-12
+```
+
+**Automation:** Monthly reports generated automatically on 1st of each month at 08:00 via systemd timer (`remediation-monthly-report.timer`)
+
+### Metrics Collection
+
+All remediation executions automatically tracked in:
+- `~/containers/.claude/remediation/metrics-history.json` - Playbook executions
+- `~/containers/.claude/remediation/chain-metrics-history.jsonl` - Chain executions
+
+**Metrics Tracked:**
+- Timestamp, playbook/chain name, status (success/failure)
+- Duration, disk reclaimed, services restarted
+- OOM events detected, root cause (for self-healing)
+
+---
+
 ## Common Workflows
 
 ### Workflow 1: System Disk Nearly Full
@@ -556,16 +674,59 @@ execute_disk_cleanup() {
 
 **Total Time:** ~6 hours (implementation + testing + documentation)
 
-### Phase 3: Advanced Features (future)
-- [ ] Alertmanager webhook integration (trigger on alerts)
-- [ ] Scheduled auto-remediation (cron/timer integration)
-- [ ] Multi-playbook chaining (cleanup + restart sequence)
-- [ ] Remediation history analytics and trend tracking
-- [ ] Prometheus metrics for remediation effectiveness
+### ~~Phase 3: Alertmanager Integration~~ ✅ COMPLETE (2025-12-23)
+- [x] **webhook-routing.yml** - Alertmanager webhook configuration
+- [x] **execute-remediation-webhook.sh** - Webhook endpoint handler
+- [x] Webhook routing rules for all remediation playbooks
+- [x] Integration testing with Alertmanager
+
+**Total Time:** ~2 hours (implementation + testing + documentation)
+
+### ~~Phase 4: Resource Pressure Intelligence~~ ✅ COMPLETE (2025-12-23)
+- [x] **predict-resource-exhaustion.sh** - 7-14 day forecasting
+- [x] CPU, memory, disk, and swap trend analysis
+- [x] Integration with predictive-maintenance playbook
+- [x] Testing and validation
+
+**Total Time:** ~2 hours (implementation + testing)
+
+### ~~Phase 5: Multi-Playbook Chaining~~ ✅ COMPLETE (2025-12-24)
+- [x] **execute-chain.sh** - Orchestration engine for playbook sequences
+- [x] **3 chain configurations:** full-recovery, predictive-preemption, database-health
+- [x] Conditional execution, varied failure strategies
+- [x] State management and resume capability
+- [x] Chain metrics tracking (JSONL format)
+- [x] Testing and bug fixes (arithmetic post-increment with set -e)
+
+**Total Time:** ~4 hours (implementation + testing + bug fixes)
+
+### ~~Phase 6: History Analytics~~ ✅ COMPLETE (2025-12-25)
+- [x] **remediation-effectiveness.sh** - Playbook effectiveness scoring (0-100)
+- [x] **remediation-trends.sh** - Execution pattern and trend analysis
+- [x] **remediation-roi.sh** - ROI calculation (time saved, incidents prevented)
+- [x] **remediation-recommendations.sh** - Optimization suggestions
+- [x] **generate-monthly-report.sh** - Comprehensive monthly reports
+- [x] **Systemd timer** - Automated monthly report generation
+- [x] Bug fixes: bc syntax, printf locale issues, tr deletion
+
+**Total Time:** ~3 hours (implementation + testing + bug fixes + documentation)
+
+### Phase 7: Future Enhancements
+- [ ] Grafana "Remediation Intelligence" dashboard
+- [ ] Slack/Discord webhook integration for monthly reports
+- [ ] Machine learning for incident prediction
+- [ ] Anomaly detection in execution patterns
+- [ ] Scheduled auto-remediation (cron/timer beyond current webhook integration)
+- [ ] Rollback automation for failed remediations
 
 ---
 
 **Maintainer:** patriark
-**Status:** Arsenal expansion complete (7 playbooks fully operational)
-**Last Updated:** 2025-12-23
-**Analysis:** See `docs/99-reports/2025-11-30-context-remediation-analysis.md`
+**Status:** ✅ Phases 1-6 complete - Full remediation framework operational
+**Playbook Count:** 7 playbooks + 3 chains
+**Analytics:** 5 scripts + automated monthly reporting
+**Last Updated:** 2025-12-25
+**Documentation:**
+- Implementation: `docs/98-journals/2025-12-*-remediation-phase-*.md`
+- Analysis: `docs/99-reports/2025-11-30-context-remediation-analysis.md`
+- Monthly Reports: `docs/99-reports/remediation-monthly-*.md` (automated)

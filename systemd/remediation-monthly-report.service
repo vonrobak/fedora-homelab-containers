@@ -1,0 +1,18 @@
+[Unit]
+Description=Remediation Monthly Report Generator
+Documentation=file:///home/patriark/containers/.claude/remediation/README.md
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/patriark/containers
+# Generate report for last month (no --month argument uses default: last month)
+ExecStart=/home/patriark/containers/scripts/analytics/generate-monthly-report.sh
+StandardOutput=journal
+StandardError=journal
+
+# Success/failure logging
+SyslogIdentifier=remediation-monthly-report
+
+[Install]
+WantedBy=default.target
