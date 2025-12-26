@@ -245,7 +245,11 @@ config:
   security:
     bind_address: "127.0.0.1"  # Localhost only
     port: 9096  # Different from Discord relay (9095)
-    auth_token: "REPLACE_WITH_RANDOM_TOKEN"  # Shared secret for webhook auth
+    # Authentication token - MUST be set via environment variable for security
+    # DO NOT commit secrets to Git!
+    # Set WEBHOOK_AUTH_TOKEN in ~/.config/remediation-webhook.env
+    # Generate new token: openssl rand -base64 32
+    auth_token: "REPLACE_WITH_ENV_VAR"  # Placeholder - actual token loaded from environment
 
   # Circuit Breaker
   circuit_breaker:

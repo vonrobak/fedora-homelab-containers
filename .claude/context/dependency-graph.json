@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-21T16:25:43+01:00",
+  "generated_at": "2025-12-26T06:09:07+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -637,9 +637,9 @@
   "networks": {
     "systemd-auth_services": {
       "members": [
-        "redis-authelia",
         "traefik",
-        "authelia"
+        "authelia",
+        "redis-authelia"
       ],
       "gateway": false
     },
@@ -651,19 +651,19 @@
     },
     "systemd-monitoring": {
       "members": [
-        "prometheus",
         "loki",
-        "nextcloud-redis",
-        "immich-server",
-        "jellyfin",
-        "alertmanager",
+        "traefik",
         "cadvisor",
-        "alert-discord-relay",
+        "nextcloud",
         "node_exporter",
         "promtail",
-        "traefik",
-        "nextcloud",
+        "alertmanager",
         "nextcloud-db",
+        "jellyfin",
+        "prometheus",
+        "nextcloud-redis",
+        "immich-server",
+        "alert-discord-relay",
         "grafana"
       ],
       "gateway": false
@@ -671,35 +671,34 @@
     "systemd-nextcloud": {
       "members": [
         "collabora",
-        "nextcloud-redis",
         "nextcloud",
-        "nextcloud-db"
+        "nextcloud-db",
+        "nextcloud-redis"
       ],
       "gateway": false
     },
     "systemd-photos": {
       "members": [
-        "immich-server",
-        "redis-immich",
         "immich-ml",
-        "postgresql-immich"
+        "redis-immich",
+        "postgresql-immich",
+        "immich-server"
       ],
       "gateway": false
     },
     "systemd-reverse_proxy": {
       "members": [
-        "collabora",
-        "prometheus",
         "loki",
-        "immich-server",
-        "jellyfin",
-        "crowdsec",
-        "homepage",
+        "collabora",
         "traefik",
-        "vaultwarden",
         "nextcloud",
-        "grafana",
-        "authelia"
+        "authelia",
+        "jellyfin",
+        "prometheus",
+        "vaultwarden",
+        "immich-server",
+        "crowdsec",
+        "grafana"
       ],
       "gateway": true
     }

@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2025-12-22 22:40:17 UTC
-**Total Documents:** 256
+**Generated:** 2025-12-26 06:01:10 UTC
+**Total Documents:** 269
 
 ---
 
@@ -72,7 +72,7 @@
 
 ---
 
-### 20-operations/ (23 documents)
+### 20-operations/ (24 documents)
 
 **Operational procedures, runbooks, and architecture**
 
@@ -89,6 +89,7 @@
 - [health-driven-operations.md](20-operations/guides/health-driven-operations.md)
 - [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - [memory-management.md](20-operations/guides/memory-management.md)
+- [remediation-chains.md](20-operations/guides/remediation-chains.md)
 - [resource-limits-configuration.md](20-operations/guides/resource-limits-configuration.md)
 - [storage-layout.md](20-operations/guides/storage-layout.md)
 - [tier3-initial-backup.md](20-operations/guides/tier3-initial-backup.md)
@@ -141,11 +142,12 @@
 
 ---
 
-### 97-plans/ (20 documents)
+### 97-plans/ (21 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-11-10-authelia-implementation-plan.md](97-plans/2025-11-10-authelia-implementation-plan.md)
 - 📋 [2025-11-10-authelia-implementation-plan-revised.md](97-plans/2025-11-10-authelia-implementation-plan-revised.md)
+- 📋 [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
 - ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
@@ -167,7 +169,7 @@
 
 ---
 
-### 98-journals/ (98 documents)
+### 98-journals/ (105 documents)
 
 **Chronological project history (append-only log)**
 
@@ -175,7 +177,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (2 documents)
+### 99-reports/ (6 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -190,21 +192,21 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2025-12-22: [middleware-configuration.md](00-foundation/guides/middleware-configuration.md)
 - 2025-12-22: [2025-12-20-ADR-013-nextcloud-native-authentication.md](10-services/decisions/2025-12-20-ADR-013-nextcloud-native-authentication.md)
 - 2025-12-22: [2025-12-20-ADR-014-nextcloud-passwordless-authentication.md](10-services/decisions/2025-12-20-ADR-014-nextcloud-passwordless-authentication.md)
+- 2025-12-22: [crowdsec.md](10-services/guides/crowdsec.md)
+- 2025-12-22: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
+- 2025-12-22: [immich.md](10-services/guides/immich.md)
+- 2025-12-22: [jellyfin.md](10-services/guides/jellyfin.md)
 - 2025-12-21: [nextcloud.md](10-services/guides/nextcloud.md)
+- 2025-12-22: [traefik.md](10-services/guides/traefik.md)
 - 2025-12-22: [architecture-diagrams.md](20-operations/guides/architecture-diagrams.md)
+- 2025-12-23: [automation-reference.md](20-operations/guides/automation-reference.md)
+- 2025-12-23: [autonomous-operations.md](20-operations/guides/autonomous-operations.md)
+- 2025-12-22: [backup-strategy.md](20-operations/guides/backup-strategy.md)
 - 2025-12-22: [pihole-backup.md](20-operations/guides/external-systems/pihole-backup.md)
 - 2025-12-22: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
+- 2025-12-24: [remediation-chains.md](20-operations/guides/remediation-chains.md)
 - 2025-12-21: [nextcloud-operations.md](20-operations/runbooks/nextcloud-operations.md)
-- 2025-12-19: [slo-based-alerting.md](40-monitoring-and-documentation/guides/slo-based-alerting.md)
-- 2025-12-18: [QUARTERLY-REVIEW-2025-Q4.md](90-archive/QUARTERLY-REVIEW-2025-Q4.md)
-- 2025-12-18: [QUARTERLY-REVIEW-DISCUSSION.md](90-archive/QUARTERLY-REVIEW-DISCUSSION.md)
-- 2025-12-22: [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
-- 2025-12-18: [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
-- 2025-12-22: [PLAN-GUIDE-ORGANIZATION.md](97-plans/PLAN-GUIDE-ORGANIZATION.md)
-- 2025-12-22: [PROJECT-AUTONOMOUS-ORCHESTRATION.md](97-plans/PROJECT-AUTONOMOUS-ORCHESTRATION.md)
-- 2025-12-22: [PROJECT-C-AUTO-DOCUMENTATION-REVISED.md](97-plans/PROJECT-C-AUTO-DOCUMENTATION-REVISED.md)
-- 2025-12-18: [2025-12-18-documentation-structure-reorganization.md](98-journals/2025-12-18-documentation-structure-reorganization.md)
-- 2025-12-19: [2025-12-19-alert-optimization-slo-enhancement.md](98-journals/2025-12-19-alert-optimization-slo-enhancement.md)
+- 2025-12-23: [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
 *No files modified in last 7 days*
 
 ---

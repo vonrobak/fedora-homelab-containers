@@ -132,7 +132,7 @@ collect_current_metrics() {
     local auto_ops_success_rate="1.0"
     local auto_ops_circuit="ok"
     local auto_state_file="${HOME}/containers/.claude/context/autonomous-state.json"
-    local auto_decision_log="${HOME}/containers/.claude/context/decision-log.json"
+    local auto_decision_log="${HOME}/containers/.claude/context/decision-log.jsonl"
 
     if [[ -f "$auto_state_file" ]]; then
         auto_ops_enabled=$(jq -r '.enabled // false' "$auto_state_file")
@@ -145,10 +145,44 @@ collect_current_metrics() {
     fi
 
     if [[ -f "$auto_decision_log" ]]; then
-        # Count decisions in last 7 days
-        local cutoff_date
-        cutoff_date=$(date -d "7 days ago" -Iseconds)
-        auto_ops_actions=$(jq --arg cutoff "$cutoff_date" '[.decisions[] | select(.timestamp > $cutoff)] | length' "$auto_decision_log" 2>/dev/null || echo "0")
+        # Count decisions in last 7 days (JSONL format: one JSON object per line)
+        local cutoff_ts
+        cutoff_ts=$(date -d "7 days ago" +%s)
+        auto_ops_actions=$(awk -v cutoff="$cutoff_ts" '{
+            if (match($0, /"timestamp":[[:space:]]*([0-9.]+)/, ts)) {
+                if (int(ts[1]) >= cutoff) count++
+            }
+        } END {print count+0}' "$auto_decision_log" 2>/dev/null || echo "0")
+    fi
+
+    # Backup & Snapshot metrics
+    local backup_failures=0
+    local total_snapshots_local=0
+    local total_snapshots_external=0
+    local backup_age_days=0
+    local oldest_backup_subvol=""
+
+    if command -v curl &>/dev/null; then
+        # Query Prometheus for backup metrics
+        backup_failures=$(curl -s "http://localhost:9090/api/v1/query?query=count(backup_success%3D%3D0)" 2>/dev/null | \
+            jq -r '.data.result[0].value[1] // "0"' || echo "0")
+
+        total_snapshots_local=$(curl -s "http://localhost:9090/api/v1/query?query=sum(backup_snapshot_count%7Blocation%3D%22local%22%7D)" 2>/dev/null | \
+            jq -r '.data.result[0].value[1] // "0"' || echo "0")
+
+        total_snapshots_external=$(curl -s "http://localhost:9090/api/v1/query?query=sum(backup_snapshot_count%7Blocation%3D%22external%22%7D)" 2>/dev/null | \
+            jq -r '.data.result[0].value[1] // "0"' || echo "0")
+
+        local last_backup_ts
+        last_backup_ts=$(curl -s "http://localhost:9090/api/v1/query?query=min(backup_last_success_timestamp)" 2>/dev/null | \
+            jq -r '.data.result[0].value[1] // "0"' || echo "0")
+
+        if [ "$last_backup_ts" != "0" ]; then
+            backup_age_days=$(( ($(date +%s) - ${last_backup_ts%.*}) / 86400 ))
+        fi
+
+        oldest_backup_subvol=$(curl -s "http://localhost:9090/api/v1/query?query=backup_last_success_timestamp" 2>/dev/null | \
+            jq -r '[.data.result[] | {subvol: .metric.subvolume, ts: .value[1]|tonumber}] | sort_by(.ts) | .[0].subvol' || echo "unknown")
     fi
 
     # Build JSON report
@@ -156,7 +190,7 @@ collect_current_metrics() {
 {
   "timestamp": "$(date -Iseconds)",
   "week_ending": "${TIMESTAMP}",
-  "health": $(echo "$intel_output" | jq -r '.health_score // 80'),
+  "health": $(jq -r '.health_score // 80' <<< "$intel_output"),
   "storage": {
     "root_percent": ${disk_root_pct},
     "root_used_gb": ${disk_root_used_gb},
@@ -186,6 +220,13 @@ collect_current_metrics() {
     "actions_7d": ${auto_ops_actions},
     "success_rate": ${auto_ops_success_rate},
     "circuit_breaker": "${auto_ops_circuit}"
+  },
+  "backup_snapshots": {
+    "failures": ${backup_failures},
+    "snapshots_local": ${total_snapshots_local},
+    "snapshots_external": ${total_snapshots_external},
+    "last_backup_days_ago": ${backup_age_days},
+    "oldest_backup_subvolume": "${oldest_backup_subvol}"
   }
 }
 EOF
@@ -268,6 +309,18 @@ send_discord_notification() {
     local auto_ops_circuit=$(jq -r '.autonomous_ops.circuit_breaker // "ok"' "$CURRENT_REPORT")
     local auto_ops_enabled=$(jq -r '.autonomous_ops.enabled // false' "$CURRENT_REPORT")
 
+    # Backup & snapshot metrics
+    local backup_snapshots_local=$(jq -r '.backup_snapshots.snapshots_local // 0' "$CURRENT_REPORT")
+    local backup_snapshots_external=$(jq -r '.backup_snapshots.snapshots_external // 0' "$CURRENT_REPORT")
+    local backup_age_days=$(jq -r '.backup_snapshots.last_backup_days_ago // 0' "$CURRENT_REPORT")
+    local backup_failures=$(jq -r '.backup_snapshots.failures // 0' "$CURRENT_REPORT")
+
+    # Build backup failures note
+    local backup_failures_note=""
+    if [ "$backup_failures" -gt 0 ]; then
+        backup_failures_note="\\n⚠️ ${backup_failures} failures"
+    fi
+
     # Determine status display
     local auto_ops_status="Active"
     if [[ "$auto_ops_circuit" == "triggered" ]]; then
@@ -334,6 +387,11 @@ send_discord_notification() {
       {
         "name": "🤖 Autonomous Ops",
         "value": "Status: ${auto_ops_status}\nActions: ${auto_ops_actions} | Rate: ${auto_ops_rate}%",
+        "inline": true
+      },
+      {
+        "name": "💾 Backups",
+        "value": "Snapshots: ${backup_snapshots_local}L/${backup_snapshots_external}E\nLast: ${backup_age_days}d ago${backup_failures_note}",
         "inline": true
       }
     ],
@@ -402,7 +460,7 @@ analyze_persistent_warnings() {
         if [ "$files_with_warning" -eq 7 ]; then
             # Warning appears in all 7 reports
             # Check if it's a known issue
-            if [[ -z "${known_issues[$warning_code]}" ]]; then
+            if [[ -z "${known_issues[$warning_code]+x}" ]]; then
                 # Unknown persistent warning - needs investigation
                 persistent_warnings+=("$warning_code")
                 log "${YELLOW}⚠️  PERSISTENT UNKNOWN WARNING ($warning_code): 7+ consecutive days${NC}"

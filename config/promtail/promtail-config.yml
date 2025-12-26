@@ -32,3 +32,62 @@ scrape_configs:
           syslog_id:
       - output:
           source: message
+
+  # Remediation decision log (JSONL format)
+  - job_name: remediation-decisions
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: remediation-decisions
+          host: fedora-htpc
+          __path__: /var/log/remediation/decision-log.jsonl
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            alert: alert
+            playbook: playbook
+            success: success
+            confidence: confidence
+            parameters: parameters
+            stdout_preview: stdout
+            stderr_preview: stderr
+      - timestamp:
+          source: timestamp
+          format: Unix
+      - labels:
+          alert:
+          playbook:
+          success:
+      - output:
+          source: stdout_preview
+
+  # Traefik access logs (errors only)
+  - job_name: traefik-access
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: traefik-access
+          host: fedora-htpc
+          __path__: /var/log/traefik/access.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: StartUTC
+            method: RequestMethod
+            path: RequestPath
+            status: DownstreamStatus
+            duration: Duration
+            service: ServiceName
+            client_addr: ClientAddr
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          method:
+          status:
+          service:
+      - output:
+          source: path

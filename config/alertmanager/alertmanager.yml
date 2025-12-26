@@ -98,7 +98,10 @@ receivers:
   # Remediation webhook (Phase 4: Alert-Driven Remediation)
   - name: 'remediation-webhook'
     webhook_configs:
-      - url: 'http://host.containers.internal:9096/webhook'
+      # SECURITY: Replace REPLACE_WITH_ACTUAL_TOKEN with your webhook token
+      # Token is stored in: ~/.config/remediation-webhook.env
+      # DO NOT commit the actual token to Git!
+      - url: 'http://host.containers.internal:9096/webhook?token=REPLACE_WITH_ACTUAL_TOKEN'
         send_resolved: false  # Only send firing alerts, not resolved
         http_config:
           follow_redirects: true

@@ -1,38 +1,38 @@
 {
   "top_memory_users": {
-    "timestamp": "2025-12-21T18:01:22+01:00",
+    "timestamp": "2025-12-26T18:04:11+01:00",
     "ttl": 300,
     "result": [
       {
-        "name": "immich-server",
-        "memory_mb": 391
+        "name": "jellyfin",
+        "memory_mb": 772
       },
       {
-        "name": "collabora",
-        "memory_mb": 288
+        "name": "immich-server",
+        "memory_mb": 444
       },
       {
         "name": "immich-ml",
-        "memory_mb": 266
+        "memory_mb": 242
       },
       {
         "name": "nextcloud",
-        "memory_mb": 209
+        "memory_mb": 236
       },
       {
-        "name": "nextcloud-db",
-        "memory_mb": 208
+        "name": "prometheus",
+        "memory_mb": 195
       }
     ]
   },
   "disk_usage": {
-    "timestamp": "2025-12-21T18:01:22+01:00",
+    "timestamp": "2025-12-26T18:04:11+01:00",
     "ttl": 600,
     "result": {
       "filesystems": [
         {
           "mount": "/",
-          "usage_pct": "66%"
+          "usage_pct": "68%"
         },
         {
           "mount": "/mnt/btrfs-pool",
@@ -42,28 +42,28 @@
     }
   },
   "top_cpu_users": {
-    "timestamp": "2025-12-21T18:01:22+01:00",
+    "timestamp": "2025-12-26T18:04:11+01:00",
     "ttl": 60,
     "result": [
       {
-        "name": "cadvisor",
-        "cpu_pct": 3.99
+        "name": "jellyfin",
+        "cpu_pct": 5.17
       },
       {
-        "name": "nextcloud",
-        "cpu_pct": 3.15
+        "name": "cadvisor",
+        "cpu_pct": 3.25
       },
       {
         "name": "traefik",
-        "cpu_pct": 0.90
+        "cpu_pct": 0.84
       },
       {
         "name": "immich-ml",
-        "cpu_pct": 0.73
+        "cpu_pct": 0.68
       },
       {
         "name": "prometheus",
-        "cpu_pct": 0.55
+        "cpu_pct": 0.59
       }
     ]
   },
@@ -406,7 +406,7 @@
     ]
   },
   "unhealthy_services": {
-    "timestamp": "2025-12-21T18:01:22+01:00",
+    "timestamp": "2025-12-26T18:04:12+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_services": []
@@ -499,7 +499,7 @@
     }
   },
   "unhealthy_dependencies": {
-    "timestamp": "2025-12-21T06:31:36+01:00",
+    "timestamp": "2025-12-26T06:34:25+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_dependencies": [
@@ -611,6 +611,11 @@
         {
           "service": "traefik",
           "dependency": "monitoring",
+          "status": "down"
+        },
+        {
+          "service": "traefik",
+          "dependency": "homepage",
           "status": "down"
         },
         {

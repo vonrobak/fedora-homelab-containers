@@ -1,0 +1,14 @@
+{
+  "chain": "predictive-preemption",
+  "execution_id": "predictive-preemption_1766568889",
+  "start_time": 1766568889,
+  "status": "running",
+  "playbooks_completed": [
+    "predictive-maintenance"
+  ],
+  "playbooks_failed": [],
+  "playbooks_skipped": [],
+  "current_playbook_index": "0",
+  "total_playbooks": "3",
+  "metadata": {}
+}

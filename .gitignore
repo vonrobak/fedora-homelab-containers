@@ -116,3 +116,6 @@ Thumbs.db
 # Git backups
 .git.backup*
 users_database.yml
+
+# Configuration files with embedded secrets (use .example templates instead)
+config/alertmanager/alertmanager.yml

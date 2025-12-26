@@ -264,11 +264,11 @@ observe_predictions() {
 
     # Get predictions in JSON format
     local predictions
-    predictions=$("$PREDICT_RESOURCES" --output json 2>/dev/null || echo '{"predictions": []}')
+    predictions=$("$PREDICT_RESOURCES" --output json 2>/dev/null || echo '{}')
 
-    # Extract key predictions
+    # Wrap single prediction object in array, or use existing array
     echo "$predictions" | jq '{
-      predictions: (if type == "array" then . else (.predictions // []) end)
+      predictions: (if type == "array" then . elif type == "object" and has("resource") then [.] else (.predictions // []) end)
     }' 2>/dev/null || echo '{"predictions": []}'
 }
 
@@ -599,6 +599,9 @@ get_risk_level() {
         disk-cleanup)
             echo "low"
             ;;
+        predictive-maintenance)
+            echo "low"
+            ;;
         service-restart)
             echo "low"
             ;;
@@ -838,6 +841,56 @@ EOF
           \"decision\": \"$decision\",
           \"priority\": \"low\"
         }")
+    fi
+
+    # Check predictions for critical resource exhaustion (Phase 3)
+    local critical_predictions
+    critical_predictions=$(echo "$predictions_obs" | jq '[.predictions[] | select(.severity == "critical" or .severity == "warning")]')
+    local critical_count
+    critical_count=$(echo "$critical_predictions" | jq 'length')
+
+    if (( critical_count > 0 )); then
+        # Get the most severe prediction
+        local worst_prediction resource_type forecast_pct days_until confidence_score
+        worst_prediction=$(echo "$critical_predictions" | jq -r '.[0]')
+        resource_type=$(echo "$worst_prediction" | jq -r '.resource // "unknown"')
+        forecast_pct=$(echo "$worst_prediction" | jq -r '.forecast_7d_pct // .forecast_7d // 0')
+        days_until=$(echo "$worst_prediction" | jq -r '.days_until_90pct // .days_until_90 // "never"')
+        confidence_score=$(echo "$worst_prediction" | jq -r '.confidence // 0')
+
+        log WARNING "Critical prediction: $resource_type will reach ${forecast_pct}% in 7 days (confidence: $confidence_score)"
+
+        # Only trigger if confidence is reasonable (>60%)
+        if (( $(awk "BEGIN {print ($confidence_score >= 0.60)}") )); then
+            # Check cooldown to prevent spam
+            if [[ "$(get_cooldown "predictive-maintenance")" == "inactive" ]]; then
+                local hist_success conf risk decision
+                hist_success=$(get_historical_success_rate "predictive-maintenance")
+
+                # Use prediction confidence as the primary factor
+                # High prediction confidence + historical success = high overall confidence
+                conf=$(calculate_confidence "$confidence_score" "$hist_success" 0.85 1.0)
+                risk=$(get_risk_level "predictive-maintenance")
+                decision=$(make_decision "$conf" "$risk" "$preferences")
+
+                actions+=("{
+                  \"id\": \"$(generate_action_id)\",
+                  \"type\": \"predictive-maintenance\",
+                  \"reason\": \"Predicted $resource_type exhaustion: ${forecast_pct}% in 7 days\",
+                  \"confidence\": $conf,
+                  \"prediction_confidence\": $confidence_score,
+                  \"resource\": \"$resource_type\",
+                  \"forecast\": \"${forecast_pct}%\",
+                  \"risk\": \"$risk\",
+                  \"decision\": \"$decision\",
+                  \"priority\": \"medium\"
+                }")
+            else
+                log DEBUG "Predictive maintenance on cooldown"
+            fi
+        else
+            log DEBUG "Prediction confidence too low ($confidence_score < 0.60) - not triggering"
+        fi
     fi
 
     # Get skill recommendations based on observations

@@ -1,0 +1,43 @@
+# Traefik Access Log Rotation
+# Created: 2025-12-26
+# Purpose: Prevent unbounded growth of Traefik access logs
+#
+# Installation:
+#   sudo cp ~/containers/config/logrotate/traefik-access /etc/logrotate.d/traefik-access
+#   sudo chmod 644 /etc/logrotate.d/traefik-access
+#
+# Testing:
+#   sudo logrotate -d /etc/logrotate.d/traefik-access
+
+/home/patriark/containers/data/traefik-logs/access.log {
+    # Rotate daily
+    daily
+
+    # Keep 31 days of rotated logs (aligns with Loki retention)
+    rotate 31
+
+    # Compress rotated logs (saves ~70% space)
+    compress
+
+    # Delay compression until next rotation (allows recent log to be readable)
+    delaycompress
+
+    # Don't error if log file is missing
+    missingok
+
+    # Don't rotate if log is empty
+    notifempty
+
+    # Create new log file with correct permissions after rotation
+    create 0644 patriark patriark
+
+    # Signal Traefik to reopen log file after rotation
+    # USR1 signal tells Traefik to close and reopen access log
+    postrotate
+        podman exec traefik kill -USR1 1 2>/dev/null || true
+    endscript
+
+    # Rotate even if file size is small (time-based rotation)
+    # This ensures logs don't accumulate indefinitely even at low traffic
+    minsize 1k
+}

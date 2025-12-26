@@ -1,28 +1,43 @@
 {
-  "timestamp": "2025-11-24T21:58:50+01:00",
-  "week_ending": "2025-11-24",
-  "health": 80,
+  "timestamp": "2025-12-26T18:24:54+01:00",
+  "week_ending": "2025-12-26",
+  "health": 95,
   "storage": {
-    "root_percent": 77,
-    "root_used_gb": 89,
-    "root_avail_gb": 27,
-    "btrfs_percent": 66,
-    "btrfs_used_tb": 9.00
+    "root_percent": 69,
+    "root_used_gb": 80,
+    "root_avail_gb": 37,
+    "btrfs_percent": 71,
+    "btrfs_used_tb": 11.00
   },
   "resources": {
     "memory_total_mb": 31445,
-    "memory_used_mb": 13073,
-    "memory_percent": 41,
+    "memory_used_mb": 12252,
+    "memory_percent": 38,
     "cpu_avg_percent": 0.0
   },
   "services": {
-    "containers_total": 20,
+    "containers_total": 22,
     "containers_healthy": 20,
     "critical_services_total": 4,
     "critical_services_running": 4
   },
   "security": {
-    "crowdsec_active_bans": 0
+    "crowdsec_active_bans": 0,
+    "crowdsec_alerts_7d": 0,
+    "crowdsec_capi": "connected"
+  },
+  "autonomous_ops": {
+    "enabled": true,
+    "actions_7d": 3,
+    "success_rate": 1.0,
+    "circuit_breaker": "ok"
+  },
+  "backup_snapshots": {
+    "failures": 0,
+    "snapshots_local": 0,
+    "snapshots_external": 0,
+    "last_backup_days_ago": 0,
+    "oldest_backup_subvolume": "unknown"
   },
   "trends": {
     "disk_delta_pct": 0,

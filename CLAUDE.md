@@ -272,6 +272,48 @@ systemctl --user list-timers | grep monthly-slo-report
 
 **Documentation:** `docs/40-monitoring-and-documentation/guides/slo-framework.md`
 
+### Loki Log Queries for Remediation Analysis
+
+**Remediation decision logs and Traefik access logs are ingested into Loki for powerful analysis.**
+
+**Access:** https://grafana.patriark.org/explore
+
+**Common Queries:**
+
+```logql
+# All remediation actions
+{job="remediation-decisions"}
+
+# Remediation failures with errors
+{job="remediation-decisions"} | json | success="false"
+| line_format "{{.alert}} → {{.playbook}}: {{.stderr_preview}}"
+
+# Remediation success rate (last 24h)
+(
+  sum(count_over_time({job="remediation-decisions"} | json | success="true" [24h]))
+  /
+  sum(count_over_time({job="remediation-decisions"}[24h]))
+) * 100
+
+# Remediation rate by playbook
+sum by (playbook) (rate({job="remediation-decisions"}[5m]))
+
+# Traefik errors by service
+{job="traefik-access"} | json | status >= 500
+| line_format "{{.service}}: {{.path}} ({{.status}})"
+
+# Correlate remediation with user impact
+# Step 1: Find remediation timestamp
+{job="remediation-decisions", alert=~".*Jellyfin"}
+# Step 2: Check Traefik errors before/after
+{job="traefik-access", service="jellyfin@docker"} | json | status >= 500
+
+# Loop detection (rapid remediation)
+sum by (alert) (count_over_time({job="remediation-decisions"}[15m])) > 3
+```
+
+**Full Query Guide:** `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
+
 ### System Health Reference
 
 **Critical Services (Must Be Running):**
@@ -318,7 +360,25 @@ curl -f http://localhost:3100/ready            # Loki
 ~/containers/.claude/context/scripts/query-decisions.sh --stats
 ```
 
-**Automation:** Runs daily at 06:30 via `autonomous-operations.timer`
+**Automation:**
+- Predictive maintenance: Daily at 06:00 via `predictive-maintenance-check.timer`
+- OODA loop assessment: Daily at 06:30 via `autonomous-operations.timer`
+
+**Predictive Maintenance Integration (Phase 3):**
+- Forecasts resource exhaustion 7-14 days in advance
+- Triggers preemptive `predictive-maintenance` playbook when severity is critical/warning
+- Minimum prediction confidence threshold: 60%
+- Decision confidence factors: prediction confidence (primary), historical success, impact certainty
+- Prevents resource exhaustion before it becomes critical
+
+**Alert-Driven Remediation (Phase 4):**
+- Alertmanager webhooks trigger automatic remediation when alerts fire
+- Webhook handler: `remediation-webhook.service` (localhost:9096)
+- Conservative routing: Only auto-remediate safe operations (disk cleanup, service restarts)
+- Safety controls: Rate limiting (5/hour), idempotency (5min window), circuit breaker (3 failures)
+- Dual notification: Auto-remediable alerts go to BOTH webhook handler AND Discord
+- Monitored alerts: SystemDiskSpace*, ContainerNotRunning, ContainerMemoryPressure, CrowdSecDown
+- Test integration: `~/containers/scripts/test-webhook-remediation.sh`
 
 **Safety Features:**
 - Circuit breaker (pauses after 3 consecutive failures)
@@ -326,6 +386,7 @@ curl -f http://localhost:3100/ready            # Loki
 - Pre-action BTRFS snapshots for instant rollback
 - Confidence-based decision matrix (>90% + low risk → auto-execute)
 - Cooldown periods per action type
+- Prediction confidence filtering (only acts on >60% confidence forecasts)
 
 **Documentation:** `docs/20-operations/guides/autonomous-operations.md`
 

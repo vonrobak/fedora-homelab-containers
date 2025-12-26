@@ -157,6 +157,29 @@ cat ~/.claude/context/known-issues.yml
 ./scripts/weekly-intelligence-report.sh
 ```
 
+**Enhancements (2025-12-26):**
+
+**Phase 1 Bug Fixes:**
+- ✅ Fixed health score extraction (was always empty due to incorrect jq syntax)
+- ✅ Fixed autonomous ops count (was always 0 due to wrong file path and JSONL parsing)
+- ✅ Fixed persistent warning check (array access error with `set -euo pipefail`)
+- ✅ Added backup/snapshot health section with Prometheus metrics
+- ✅ Improved Discord notification formatting
+
+**Phase 2 Log Integration:**
+- ✅ Decision logs ingested into Loki (`{job="remediation-decisions"}`)
+- ✅ Traefik access logs ingested into Loki (`{job="traefik-access"}`)
+- ✅ Powerful LogQL queries available in Grafana Explore
+- ✅ Full query guide: `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
+
+**Available Metrics:**
+- Health score (0-100)
+- Autonomous operations count (7-day window)
+- Backup/snapshot status (local + external counts, last backup age)
+- Storage trends (week-over-week delta)
+- Service health (containers running, critical services)
+- Security posture (CrowdSec bans, alerts, CAPI status)
+
 ### Tier 3: Deployment & Validation
 
 Scripts for deploying and validating services. Located in both `/scripts/` and `.claude/skills/`.

@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2025-12-22 22:40:15 UTC
+**Generated:** 2025-12-26 06:01:09 UTC
 **System:** fedora-htpc
 
 ---
@@ -9,12 +9,10 @@
 
 | Service | Image | Status | Networks |
 |---------|-------|--------|----------|
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
-| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | immich-ml | immich-app/immich-machine-learning:v2.3. | ✅ Up | photos |
-| nextcloud-redis | redis:7-alpine | ✅ Up | nextcloud,monitoring |
-| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
+| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
+| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
@@ -23,21 +21,24 @@
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
+| traefik | traefik:latest | ✅ Up | monitoring,reverse_proxy,auth_services |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| immich-server | immich-app/immich-server:v2.3.1 | ✅ Up | reverse_proxy,monitoring,photos |
+| immich-server | immich-app/immich-server:v2.3.1 | ✅ Up | monitoring,photos,reverse_proxy |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
+| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
+| alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
 
 ---
 
 ## Statistics
 
-- **Total Running:** 21
-- **Total Defined:** 21
-- **System Load:**  0,81, 0,64, 0,67
+- **Total Running:** 22
+- **Total Defined:** 22
+- **System Load:**  0,67, 0,55, 0,49
 
 ---
 

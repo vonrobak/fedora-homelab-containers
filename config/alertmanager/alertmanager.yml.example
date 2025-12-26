@@ -1,0 +1,51 @@
+# Alertmanager Configuration Template
+#
+# SETUP INSTRUCTIONS:
+# 1. Copy this file to alertmanager.yml:
+#    cp alertmanager.yml.example alertmanager.yml
+#
+# 2. Get your webhook token:
+#    grep WEBHOOK_AUTH_TOKEN ~/.config/remediation-webhook.env
+#
+# 3. Replace REPLACE_WITH_ACTUAL_TOKEN in alertmanager.yml with your token
+#
+# 4. Verify alertmanager.yml is in .gitignore (or use git update-index --skip-worktree)
+#
+# IMPORTANT: Never commit alertmanager.yml with real secrets to Git!
+
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'discord'
+  routes:
+    # Route to webhook for auto-remediation
+    - receiver: 'remediation-webhook'
+      match_re:
+        alertname: '(SystemDiskSpace.*|ContainerNotRunning|ContainerMemoryPressure|CrowdSecDown|SLOBurnRateTier[12]_.*)'
+      continue: true  # Also send to Discord
+
+receivers:
+  - name: 'discord'
+    webhook_configs:
+      - url: 'http://alert-discord-relay:9095/webhook'
+        send_resolved: false
+
+  - name: 'remediation-webhook'
+    webhook_configs:
+      # REPLACE: Set your actual webhook token here (from ~/.config/remediation-webhook.env)
+      - url: 'http://host.containers.internal:9096/webhook?token=REPLACE_WITH_ACTUAL_TOKEN'
+        send_resolved: false
+        http_config:
+          follow_redirects: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']

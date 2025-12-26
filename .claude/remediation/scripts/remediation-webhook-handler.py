@@ -18,6 +18,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 import time
@@ -42,6 +43,7 @@ execution_history: deque = deque(maxlen=1000)
 rate_limit_tracker: Dict[str, List[float]] = defaultdict(list)
 idempotency_tracker: Dict[str, float] = {}
 circuit_breaker_state: Dict[str, Dict] = {}
+oscillation_detector: Dict[str, List[float]] = defaultdict(list)
 
 
 class RemediationWebhookHandler(BaseHTTPRequestHandler):
@@ -63,9 +65,36 @@ class RemediationWebhookHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_POST(self):
-        """Handle POST requests (webhook endpoint)."""
-        if self.path != "/webhook":
+        """Handle POST requests (webhook endpoint) with token authentication."""
+        # Parse URL for token
+        from urllib.parse import urlparse, parse_qs
+
+        parsed_url = urlparse(self.path)
+        if parsed_url.path != "/webhook":
             self.send_error(404, "Not Found")
+            return
+
+        # Validate token
+        query_params = parse_qs(parsed_url.query)
+        provided_token = query_params.get('token', [''])[0]
+
+        # Load expected token from environment variable (preferred) or config file (fallback)
+        # Environment variable provides better security (not committed to Git)
+        expected_token = os.environ.get('WEBHOOK_AUTH_TOKEN', '')
+        if not expected_token:
+            # Fallback to config file (legacy, less secure)
+            expected_token = config.get('config', {}).get('security', {}).get('auth_token', '')
+            if expected_token and expected_token != 'REPLACE_WITH_ENV_VAR':
+                logging.warning("Using auth_token from config file - consider migrating to environment variable")
+
+        if not expected_token or expected_token == 'REPLACE_WITH_ENV_VAR':
+            logging.critical("No auth_token configured - refusing to start without authentication")
+            logging.critical("Set WEBHOOK_AUTH_TOKEN environment variable or configure in webhook-routing.yml")
+            self.send_error(503, "Service Unavailable - Authentication not configured")
+            return
+        elif not provided_token or provided_token != expected_token:
+            self.send_error(401, "Unauthorized")
+            logging.warning(f"Invalid/missing token from {self.address_string()}")
             return
 
         try:
@@ -242,6 +271,48 @@ def record_circuit_breaker_outcome(playbook: str, success: bool, threshold: int)
             breaker["state"] = "open"
 
 
+def strip_ansi_codes(text: str) -> str:
+    """
+    Remove ANSI escape sequences from text.
+
+    ANSI codes are used for terminal colors/formatting (e.g., \\033[0;34m for blue text).
+    These codes make logs unreadable in Loki/Grafana, rendering as literal text like:
+        ^[[0;34m━━━━━━━━━━^[[0m
+
+    This function strips all ANSI escape sequences, leaving only the actual text content.
+
+    Args:
+        text: Input text potentially containing ANSI escape codes
+
+    Returns:
+        Text with all ANSI escape sequences removed
+
+    Example:
+        Input:  "\\033[0;34mDEBUG\\033[0m: Success"
+        Output: "DEBUG: Success"
+    """
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    return ansi_escape.sub('', text)
+
+
+def detect_oscillation(alert_name: str, playbook: str, threshold: int = 3, window_minutes: int = 15) -> bool:
+    """Detect if same alert+playbook is oscillating."""
+    key = f"{alert_name}:{playbook}"
+    now = time.time()
+    window_start = now - (window_minutes * 60)
+
+    # Clean old entries
+    oscillation_detector[key] = [t for t in oscillation_detector[key] if t > window_start]
+
+    # Check threshold
+    if len(oscillation_detector[key]) >= threshold:
+        logging.warning(f"Oscillation detected: {alert_name} → {playbook} ({len(oscillation_detector[key])} in {window_minutes}m)")
+        return True
+
+    oscillation_detector[key].append(now)
+    return False
+
+
 def substitute_parameters(param_template: str, alert: Dict) -> str:
     """Substitute {{.Labels.foo}} placeholders in parameters."""
     result = param_template
@@ -379,6 +450,15 @@ def process_alert(alert: Dict) -> Dict:
             "reason": circuit_reason,
         }
 
+    # Oscillation check
+    if detect_oscillation(alert_name, playbook, threshold=3, window_minutes=15):
+        logging.error(f"Blocked oscillating remediation: {alert_name} → {playbook}")
+        return {
+            "alert": alert_name,
+            "action": "blocked_oscillation",
+            "reason": "3+ triggers in 15min"
+        }
+
     # Confidence check
     confidence = route.get("confidence", 0)
     requires_confirmation = route.get("requires_confirmation", False)
@@ -407,7 +487,7 @@ def process_alert(alert: Dict) -> Dict:
     # Record circuit breaker outcome
     record_circuit_breaker_outcome(playbook, success, circuit_cfg.get("failure_threshold", 3))
 
-    # Log execution
+    # Log execution (strip ANSI codes for clean Loki output)
     execution_record = {
         "timestamp": time.time(),
         "alert": alert_name,
@@ -415,8 +495,8 @@ def process_alert(alert: Dict) -> Dict:
         "parameters": parameters,
         "success": success,
         "confidence": confidence,
-        "stdout": stdout[:500],  # Truncate to prevent huge logs
-        "stderr": stderr[:500],
+        "stdout": strip_ansi_codes(stdout[:500]),  # Strip ANSI, truncate to prevent huge logs
+        "stderr": strip_ansi_codes(stderr[:500]),  # Strip ANSI, truncate to prevent huge logs
     }
     execution_history.append(execution_record)
 
@@ -439,6 +519,13 @@ def process_alert(alert: Dict) -> Dict:
         }
     else:
         logging.error(f"Remediation failed: {alert_name} → {playbook}")
+
+        # Send Discord notification on failure
+        try:
+            send_failure_notification_discord(alert_name, playbook, stderr[:200])
+        except Exception as e:
+            logging.error(f"Discord failure notification error: {e}")
+
         return {
             "alert": alert_name,
             "action": "executed",
@@ -446,6 +533,58 @@ def process_alert(alert: Dict) -> Dict:
             "result": "failure",
             "error": stderr[:200],
         }
+
+
+def send_failure_notification_discord(alert_name: str, playbook: str, error_msg: str):
+    """Send Discord notification when remediation fails."""
+    import requests
+
+    # Get Discord webhook URL from alert-discord-relay container
+    discord_webhook = None
+    try:
+        result = subprocess.run(
+            ["podman", "exec", "alert-discord-relay", "env"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        for line in result.stdout.split('\n'):
+            if line.startswith("DISCORD_WEBHOOK_URL="):
+                discord_webhook = line.split('=', 1)[1].strip()
+                break
+    except Exception as e:
+        logging.error(f"Failed to get Discord webhook: {e}")
+        return
+
+    if not discord_webhook:
+        logging.warning("Discord webhook URL not available")
+        return
+
+    # Build Discord embed
+    embed = {
+        "embeds": [{
+            "title": "🚨 Remediation Failure",
+            "description": f"Automatic remediation failed for alert **{alert_name}**",
+            "color": 15158332,  # Red
+            "fields": [
+                {"name": "Alert", "value": alert_name, "inline": True},
+                {"name": "Playbook", "value": playbook, "inline": True},
+                {"name": "Error", "value": f"```\n{error_msg[:500]}\n```", "inline": False}
+            ],
+            "footer": {"text": "Remediation Webhook Handler"},
+            "timestamp": datetime.utcnow().isoformat()
+        }]
+    }
+
+    # Send to Discord
+    try:
+        response = requests.post(discord_webhook, json=embed, timeout=10)
+        if response.status_code in [200, 204]:
+            logging.info("Discord failure notification sent")
+        else:
+            logging.error(f"Discord notification failed: {response.status_code}")
+    except Exception as e:
+        logging.error(f"Failed to send Discord notification: {e}")
 
 
 def main():
