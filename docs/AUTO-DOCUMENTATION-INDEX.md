@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2025-12-26 06:01:10 UTC
-**Total Documents:** 269
+**Generated:** 2025-12-26 23:04:00 UTC
+**Total Documents:** 280
 
 ---
 
@@ -103,7 +103,7 @@
 
 ---
 
-### 30-security/ (13 documents)
+### 30-security/ (14 documents)
 
 **Security architecture, configurations, and incident response**
 
@@ -112,6 +112,7 @@
 - [crowdsec-phase2-and-5-advanced-features.md](30-security/guides/crowdsec-phase2-and-5-advanced-features.md)
 - [crowdsec-phase3-threat-intelligence.md](30-security/guides/crowdsec-phase3-threat-intelligence.md)
 - [crowdsec-phase4-configuration-management.md](30-security/guides/crowdsec-phase4-configuration-management.md)
+- [secrets-management.md](30-security/guides/secrets-management.md)
 - [sshd-deployment-procedure.md](30-security/guides/sshd-deployment-procedure.md)
 - [ssh-hardening.md](30-security/guides/ssh-hardening.md)
 
@@ -128,13 +129,14 @@
 
 ---
 
-### 40-monitoring-and-documentation/ (7 documents)
+### 40-monitoring-and-documentation/ (8 documents)
 
 **Monitoring stack, SLOs, and documentation practices**
 
 **Guides:**
 - [git-workflow.md](40-monitoring-and-documentation/guides/git-workflow.md)
 - [homelab-snapshot-development.md](40-monitoring-and-documentation/guides/homelab-snapshot-development.md)
+- [loki-remediation-queries.md](40-monitoring-and-documentation/guides/loki-remediation-queries.md)
 - [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
 - [natural-language-queries.md](40-monitoring-and-documentation/guides/natural-language-queries.md)
 - [slo-based-alerting.md](40-monitoring-and-documentation/guides/slo-based-alerting.md)
@@ -169,7 +171,7 @@
 
 ---
 
-### 98-journals/ (105 documents)
+### 98-journals/ (110 documents)
 
 **Chronological project history (append-only log)**
 
@@ -177,7 +179,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (6 documents)
+### 99-reports/ (10 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -199,14 +201,14 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2025-12-21: [nextcloud.md](10-services/guides/nextcloud.md)
 - 2025-12-22: [traefik.md](10-services/guides/traefik.md)
 - 2025-12-22: [architecture-diagrams.md](20-operations/guides/architecture-diagrams.md)
-- 2025-12-23: [automation-reference.md](20-operations/guides/automation-reference.md)
+- 2025-12-26: [automation-reference.md](20-operations/guides/automation-reference.md)
 - 2025-12-23: [autonomous-operations.md](20-operations/guides/autonomous-operations.md)
 - 2025-12-22: [backup-strategy.md](20-operations/guides/backup-strategy.md)
 - 2025-12-22: [pihole-backup.md](20-operations/guides/external-systems/pihole-backup.md)
 - 2025-12-22: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - 2025-12-24: [remediation-chains.md](20-operations/guides/remediation-chains.md)
 - 2025-12-21: [nextcloud-operations.md](20-operations/runbooks/nextcloud-operations.md)
-- 2025-12-23: [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
+- 2025-12-26: [secrets-management.md](30-security/guides/secrets-management.md)
 *No files modified in last 7 days*
 
 ---

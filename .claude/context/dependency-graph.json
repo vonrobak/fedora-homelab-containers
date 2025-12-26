@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-26T06:09:07+01:00",
+  "generated_at": "2025-12-27T00:02:36+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -29,14 +29,17 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [],
+      "dependents": [
+        "traefik"
+      ],
       "networks": [
+        "systemd-reverse_proxy",
         "systemd-monitoring"
       ],
       "external_access": false,
       "critical": true,
       "restart_priority": 0,
-      "blast_radius": 0
+      "blast_radius": 1
     },
     "authelia": {
       "dependencies": [
@@ -545,6 +548,13 @@
           "strength": "soft",
           "source": "traefik-router",
           "router": "loki-secure"
+        },
+        {
+          "target": "alertmanager",
+          "type": "routing",
+          "strength": "soft",
+          "source": "traefik-router",
+          "router": "alertmanager-secure"
         }
       ],
       "dependents": [
@@ -637,8 +647,8 @@
   "networks": {
     "systemd-auth_services": {
       "members": [
-        "traefik",
         "authelia",
+        "traefik",
         "redis-authelia"
       ],
       "gateway": false
@@ -652,19 +662,19 @@
     "systemd-monitoring": {
       "members": [
         "loki",
-        "traefik",
         "cadvisor",
         "nextcloud",
         "node_exporter",
-        "promtail",
-        "alertmanager",
+        "prometheus",
         "nextcloud-db",
         "jellyfin",
-        "prometheus",
         "nextcloud-redis",
-        "immich-server",
+        "alertmanager",
+        "traefik",
         "alert-discord-relay",
-        "grafana"
+        "grafana",
+        "immich-server",
+        "promtail"
       ],
       "gateway": false
     },
@@ -679,9 +689,9 @@
     },
     "systemd-photos": {
       "members": [
+        "postgresql-immich",
         "immich-ml",
         "redis-immich",
-        "postgresql-immich",
         "immich-server"
       ],
       "gateway": false
@@ -690,22 +700,23 @@
       "members": [
         "loki",
         "collabora",
-        "traefik",
         "nextcloud",
         "authelia",
-        "jellyfin",
         "prometheus",
         "vaultwarden",
-        "immich-server",
+        "jellyfin",
+        "alertmanager",
+        "traefik",
         "crowdsec",
-        "grafana"
+        "grafana",
+        "immich-server"
       ],
       "gateway": true
     }
   },
   "metadata": {
     "total_services": 29,
-    "total_dependencies": 41,
+    "total_dependencies": 42,
     "sources": [
       "quadlets",
       "networks",

@@ -1,38 +1,38 @@
 {
   "top_memory_users": {
-    "timestamp": "2025-12-26T18:04:11+01:00",
+    "timestamp": "2025-12-27T00:01:43+01:00",
     "ttl": 300,
     "result": [
       {
         "name": "jellyfin",
-        "memory_mb": 772
+        "memory_mb": 816
       },
       {
         "name": "immich-server",
-        "memory_mb": 444
+        "memory_mb": 426
       },
       {
         "name": "immich-ml",
-        "memory_mb": 242
+        "memory_mb": 244
       },
       {
-        "name": "nextcloud",
-        "memory_mb": 236
+        "name": "loki",
+        "memory_mb": 229
       },
       {
         "name": "prometheus",
-        "memory_mb": 195
+        "memory_mb": 210
       }
     ]
   },
   "disk_usage": {
-    "timestamp": "2025-12-26T18:04:11+01:00",
+    "timestamp": "2025-12-27T00:01:43+01:00",
     "ttl": 600,
     "result": {
       "filesystems": [
         {
           "mount": "/",
-          "usage_pct": "68%"
+          "usage_pct": "69%"
         },
         {
           "mount": "/mnt/btrfs-pool",
@@ -42,20 +42,20 @@
     }
   },
   "top_cpu_users": {
-    "timestamp": "2025-12-26T18:04:11+01:00",
+    "timestamp": "2025-12-27T00:01:43+01:00",
     "ttl": 60,
     "result": [
       {
         "name": "jellyfin",
-        "cpu_pct": 5.17
+        "cpu_pct": 5.69
       },
       {
         "name": "cadvisor",
-        "cpu_pct": 3.25
+        "cpu_pct": 3.26
       },
       {
         "name": "traefik",
-        "cpu_pct": 0.84
+        "cpu_pct": 0.83
       },
       {
         "name": "immich-ml",
@@ -63,7 +63,7 @@
       },
       {
         "name": "prometheus",
-        "cpu_pct": 0.59
+        "cpu_pct": 0.58
       }
     ]
   },
@@ -406,7 +406,7 @@
     ]
   },
   "unhealthy_services": {
-    "timestamp": "2025-12-26T18:04:12+01:00",
+    "timestamp": "2025-12-27T00:01:43+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_services": []
