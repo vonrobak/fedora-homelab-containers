@@ -11,6 +11,22 @@ ping:
 log:
   level: INFO
 
+accessLog:
+  format: json
+  fields:
+    defaultMode: keep
+    names:
+      ClientUsername: drop
+    headers:
+      defaultMode: keep
+      names:
+        User-Agent: keep
+        Authorization: drop
+        Cookie: drop
+        Set-Cookie: drop
+        X-Forwarded-For: keep
+        X-Real-IP: keep
+
 metrics:
   prometheus:
     addEntryPointsLabels: true

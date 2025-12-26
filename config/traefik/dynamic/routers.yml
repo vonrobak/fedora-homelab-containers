@@ -168,6 +168,21 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # Alertmanager - Alert Routing and Notification
+    alertmanager-secure:
+      rule: "Host(`alertmanager.patriark.org`)"
+      service: "alertmanager"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - monitoring-api-whitelist@file
+        - rate-limit@file
+        - authelia@file
+        - security-headers-strict@file
+      tls:
+        certResolver: letsencrypt
+
   services:
     homepage:
       loadBalancer:
@@ -198,6 +213,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://loki:3100"
+
+    alertmanager:
+      loadBalancer:
+        servers:
+          - url: "http://alertmanager:9093"
 
     authelia:
       loadBalancer:
