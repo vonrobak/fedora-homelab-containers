@@ -95,11 +95,12 @@ http:
           ipStrategy:
             depth: 1
 
-    # OCIS file storage (higher capacity for OIDC/JWKS traffic)
-    rate-limit-ocis:
+    # WebDAV/CalDAV/Office (higher capacity for file sync and document editing)
+    # Used by: Nextcloud, Collabora
+    rate-limit-webdav:
       rateLimit:
-        average: 200      # Increased to handle OIDC token refresh bursts
-        burst: 100        # Handle simultaneous authentication requests
+        average: 200      # Higher sustained rate for file/calendar/contact sync
+        burst: 100        # Handle simultaneous sync requests
         period: 1m
         sourceCriterion:
           ipStrategy:
@@ -110,6 +111,16 @@ http:
       rateLimit:
         average: 400      # Higher sustained rate for file/calendar/contact sync
         burst: 1400       # Support bulk operations (1300+ contact CSV imports)
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    # Immich (photo management - high capacity for thumbnail loading)
+    rate-limit-immich:
+      rateLimit:
+        average: 500      # High sustained rate for browsing photo library
+        burst: 2000       # Support rapid thumbnail loading (scrolling through albums)
         period: 1m
         sourceCriterion:
           ipStrategy:

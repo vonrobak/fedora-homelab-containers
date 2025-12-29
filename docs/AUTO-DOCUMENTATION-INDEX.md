@@ -1,6 +1,6 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2025-12-26 23:04:00 UTC
+**Generated:** 2025-12-29 06:01:26 UTC
 **Total Documents:** 280
 
 ---
@@ -189,16 +189,12 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2025-12-22: [2025-11-13-ADR-009-config-data-directory-strategy.md](00-foundation/decisions/2025-11-13-ADR-009-config-data-directory-strategy.md)
 - 2025-12-22: [2025-12-22-ADR-015-container-update-strategy.md](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
 - 2025-12-22: [middleware-configuration.md](00-foundation/guides/middleware-configuration.md)
-- 2025-12-22: [2025-12-20-ADR-013-nextcloud-native-authentication.md](10-services/decisions/2025-12-20-ADR-013-nextcloud-native-authentication.md)
-- 2025-12-22: [2025-12-20-ADR-014-nextcloud-passwordless-authentication.md](10-services/decisions/2025-12-20-ADR-014-nextcloud-passwordless-authentication.md)
 - 2025-12-22: [crowdsec.md](10-services/guides/crowdsec.md)
 - 2025-12-22: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
 - 2025-12-22: [immich.md](10-services/guides/immich.md)
 - 2025-12-22: [jellyfin.md](10-services/guides/jellyfin.md)
-- 2025-12-21: [nextcloud.md](10-services/guides/nextcloud.md)
 - 2025-12-22: [traefik.md](10-services/guides/traefik.md)
 - 2025-12-22: [architecture-diagrams.md](20-operations/guides/architecture-diagrams.md)
 - 2025-12-26: [automation-reference.md](20-operations/guides/automation-reference.md)
@@ -207,8 +203,12 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2025-12-22: [pihole-backup.md](20-operations/guides/external-systems/pihole-backup.md)
 - 2025-12-22: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - 2025-12-24: [remediation-chains.md](20-operations/guides/remediation-chains.md)
-- 2025-12-21: [nextcloud-operations.md](20-operations/runbooks/nextcloud-operations.md)
 - 2025-12-26: [secrets-management.md](30-security/guides/secrets-management.md)
+- 2025-12-26: [loki-remediation-queries.md](40-monitoring-and-documentation/guides/loki-remediation-queries.md)
+- 2025-12-27: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
+- 2025-12-23: [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
+- 2025-12-22: [PLAN-GUIDE-ORGANIZATION.md](97-plans/PLAN-GUIDE-ORGANIZATION.md)
+- 2025-12-22: [PROJECT-AUTONOMOUS-ORCHESTRATION.md](97-plans/PROJECT-AUTONOMOUS-ORCHESTRATION.md)
 *No files modified in last 7 days*
 
 ---

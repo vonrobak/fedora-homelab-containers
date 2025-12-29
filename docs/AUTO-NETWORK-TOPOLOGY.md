@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2025-12-26 23:03:59 UTC
+**Generated:** 2025-12-29 06:01:24 UTC
 **System:** fedora-htpc
 
 This document provides visual representations of the homelab network architecture using Mermaid diagrams.

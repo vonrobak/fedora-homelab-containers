@@ -1,6 +1,6 @@
 # Remediation Monthly Report - november 2025
 
-**Generated:** 2025-12-25 22:09:51
+**Generated:** 2025-12-28 18:16:34
 **Period:** 2025-11 (30 days)
 **Report Type:** Automated Analytics
 
@@ -39,7 +39,7 @@
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 disk-cleanup                         100%        10%       100%        63
-predictive-maintenance                92%        70%       100%        86
+predictive-maintenance                80%        70%       100%        81
 slo-violation-remediation            100%        50%        74%        69
 test                                 100%        50%       100%        75
 
@@ -56,7 +56,7 @@ Legend: ≥80 Excellent | 60-79 Good | <60 Needs Improvement
 Playbook                            First Half     Second Half           Trend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 disk-cleanup                                 0               2 \033[0;32m↑ New\033[0m
-predictive-maintenance                       0              14 \033[0;32m↑ New\033[0m
+predictive-maintenance                       0              20 \033[0;32m↑ New\033[0m
 slo-violation-remediation                    0               1 \033[0;32m↑ New\033[0m
 test                                         0               1 \033[0;32m↑ New\033[0m
 
@@ -67,7 +67,7 @@ test                                         0               1 \033[0;32m↑ New
 Playbook                            First Half     Second Half           Trend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 disk-cleanup                                0%            100% \033[0;36mNew\033[0m
-predictive-maintenance                      0%             92% \033[0;36mNew\033[0m
+predictive-maintenance                      0%             80% \033[0;36mNew\033[0m
 slo-violation-remediation                   0%            100% \033[0;36mNew\033[0m
 test                                        0%            100% \033[0;36mNew\033[0m
 
@@ -78,12 +78,12 @@ test                                        0%            100% \033[0;36mNew\033
 ═══ ROI Summary ═══
 
   In the last 30d, auto-remediation has:
-  • Prevented 3 incidents before they occurred
+  • Prevented 4 incidents before they occurred
   • Recovered 0 services automatically
-  • Avoided 20 manual interventions
-  • Saved 9.44 hours of operational time
+  • Avoided 24 manual interventions
+  • Saved 11.34 hours of operational time
 
-  ✓ Equivalent to 1.1 workdays saved
+  ✓ Equivalent to 1.4 workdays saved
 
 
 ---

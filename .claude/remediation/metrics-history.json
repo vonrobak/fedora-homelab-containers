@@ -199,6 +199,66 @@
       "services_restarted": "",
       "oom_detected": 0,
       "root_cause": "script_error_line_1186"
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1766811669,
+      "duration": 2,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "failure",
+      "timestamp": 1766811670,
+      "duration": 3,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": "script_error_line_1186"
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1766898058,
+      "duration": 2,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "failure",
+      "timestamp": 1766898059,
+      "duration": 3,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": "script_error_line_1186"
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1766984496,
+      "duration": 3,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "failure",
+      "timestamp": 1766984496,
+      "duration": 3,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": "script_error_line_1186"
     }
   ]
 }

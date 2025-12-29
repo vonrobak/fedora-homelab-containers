@@ -1,32 +1,32 @@
 {
   "top_memory_users": {
-    "timestamp": "2025-12-27T00:01:43+01:00",
+    "timestamp": "2025-12-29T12:00:09+01:00",
     "ttl": 300,
     "result": [
       {
         "name": "jellyfin",
-        "memory_mb": 816
+        "memory_mb": 931
+      },
+      {
+        "name": "collabora",
+        "memory_mb": 882
       },
       {
         "name": "immich-server",
-        "memory_mb": 426
+        "memory_mb": 330
       },
       {
-        "name": "immich-ml",
-        "memory_mb": 244
-      },
-      {
-        "name": "loki",
-        "memory_mb": 229
+        "name": "grafana",
+        "memory_mb": 305
       },
       {
         "name": "prometheus",
-        "memory_mb": 210
+        "memory_mb": 296
       }
     ]
   },
   "disk_usage": {
-    "timestamp": "2025-12-27T00:01:43+01:00",
+    "timestamp": "2025-12-29T12:00:10+01:00",
     "ttl": 600,
     "result": {
       "filesystems": [
@@ -42,28 +42,28 @@
     }
   },
   "top_cpu_users": {
-    "timestamp": "2025-12-27T00:01:43+01:00",
+    "timestamp": "2025-12-29T12:00:10+01:00",
     "ttl": 60,
     "result": [
       {
-        "name": "jellyfin",
-        "cpu_pct": 5.69
+        "name": "cadvisor",
+        "cpu_pct": 4.43
       },
       {
-        "name": "cadvisor",
-        "cpu_pct": 3.26
+        "name": "jellyfin",
+        "cpu_pct": 1.76
       },
       {
         "name": "traefik",
-        "cpu_pct": 0.83
+        "cpu_pct": 0.90
       },
       {
         "name": "immich-ml",
-        "cpu_pct": 0.68
+        "cpu_pct": 0.70
       },
       {
         "name": "prometheus",
-        "cpu_pct": 0.58
+        "cpu_pct": 0.59
       }
     ]
   },
@@ -406,7 +406,7 @@
     ]
   },
   "unhealthy_services": {
-    "timestamp": "2025-12-27T00:01:43+01:00",
+    "timestamp": "2025-12-29T12:00:10+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_services": []
@@ -499,7 +499,7 @@
     }
   },
   "unhealthy_dependencies": {
-    "timestamp": "2025-12-26T06:34:25+01:00",
+    "timestamp": "2025-12-29T06:32:50+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_dependencies": [
@@ -611,11 +611,6 @@
         {
           "service": "traefik",
           "dependency": "monitoring",
-          "status": "down"
-        },
-        {
-          "service": "traefik",
-          "dependency": "homepage",
           "status": "down"
         },
         {

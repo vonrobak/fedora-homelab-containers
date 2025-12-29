@@ -18,7 +18,7 @@ This guide covers the complete monitoring, alerting, and autonomous remediation 
 ## Quick Start
 
 **Access Points:**
-- Grafana Dashboards: https://grafana.patriark.org (patriark / qTR#k28w4$RPM3)
+- Grafana Dashboards: https://grafana.patriark.org
 - Alertmanager: https://alertmanager.patriark.org
 - Discord Notifications: Check your Discord server for alerts
 

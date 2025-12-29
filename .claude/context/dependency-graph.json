@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-27T00:02:36+01:00",
+  "generated_at": "2025-12-29T06:07:56+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -647,9 +647,9 @@
   "networks": {
     "systemd-auth_services": {
       "members": [
+        "redis-authelia",
         "authelia",
-        "traefik",
-        "redis-authelia"
+        "traefik"
       ],
       "gateway": false
     },
@@ -661,55 +661,56 @@
     },
     "systemd-monitoring": {
       "members": [
-        "loki",
-        "cadvisor",
-        "nextcloud",
-        "node_exporter",
-        "prometheus",
-        "nextcloud-db",
-        "jellyfin",
-        "nextcloud-redis",
-        "alertmanager",
-        "traefik",
         "alert-discord-relay",
+        "cadvisor",
+        "promtail",
         "grafana",
+        "nextcloud-db",
+        "alertmanager",
+        "nextcloud",
+        "traefik",
+        "nextcloud-redis",
+        "loki",
+        "node_exporter",
         "immich-server",
-        "promtail"
+        "prometheus",
+        "jellyfin"
       ],
       "gateway": false
     },
     "systemd-nextcloud": {
       "members": [
         "collabora",
-        "nextcloud",
         "nextcloud-db",
+        "nextcloud",
         "nextcloud-redis"
       ],
       "gateway": false
     },
     "systemd-photos": {
       "members": [
+        "redis-immich",
         "postgresql-immich",
         "immich-ml",
-        "redis-immich",
         "immich-server"
       ],
       "gateway": false
     },
     "systemd-reverse_proxy": {
       "members": [
-        "loki",
-        "collabora",
-        "nextcloud",
-        "authelia",
-        "prometheus",
-        "vaultwarden",
-        "jellyfin",
-        "alertmanager",
-        "traefik",
-        "crowdsec",
         "grafana",
-        "immich-server"
+        "collabora",
+        "vaultwarden",
+        "homepage",
+        "authelia",
+        "alertmanager",
+        "nextcloud",
+        "traefik",
+        "loki",
+        "crowdsec",
+        "immich-server",
+        "prometheus",
+        "jellyfin"
       ],
       "gateway": true
     }

@@ -1,0 +1,33 @@
+Container Image Update Check
+Generated: sø. 28. des. 10:00:30 +0100 2025
+========================================
+
+time="2025-12-28T10:00:05+01:00" level=warning msg="The deprecated BoltDB database driver is in use. This driver will be removed in the upcoming Podman 6.0 release in mid 2026. It is advised that you migrate to SQLite to avoid issues when this occurs. Set SUPPRESS_BOLTDB_WARNING environment variable to remove this message."
+            UNIT                       CONTAINER                         IMAGE                                                           POLICY      UPDATED
+            cadvisor.service           8dd7dd6208e9 (cadvisor)           gcr.io/cadvisor/cadvisor:latest                                 registry    false
+            jellyfin.service           9266a91e7580 (jellyfin)           docker.io/jellyfin/jellyfin:latest                              registry    false
+            prometheus.service         648a40127a64 (prometheus)         quay.io/prometheus/prometheus:latest                            registry    false
+            crowdsec.service           d7da3fb6fc24 (crowdsec)           docker.io/crowdsecurity/crowdsec:latest                         registry    false
+            grafana.service            e86c7b34edc9 (grafana)            docker.io/grafana/grafana:latest                                registry    false
+            immich-ml.service          a7b25bad6279 (immich-ml)          ghcr.io/immich-app/immich-machine-learning:v2.4.1               registry    false
+            alertmanager.service       ae80fe993ce3 (alertmanager)       quay.io/prometheus/alertmanager:latest                          registry    false
+            loki.service               064c08ab92c9 (loki)               docker.io/grafana/loki:latest                                   registry    false
+            node_exporter.service      4e245795cdbd (node_exporter)      quay.io/prometheus/node-exporter:latest                         registry    false
+            redis-authelia.service     dac1066c0547 (redis-authelia)     docker.io/library/redis:7-alpine                                registry    false
+            promtail.service           fb0f6cc80206 (promtail)           docker.io/grafana/promtail:latest                               registry    false
+            redis-immich.service       153cc76c156f (redis-immich)       docker.io/valkey/valkey:latest                                  registry    false
+            nextcloud.service          43bb575e60ee (nextcloud)          docker.io/library/nextcloud:30                                  registry    false
+            traefik.service            c3a6eef17e61 (traefik)            docker.io/library/traefik:latest                                registry    false
+            immich-server.service      d69ab1a9dca4 (immich-server)      ghcr.io/immich-app/immich-server:v2.4.1                         registry    false
+            nextcloud-redis.service    ad39dfd6d7d2 (nextcloud-redis)    docker.io/library/redis:7-alpine                                registry    false
+            collabora.service          1590bb8ec059 (collabora)          docker.io/collabora/code:latest                                 registry    false
+            postgresql-immich.service  37be461978b3 (postgresql-immich)  ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0  registry    false
+            authelia.service           43ebe2614095 (authelia)           docker.io/authelia/authelia:latest                              registry    false
+            nextcloud-db.service       885b675833d9 (nextcloud-db)       docker.io/library/mariadb:11                                    registry    false
+
+========================================
+
+To apply updates, run:
+  ~/containers/scripts/update-before-reboot.sh
+  sudo dnf update -y
+  sudo reboot

@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2025-12-26 23:03:59 UTC
+**Generated:** 2025-12-29 06:01:23 UTC
 **System:** fedora-htpc
 
 ---
@@ -9,36 +9,37 @@
 
 | Service | Image | Status | Networks |
 |---------|-------|--------|----------|
-| collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
-| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
-| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
-| nextcloud-db | mariadb:11 | ✅ Up | nextcloud,monitoring |
-| redis-authelia | redis:7-alpine | ✅ Up | auth_services |
-| grafana | grafana/grafana:latest | ✅ Up | reverse_proxy,monitoring |
-| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
-| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
-| cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
-| redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
+| redis-authelia | redis:7-alpine | ✅ Up | auth_services |
+| cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
+| homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
-| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
-| postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
-| immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
-| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | reverse_proxy,monitoring,photos |
-| traefik | traefik:latest | ✅ Up | monitoring,reverse_proxy,auth_services |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
-| promtail | grafana/promtail:latest | ✅ Up | monitoring |
+| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
+| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
+| redis-immich | valkey/valkey:latest | ✅ Up | photos |
+| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
+| immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
+| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
+| postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | reverse_proxy,media_services,monitoring |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
+| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
+| promtail | grafana/promtail:latest | ✅ Up | monitoring |
+| collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
+| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
 
 ---
 
 ## Statistics
 
-- **Total Running:** 22
-- **Total Defined:** 22
-- **System Load:**  0,65, 0,80, 0,71
+- **Total Running:** 23
+- **Total Defined:** 23
+- **System Load:**  0,37, 0,45, 0,67
 
 ---
 
