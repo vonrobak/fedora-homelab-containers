@@ -29,7 +29,7 @@ DNS=192.168.1.69
 DNSSearch=lokal
 
 # Storage Volumes
-Volume=%h/containers/config/jellyfin:/config:Z
+Volume=/mnt/btrfs-pool/subvol7-containers/jellyfin-config:/config:Z
 Volume=/mnt/btrfs-pool/subvol7-containers/jellyfin/data:/data:Z
 Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-cache:/cache:Z
 Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes:/config/transcodes:Z
@@ -50,12 +50,14 @@ HealthRetries=3
 HealthStartPeriod=60s
 
 [Service]
+Slice=container.slice
 Restart=always
 TimeoutStartSec=900
 
 # Resource Limits
-MemoryMax=4G
-MemoryHigh=3G
+MemoryMax=8G
+MemoryHigh=7G
+MemorySwapMax=1G
 
 # CPU Priority (higher priority for smooth streaming)
 Nice=-5
