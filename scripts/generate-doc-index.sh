@@ -250,16 +250,15 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 EOF
 
     # Add recently updated files
-    local recent_count=0
-    get_recent_files | head -20 | while read -r file; do
-        local basename=$(basename "$file")
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
-        local mod_date=$(stat -c %y "$file" | cut -d' ' -f1)
-        echo "- $mod_date: [$basename]($relpath)" >> "$OUTPUT_FILE"
-        ((recent_count++)) || true
-    done
-
-    if [[ $recent_count -eq 0 ]]; then
+    local recent_files=$(get_recent_files | head -20)
+    if [[ -n "$recent_files" ]]; then
+        echo "$recent_files" | while read -r file; do
+            local basename=$(basename "$file")
+            local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+            local mod_date=$(stat -c %y "$file" | cut -d' ' -f1)
+            echo "- $mod_date: [$basename]($relpath)" >> "$OUTPUT_FILE"
+        done
+    else
         echo "*No files modified in last 7 days*" >> "$OUTPUT_FILE"
     fi
 

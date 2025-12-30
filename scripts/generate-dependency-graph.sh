@@ -235,7 +235,7 @@ EOF
     for network in $(podman network ls --format '{{.Name}}' | grep '^systemd-'); do
         local network_short=$(echo "$network" | sed 's/systemd-//')
         local members=$(podman network inspect "$network" 2>/dev/null | \
-            jq -r '.[0].Containers // {} | keys[]' | sort | tr '\n' ', ' | sed 's/,$//')
+            jq -r '.[0].containers // {} | to_entries[] | .value.name' | sort | tr '\n' ', ' | sed 's/,$//')
 
         if [[ -n "$members" ]]; then
             cat >> "$OUTPUT_FILE" <<EOF
