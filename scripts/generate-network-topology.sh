@@ -19,14 +19,14 @@ get_networks() {
 get_network_members() {
     local network=$1
     podman network inspect "$network" 2>/dev/null | \
-        jq -r '.[0].Containers // {} | keys[]' | sort || true
+        jq -r '.[0].containers // {} | to_entries[] | .value.name' | sort || true
 }
 
 # Get network subnet
 get_network_subnet() {
     local network=$1
     podman network inspect "$network" 2>/dev/null | \
-        jq -r '.[0].Subnets[0].Subnet // "unknown"' || echo "unknown"
+        jq -r '.[0].subnets[0].subnet // "unknown"' || echo "unknown"
 }
 
 # Generate the topology document
