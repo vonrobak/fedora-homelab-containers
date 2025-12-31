@@ -213,7 +213,7 @@ podman inspect jellyfin | grep -A 5 <customization>
 **Common customizations:**
 - GPU passthrough: `AddDevice=/dev/dri/renderD128`
 - Volume mounts: `Volume=/path:/container:Z,ro`
-- Remove auth: Edit `traefik.http.routers.*.middlewares` label
+- Remove auth: Edit `~/containers/config/traefik/dynamic/routers.yml` (remove authelia middleware)
 - Environment vars: `Environment=KEY=value`
 - Resource limits: Adjust `Memory=` and `CPUWeight=`
 
@@ -493,11 +493,14 @@ podman logs authelia --tail 100 | grep -i error
 **Emergency bypass (temporary):**
 ```bash
 # Remove authelia middleware from critical service
-nano ~/.config/containers/systemd/<service>.container
-# Edit: traefik.http.routers.*.middlewares
-# Remove: authelia@docker
-systemctl --user daemon-reload
-systemctl --user restart <service>.service
+nano ~/containers/config/traefik/dynamic/routers.yml
+
+# Find router for <service>-secure:
+# Remove authelia@file from middlewares list
+# Keep: crowdsec-bouncer@file, rate-limit@file, security-headers@file
+
+# Traefik will auto-reload in ~60s, or force reload:
+podman exec traefik kill -SIGHUP 1
 
 # NOTE: Service now publicly accessible
 # Restore authentication after fixing Authelia

@@ -400,16 +400,8 @@
   # Storage
   Volume=/mnt/btrfs-pool/subvol8-photos:/usr/src/app/upload:Z
 
-  # Expose port for Traefik
-  PublishPort=2283:2283
-
-  # Traefik labels
-  Label=traefik.enable=true
-  Label=traefik.http.routers.immich.rule=Host(\`photos.patriark.org\`)
-  Label=traefik.http.routers.immich.entrypoints=websecure
-  Label=traefik.http.routers.immich.tls=true
-  Label=traefik.http.routers.immich.middlewares=crowdsec-bouncer@file,rate-limit@file,tinyauth@file
-  Label=traefik.http.services.immich.loadbalancer.server.port=2283
+  # NOTE: NO Traefik labels in quadlet (ADR-016: Separation of Concerns)
+  # Routing configured in ~/containers/config/traefik/dynamic/routers.yml
 
   # Health check
   HealthCmd=curl -f http://localhost:2283/api/server-info/ping || exit 1
@@ -556,13 +548,43 @@
   systemctl --user list-unit-files | grep immich
   ```
 
-### Phase 5: Traefik Integration Test (30 minutes)
+### Phase 5: Traefik Routing Configuration (30 minutes)
 
-- [ ] **Verify Traefik detects Immich**
+- [ ] **Add Immich routing to routers.yml**
 
   ```bash
+  # Edit Traefik dynamic config
+  nano ~/containers/config/traefik/dynamic/routers.yml
+
+  # Add under http.routers:
+  immich-secure:
+    rule: "Host(`photos.patriark.org`)"
+    service: "immich"
+    entryPoints:
+      - websecure
+    middlewares:
+      - crowdsec-bouncer@file
+      - rate-limit@file
+      - authelia@file
+      - security-headers@file
+    tls:
+      certResolver: letsencrypt
+
+  # Add under http.services:
+  immich:
+    loadBalancer:
+      servers:
+        - url: "http://immich-server:2283"
+
+  # Traefik will auto-reload in ~60s, or force reload:
+  podman exec traefik kill -SIGHUP 1
+  ```
+
+- [ ] **Verify Traefik routing active**
+
+  ```bash
+  # Check Traefik logs for routing changes
   podman logs traefik --tail 100 | grep immich
-  # Look for: "Creating router immich"
   ```
 
 - [ ] **Access Traefik dashboard**

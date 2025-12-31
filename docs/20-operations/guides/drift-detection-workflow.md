@@ -401,27 +401,31 @@ podman inspect jellyfin | grep -i network
 
 ---
 
-### Scenario 4: Traefik Labels Updated
+### Scenario 4: Traefik Routing Configuration Drift
+
+**Note:** Per ADR-016, Traefik routing is in `~/containers/config/traefik/dynamic/routers.yml`, NOT in quadlet labels.
 
 **Detection:**
-```
-Service: jellyfin
-  ✗ Labels: DRIFT
-    Quadlet: traefik.http.routers.jellyfin.middlewares=crowdsec,auth
-    Running: traefik.http.routers.jellyfin.middlewares=crowdsec
+```bash
+# Manual review of routers.yml vs running Traefik config
+diff <(grep -A 10 "jellyfin-secure:" ~/containers/config/traefik/dynamic/routers.yml) \
+     <(curl -s http://localhost:8080/api/http/routers/jellyfin-secure@file | jq)
 ```
 
-**Cause:** Middleware added to quadlet (e.g., enabling authentication)
+**Cause:** routers.yml edited but Traefik not reloaded
 
 **Fix:**
 ```bash
-# Restart to apply new labels
-systemctl --user daemon-reload
-systemctl --user restart jellyfin.service
+# Reload Traefik to apply routing changes
+podman exec traefik kill -SIGHUP 1
 
-# Verify Traefik picked up changes
-curl http://localhost:8080/api/http/routers/jellyfin@docker
+# Verify routing updated
+curl http://localhost:8080/api/http/routers/jellyfin-secure@file | jq .middlewares
+
+# Or wait ~60s for auto-reload
 ```
+
+**Prevention:** Traefik auto-reloads dynamic config files every ~60 seconds. Manual reload only needed for immediate changes.
 
 ---
 
