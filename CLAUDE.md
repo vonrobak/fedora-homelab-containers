@@ -98,16 +98,77 @@ cat docs/10-services/guides/pattern-selection-guide.md
 - `reverse-proxy-backend` - Internal services (strict auth required)
 - `monitoring-exporter` - Node exporter, cAdvisor (metrics collection)
 
-### Manual Deployment (Legacy)
+### Manual Deployment
+
+**🚨 CRITICAL: Traefik Routing Configuration**
+
+**ALL Traefik routing is defined in dynamic config files, NEVER in container labels.**
+
+**Why?**
+- ✅ Separation of concerns (ADR-016: quadlets = deployment, Traefik = routing)
+- ✅ Centralized security (all routes auditable in one 248-line file)
+- ✅ Fail-fast middleware ordering enforced consistently
+- ✅ Single source of truth (no label/config sync issues)
+- ✅ Git-friendly (routing changes isolated from service changes)
+
+**See:** ADR-016 (Configuration Design Principles) for complete rationale
+
+---
 
 For services without matching patterns:
 
 ```bash
-# Create container with podman run (Traefik labels excluded as they should be defined in Traefik dynamic files)
-# Generate systemd units
-podman generate systemd --name <container> --files --new
+# 1. Create quadlet file (NO Traefik labels)
+nano ~/.config/containers/systemd/service.container
+
+[Container]
+Image=service:latest
+ContainerName=service
+Network=systemd-reverse_proxy.network
+# NO Traefik labels - routing defined separately
+
+# 2. Add route to Traefik dynamic config
+nano ~/containers/config/traefik/dynamic/routers.yml
+
+# Append under http.routers:
+    service-secure:
+      rule: "Host(`service.patriark.org`)"
+      service: "service"
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit@file
+        - authelia@file               # Remove if native auth
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
+# And under http.services:
+    service:
+      loadBalancer:
+        servers:
+          - url: "http://service:port"
+
+# 3. Deploy
 systemctl --user daemon-reload
-systemctl --user enable --now <service>.service
+systemctl --user enable --now service.service
+
+# 4. Verify routing
+curl -I https://service.patriark.org
+```
+
+**Pattern-based deployment handles this automatically:**
+```bash
+cd .claude/skills/homelab-deployment
+
+./scripts/deploy-from-pattern.sh \
+  --pattern web-app-with-database \
+  --service-name wiki \
+  --hostname wiki.patriark.org \
+  --memory 2G
+
+# ✅ Generates BOTH:
+# 1. ~/.config/containers/systemd/wiki.container (deployment)
+# 2. ~/containers/config/traefik/dynamic/routers.yml (routing)
 ```
 
 ## Operations
@@ -150,6 +211,8 @@ podman network connect <network> <container>   # Connect container
 
 ### Traefik Operations
 
+**Configuration Philosophy:** ALL routing in dynamic config files (see ADR-016)
+
 ```bash
 # Dynamic config reloads automatically when files change
 # Just edit config/traefik/dynamic/*.yml and save
@@ -158,7 +221,42 @@ podman logs -f traefik                         # View logs
 # Dashboard: traefik.patriark.org (requires auth)
 
 # Check Let's Encrypt certificates
-ls -lh /path/to/letsencrypt/acme.json
+ls -lh ~/containers/data/letsencrypt/acme.json
+
+# Routing configuration files
+cat ~/containers/config/traefik/dynamic/routers.yml      # All routes (248 lines)
+cat ~/containers/config/traefik/dynamic/middleware.yml   # Security policies (13KB)
+
+# Force config reload (optional - auto-reloads after 60s)
+podman exec traefik kill -SIGHUP 1
+
+# Verify routing works
+curl -I https://service.patriark.org
+
+# Audit all public routes
+grep "rule:" ~/containers/config/traefik/dynamic/routers.yml
+```
+
+**Add new route:**
+```bash
+# 1. Edit routers.yml
+nano ~/containers/config/traefik/dynamic/routers.yml
+
+# 2. Append under http.routers section:
+    newservice-secure:
+      rule: "Host(`newservice.patriark.org`)"
+      service: "newservice"
+      middlewares: [crowdsec-bouncer@file, rate-limit@file, authelia@file, security-headers@file]
+      tls:
+        certResolver: letsencrypt
+
+# 3. Add service definition:
+    newservice:
+      loadBalancer:
+        servers:
+          - url: "http://newservice:8080"
+
+# 4. Save file (Traefik auto-reloads in ~60s or send SIGHUP)
 ```
 
 ### Authelia Operations

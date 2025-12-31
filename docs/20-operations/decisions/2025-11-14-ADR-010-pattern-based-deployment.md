@@ -60,6 +60,62 @@ cd .claude/skills/homelab-deployment
 systemctl --user status <name>.service
 ```
 
+### Routing Configuration Generation
+
+**Patterns generate Traefik dynamic config, not container labels** (per ADR-016: Separation of Concerns).
+
+**Workflow:**
+1. Pattern specifies Traefik template (`authenticated-service.yml`, `public-service.yml`, `api-service.yml`, `admin-service.yml`)
+2. Deployment script renders template with service-specific variables (`{{service_name}}`, `{{hostname}}`, `{{port}}`)
+3. Generated router entry appended to `~/containers/config/traefik/dynamic/routers.yml`
+4. Traefik reloaded to apply changes (SIGHUP signal or auto-reload after 60s)
+
+**Example template rendering:**
+
+**Input - Pattern template** (`templates/traefik/authenticated-service.yml`):
+```yaml
+{{service_name}}-secure:
+  rule: "Host(`{{hostname}}`)"
+  entryPoints: [websecure]
+  middlewares:
+    - crowdsec-bouncer@file      # 1. Block bad IPs (cache - fastest)
+    - rate-limit@file             # 2. Rate limit (memory - fast)
+    - authelia@file               # 3. Authenticate (database + crypto)
+    - security-headers@file       # 4. Security headers (response)
+  service: "{{service_name}}"
+  tls:
+    certResolver: letsencrypt
+
+{{service_name}}:
+  loadBalancer:
+    servers:
+      - url: "http://{{service_name}}:{{port}}"
+```
+
+**Output - Generated config** (appended to `routers.yml`):
+```yaml
+# Under http.routers:
+wiki-secure:
+  rule: "Host(`wiki.patriark.org`)"
+  entryPoints: [websecure]
+  middlewares: [crowdsec-bouncer@file, rate-limit@file, authelia@file, security-headers@file]
+  service: "wiki"
+  tls:
+    certResolver: letsencrypt
+
+# Under http.services:
+wiki:
+  loadBalancer:
+    servers:
+      - url: "http://wiki:8080"
+```
+
+**Why dynamic config instead of labels?**
+- **Separation of concerns:** Deployment (quadlet) vs routing (Traefik) - see ADR-016
+- **Centralized security:** Middleware ordering enforced in one place
+- **Single source of truth:** All routes auditable in one 248-line file
+- **Git-friendly:** Routing changes tracked separately from service deployments
+
 ### Pattern Library (9 Patterns)
 
 1. **media-server-stack** - Jellyfin, Plex (GPU, large storage)
@@ -79,6 +135,12 @@ name: pattern-name
 category: service-type
 description: Human-readable description
 
+traefik_routing:
+  method: dynamic_config
+  template: authenticated-service.yml  # or public-service.yml, api-service.yml, admin-service.yml
+  generates: routers.yml entry
+  reload: auto (60s) or manual (SIGHUP)
+
 quadlet:
   container:
     image: docker.io/library/image:tag
@@ -87,9 +149,7 @@ quadlet:
       - systemd-monitoring.network
     volumes:
       - /data/path:/container/path:Z
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.service.rule: "Host(`{{hostname}}`)"
+    # NO Traefik labels - routing in dynamic config (ADR-016)
 
 systemd:
   service:
@@ -210,6 +270,12 @@ post_deployment:
 - Patterns are self-documenting (deployment_notes section)
 - Post-deployment checklists ensure nothing missed
 - Pattern library serves as reference architecture
+
+**Routing auditability:**
+- See all public routes in one 248-line file (routers.yml)
+- Security policies centralized and consistent
+- Routing changes tracked separately in git history
+- Middleware ordering enforced (CrowdSec → Rate Limit → Auth → Headers)
 
 **Transferable skills:**
 - Pattern-based deployment aligns with industry practices (Helm, Terraform)

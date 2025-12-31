@@ -2,8 +2,28 @@
 
 **Current Config Analysis:** middleware.yml
 **Focus:** CrowdSec integration, interoperability, and advanced patterns
-**Last Updated:** 2025-12-22
-**Status:** Updated for Authelia SSO (replaced TinyAuth references)
+**Last Updated:** 2025-12-31
+**Status:** Updated for Authelia SSO and ADR-016 design principles
+
+---
+
+## 🎯 Design Philosophy (ADR-016)
+
+This guide details Traefik middleware configuration in the **centralized dynamic config approach**.
+
+**Key Principle:** ALL Traefik routing (routers, services, middleware) is defined in
+`~/containers/config/traefik/dynamic/*.yml` files, NEVER in container labels.
+
+**Why?**
+- ✅ **Separation of concerns:** Quadlets = deployment, Traefik = routing (see ADR-016)
+- ✅ **Centralized security:** Middleware ordering enforced in one place
+- ✅ **Single source of truth:** See all routes in 248 lines (routers.yml)
+- ✅ **Fail-fast enforcement:** CrowdSec → Rate Limit → Auth ordering guaranteed
+
+**See also:**
+- ADR-002 (Systemd Quadlets) - Foundation for deployment architecture
+- ADR-016 (Configuration Design Principles) - Complete rationale
+- ADR-010 (Pattern-Based Deployment) - Automated deployment approach
 
 ---
 

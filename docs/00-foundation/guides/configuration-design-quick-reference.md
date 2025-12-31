@@ -109,6 +109,74 @@ PATTERN 5: Multi-tenant
 
 ---
 
+## 🌐 Traefik Configuration: Labels vs Dynamic Config
+
+**Decision: ALWAYS use dynamic config files.**
+
+```
+┌─────────────────────────────────────────────────────┐
+│  WHERE TO DEFINE TRAEFIK ROUTING?                   │
+├─────────────────────────────────────────────────────┤
+│                                                      │
+│  ✅ DYNAMIC CONFIG (routers.yml)                    │
+│  • Single source of truth                           │
+│  • Centralized security enforcement                 │
+│  • Fail-fast middleware ordering guaranteed         │
+│  • Clean separation of concerns                     │
+│  • Git-friendly change tracking                     │
+│                                                      │
+│  ❌ CONTAINER LABELS                                │
+│  • NO - Violates separation of concerns             │
+│  • NO - Distributed routing (hard to audit)         │
+│  • NO - Easy to misorder middleware                 │
+│  • NO - Mixing deployment + routing concerns        │
+│                                                      │
+└─────────────────────────────────────────────────────┘
+```
+
+**Deployment workflow:**
+
+```bash
+# 1. Create quadlet (NO labels)
+nano ~/.config/containers/systemd/service.container
+
+# 2. Add route to routers.yml
+nano ~/containers/config/traefik/dynamic/routers.yml
+
+# 3. Deploy
+systemctl --user daemon-reload
+systemctl --user enable --now service.service
+```
+
+**Quick template:**
+
+```yaml
+# ~/containers/config/traefik/dynamic/routers.yml
+
+http:
+  routers:
+    service-name-secure:
+      rule: "Host(`service.patriark.org`)"
+      service: "service-name"
+      middlewares:
+        - crowdsec-bouncer@file      # 1. Block bad IPs
+        - rate-limit@file             # 2. Rate limit
+        - authelia@file               # 3. Authenticate (optional)
+        - security-headers@file       # 4. Security headers
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    service-name:
+      loadBalancer:
+        servers:
+          - url: "http://service-name:port"
+```
+
+**See:** ADR-016 (Configuration Design Principles) for complete rationale.
+
+---
+
 ## 🔐 Authentication Decision Matrix
 
 ```

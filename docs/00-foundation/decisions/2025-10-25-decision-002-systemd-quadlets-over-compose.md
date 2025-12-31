@@ -248,6 +248,118 @@ systemctl --user status newservice.service
 
 ---
 
+## Traefik Routing Configuration (Added 2025-12-31)
+
+**Extension to ADR-002:** After 2 months of production deployment (October-December 2025), a clear routing configuration philosophy emerged that complements the quadlet approach.
+
+### Decision
+
+**Traefik routing is defined in dynamic YAML files, NOT container labels.**
+
+### Rationale
+
+**Aligns with ADR-002 principles:**
+- **Native Integration:** Dynamic config integrates with Traefik's file provider (native, no abstraction)
+- **Infrastructure as Code:** All routing rules in Git-tracked YAML files
+- **Operational Benefits:** Single source of truth, easy auditing, fail-fast enforcement
+
+**Additional benefits specific to routing:**
+- **Separation of concerns:** Quadlet = "what runs" (deployment), Traefik = "how it's accessed" (routing)
+- **Centralized security:** Middleware ordering enforced in one place (fail-fast: CrowdSec → Rate Limit → Auth → Headers)
+- **Clean quadlets:** No infrastructure annotations cluttering service definitions
+- **Git clarity:** Routing changes tracked separately from service changes
+- **Auditability:** See all public routes in one 248-line file
+
+### Implementation
+
+**All routes defined in:** `~/containers/config/traefik/dynamic/routers.yml`
+
+**Quadlet example (NO Traefik labels):**
+```ini
+# ~/.config/containers/systemd/jellyfin.container
+
+[Container]
+Image=docker.io/jellyfin/jellyfin:latest
+ContainerName=jellyfin
+Network=systemd-reverse_proxy.network
+Volume=%h/containers/config/jellyfin:/config:Z
+# NO Traefik labels - routing in dynamic config
+```
+
+**Routing example (routers.yml):**
+```yaml
+# ~/containers/config/traefik/dynamic/routers.yml
+
+http:
+  routers:
+    jellyfin-secure:
+      rule: "Host(`jellyfin.patriark.org`)"
+      service: "jellyfin"
+      middlewares:
+        - crowdsec-bouncer@file       # 1. Block bad IPs (cache - fastest)
+        - rate-limit-public@file       # 2. Rate limit (memory - fast)
+        - security-headers@file        # 3. Security headers (response)
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    jellyfin:
+      loadBalancer:
+        servers:
+          - url: "http://jellyfin:8096"
+```
+
+**Service discovery:** Container name (`jellyfin`) resolves via DNS on `systemd-reverse_proxy` network.
+
+### Production Validation
+
+**Status (as of 2025-12-31):**
+- **23 quadlet files** deployed across homelab
+- **0 Traefik labels** in any quadlet (100% compliance)
+- **13 services** with routes in `routers.yml`
+- **100% routing** centralized in dynamic config
+- **Health score:** 95/100
+- **No drift detected:** All production deployments follow this pattern
+
+**Consistency metrics:**
+- All externally-accessible services use dynamic config
+- All middleware chains centrally defined
+- All fail-fast ordering enforced (CrowdSec first, headers last)
+- All routing auditable in single file
+
+### Comparison to Label-Based Approach
+
+| Aspect | Dynamic Config (Chosen) | Container Labels (Rejected) |
+|--------|-------------------------|------------------------------|
+| Source of truth | Single file (routers.yml) | Distributed across 23 quadlets |
+| Auditability | See all routes at once | Must grep across files |
+| Change tracking | Routing isolated in git | Routing + service changes mixed |
+| Middleware consistency | Enforced centrally | Must remember per service |
+| Fail-fast ordering | Guaranteed correct | Easy to misorder |
+| Scalability | Add routes independently | Must modify quadlets |
+| Complexity | Two files (quadlet + router) | One file per service |
+
+**Verdict:** Dynamic config is objectively superior for security-first, auditable infrastructure at this scale (10-30 services).
+
+### When to Use Each Configuration Method
+
+**Dynamic Config (Standard):**
+- ✅ All externally-accessible services
+- ✅ Services requiring complex middleware chains
+- ✅ Services needing service-aware security policies
+- ✅ When routing may change independent of deployment
+
+**No Routing (Internal Services):**
+- ✅ Databases (PostgreSQL, MariaDB)
+- ✅ Caches (Redis, Memcached)
+- ✅ Internal tools (exporters, background workers)
+
+**See also:**
+- ADR-016 (Configuration Design Principles) - Codifies separation of concerns
+- ADR-010 (Pattern-Based Deployment) - Automated deployment with routing generation
+
+---
+
 ## Migration Path
 
 ### Phase 1: Foundation (Complete ✅)
