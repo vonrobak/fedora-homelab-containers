@@ -1,0 +1,80 @@
+[Unit]
+Description=Nextcloud File Sync and Collaboration
+After=network-online.target nextcloud-db.service nextcloud-redis.service
+Wants=network-online.target
+
+
+[Container]
+Image=docker.io/library/nextcloud:30
+ContainerName=nextcloud
+AutoUpdate=registry
+
+# Database configuration (using podman secrets)
+Secret=nextcloud_db_password,type=env,target=MYSQL_PASSWORD
+Environment=MYSQL_HOST=nextcloud-db
+Environment=MYSQL_DATABASE=nextcloud
+Environment=MYSQL_USER=nextcloud
+
+# Redis configuration (using podman secrets for session handler)
+Secret=nextcloud_redis_password,type=env,target=REDIS_HOST_PASSWORD
+Environment=REDIS_HOST=nextcloud-redis
+
+# Nextcloud configuration
+Environment=NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.patriark.org localhost
+Environment=OVERWRITEPROTOCOL=https
+Environment=OVERWRITEHOST=nextcloud.patriark.org
+Environment=OVERWRITECLIURL=https://nextcloud.patriark.org
+
+# Admin account (managed via OCC, not container env vars)
+Environment=NEXTCLOUD_ADMIN_USER=admin
+# REMOVED: NEXTCLOUD_ADMIN_PASSWORD (security best practice - use OCC for password management)
+
+# Timezone and PHP tuning
+Environment=TZ=Europe/Oslo
+Environment=PHP_MEMORY_LIMIT=1G
+Environment=PHP_UPLOAD_LIMIT=10G
+
+# Main Nextcloud data
+Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud/data:/var/www/html:Z
+
+# External storage - read-only media (shared with Jellyfin/Immich)
+Volume=/mnt/btrfs-pool/subvol3-opptak:/external/opptak:ro,z
+Volume=/mnt/btrfs-pool/subvol4-multimedia:/external/multimedia:ro,z
+Volume=/mnt/btrfs-pool/subvol5-music:/external/music:ro,z
+Volume=/mnt/btrfs-pool/subvol3-opptak/immich:/external/immich-photos:ro,z
+
+# External storage - read-write
+Volume=/mnt/btrfs-pool/subvol6-tmp/Downloads:/external/downloads:Z
+Volume=/mnt/btrfs-pool/subvol1-docs:/external/user-documents:Z
+Volume=/mnt/btrfs-pool/subvol2-pics:/external/user-photos:Z
+
+# Networks (reverse_proxy FIRST for internet access!)
+Network=systemd-reverse_proxy
+Network=systemd-nextcloud
+Network=systemd-monitoring
+
+# Health check
+HealthCmd=curl -f http://localhost:80/status.php
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+HealthStartPeriod=120s
+
+# Resource limits
+Memory=1536M
+
+# Traefik routing configured via file provider (config/traefik/dynamic/routers.yml)
+# No labels needed - cleaner separation of concerns
+# CalDAV/.well-known redirects also defined in routers.yml
+
+# Prometheus
+Label=prometheus.scrape=true
+Label=prometheus.port=80
+Label=prometheus.path=/ocs/v2.php/apps/serverinfo/api/v1/info
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
