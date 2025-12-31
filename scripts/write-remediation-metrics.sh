@@ -308,7 +308,7 @@ EOF
 
     if [ -n "$CHAINS" ]; then
         while IFS= read -r chain; do
-            LAST_TS=$(jq --arg chain "$chain" 'select(.chain == $chain) | .timestamp' "$CHAIN_METRICS_HISTORY" 2>/dev/null | tail -1)
+            LAST_TS=$(jq -c --arg chain "$chain" 'select(.chain == $chain) | .timestamp' "$CHAIN_METRICS_HISTORY" 2>/dev/null | tail -1)
             if [ -n "$LAST_TS" ] && [ "$LAST_TS" != "null" ]; then
                 echo "remediation_chain_last_execution_timestamp{chain=\"$chain\"} $LAST_TS" >> "$METRICS_FILE"
             else
@@ -325,7 +325,7 @@ EOF
 
     if [ -n "$CHAINS" ]; then
         while IFS= read -r chain; do
-            LAST_DURATION=$(jq --arg chain "$chain" 'select(.chain == $chain) | .duration' "$CHAIN_METRICS_HISTORY" 2>/dev/null | tail -1)
+            LAST_DURATION=$(jq -c --arg chain "$chain" 'select(.chain == $chain) | .duration' "$CHAIN_METRICS_HISTORY" 2>/dev/null | tail -1)
             if [ -n "$LAST_DURATION" ] && [ "$LAST_DURATION" != "null" ]; then
                 echo "remediation_chain_duration_seconds{chain=\"$chain\"} $LAST_DURATION" >> "$METRICS_FILE"
             else
@@ -343,7 +343,7 @@ EOF
     if [ -n "$CHAINS" ]; then
         while IFS= read -r chain; do
             # Get last execution for this chain
-            LAST_EXEC=$(jq --arg chain "$chain" 'select(.chain == $chain)' "$CHAIN_METRICS_HISTORY" 2>/dev/null | tail -1)
+            LAST_EXEC=$(jq -c --arg chain "$chain" 'select(.chain == $chain)' "$CHAIN_METRICS_HISTORY" 2>/dev/null | tail -1)
 
             if [ -n "$LAST_EXEC" ]; then
                 SUCCESS=$(echo "$LAST_EXEC" | jq -r '.playbooks_succeeded // 0')

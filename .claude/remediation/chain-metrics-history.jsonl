@@ -1,10 +1,1 @@
-{
-  "execution_id": "predictive-preemption_1766570708",
-  "chain": "predictive-preemption",
-  "status": "failed",
-  "timestamp": 1766570734,
-  "duration": 26,
-  "playbooks_succeeded": 1,
-  "playbooks_failed": 1,
-  "playbooks_skipped": 1
-}
+{"execution_id":"predictive-preemption_1766570708","chain":"predictive-preemption","status":"failed","timestamp":1766570734,"duration":26,"playbooks_succeeded":1,"playbooks_failed":1,"playbooks_skipped":1}
