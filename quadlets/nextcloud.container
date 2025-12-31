@@ -37,11 +37,12 @@ Environment=PHP_UPLOAD_LIMIT=10G
 # Main Nextcloud data
 Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud/data:/var/www/html:Z
 
-# External storage - read-only media (shared with Jellyfin/Immich)
+# External storage - read-only media (shared with Jellyfin)
 Volume=/mnt/btrfs-pool/subvol3-opptak:/external/opptak:ro,z
 Volume=/mnt/btrfs-pool/subvol4-multimedia:/external/multimedia:ro,z
 Volume=/mnt/btrfs-pool/subvol5-music:/external/music:ro,z
-Volume=/mnt/btrfs-pool/subvol3-opptak/immich:/external/immich-photos:ro,z
+# REMOVED: /subvol3-opptak/immich mount (redundant - accessible via /external/opptak/immich/)
+# Immich has exclusive :Z access to this subdirectory
 
 # External storage - read-write
 Volume=/mnt/btrfs-pool/subvol6-tmp/Downloads:/external/downloads:Z
