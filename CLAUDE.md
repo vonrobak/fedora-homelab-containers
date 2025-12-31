@@ -37,14 +37,9 @@ Backend Service
 
 **Why this order matters:** Each layer is more expensive than the last. Reject malicious IPs immediately before wasting resources on auth checks.
 
-**Network Segmentation:**
-- `systemd-reverse_proxy` - Traefik and externally-accessible services
-- `systemd-media_services` - Jellyfin and media processing
-- `systemd-auth_services` - Authelia, Redis (session storage)
-- `systemd-monitoring` - Prometheus, Grafana, Loki, Alertmanager, exporters
-- `systemd-photos` - Immich and its underlying services
+**Network Segmentation:** 5 networks for trust boundaries (see `AUTO-NETWORK-TOPOLOGY.md` for topology diagrams)
 
-Services join networks based on trust/access requirements. Services can be on multiple networks.
+Services join networks based on trust/access requirements. Key principle: **First network gets default route** (see Common Gotchas).
 
 ### Traefik Configuration
 
@@ -291,126 +286,32 @@ systemctl --user restart authelia.service
 
 ### Key Diagnostic Scripts
 
+**Complete catalog:** `docs/20-operations/guides/automation-reference.md` (65 scripts, schedules, integrations)
+
 ```bash
-# System health and intelligence
-./scripts/homelab-intel.sh              # Health scoring + recommendations (0-100)
-./scripts/homelab-diagnose.sh           # Comprehensive system diagnostics
-
-# Natural language queries (cached for speed)
-./scripts/query-homelab.sh "what services are using the most memory?"
-./scripts/query-homelab.sh "is jellyfin running?"
-./scripts/query-homelab.sh "show me disk usage"
-
-# Autonomous operations
-./scripts/autonomous-check.sh --verbose  # Assessment only
-./scripts/autonomous-execute.sh --status # Check autonomous status
-
-# Predictive analytics
-./scripts/predictive-analytics/predict-resource-exhaustion.sh --all
-
-# Configuration drift detection
-cd .claude/skills/homelab-deployment
-./scripts/check-drift.sh                 # Check all services
-./scripts/check-drift.sh jellyfin       # Check specific service
-
-# Pre-deployment health check
-./scripts/check-system-health.sh
-./scripts/check-system-health.sh --verbose
-
-# Security
-./scripts/security-audit.sh
-./scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
-
-# Skill usage analytics
-./scripts/analyze-skill-usage.sh
-./scripts/recommend-skill.sh "jellyfin won't start"
-
-# System inventory
-./scripts/survey.sh                      # BTRFS, storage, firewall, versions
-./scripts/show-pod-status.sh            # Pod status with network/port info
-./scripts/jellyfin-status.sh            # Service-specific status
-./scripts/collect-storage-info.sh       # Storage diagnostics
-
-# Auto-documentation (regenerate all architecture docs)
-./scripts/auto-doc-orchestrator.sh       # Run all generators (2s complete run)
-./scripts/generate-service-catalog-simple.sh   # Service inventory
-./scripts/generate-network-topology.sh         # Network diagrams (Mermaid)
-./scripts/generate-dependency-graph.sh         # Service dependencies
-./scripts/generate-doc-index.sh                # Documentation index (256 files)
+# Most critical operations
+./scripts/homelab-intel.sh                     # Health scoring (0-100) + recommendations
+./scripts/query-homelab.sh "<natural language>" # Query system state (cached)
+./scripts/autonomous-check.sh --verbose        # OODA loop assessment
+./scripts/check-drift.sh [service]             # Config drift detection
+./scripts/security-audit.sh                    # Security baseline check
+./scripts/auto-doc-orchestrator.sh             # Regenerate all docs (~2s)
 ```
-
-**Drift Detection Categories:**
-- ✓ MATCH - Configuration matches quadlet definition
-- ✗ DRIFT - Mismatch requiring reconciliation (restart service)
-- ⚠ WARNING - Minor differences (informational only)
-
-**What is checked:** Image version, memory limits, networks, volumes, Traefik labels
 
 ### SLO Monitoring
 
-**Dashboard:** https://grafana.patriark.org/d/slo-dashboard
+**9 SLOs across 5 services.** Full targets, queries, and dashboard: `docs/40-monitoring-and-documentation/guides/slo-framework.md`
 
 ```bash
-# Query SLO metrics
-curl 'http://localhost:9090/api/v1/query?query=slo:jellyfin:availability:actual'
-
-# Run monthly SLO report
-~/containers/scripts/monthly-slo-report.sh
-
-# Check schedule
-systemctl --user list-timers | grep monthly-slo-report
+# Dashboard: https://grafana.patriark.org/d/slo-dashboard
+~/containers/scripts/monthly-slo-report.sh  # Generate SLO report
 ```
 
-**SLO Targets (9 SLOs across 5 services):**
-- Jellyfin: 99.5% availability, 95% latency <500ms
-- Immich: 99.9% availability, 99.5% upload success
-- Authelia: 99.9% availability, 95% latency <200ms
-- Traefik: 99.95% availability, 99% latency <100ms
-- OCIS: 99.5% availability
+### Loki Log Analysis
 
-**Documentation:** `docs/40-monitoring-and-documentation/guides/slo-framework.md`
+**Remediation decisions and Traefik access logs ingested into Loki.** LogQL queries for analysis, correlation, and loop detection: `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
 
-### Loki Log Queries for Remediation Analysis
-
-**Remediation decision logs and Traefik access logs are ingested into Loki for powerful analysis.**
-
-**Access:** https://grafana.patriark.org/explore
-
-**Common Queries:**
-
-```logql
-# All remediation actions
-{job="remediation-decisions"}
-
-# Remediation failures with errors
-{job="remediation-decisions"} | json | success="false"
-| line_format "{{.alert}} → {{.playbook}}: {{.stderr_preview}}"
-
-# Remediation success rate (last 24h)
-(
-  sum(count_over_time({job="remediation-decisions"} | json | success="true" [24h]))
-  /
-  sum(count_over_time({job="remediation-decisions"}[24h]))
-) * 100
-
-# Remediation rate by playbook
-sum by (playbook) (rate({job="remediation-decisions"}[5m]))
-
-# Traefik errors by service
-{job="traefik-access"} | json | status >= 500
-| line_format "{{.service}}: {{.path}} ({{.status}})"
-
-# Correlate remediation with user impact
-# Step 1: Find remediation timestamp
-{job="remediation-decisions", alert=~".*Jellyfin"}
-# Step 2: Check Traefik errors before/after
-{job="traefik-access", service="jellyfin@docker"} | json | status >= 500
-
-# Loop detection (rapid remediation)
-sum by (alert) (count_over_time({job="remediation-decisions"}[15m])) > 3
-```
-
-**Full Query Guide:** `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
+**Explore:** https://grafana.patriark.org/explore
 
 ### System Health Reference
 
@@ -439,54 +340,24 @@ curl -f http://localhost:3100/ready            # Loki
 
 ## Autonomous Operations
 
-**OODA Loop:** Daily automated Observe → Orient → Decide → Act cycle with safety controls.
+**OODA Loop:** Daily automated Observe → Orient → Decide → Act cycle. Full framework details: `docs/20-operations/guides/autonomous-operations.md`
 
 ```bash
 # Status and control
-~/containers/scripts/autonomous-execute.sh --status
-~/containers/scripts/autonomous-check.sh --verbose  # Assessment only
-~/containers/scripts/autonomous-execute.sh --from-check --dry-run
-
-# Emergency controls
-~/containers/scripts/autonomous-execute.sh --pause   # Stop autonomous actions
-~/containers/scripts/autonomous-execute.sh --stop    # Full shutdown
-~/containers/scripts/autonomous-execute.sh --resume  # Resume operations
+~/containers/scripts/autonomous-check.sh --verbose   # Assessment only
+~/containers/scripts/autonomous-execute.sh --status  # Current state
+~/containers/scripts/autonomous-execute.sh --pause   # Emergency stop
 
 # Decision history
-~/containers/.claude/context/scripts/query-decisions.sh --last 7d
-~/containers/.claude/context/scripts/query-decisions.sh --outcome failure
-~/containers/.claude/context/scripts/query-decisions.sh --stats
+~/containers/.claude/context/scripts/query-decisions.sh --last 7d --stats
 ```
 
-**Automation:**
-- Predictive maintenance: Daily at 06:00 via `predictive-maintenance-check.timer`
-- OODA loop assessment: Daily at 06:30 via `autonomous-operations.timer`
+**Key Features:**
+- **Predictive maintenance:** Forecasts resource exhaustion 7-14 days ahead (>60% confidence threshold)
+- **Alert-driven remediation:** Webhook integration with Alertmanager (conservative, safe operations only)
+- **Safety controls:** Circuit breaker, service overrides (traefik/authelia), BTRFS snapshots, confidence-based decisions (>90%)
 
-**Predictive Maintenance Integration (Phase 3):**
-- Forecasts resource exhaustion 7-14 days in advance
-- Triggers preemptive `predictive-maintenance` playbook when severity is critical/warning
-- Minimum prediction confidence threshold: 60%
-- Decision confidence factors: prediction confidence (primary), historical success, impact certainty
-- Prevents resource exhaustion before it becomes critical
-
-**Alert-Driven Remediation (Phase 4):**
-- Alertmanager webhooks trigger automatic remediation when alerts fire
-- Webhook handler: `remediation-webhook.service` (localhost:9096)
-- Conservative routing: Only auto-remediate safe operations (disk cleanup, service restarts)
-- Safety controls: Rate limiting (5/hour), idempotency (5min window), circuit breaker (3 failures)
-- Dual notification: Auto-remediable alerts go to BOTH webhook handler AND Discord
-- Monitored alerts: SystemDiskSpace*, ContainerNotRunning, ContainerMemoryPressure, CrowdSecDown
-- Test integration: `~/containers/scripts/test-webhook-remediation.sh`
-
-**Safety Features:**
-- Circuit breaker (pauses after 3 consecutive failures)
-- Service overrides (traefik, authelia never auto-restart)
-- Pre-action BTRFS snapshots for instant rollback
-- Confidence-based decision matrix (>90% + low risk → auto-execute)
-- Cooldown periods per action type
-- Prediction confidence filtering (only acts on >60% confidence forecasts)
-
-**Documentation:** `docs/20-operations/guides/autonomous-operations.md`
+**Automation:** Daily at 06:00 (predictive) and 06:30 (OODA) via systemd timers
 
 ## Skills & Automation
 
@@ -502,36 +373,18 @@ curl -f http://localhost:3100/ready            # Loki
 
 ## Security & Runbooks
 
-### Security Framework
-
+**Security operations:**
 ```bash
-# Security operations
-~/containers/scripts/security-audit.sh                          # Comprehensive audit
+~/containers/scripts/security-audit.sh               # Comprehensive audit (40+ checks)
 ~/containers/scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
-ls -lh ~/containers/data/security-reports/
-systemctl --user status vulnerability-scan.timer                # Check schedule
 ```
 
-**Automated Security:**
-- Weekly vulnerability scanning (Sundays 06:00)
-- ADR compliance validation
-- Security baseline enforcement in deployments
+**Automated:** Weekly vulnerability scanning (Sundays 06:00), ADR compliance validation
 
-### Runbooks
-
-**Disaster Recovery** (`docs/20-operations/runbooks/`):
-- **DR-001:** System SSD Failure
-- **DR-002:** BTRFS Pool Corruption
-- **DR-003:** Accidental Deletion
-- **DR-004:** Total Catastrophe (bare metal rebuild)
-
-**Incident Response** (`docs/30-security/runbooks/`):
-- **IR-001:** Brute Force Attack
-- **IR-002:** Unauthorized Port Exposed
-- **IR-003:** Critical CVE in Running Container
-- **IR-004:** Compliance Failure
-
-Each runbook includes detection criteria, step-by-step procedures, recovery time estimates, and verification steps.
+**Runbooks:** 9 total (4 DR, 4 IR, + procedures). See:
+- **Disaster Recovery:** `docs/20-operations/runbooks/` (DR-001 through DR-004)
+- **Incident Response:** `docs/30-security/runbooks/` (IR-001 through IR-004)
+- **Security Guides:** `docs/30-security/guides/` (7 guides including CrowdSec phases, SSH hardening, secrets management)
 
 ## Troubleshooting
 
@@ -580,23 +433,27 @@ Each runbook includes detection criteria, step-by-step procedures, recovery time
 
 ## Architecture Decision Records (ADRs)
 
-**Key decisions shaping this homelab** (see `docs/*/decisions/` for full details):
+**15 ADRs documenting architectural decisions** (see `docs/*/decisions/` for full details)
 
-- **ADR-001: Rootless Containers** - All containers run as unprivileged user (UID 1000), not root. Requires `:Z` SELinux labels. ✅ Production
-- **ADR-002: Systemd Quadlets Over Docker Compose** - Native systemd integration for unified logging and dependency management. ✅ Production
-- **ADR-003: Monitoring Stack (Prometheus + Grafana + Loki)** - Industry-standard observability with ~340MB RAM overhead. ✅ Production
-- **ADR-004: Immich Deployment Architecture** - Multi-container photo management with GPU transcoding and machine learning. ✅ Production
-- **ADR-005: Authelia SSO & MFA Architecture** - Initial SSO design with multi-factor authentication. ✅ Production (superseded by ADR-006)
-- **ADR-006: Authelia SSO with YubiKey-First Authentication** - Phishing-resistant hardware auth via FIDO2/WebAuthn, replacing TinyAuth. ✅ Production
-- **ADR-007: Vaultwarden Architecture** - Self-hosted password manager with Bitwarden compatibility. ✅ Production
-- **ADR-008: CrowdSec Security Architecture** - IP reputation and threat intelligence with fail-fast middleware ordering. ✅ Production
-- **ADR-009: Config vs Data Directory Strategy** - Storage organization principles for containers. ✅ Production
-- **ADR-010: Pattern-Based Deployment** - Automated service deployment with validation and health checks. ✅ Production
-- **ADR-011: Service Dependency Mapping** - Automated dependency discovery for autonomous operations. ✅ Production
-- **ADR-012: Autonomous Operations Alert Quality** - SLO-based alerting and prediction system with confidence-based decision making. ✅ Production
-- **ADR-013: Nextcloud Native Authentication** - CalDAV/CardDAV compatibility requires native auth instead of Authelia SSO. ✅ Production
-- **ADR-014: Nextcloud Passwordless Authentication** - FIDO2/WebAuthn passwordless authentication for superior security. ✅ Production
-- **ADR-015: Container Update Strategy** - State-of-the-art approach with `:latest` tags for most services, strategic pinning for databases. ✅ Production
+**Design-Guiding ADRs (affect future decisions):**
+- **ADR-001: Rootless Containers** - All containers run as unprivileged user (UID 1000). Requires `:Z` SELinux labels on all volume mounts.
+- **ADR-002: Systemd Quadlets Over Docker Compose** - Native systemd integration for unified logging and dependency management.
+- **ADR-003: Monitoring Stack** - Prometheus + Grafana + Loki for observability (~340MB RAM overhead).
+- **ADR-006: YubiKey-First Authentication** - Phishing-resistant hardware auth via FIDO2/WebAuthn for Authelia SSO.
+- **ADR-008: CrowdSec Security Architecture** - IP reputation with fail-fast middleware ordering (cheapest checks first).
+- **ADR-009: Config vs Data Directory Strategy** - Storage organization: `/config` (version-controlled), `/data` (ephemeral/large).
+- **ADR-010: Pattern-Based Deployment** - Automated service deployment using 9 battle-tested patterns with validation.
+- **ADR-016: Configuration Design Principles** - **CRITICAL:** Separation of concerns (quadlets = deployment, Traefik = routing). ALL Traefik routing in dynamic config files, NEVER in labels.
+
+**Supporting ADRs (implementation details):**
+- ADR-004: Immich Deployment (multi-container, GPU/ML)
+- ADR-005: Authelia SSO (superseded by ADR-006)
+- ADR-007: Vaultwarden (self-hosted password manager)
+- ADR-011: Service Dependency Mapping
+- ADR-012: Autonomous Operations Alert Quality
+- ADR-013: Nextcloud Native Authentication
+- ADR-014: Nextcloud Passwordless Auth
+- ADR-015: Container Update Strategy (`:latest` tags + strategic pinning)
 
 **Using ADRs:**
 1. Check if an ADR exists explaining the current approach before proposing changes
@@ -611,6 +468,30 @@ Each runbook includes detection criteria, step-by-step procedures, recovery time
 This decision has been superseded by [ADR-XXX](path/to/new-adr.md)
 due to [reason for change].
 ```
+
+## Quick Reference
+
+**Architecture & Services:**
+- Complete service catalog: `AUTO-SERVICE-CATALOG.md` (updated daily)
+- Network topology: `AUTO-NETWORK-TOPOLOGY.md` (diagrams, 5 networks)
+- Service dependencies: `AUTO-DEPENDENCY-GRAPH.md` (4-tier graph, critical paths)
+- Architecture overview: `docs/20-operations/guides/homelab-architecture.md`
+
+**Operations & Automation:**
+- Script catalog: `docs/20-operations/guides/automation-reference.md` (65 scripts)
+- Autonomous operations: `docs/20-operations/guides/autonomous-operations.md`
+- Drift detection: `docs/20-operations/guides/drift-detection-workflow.md`
+- Dependency management: `docs/20-operations/guides/dependency-management.md`
+
+**Monitoring & Security:**
+- SLO framework: `docs/40-monitoring-and-documentation/guides/slo-framework.md` (9 SLOs)
+- Monitoring stack: `docs/40-monitoring-and-documentation/guides/monitoring-stack.md`
+- Loki queries: `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
+- Security guides: `docs/30-security/guides/` (7 guides + 4 runbooks)
+
+**Documentation:**
+- Complete index: `AUTO-DOCUMENTATION-INDEX.md` (298 files)
+- Contributing guide: `CONTRIBUTING.md`
 
 ## Common Gotchas & Solutions
 
@@ -697,98 +578,32 @@ find ~/containers/data/backup-logs/ -name "*.log" -mtime +30 -delete
 
 ## Documentation & Git Workflow
 
-### Documentation Structure
+**Documentation Structure:** Hybrid - topical reference + chronological learning logs. See `CONTRIBUTING.md` for conventions.
 
-The `docs/` directory uses a **hybrid structure** combining topical reference with chronological learning logs.
+**Key directories:**
+- `00-40/` - Topical guides, ADRs, runbooks (living reference)
+- `97-plans/` - Strategic planning (forward-looking)
+- `98-journals/` - Complete project timeline (immutable, append-only)
+- `99-reports/` - Automated reports + infrastructure snapshots
+- `90-archive/` - Superseded documentation
 
-**Directory Organization:**
-- `97-plans/` - Strategic planning documents (forward-looking)
-- `98-journals/` - Complete chronological history (flat, all dated entries)
-- `99-reports/` - Automated system reports + formal snapshots
-- `00-foundation/` - Podman, networking, pods, quadlets fundamentals
-- `10-services/` - Service-specific guides
-- `20-operations/` - Operational procedures, architecture, backup strategy
-- `30-security/` - Security configurations, hardening, runbooks
-- `40-monitoring-and-documentation/` - Monitoring stack, SLO framework
-- `90-archive/` - Superseded documentation (with archival metadata)
+**Auto-Generated Docs (updated daily 07:00):**
+- `AUTO-SERVICE-CATALOG.md` - Service inventory, status, resources
+- `AUTO-NETWORK-TOPOLOGY.md` - Network diagrams (Mermaid)
+- `AUTO-DEPENDENCY-GRAPH.md` - 4-tier dependency graph, critical paths
+- `AUTO-DOCUMENTATION-INDEX.md` - Complete catalog (298 files)
 
-**Three-Tier Documentation:**
-1. **Forward-looking** (`97-plans/`) - Strategic plans and roadmaps
-2. **Historical** (`98-journals/`) - Chronological project timeline
-3. **Current state** (`*/guides/`) - Living reference documentation
+**Regenerate:** `~/containers/scripts/auto-doc-orchestrator.sh` (~2s)
 
-**Subdirectory Structure (for 00-40 categories):**
-- **`guides/`** - Living reference documentation (updated in place, no date prefix)
-- **`decisions/`** - Architecture Decision Records / ADRs (immutable, dated)
-- **`runbooks/`** - Disaster recovery and incident response (where applicable)
-
-**Documentation Policies:**
-1. **Guides are living** - Update in place when information changes
-2. **Journals are immutable** - Never edit after creation (append-only log)
-3. **Plans include status** - Updated with progress, archived manually
-4. **ADRs are permanent** - Architecture decisions never edited, only superseded
-5. **Reports are automated** - JSON reports or formal infrastructure snapshots
-6. **Archive with metadata** - Include archival reason and superseding document
-
-**Auto-Generated Documentation:**
-
-Four key architecture documents are auto-generated from live system state:
-
-- **`AUTO-SERVICE-CATALOG.md`** - Running services inventory (21 services)
-  - Status, networks, images, resource usage
-  - Updated: Daily at 07:00 via systemd timer
-
-- **`AUTO-NETWORK-TOPOLOGY.md`** - Network architecture diagrams
-  - Mermaid network topology (5 networks)
-  - Request flow sequence diagram
-  - Network segmentation documentation
-
-- **`AUTO-DEPENDENCY-GRAPH.md`** - Service dependency analysis
-  - 4-tier dependency graph (Critical → Infrastructure → Applications → Data)
-  - Critical path identification
-  - Startup order recommendations
-  - Impact analysis for failures
-
-- **`AUTO-DOCUMENTATION-INDEX.md`** - Complete documentation catalog
-  - Comprehensive index of 256 documentation files
-  - Categorized by directory structure
-  - Recently updated tracking (last 7 days)
-  - Quick search by service
-
-**Regenerate manually:** `~/containers/scripts/auto-doc-orchestrator.sh` (completes in ~2 seconds)
-
-**Automation:** Scheduled daily at 07:00 via `auto-doc-update.timer` (see `systemd/README.md`)
-
-**Full guide:** See `docs/CONTRIBUTING.md` for detailed conventions and templates.
-
-### Git Workflow
-
-**Branch naming:**
-- Features: `feature/description`
-- Bugfixes: `bugfix/description`
-- Documentation: `docs/description`
-- Hotfixes: `hotfix/description`
-
-**Standard workflow:**
+**Git Workflow:**
 ```bash
-# Start new work
-git checkout main && git pull origin main
-git checkout -b feature/your-feature
-
-# Commit changes
-git add <files>
-git commit -m "Descriptive message"  # GPG signing enabled
-
-# Push and create PR
-git push -u origin feature/your-feature
+git checkout main && git pull
+git checkout -b feature/description
+git add <files> && git commit -m "message"  # GPG signed
+git push -u origin feature/description
 ```
 
-**Merging strategy:**
-- "Squash and merge" for small changes
-- "Create merge commit" for feature branches
-- Auto-delete branches after merge
-
-**Security:** SSH authentication (Ed25519), GPG commit signing, strict host key checking enabled.
+**Security:** SSH (Ed25519), GPG signing, strict host key checking
 
 ## Secrets Management
 
