@@ -279,6 +279,136 @@
       "services_restarted": "",
       "oom_detected": 0,
       "root_cause": "script_error_line_1186"
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146065,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146140,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146536,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146702,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146717,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146736,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146794,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146806,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146878,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146889,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146933,
+      "duration": 1,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767146936,
+      "duration": 3,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767157265,
+      "duration": 2,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
     }
   ]
 }

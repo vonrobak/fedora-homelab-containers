@@ -436,11 +436,6 @@ Strict-Transport-Security: max-age=31536000
 ```bash
 # List snapshots in / and limit shown results to include text home - should be revised
 sudo btrfs subvolume list / | grep home
-
-# Current snapshots - this list is NOT complete and should be updated
-/home-before-authelia-20251111   # Before Authelia SSO migration
-/home-working-tinyauth-20251023  # Historical - After Tinyauth setup (now deprecated)
-/home-before-letsencrypt-*       # Before SSL setup
 ```
 
 ---

@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2025-12-30 23:03:30 UTC
-**Total Documents:** 288
+**Generated:** 2025-12-31 06:03:23 UTC
+**Total Documents:** 295
 
 ---
 
@@ -174,7 +174,7 @@
 
 ---
 
-### 98-journals/ (113 documents)
+### 98-journals/ (115 documents)
 
 **Chronological project history (append-only log)**
 
@@ -182,7 +182,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (12 documents)
+### 99-reports/ (17 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -200,11 +200,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2025-12-27: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
 - 2025-12-30: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 2025-12-30: [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
-- 2025-12-24: [2025-12-24-remediation-phase-3-autonomous-integration.md](98-journals/2025-12-24-remediation-phase-3-autonomous-integration.md)
-- 2025-12-24: [2025-12-24-remediation-phase-3-part-1-metrics-and-scheduling.md](98-journals/2025-12-24-remediation-phase-3-part-1-metrics-and-scheduling.md)
-- 2025-12-24: [2025-12-24-remediation-phase-4-alertmanager-webhooks.md](98-journals/2025-12-24-remediation-phase-4-alertmanager-webhooks.md)
 - 2025-12-25: [2025-12-24-remediation-phase-5-implementation.md](98-journals/2025-12-24-remediation-phase-5-implementation.md)
-- 2025-12-24: [2025-12-24-remediation-slo-critical-analysis.md](98-journals/2025-12-24-remediation-slo-critical-analysis.md)
 - 2025-12-25: [2025-12-25-remediation-phase-6-implementation.md](98-journals/2025-12-25-remediation-phase-6-implementation.md)
 - 2025-12-26: [2025-12-26-monitoring-alerting-investigation.md](98-journals/2025-12-26-monitoring-alerting-investigation.md)
 - 2025-12-26: [2025-12-26-monitoring-alerting-investigation-revised.md](98-journals/2025-12-26-monitoring-alerting-investigation-revised.md)
@@ -212,6 +208,10 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2025-12-26: [2025-12-26-phase2-loki-integration.md](98-journals/2025-12-26-phase2-loki-integration.md)
 - 2025-12-26: [2025-12-26-security-review-and-infrastructure-improvements.md](98-journals/2025-12-26-security-review-and-infrastructure-improvements.md)
 - 2025-12-30: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
+- 2025-12-30: [2025-12-30-matter-vs-zigbee-analysis.md](98-journals/2025-12-30-matter-vs-zigbee-analysis.md)
+- 2025-12-30: [2025-12-30-nextcloud-external-storage-optimization-investigation.md](98-journals/2025-12-30-nextcloud-external-storage-optimization-investigation.md)
+- 2025-12-31: [2025-12-31-nextcloud-security-jellyfin-selinux-fix.md](98-journals/2025-12-31-nextcloud-security-jellyfin-selinux-fix.md)
+- 2025-12-31: [2025-12-31-selinux-nested-mounts-and-nextcloud-permissions.md](98-journals/2025-12-31-selinux-nested-mounts-and-nextcloud-permissions.md)
 
 ---
 

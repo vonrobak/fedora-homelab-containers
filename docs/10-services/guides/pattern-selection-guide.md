@@ -350,16 +350,22 @@ middleware:
 For public services (media servers, blogs):
 
 ```bash
-# After deploying from pattern, edit quadlet:
-nano ~/.config/containers/systemd/jellyfin.container
+# After deploying from pattern, edit Traefik routing:
+nano ~/containers/config/traefik/dynamic/routers.yml
 
-# Remove authelia middleware from labels:
-Label=traefik.http.routers.jellyfin.middlewares=crowdsec-bouncer@file,rate-limit-public@file,security-headers@file
+# Find the router for your service (e.g., jellyfin-secure:)
+# Remove authelia middleware from the middlewares list:
+middlewares:
+  - crowdsec-bouncer@file
+  - rate-limit-public@file
+  # - authelia@file  (REMOVED)
+  - security-headers@file
 
-# Apply:
-systemctl --user daemon-reload
-systemctl --user restart jellyfin.service
+# Traefik will auto-reload in ~60s, or force reload:
+podman exec traefik kill -SIGHUP 1
 ```
+
+**Why edit routers.yml?** Per ADR-016 (Separation of Concerns), Traefik routing is defined in dynamic config files, NOT quadlet labels. This ensures centralized security enforcement and single source of truth.
 
 ### Adding GPU Access
 

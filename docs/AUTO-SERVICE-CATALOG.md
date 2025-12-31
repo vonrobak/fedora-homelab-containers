@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2025-12-30 23:03:28 UTC
+**Generated:** 2025-12-31 06:03:21 UTC
 **System:** fedora-htpc
 
 ---
@@ -14,24 +14,24 @@
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
 | homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
-| nextcloud-redis | redis:7-alpine | ✅ Up | nextcloud,monitoring |
+| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
-| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
+| loki | grafana/loki:latest | ✅ Up | reverse_proxy,monitoring |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
+| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
+| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
-| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
-| grafana | grafana/grafana:latest | ✅ Up | reverse_proxy,monitoring |
-| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
+| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | reverse_proxy,monitoring,photos |
 
 ---
 
@@ -39,7 +39,7 @@
 
 - **Total Running:** 23
 - **Total Defined:** 23
-- **System Load:**  1,65, 3,03, 3,17
+- **System Load:**  0,54, 0,34, 0,30
 
 ---
 

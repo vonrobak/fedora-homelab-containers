@@ -230,6 +230,148 @@ generate_quadlet() {
 }
 
 ##############################################################################
+# Traefik Routing Generation
+##############################################################################
+
+generate_traefik_routing() {
+    local traefik_template="${PATTERN_VARS[traefik_template]}"
+
+    echo -e "${BLUE}=== Generating Traefik Routing ===${NC}"
+    echo ""
+
+    # Skip if no Traefik routing needed
+    if [[ -z "$traefik_template" || "$traefik_template" == "none" ]]; then
+        echo -e "${CYAN}ℹ${NC} No Traefik routing (internal service)"
+        echo ""
+        return 0
+    fi
+
+    local template_file="${TEMPLATES_DIR}/traefik/${traefik_template}"
+    local output_file="/tmp/${SERVICE_NAME}-traefik.yml"
+
+    if [[ ! -f "$template_file" ]]; then
+        echo -e "${RED}✗${NC} Traefik template not found: ${traefik_template}"
+        exit 1
+    fi
+
+    # Substitute variables (including PORT and HEALTH_PATH with defaults)
+    local port="${PATTERN_VARS[port]:-8080}"
+    local health_path="${PATTERN_VARS[health_path]:-/}"
+
+    cp "$template_file" "$output_file"
+    sed -i "s/{{SERVICE_NAME}}/${SERVICE_NAME}/g" "$output_file"
+    sed -i "s/{{HOSTNAME}}/${HOSTNAME}/g" "$output_file"
+    sed -i "s/{{PORT}}/${port}/g" "$output_file"
+    sed -i "s/{{HEALTH_PATH}}/${health_path}/g" "$output_file"
+
+    # Extract just the router and service definitions (skip the "http:" wrapper and comments)
+    local routers_file="${HOME}/containers/config/traefik/dynamic/routers.yml"
+
+    if [[ ! -f "$routers_file" ]]; then
+        echo -e "${RED}✗${NC} Traefik routers.yml not found: ${routers_file}"
+        exit 1
+    fi
+
+    # Backup routers.yml
+    cp "$routers_file" "${routers_file}.backup-$(date +%Y%m%d-%H%M%S)"
+
+    echo -e "${GREEN}✓${NC} Traefik routing generated: $output_file"
+
+    if [[ "$VERBOSE" == "true" ]]; then
+        echo ""
+        echo "Preview:"
+        cat "$output_file"
+    fi
+
+    echo ""
+}
+
+append_to_routers() {
+    local traefik_template="${PATTERN_VARS[traefik_template]}"
+
+    # Skip if no routing to append
+    if [[ -z "$traefik_template" || "$traefik_template" == "none" ]]; then
+        return 0
+    fi
+
+    local rendered_config="/tmp/${SERVICE_NAME}-traefik.yml"
+    local routers_file="${HOME}/containers/config/traefik/dynamic/routers.yml"
+
+    if [[ ! -f "$rendered_config" ]]; then
+        echo -e "${YELLOW}⚠${NC} No Traefik config to append"
+        return 0
+    fi
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo -e "${YELLOW}[DRY RUN]${NC} Would append to: $routers_file"
+        return 0
+    fi
+
+    echo -e "${BLUE}=== Updating Traefik Configuration ===${NC}"
+    echo ""
+
+    # Extract router and service definitions from template (strip "http:" wrapper)
+    local temp_routers="/tmp/${SERVICE_NAME}-routers.extract"
+    local temp_services="/tmp/${SERVICE_NAME}-services.extract"
+
+    # Extract routers section (between "routers:" and "services:")
+    sed -n '/^  routers:/,/^  services:/p' "$rendered_config" | \
+        grep -v "^  routers:" | \
+        grep -v "^  services:" > "$temp_routers"
+
+    # Extract services section (from "services:" to end)
+    sed -n '/^  services:/,$p' "$rendered_config" | \
+        grep -v "^  services:" > "$temp_services"
+
+    # Append to routers.yml under appropriate sections
+    # Find the routers section and append
+    echo "" >> "$routers_file"
+    echo "    # ${SERVICE_NAME} (added $(date +%Y-%m-%d))" >> "$routers_file"
+    cat "$temp_routers" >> "$routers_file"
+
+    # Find the services section and append
+    # Note: This assumes routers.yml has http.routers and http.services sections
+    # We need to insert under http.services, not create a new http: block
+    if grep -q "^  services:" "$routers_file"; then
+        # Append to existing services section
+        echo "" >> "$routers_file"
+        echo "    # ${SERVICE_NAME} (added $(date +%Y-%m-%d))" >> "$routers_file"
+        cat "$temp_services" >> "$routers_file"
+    fi
+
+    # Cleanup temp files
+    rm -f "$temp_routers" "$temp_services" "$rendered_config"
+
+    echo -e "${GREEN}✓${NC} Routing added to routers.yml"
+    echo ""
+}
+
+reload_traefik() {
+    local traefik_template="${PATTERN_VARS[traefik_template]}"
+
+    # Skip if no routing was added
+    if [[ -z "$traefik_template" || "$traefik_template" == "none" ]]; then
+        return 0
+    fi
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo -e "${YELLOW}[DRY RUN]${NC} Would reload Traefik"
+        return 0
+    fi
+
+    echo -e "${BLUE}=== Reloading Traefik ===${NC}"
+    echo ""
+
+    if podman exec traefik kill -SIGHUP 1 2>/dev/null; then
+        echo -e "${GREEN}✓${NC} Traefik reloaded (SIGHUP)"
+    else
+        echo -e "${CYAN}ℹ${NC} Traefik will auto-reload in ~60s"
+    fi
+
+    echo ""
+}
+
+##############################################################################
 # Prerequisites Check
 ##############################################################################
 
@@ -328,6 +470,7 @@ deploy_service() {
 
 show_post_deployment() {
     local pattern_file="${PATTERNS_DIR}/${PATTERN}.yml"
+    local traefik_template="${PATTERN_VARS[traefik_template]}"
 
     echo -e "${BLUE}=== Post-Deployment Checklist ===${NC}"
     echo ""
@@ -340,11 +483,28 @@ show_post_deployment() {
     else
         echo "  ☐ Verify service is running: systemctl --user status ${SERVICE_NAME}.service"
         echo "  ☐ Check logs: journalctl --user -u ${SERVICE_NAME}.service -f"
-        echo "  ☐ Test access: https://${HOSTNAME}"
+
+        # Add routing check if Traefik routing was configured
+        if [[ -n "$traefik_template" && "$traefik_template" != "none" ]]; then
+            echo "  ☐ Verify routing: grep -A 10 '${SERVICE_NAME}-secure' ~/containers/config/traefik/dynamic/routers.yml"
+            echo "  ☐ Test external access: curl -I https://${HOSTNAME}"
+        fi
     fi
 
     echo ""
     echo -e "${GREEN}✓ Deployment complete!${NC}"
+
+    # Show service access info
+    if [[ -n "$traefik_template" && "$traefik_template" != "none" ]]; then
+        echo ""
+        echo "  Service: systemctl --user status ${SERVICE_NAME}.service"
+        echo "  Access:  https://${HOSTNAME}"
+    else
+        echo ""
+        echo "  Service: systemctl --user status ${SERVICE_NAME}.service"
+        echo "  Note:    Internal service (no external routing)"
+    fi
+
     echo ""
 }
 
@@ -494,9 +654,12 @@ main() {
     # Workflow
     run_health_check
     generate_quadlet
+    generate_traefik_routing
     run_prerequisites_check
     validate_quadlet
     deploy_service
+    append_to_routers
+    reload_traefik
     log_deployment_to_context
     show_post_deployment
 }
