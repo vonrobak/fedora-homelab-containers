@@ -63,16 +63,17 @@ groups:
           description: "Restore test hasn't run in {{ $value | humanizeDuration }}. Should run monthly (last Sunday)."
 
       # Warning: Low snapshot count (may indicate cleanup issues)
-      - alert: LowSnapshotCount
-        expr: backup_snapshot_count{location="local"} < 2
-        for: 1h
-        labels:
-          severity: warning
-          category: backup
-          component: btrfs-snapshot-backup
-        annotations:
-          summary: "Low snapshot count for {{ $labels.subvolume }}"
-          description: "Only {{ $value }} local snapshots for {{ $labels.subvolume }}. Expected at least 3-7."
+      # DISABLED: User monitors this via Grafana dashboard, Discord alerts not needed
+      # - alert: LowSnapshotCount
+      #   expr: backup_snapshot_count{location="local"} < 2
+      #   for: 1h
+      #   labels:
+      #     severity: warning
+      #     category: backup
+      #     component: btrfs-snapshot-backup
+      #   annotations:
+      #     summary: "Low snapshot count for {{ $labels.subvolume }}"
+      #     description: "Only {{ $value }} local snapshots for {{ $labels.subvolume }}. Expected at least 3-7."
 
       # Warning: External backup missing
       - alert: ExternalBackupMissing

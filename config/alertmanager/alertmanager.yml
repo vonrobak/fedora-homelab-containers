@@ -163,8 +163,3 @@ inhibit_rules:
     target_match_re:
       alertname: '.*(Down|Unhealthy|Unavailable).*'
     equal: ['instance']
-
-  # Suppress snapshot count alerts (monitored via Grafana dashboard instead)
-  # User has dedicated Grafana panels for local + external snapshot counts
-  - target_match_re:
-      alertname: '^(LowSnapshotCount|ExternalBackupMissing)$'
