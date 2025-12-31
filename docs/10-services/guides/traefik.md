@@ -20,6 +20,22 @@ Traefik is the **gateway to all homelab services**, providing:
 
 ---
 
+## 🚨 IMPORTANT: Routing Configuration Philosophy (ADR-016)
+
+**ALL Traefik routing is defined in dynamic config files (`~/containers/config/traefik/dynamic/routers.yml`), NEVER in container labels.**
+
+**Why?**
+- ✅ **Separation of concerns** - Quadlets define deployment, Traefik files define routing
+- ✅ **Centralized security** - All routes auditable in one 248-line file
+- ✅ **Fail-fast enforcement** - Middleware ordering (CrowdSec → Rate Limit → Auth → Headers) guaranteed
+- ✅ **Single source of truth** - No label/config sync issues
+
+**See:** ADR-016 (Configuration Design Principles), ADR-002 (Systemd Quadlets), CLAUDE.md
+
+**Note:** Historical sections below may reference container labels - these are deprecated. Use dynamic config files instead.
+
+---
+
 ## Quick Reference
 
 ### Access Points

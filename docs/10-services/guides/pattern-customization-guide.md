@@ -203,19 +203,25 @@ podman exec jellyfin ls /media/music
   --service-name jellyfin \
   --memory 4G
 
-# 2. Edit quadlet
-nano ~/.config/containers/systemd/jellyfin.container
+# 2. Edit Traefik routing (NOT quadlet - ADR-016 separation of concerns)
+nano ~/containers/config/traefik/dynamic/routers.yml
 
-# 3. Find Traefik middleware label
+# 3. Find jellyfin-secure router and remove authelia middleware
 # BEFORE:
-Label=traefik.http.routers.jellyfin.middlewares=crowdsec-bouncer@file,rate-limit-public@file,authelia@docker,security-headers@file
+middlewares:
+  - crowdsec-bouncer@file
+  - rate-limit-public@file
+  - authelia@file
+  - security-headers@file
 
-# AFTER (remove authelia@docker):
-Label=traefik.http.routers.jellyfin.middlewares=crowdsec-bouncer@file,rate-limit-public@file,security-headers@file
+# AFTER (remove authelia):
+middlewares:
+  - crowdsec-bouncer@file
+  - rate-limit-public@file
+  - security-headers@file
 
-# 4. Apply
-systemctl --user daemon-reload
-systemctl --user restart jellyfin.service
+# 4. Reload Traefik (auto-reloads in ~60s, or force reload)
+podman exec traefik kill -SIGHUP 1
 
 # 5. Verify public access
 curl https://jellyfin.patriark.org
@@ -601,8 +607,8 @@ AddDevice=/dev/dri/renderD128
 Volume=/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia:Z,ro
 Volume=/mnt/btrfs-pool/subvol5-music:/media/music:Z,ro
 
-# PATTERN DEFAULT: Traefik routing
-Label=traefik.enable=true
+# NOTE: Traefik routing is in ~/containers/config/traefik/dynamic/routers.yml
+# (Per ADR-016: Separation of concerns - routing NOT in quadlet labels)
 ...
 ```
 
