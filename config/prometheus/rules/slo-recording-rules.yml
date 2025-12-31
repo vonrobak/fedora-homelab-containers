@@ -171,7 +171,7 @@ groups:
 
       - record: slo:jellyfin:availability:compliant
         expr: |
-          slo:jellyfin:availability:actual >= slo:jellyfin:availability:target
+          slo:jellyfin:availability:actual >= bool slo:jellyfin:availability:target
 
       # Immich - 99.9% availability target over 30 days
       - record: slo:immich:availability:target
@@ -187,7 +187,7 @@ groups:
 
       - record: slo:immich:availability:compliant
         expr: |
-          slo:immich:availability:actual >= slo:immich:availability:target
+          slo:immich:availability:actual >= bool slo:immich:availability:target
 
       # Authelia - 99.9% availability target over 30 days
       - record: slo:authelia:availability:target
@@ -203,7 +203,7 @@ groups:
 
       - record: slo:authelia:availability:compliant
         expr: |
-          slo:authelia:availability:actual >= slo:authelia:availability:target
+          slo:authelia:availability:actual >= bool slo:authelia:availability:target
 
       # Nextcloud - 99.5% availability target over 30 days
       - record: slo:nextcloud:availability:target
@@ -219,7 +219,7 @@ groups:
 
       - record: slo:nextcloud:availability:compliant
         expr: |
-          slo:nextcloud:availability:actual >= slo:nextcloud:availability:target
+          slo:nextcloud:availability:actual >= bool slo:nextcloud:availability:target
 
       # Traefik - 99.95% availability target over 30 days
       - record: slo:traefik:availability:target
@@ -231,7 +231,7 @@ groups:
 
       - record: slo:traefik:availability:compliant
         expr: |
-          slo:traefik:availability:actual >= slo:traefik:availability:target
+          slo:traefik:availability:actual >= bool slo:traefik:availability:target
 
   # ===========================================================================
   # ERROR BUDGET TRACKING

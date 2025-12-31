@@ -64,13 +64,20 @@ nextcloud_compliant=$(query_prom 'slo:nextcloud:availability:compliant')
 # ============================================================================
 log_section "Formatting report..."
 
-# Helper function to format percentage
+# Helper function to format percentage (handles negative/over-budget values)
 format_pct() {
     local val="$1"
     if [ "$val" = "null" ] || [ -z "$val" ]; then
         echo "N/A"
     else
-        echo "$val" | awk '{printf "%.2f%%", $1 * 100}'
+        # Check if negative (over-budget scenario)
+        local is_negative=$(echo "$val < 0" | bc -l 2>/dev/null || echo "0")
+        if [ "$is_negative" = "1" ]; then
+            echo "0.00% (exhausted)"
+        else
+            # Use awk for reliable number formatting
+            echo "$val" | awk '{printf "%.2f%%", $1 * 100}'
+        fi
     fi
 }
 
