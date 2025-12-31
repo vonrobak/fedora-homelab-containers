@@ -16,9 +16,8 @@ Network=systemd-media_services
 Network=systemd-monitoring
 
 # AMD Radeon Vega GPU Hardware Acceleration
-# APU needs both card and render node
-AddDevice=/dev/dri/card1
 AddDevice=/dev/dri/renderD128
+AddDevice=/dev/dri/card1
 
 # Environment
 Environment=TZ=Europe/Oslo
@@ -34,9 +33,9 @@ Volume=/mnt/btrfs-pool/subvol7-containers/jellyfin/data:/data:Z
 Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-cache:/cache:Z
 Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes:/config/transcodes:Z
 
-# Media Libraries (read-only)
-Volume=/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia:ro,Z
-Volume=/mnt/btrfs-pool/subvol5-music:/media/music:ro,Z
+# Media Libraries (read-only, shared with Nextcloud)
+Volume=/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia:ro,z
+Volume=/mnt/btrfs-pool/subvol5-music:/media/music:ro,z
 
 # Ports
 PublishPort=8096:8096
