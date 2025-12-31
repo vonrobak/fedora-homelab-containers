@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-29T06:07:56+01:00",
+  "generated_at": "2025-12-31T00:02:32+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -664,17 +664,17 @@
         "alert-discord-relay",
         "cadvisor",
         "promtail",
-        "grafana",
         "nextcloud-db",
-        "alertmanager",
-        "nextcloud",
         "traefik",
+        "grafana",
         "nextcloud-redis",
         "loki",
+        "alertmanager",
         "node_exporter",
+        "nextcloud",
         "immich-server",
-        "prometheus",
-        "jellyfin"
+        "jellyfin",
+        "prometheus"
       ],
       "gateway": false
     },
@@ -682,8 +682,8 @@
       "members": [
         "collabora",
         "nextcloud-db",
-        "nextcloud",
-        "nextcloud-redis"
+        "nextcloud-redis",
+        "nextcloud"
       ],
       "gateway": false
     },
@@ -691,26 +691,26 @@
       "members": [
         "redis-immich",
         "postgresql-immich",
-        "immich-ml",
-        "immich-server"
+        "immich-server",
+        "immich-ml"
       ],
       "gateway": false
     },
     "systemd-reverse_proxy": {
       "members": [
-        "grafana",
-        "collabora",
         "vaultwarden",
         "homepage",
         "authelia",
-        "alertmanager",
-        "nextcloud",
+        "collabora",
         "traefik",
+        "grafana",
         "loki",
+        "alertmanager",
         "crowdsec",
+        "nextcloud",
         "immich-server",
-        "prometheus",
-        "jellyfin"
+        "jellyfin",
+        "prometheus"
       ],
       "gateway": true
     }

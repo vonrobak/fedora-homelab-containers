@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2025-12-29 06:01:26 UTC
-**Total Documents:** 280
+**Generated:** 2025-12-30 23:03:30 UTC
+**Total Documents:** 288
 
 ---
 
@@ -72,7 +72,7 @@
 
 ---
 
-### 20-operations/ (24 documents)
+### 20-operations/ (25 documents)
 
 **Operational procedures, runbooks, and architecture**
 
@@ -89,6 +89,7 @@
 - [health-driven-operations.md](20-operations/guides/health-driven-operations.md)
 - [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - [memory-management.md](20-operations/guides/memory-management.md)
+- [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
 - [remediation-chains.md](20-operations/guides/remediation-chains.md)
 - [resource-limits-configuration.md](20-operations/guides/resource-limits-configuration.md)
 - [storage-layout.md](20-operations/guides/storage-layout.md)
@@ -144,12 +145,14 @@
 
 ---
 
-### 97-plans/ (21 documents)
+### 97-plans/ (23 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-11-10-authelia-implementation-plan.md](97-plans/2025-11-10-authelia-implementation-plan.md)
 - 📋 [2025-11-10-authelia-implementation-plan-revised.md](97-plans/2025-11-10-authelia-implementation-plan-revised.md)
 - 📋 [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
+- 📋 [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
+- 📋 [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
 - ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
@@ -171,7 +174,7 @@
 
 ---
 
-### 98-journals/ (110 documents)
+### 98-journals/ (113 documents)
 
 **Chronological project history (append-only log)**
 
@@ -179,7 +182,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (10 documents)
+### 99-reports/ (12 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -189,27 +192,26 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2025-12-22: [2025-12-22-ADR-015-container-update-strategy.md](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
-- 2025-12-22: [middleware-configuration.md](00-foundation/guides/middleware-configuration.md)
-- 2025-12-22: [crowdsec.md](10-services/guides/crowdsec.md)
-- 2025-12-22: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
-- 2025-12-22: [immich.md](10-services/guides/immich.md)
-- 2025-12-22: [jellyfin.md](10-services/guides/jellyfin.md)
-- 2025-12-22: [traefik.md](10-services/guides/traefik.md)
-- 2025-12-22: [architecture-diagrams.md](20-operations/guides/architecture-diagrams.md)
 - 2025-12-26: [automation-reference.md](20-operations/guides/automation-reference.md)
-- 2025-12-23: [autonomous-operations.md](20-operations/guides/autonomous-operations.md)
-- 2025-12-22: [backup-strategy.md](20-operations/guides/backup-strategy.md)
-- 2025-12-22: [pihole-backup.md](20-operations/guides/external-systems/pihole-backup.md)
-- 2025-12-22: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
+- 2025-12-29: [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
 - 2025-12-24: [remediation-chains.md](20-operations/guides/remediation-chains.md)
 - 2025-12-26: [secrets-management.md](30-security/guides/secrets-management.md)
 - 2025-12-26: [loki-remediation-queries.md](40-monitoring-and-documentation/guides/loki-remediation-queries.md)
 - 2025-12-27: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- 2025-12-23: [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
-- 2025-12-22: [PLAN-GUIDE-ORGANIZATION.md](97-plans/PLAN-GUIDE-ORGANIZATION.md)
-- 2025-12-22: [PROJECT-AUTONOMOUS-ORCHESTRATION.md](97-plans/PROJECT-AUTONOMOUS-ORCHESTRATION.md)
-*No files modified in last 7 days*
+- 2025-12-30: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
+- 2025-12-30: [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
+- 2025-12-24: [2025-12-24-remediation-phase-3-autonomous-integration.md](98-journals/2025-12-24-remediation-phase-3-autonomous-integration.md)
+- 2025-12-24: [2025-12-24-remediation-phase-3-part-1-metrics-and-scheduling.md](98-journals/2025-12-24-remediation-phase-3-part-1-metrics-and-scheduling.md)
+- 2025-12-24: [2025-12-24-remediation-phase-4-alertmanager-webhooks.md](98-journals/2025-12-24-remediation-phase-4-alertmanager-webhooks.md)
+- 2025-12-25: [2025-12-24-remediation-phase-5-implementation.md](98-journals/2025-12-24-remediation-phase-5-implementation.md)
+- 2025-12-24: [2025-12-24-remediation-slo-critical-analysis.md](98-journals/2025-12-24-remediation-slo-critical-analysis.md)
+- 2025-12-25: [2025-12-25-remediation-phase-6-implementation.md](98-journals/2025-12-25-remediation-phase-6-implementation.md)
+- 2025-12-26: [2025-12-26-monitoring-alerting-investigation.md](98-journals/2025-12-26-monitoring-alerting-investigation.md)
+- 2025-12-26: [2025-12-26-monitoring-alerting-investigation-revised.md](98-journals/2025-12-26-monitoring-alerting-investigation-revised.md)
+- 2025-12-26: [2025-12-26-phase1-monitoring-enhancements.md](98-journals/2025-12-26-phase1-monitoring-enhancements.md)
+- 2025-12-26: [2025-12-26-phase2-loki-integration.md](98-journals/2025-12-26-phase2-loki-integration.md)
+- 2025-12-26: [2025-12-26-security-review-and-infrastructure-improvements.md](98-journals/2025-12-26-security-review-and-infrastructure-improvements.md)
+- 2025-12-30: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
 
 ---
 

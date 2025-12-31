@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2025-12-29 06:01:26 UTC
+**Generated:** 2025-12-30 23:03:30 UTC
 **System:** fedora-htpc
 
 This document visualizes service dependencies and critical paths in the homelab infrastructure.
@@ -173,6 +173,18 @@ Based on dependencies, services should start in this order:
 
 Services on the same network can communicate:
 
+
+**auth_services:** authelia,redis-authelia,traefik
+
+**media_services:** jellyfin
+
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,immich-server,jellyfin,loki,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik
+
+**nextcloud:** collabora,nextcloud,nextcloud-db,nextcloud-redis
+
+**photos:** immich-ml,immich-server,postgresql-immich,redis-immich
+
+**reverse_proxy:** alertmanager,authelia,collabora,crowdsec,grafana,homepage,immich-server,jellyfin,loki,nextcloud,prometheus,traefik,vaultwarden
 
 
 ---

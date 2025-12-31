@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2025-12-29 06:01:24 UTC
+**Generated:** 2025-12-30 23:03:29 UTC
 **System:** fedora-htpc
 
 This document provides visual representations of the homelab network architecture using Mermaid diagrams.
@@ -21,22 +21,61 @@ graph TB
     WAN -->|Port Forward| Traefik
 
 
-    subgraph auth_services[auth_services Network<br/>unknown]
+    subgraph auth_services[auth_services Network<br/>10.89.3.0/24]
+        authelia[authelia]
+        redis_authelia[redis-authelia]
+        traefik[traefik]
     end
 
-    subgraph media_services[media_services Network<br/>unknown]
+    subgraph media_services[media_services Network<br/>10.89.1.0/24]
+        jellyfin[jellyfin]
     end
 
-    subgraph monitoring[monitoring Network<br/>unknown]
+    subgraph monitoring[monitoring Network<br/>10.89.4.0/24]
+        alert_discord_relay[alert-discord-relay]
+        alertmanager[alertmanager]
+        cadvisor[cadvisor]
+        grafana[grafana]
+        immich_server[immich-server]
+        jellyfin[jellyfin]
+        loki[loki]
+        nextcloud[nextcloud]
+        nextcloud_db[nextcloud-db]
+        nextcloud_redis[nextcloud-redis]
+        node_exporter[node_exporter]
+        prometheus[prometheus]
+        promtail[promtail]
+        traefik[traefik]
     end
 
-    subgraph nextcloud[nextcloud Network<br/>unknown]
+    subgraph nextcloud[nextcloud Network<br/>10.89.10.0/24]
+        collabora[collabora]
+        nextcloud[nextcloud]
+        nextcloud_db[nextcloud-db]
+        nextcloud_redis[nextcloud-redis]
     end
 
-    subgraph photos[photos Network<br/>unknown]
+    subgraph photos[photos Network<br/>10.89.5.0/24]
+        immich_ml[immich-ml]
+        immich_server[immich-server]
+        postgresql_immich[postgresql-immich]
+        redis_immich[redis-immich]
     end
 
-    subgraph reverse_proxy[reverse_proxy Network<br/>unknown]
+    subgraph reverse_proxy[reverse_proxy Network<br/>10.89.2.0/24]
+        alertmanager[alertmanager]
+        authelia[authelia]
+        collabora[collabora]
+        crowdsec[crowdsec]
+        grafana[grafana]
+        homepage[homepage]
+        immich_server[immich-server]
+        jellyfin[jellyfin]
+        loki[loki]
+        nextcloud[nextcloud]
+        prometheus[prometheus]
+        traefik[traefik]
+        vaultwarden[vaultwarden]
     end
 
     Traefik -->|Routes to| jellyfin
@@ -102,55 +141,94 @@ sequenceDiagram
 ### auth_services
 
 - **Full Name:** `systemd-auth_services`
-- **Subnet:** unknown
-- **Services:** 0
+- **Subnet:** 10.89.3.0/24
+- **Services:** 3
 
 **Members:**
+- authelia
+- redis-authelia
+- traefik
 
 
 ### media_services
 
 - **Full Name:** `systemd-media_services`
-- **Subnet:** unknown
-- **Services:** 0
+- **Subnet:** 10.89.1.0/24
+- **Services:** 1
 
 **Members:**
+- jellyfin
 
 
 ### monitoring
 
 - **Full Name:** `systemd-monitoring`
-- **Subnet:** unknown
-- **Services:** 0
+- **Subnet:** 10.89.4.0/24
+- **Services:** 14
 
 **Members:**
+- alert-discord-relay
+- alertmanager
+- cadvisor
+- grafana
+- immich-server
+- jellyfin
+- loki
+- nextcloud
+- nextcloud-db
+- nextcloud-redis
+- node_exporter
+- prometheus
+- promtail
+- traefik
 
 
 ### nextcloud
 
 - **Full Name:** `systemd-nextcloud`
-- **Subnet:** unknown
-- **Services:** 0
+- **Subnet:** 10.89.10.0/24
+- **Services:** 4
 
 **Members:**
+- collabora
+- nextcloud
+- nextcloud-db
+- nextcloud-redis
 
 
 ### photos
 
 - **Full Name:** `systemd-photos`
-- **Subnet:** unknown
-- **Services:** 0
+- **Subnet:** 10.89.5.0/24
+- **Services:** 4
 
 **Members:**
+- immich-ml
+- immich-server
+- postgresql-immich
+- redis-immich
 
 
 ### reverse_proxy
 
 - **Full Name:** `systemd-reverse_proxy`
-- **Subnet:** unknown
-- **Services:** 0
+- **Subnet:** 10.89.2.0/24
+- **Services:** 13
 
 **Members:**
+- alertmanager
+- authelia
+- collabora
+- crowdsec
+- grafana
+- homepage
+- immich-server
+- jellyfin
+- loki
+- nextcloud
+- prometheus
+- traefik
+- vaultwarden
 
 
 ---
