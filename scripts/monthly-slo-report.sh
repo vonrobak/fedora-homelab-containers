@@ -54,10 +54,10 @@ traefik_actual=$(query_prom 'slo:traefik:availability:actual')
 traefik_budget=$(query_prom 'error_budget:traefik:availability:budget_remaining')
 traefik_compliant=$(query_prom 'slo:traefik:availability:compliant')
 
-# OCIS
-ocis_actual=$(query_prom 'slo:ocis:availability:actual')
-ocis_budget=$(query_prom 'error_budget:ocis:availability:budget_remaining')
-ocis_compliant=$(query_prom 'slo:ocis:availability:compliant')
+# Nextcloud
+nextcloud_actual=$(query_prom 'slo:nextcloud:availability:actual')
+nextcloud_budget=$(query_prom 'error_budget:nextcloud:availability:budget_remaining')
+nextcloud_compliant=$(query_prom 'slo:nextcloud:availability:compliant')
 
 # ============================================================================
 # FORMAT REPORT
@@ -111,7 +111,7 @@ overall_violations=0
 [ "$immich_compliant" = "0" ] && ((overall_violations++)) || true
 [ "$authelia_compliant" = "0" ] && ((overall_violations++)) || true
 [ "$traefik_compliant" = "0" ] && ((overall_violations++)) || true
-[ "$ocis_compliant" = "0" ] && ((overall_violations++)) || true
+[ "$nextcloud_compliant" = "0" ] && ((overall_violations++)) || true
 
 if [ "$overall_violations" -eq 0 ]; then
     report_color="3066993"  # Green
@@ -158,8 +158,8 @@ read -r -d '' DISCORD_PAYLOAD <<EOF || true
         "inline": true
       },
       {
-        "name": "☁️ OCIS File Storage",
-        "value": "$(compliance_emoji "$ocis_compliant") **Availability:** $(format_pct "$ocis_actual")\n**Target:** 99.50%\n**Error Budget:** $(format_pct "$ocis_budget") remaining",
+        "name": "☁️ Nextcloud File Storage",
+        "value": "$(compliance_emoji "$nextcloud_compliant") **Availability:** $(format_pct "$nextcloud_actual")\n**Target:** 99.50%\n**Error Budget:** $(format_pct "$nextcloud_budget") remaining",
         "inline": true
       },
       {

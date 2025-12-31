@@ -120,3 +120,4 @@ users_database.yml
 # Configuration files with embedded secrets (use .example templates instead)
 config/alertmanager/alertmanager.yml
 *.env.decommissioned-*
+test-restore/

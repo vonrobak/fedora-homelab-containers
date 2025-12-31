@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2025-12-31 06:03:23 UTC
-**Total Documents:** 295
+**Generated:** 2025-12-31 20:00:37 UTC
+**Total Documents:** 302
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (9 documents)
+### 00-foundation/ (10 documents)
 
 **Fundamentals and core concepts**
 
@@ -38,6 +38,7 @@
 - : [2025-10-25-decision-002-systemd-quadlets-over-compose](00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md)
 - ADR-009: [2025-11-13-ADR-009-config-data-directory-strategy](00-foundation/decisions/2025-11-13-ADR-009-config-data-directory-strategy.md)
 - ADR-015: [2025-12-22-ADR-015-container-update-strategy](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
+- ADR-016: [2025-12-31-ADR-016-configuration-design-principles](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
 
 ---
 
@@ -174,7 +175,7 @@
 
 ---
 
-### 98-journals/ (115 documents)
+### 98-journals/ (119 documents)
 
 **Chronological project history (append-only log)**
 
@@ -182,7 +183,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (17 documents)
+### 99-reports/ (19 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -192,26 +193,26 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
+- 2025-12-31: [2025-10-25-decision-002-systemd-quadlets-over-compose.md](00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md)
+- 2025-12-31: [2025-12-31-ADR-016-configuration-design-principles.md](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
+- 2025-12-31: [configuration-design-quick-reference.md](00-foundation/guides/configuration-design-quick-reference.md)
+- 2025-12-31: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
+- 2025-12-31: [middleware-configuration.md](00-foundation/guides/middleware-configuration.md)
+- 2025-12-31: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
+- 2025-12-31: [pattern-customization-guide.md](10-services/guides/pattern-customization-guide.md)
+- 2025-12-31: [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
+- 2025-12-31: [traefik.md](10-services/guides/traefik.md)
+- 2025-12-31: [2025-11-14-ADR-010-pattern-based-deployment.md](20-operations/decisions/2025-11-14-ADR-010-pattern-based-deployment.md)
 - 2025-12-26: [automation-reference.md](20-operations/guides/automation-reference.md)
+- 2025-12-31: [drift-detection-workflow.md](20-operations/guides/drift-detection-workflow.md)
+- 2025-12-31: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - 2025-12-29: [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
-- 2025-12-24: [remediation-chains.md](20-operations/guides/remediation-chains.md)
-- 2025-12-26: [secrets-management.md](30-security/guides/secrets-management.md)
+- 2025-12-31: [secrets-management.md](30-security/guides/secrets-management.md)
 - 2025-12-26: [loki-remediation-queries.md](40-monitoring-and-documentation/guides/loki-remediation-queries.md)
 - 2025-12-27: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
 - 2025-12-30: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 2025-12-30: [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
 - 2025-12-25: [2025-12-24-remediation-phase-5-implementation.md](98-journals/2025-12-24-remediation-phase-5-implementation.md)
-- 2025-12-25: [2025-12-25-remediation-phase-6-implementation.md](98-journals/2025-12-25-remediation-phase-6-implementation.md)
-- 2025-12-26: [2025-12-26-monitoring-alerting-investigation.md](98-journals/2025-12-26-monitoring-alerting-investigation.md)
-- 2025-12-26: [2025-12-26-monitoring-alerting-investigation-revised.md](98-journals/2025-12-26-monitoring-alerting-investigation-revised.md)
-- 2025-12-26: [2025-12-26-phase1-monitoring-enhancements.md](98-journals/2025-12-26-phase1-monitoring-enhancements.md)
-- 2025-12-26: [2025-12-26-phase2-loki-integration.md](98-journals/2025-12-26-phase2-loki-integration.md)
-- 2025-12-26: [2025-12-26-security-review-and-infrastructure-improvements.md](98-journals/2025-12-26-security-review-and-infrastructure-improvements.md)
-- 2025-12-30: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
-- 2025-12-30: [2025-12-30-matter-vs-zigbee-analysis.md](98-journals/2025-12-30-matter-vs-zigbee-analysis.md)
-- 2025-12-30: [2025-12-30-nextcloud-external-storage-optimization-investigation.md](98-journals/2025-12-30-nextcloud-external-storage-optimization-investigation.md)
-- 2025-12-31: [2025-12-31-nextcloud-security-jellyfin-selinux-fix.md](98-journals/2025-12-31-nextcloud-security-jellyfin-selinux-fix.md)
-- 2025-12-31: [2025-12-31-selinux-nested-mounts-and-nextcloud-permissions.md](98-journals/2025-12-31-selinux-nested-mounts-and-nextcloud-permissions.md)
 
 ---
 

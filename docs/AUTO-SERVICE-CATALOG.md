@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2025-12-31 06:03:21 UTC
+**Generated:** 2025-12-31 20:00:36 UTC
 **System:** fedora-htpc
 
 ---
@@ -19,11 +19,10 @@
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
-| loki | grafana/loki:latest | ✅ Up | reverse_proxy,monitoring |
+| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
@@ -31,7 +30,8 @@
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
-| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | reverse_proxy,monitoring,photos |
+| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 
 ---
 
@@ -39,7 +39,7 @@
 
 - **Total Running:** 23
 - **Total Defined:** 23
-- **System Load:**  0,54, 0,34, 0,30
+- **System Load:**  0,46, 0,40, 0,74
 
 ---
 
