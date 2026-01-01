@@ -37,6 +37,82 @@ get_container_networks() {
         sed 's/systemd-//' | sort | tr '\n' ',' | sed 's/,$//'
 }
 
+# Get all running containers
+get_all_containers() {
+    podman ps --format '{{.Names}}' | sort
+}
+
+# Check if service uses Authelia middleware (parse routers.yml)
+uses_authelia() {
+    local service=$1
+    local routers_file="${HOME}/containers/config/traefik/dynamic/routers.yml"
+
+    if [[ ! -f "$routers_file" ]]; then
+        return 1
+    fi
+
+    # Strategy: Extract router blocks that have "service: \"$service\""
+    # Then check if that block contains "authelia@file"
+    # Router blocks start with 4-space indent + name + colon (e.g., "    router-name:")
+    # and continue until the next router or section
+
+    awk -v service="$service" '
+        # Start of a new router (4 spaces + word + colon, not a list item)
+        /^    [a-z][a-z0-9_-]*:$/ {
+            # Process previous router if it matched
+            if (found_service && found_authelia) {
+                exit 0
+            }
+            # Reset for new router
+            found_service = 0
+            found_authelia = 0
+            in_router = 1
+            next
+        }
+
+        # Check if this line has our service
+        in_router && $0 ~ "service: \"" service "\"" {
+            found_service = 1
+        }
+
+        # Check if this line has authelia middleware
+        in_router && /authelia@file/ {
+            found_authelia = 1
+        }
+
+        # End of routers section or file
+        /^  [a-z]+:/ && !/^    / {
+            if (found_service && found_authelia) {
+                exit 0
+            }
+            in_router = 0
+        }
+
+        END {
+            if (found_service && found_authelia) {
+                exit 0
+            }
+            exit 1
+        }
+    ' "$routers_file" && return 0
+
+    return 1
+}
+
+# Determine if container is internet-accessible (in reverse_proxy network)
+is_public_service() {
+    local container=$1
+    get_container_networks "$container" | grep -q "reverse_proxy"
+}
+
+# Get primary network for a container (first network = default route)
+get_primary_network() {
+    local container=$1
+    podman inspect "$container" 2>/dev/null | \
+        jq -r '.[0].NetworkSettings.Networks // {} | keys[0]' | \
+        sed 's/systemd-//'
+}
+
 # Generate the topology document
 generate_topology() {
     local timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
@@ -49,97 +125,146 @@ generate_topology() {
 **Generated:** TIMESTAMP
 **System:** fedora-htpc
 
-This document provides visual representations of the homelab network architecture.
+This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
 
 ---
 
-## Hierarchical Network Architecture
+## 1. Traffic Flow & Middleware Routing
 
-Shows the layered architecture from Internet to services. Each service appears **once** in its primary functional layer.
+Shows how requests flow from Internet through Traefik with middleware routing based on actual configuration in `config/traefik/dynamic/routers.yml`.
 
 ```mermaid
 graph TB
-    %% Internet Layer
     Internet[🌐 Internet<br/>Port 80/443]
+    Internet -->|Port Forward| Traefik[Traefik<br/>Reverse Proxy]
 
-    %% Gateway Layer - Entry point
-    Internet -->|Port Forward| Traefik
+    %% All traffic goes through CrowdSec first
+    Traefik -->|All Traffic| CrowdSec[CrowdSec<br/>IP Reputation]
 
-    %% Security Middleware
-    Traefik -->|1. IP Check| CrowdSec[CrowdSec<br/>IP Reputation]
-    Traefik -->|2. Auth| Authelia[Authelia<br/>SSO + YubiKey]
+EOF
 
-    %% Public Services (Internet-accessible via reverse_proxy network)
-    Traefik -->|Routes| Jellyfin[Jellyfin<br/>Media Server]
-    Traefik -->|Routes| Immich[Immich<br/>Photo Management]
-    Traefik -->|Routes| Nextcloud[Nextcloud<br/>File Sync]
-    Traefik -->|Routes| Vaultwarden[Vaultwarden<br/>Passwords]
-    Traefik -->|Routes| Collabora[Collabora<br/>Office Suite]
-    Traefik -->|Routes| Homepage[Homepage<br/>Dashboard]
+    # Parse routers.yml to determine routing (data-driven)
+    log "Parsing routing configuration..."
 
-    %% Monitoring Services (reverse_proxy + monitoring networks)
-    Traefik -->|Routes| Prometheus[Prometheus<br/>Metrics]
-    Traefik -->|Routes| Grafana[Grafana<br/>Dashboards]
-    Traefik -->|Routes| Loki[Loki<br/>Logs]
-    Traefik -->|Routes| Alertmanager[Alertmanager<br/>Alerts]
+    # Services with Authelia
+    cat >> "$OUTPUT_FILE" <<'EOF'
+    %% Services requiring Authelia SSO
+    CrowdSec -->|Rate Limit| Authelia[Authelia<br/>SSO + YubiKey]
+EOF
 
-    %% Backend Services (Internal only - monitoring network)
-    Prometheus -.->|Scrapes| NodeExporter[Node Exporter<br/>Host Metrics]
-    Prometheus -.->|Scrapes| cAdvisor[cAdvisor<br/>Container Metrics]
-    Prometheus -.->|Scrapes| Promtail[Promtail<br/>Log Collection]
-    Alertmanager -.->|Webhooks| DiscordRelay[Discord Relay<br/>Notifications]
+    local authelia_services=""
+    local native_auth_services=""
 
-    %% Support Services
-    Authelia -->|Session| RedisAuth[(Redis<br/>Auth Sessions)]
-    Jellyfin -.->|Media Storage| MediaLib[/Media Library<br/>BTRFS/]
+    for container in $(get_network_members "systemd-reverse_proxy"); do
+        if uses_authelia "$container"; then
+            authelia_services="$authelia_services $container"
+        elif [[ "$container" != "traefik" && "$container" != "crowdsec" && "$container" != "authelia" ]]; then
+            native_auth_services="$native_auth_services $container"
+        fi
+    done
 
-    Immich -->|ML Processing| ImmichML[Immich ML<br/>Recognition]
-    Immich -->|Photos| PostgresImmich[(PostgreSQL<br/>Immich DB)]
-    Immich -->|Cache| RedisImmich[(Redis<br/>Immich Cache)]
+    # Add Authelia-protected services
+    for service in $authelia_services; do
+        local node_name=$(echo "$service" | sed 's/-/_/g')
+        echo "    Authelia -->|Proxy| ${node_name}[${service}]" >> "$OUTPUT_FILE"
+    done
 
-    Nextcloud -->|Database| NextcloudDB[(PostgreSQL<br/>Nextcloud DB)]
-    Nextcloud -->|Cache| NextcloudRedis[(Redis<br/>Nextcloud Cache)]
+    # Add services with native auth (bypass Authelia)
+    cat >> "$OUTPUT_FILE" <<EOF
 
-    %% Styling - Readable colors with good contrast
+    %% Services with native authentication (bypass Authelia)
+EOF
+
+    for service in $native_auth_services; do
+        local node_name=$(echo "$service" | sed 's/-/_/g')
+        echo "    CrowdSec -->|Rate Limit| ${node_name}[${service}]" >> "$OUTPUT_FILE"
+    done
+
+    # Styling
+    cat >> "$OUTPUT_FILE" <<'EOF'
+
+    %% Styling
     style Traefik fill:#1a5490,stroke:#0d2a45,stroke-width:4px,color:#fff
     style CrowdSec fill:#c41e3a,stroke:#8b1528,stroke-width:2px,color:#fff
     style Authelia fill:#2d5016,stroke:#1a3010,stroke-width:2px,color:#fff
-
-    style Jellyfin fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Immich fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Nextcloud fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Vaultwarden fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Collabora fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Homepage fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-
-    style Prometheus fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-    style Grafana fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-    style Loki fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-    style Alertmanager fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-
-    style NodeExporter fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-    style cAdvisor fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-    style Promtail fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-    style DiscordRelay fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-
-    style ImmichML fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
-    style PostgresImmich fill:#d4e6f1,stroke:#5499c7,stroke-width:2px,color:#000
-    style RedisImmich fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
-    style NextcloudDB fill:#d4e6f1,stroke:#5499c7,stroke-width:2px,color:#000
-    style NextcloudRedis fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
-    style RedisAuth fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
 ```
 
-**Legend:**
-- 🔵 **Blue** = Gateway (Traefik)
-- 🔴 **Red** = Security (CrowdSec)
-- 🟢 **Green** = Authentication (Authelia)
-- ⚪ **Light Blue** = Public Services
-- 🟡 **Cream** = Monitoring Services
-- ⚫ **Gray** = Internal Services
-- 🗄️ **Databases** = Cylinder shape
-- **Solid arrows** = Primary traffic flow
-- **Dotted arrows** = Backend/scraping connections
+**Key Insights:**
+- **CrowdSec** checks ALL traffic (fail-fast: reject banned IPs immediately)
+- **Authelia** protects administrative/monitoring services (SSO with YubiKey)
+- **Native auth** services handle their own authentication (Jellyfin, Immich, Nextcloud, Vaultwarden)
+
+---
+
+## 2. Network Architecture & Boundaries
+
+Shows Podman networks as isolated segments with services grouped by their **primary network** (first `Network=` line in quadlet = default route).
+
+```mermaid
+graph TB
+    Internet[🌐 Internet]
+    Internet -.->|Port 80/443| GW[Gateway: Traefik]
+
+EOF
+
+    # Build network-centric view dynamically
+    log "Building network topology..."
+
+    # Process each network
+    for network in $(get_networks); do
+        local network_short=$(echo "$network" | sed 's/systemd-//')
+        local subnet=$(get_network_subnet "$network")
+
+        cat >> "$OUTPUT_FILE" <<EOF
+
+    subgraph ${network_short}_net["🔷 ${network_short} Network<br/>${subnet}"]
+        direction TB
+EOF
+
+        # Add services that have this as PRIMARY network
+        for container in $(get_all_containers); do
+            local primary_net=$(get_primary_network "$container")
+            if [[ "$primary_net" == "$network_short" ]]; then
+                local node_name=$(echo "$container" | sed 's/-/_/g')
+                local networks=$(get_container_networks "$container")
+                local network_count=$(echo "$networks" | tr ',' '\n' | wc -l)
+
+                # Add badge for multi-network services
+                if [[ $network_count -gt 1 ]]; then
+                    echo "        ${network_short}_${node_name}[${container}<br/><small>+${network_short},$(echo $networks | sed "s/${network_short},//;s/,/, /g")</small>]" >> "$OUTPUT_FILE"
+                else
+                    echo "        ${network_short}_${node_name}[${container}]" >> "$OUTPUT_FILE"
+                fi
+            fi
+        done
+
+        echo "    end" >> "$OUTPUT_FILE"
+    done
+
+    # Add cross-network connections
+    cat >> "$OUTPUT_FILE" <<'EOF'
+
+    %% Cross-network connections
+    GW -.->|Routes| reverse_proxy_net
+    reverse_proxy_net -.->|Scrapes metrics| monitoring_net
+    reverse_proxy_immich_server -.->|Backend| photos_net
+    reverse_proxy_nextcloud -.->|Backend| nextcloud_net
+    reverse_proxy_jellyfin -.->|Backend| media_services_net
+
+    %% Network styling
+    classDef gatewayNet fill:#e6f3ff,stroke:#1a5490,stroke-width:3px
+    classDef internalNet fill:#fff9e6,stroke:#d68910,stroke-width:2px
+    classDef backendNet fill:#f0f0f0,stroke:#666,stroke-width:2px
+
+    class reverse_proxy_net gatewayNet
+    class monitoring_net internalNet
+    class auth_services_net,photos_net,nextcloud_net,media_services_net backendNet
+```
+
+**Network Roles:**
+- **reverse_proxy** (Gateway) - Internet-accessible services, provides default route
+- **monitoring** (Observability) - Scrapes metrics from all services across networks
+- **auth_services**, **photos**, **nextcloud**, **media_services** (Backend) - Function-specific isolation
 
 ---
 
@@ -291,7 +416,7 @@ Services are organized into isolated networks based on function and trust level:
    - 4 members
 
 5. **nextcloud** (10.89.10.0/24) - **File Sync Network**
-   - Nextcloud application with PostgreSQL, Redis, and Collabora
+   - Nextcloud application with MariaDB, Redis, and Collabora
    - Backend databases accessible only within this network
    - 4 members
 

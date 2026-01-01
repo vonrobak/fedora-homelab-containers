@@ -1,99 +1,130 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-01-01 11:08:03 UTC
+**Generated:** 2026-01-01 12:10:53 UTC
 **System:** fedora-htpc
 
-This document provides visual representations of the homelab network architecture.
+This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
 
 ---
 
-## Hierarchical Network Architecture
+## 1. Traffic Flow & Middleware Routing
 
-Shows the layered architecture from Internet to services. Each service appears **once** in its primary functional layer.
+Shows how requests flow from Internet through Traefik with middleware routing based on actual configuration in `config/traefik/dynamic/routers.yml`.
 
 ```mermaid
 graph TB
-    %% Internet Layer
     Internet[🌐 Internet<br/>Port 80/443]
+    Internet -->|Port Forward| Traefik[Traefik<br/>Reverse Proxy]
 
-    %% Gateway Layer - Entry point
-    Internet -->|Port Forward| Traefik
+    %% All traffic goes through CrowdSec first
+    Traefik -->|All Traffic| CrowdSec[CrowdSec<br/>IP Reputation]
 
-    %% Security Middleware
-    Traefik -->|1. IP Check| CrowdSec[CrowdSec<br/>IP Reputation]
-    Traefik -->|2. Auth| Authelia[Authelia<br/>SSO + YubiKey]
+    %% Services requiring Authelia SSO
+    CrowdSec -->|Rate Limit| Authelia[Authelia<br/>SSO + YubiKey]
+    Authelia -->|Proxy| alertmanager[alertmanager]
+    Authelia -->|Proxy| grafana[grafana]
+    Authelia -->|Proxy| homepage[homepage]
+    Authelia -->|Proxy| loki[loki]
+    Authelia -->|Proxy| prometheus[prometheus]
 
-    %% Public Services (Internet-accessible via reverse_proxy network)
-    Traefik -->|Routes| Jellyfin[Jellyfin<br/>Media Server]
-    Traefik -->|Routes| Immich[Immich<br/>Photo Management]
-    Traefik -->|Routes| Nextcloud[Nextcloud<br/>File Sync]
-    Traefik -->|Routes| Vaultwarden[Vaultwarden<br/>Passwords]
-    Traefik -->|Routes| Collabora[Collabora<br/>Office Suite]
-    Traefik -->|Routes| Homepage[Homepage<br/>Dashboard]
+    %% Services with native authentication (bypass Authelia)
+    CrowdSec -->|Rate Limit| collabora[collabora]
+    CrowdSec -->|Rate Limit| immich_server[immich-server]
+    CrowdSec -->|Rate Limit| jellyfin[jellyfin]
+    CrowdSec -->|Rate Limit| nextcloud[nextcloud]
+    CrowdSec -->|Rate Limit| vaultwarden[vaultwarden]
 
-    %% Monitoring Services (reverse_proxy + monitoring networks)
-    Traefik -->|Routes| Prometheus[Prometheus<br/>Metrics]
-    Traefik -->|Routes| Grafana[Grafana<br/>Dashboards]
-    Traefik -->|Routes| Loki[Loki<br/>Logs]
-    Traefik -->|Routes| Alertmanager[Alertmanager<br/>Alerts]
-
-    %% Backend Services (Internal only - monitoring network)
-    Prometheus -.->|Scrapes| NodeExporter[Node Exporter<br/>Host Metrics]
-    Prometheus -.->|Scrapes| cAdvisor[cAdvisor<br/>Container Metrics]
-    Prometheus -.->|Scrapes| Promtail[Promtail<br/>Log Collection]
-    Alertmanager -.->|Webhooks| DiscordRelay[Discord Relay<br/>Notifications]
-
-    %% Support Services
-    Authelia -->|Session| RedisAuth[(Redis<br/>Auth Sessions)]
-    Jellyfin -.->|Media Storage| MediaLib[/Media Library<br/>BTRFS/]
-
-    Immich -->|ML Processing| ImmichML[Immich ML<br/>Recognition]
-    Immich -->|Photos| PostgresImmich[(PostgreSQL<br/>Immich DB)]
-    Immich -->|Cache| RedisImmich[(Redis<br/>Immich Cache)]
-
-    Nextcloud -->|Database| NextcloudDB[(PostgreSQL<br/>Nextcloud DB)]
-    Nextcloud -->|Cache| NextcloudRedis[(Redis<br/>Nextcloud Cache)]
-
-    %% Styling - Readable colors with good contrast
+    %% Styling
     style Traefik fill:#1a5490,stroke:#0d2a45,stroke-width:4px,color:#fff
     style CrowdSec fill:#c41e3a,stroke:#8b1528,stroke-width:2px,color:#fff
     style Authelia fill:#2d5016,stroke:#1a3010,stroke-width:2px,color:#fff
-
-    style Jellyfin fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Immich fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Nextcloud fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Vaultwarden fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Collabora fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-    style Homepage fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
-
-    style Prometheus fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-    style Grafana fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-    style Loki fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-    style Alertmanager fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
-
-    style NodeExporter fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-    style cAdvisor fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-    style Promtail fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-    style DiscordRelay fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
-
-    style ImmichML fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
-    style PostgresImmich fill:#d4e6f1,stroke:#5499c7,stroke-width:2px,color:#000
-    style RedisImmich fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
-    style NextcloudDB fill:#d4e6f1,stroke:#5499c7,stroke-width:2px,color:#000
-    style NextcloudRedis fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
-    style RedisAuth fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
 ```
 
-**Legend:**
-- 🔵 **Blue** = Gateway (Traefik)
-- 🔴 **Red** = Security (CrowdSec)
-- 🟢 **Green** = Authentication (Authelia)
-- ⚪ **Light Blue** = Public Services
-- 🟡 **Cream** = Monitoring Services
-- ⚫ **Gray** = Internal Services
-- 🗄️ **Databases** = Cylinder shape
-- **Solid arrows** = Primary traffic flow
-- **Dotted arrows** = Backend/scraping connections
+**Key Insights:**
+- **CrowdSec** checks ALL traffic (fail-fast: reject banned IPs immediately)
+- **Authelia** protects administrative/monitoring services (SSO with YubiKey)
+- **Native auth** services handle their own authentication (Jellyfin, Immich, Nextcloud, Vaultwarden)
+
+---
+
+## 2. Network Architecture & Boundaries
+
+Shows Podman networks as isolated segments with services grouped by their **primary network** (first `Network=` line in quadlet = default route).
+
+```mermaid
+graph TB
+    Internet[🌐 Internet]
+    Internet -.->|Port 80/443| GW[Gateway: Traefik]
+
+
+    subgraph auth_services_net["🔷 auth_services Network<br/>10.89.3.0/24"]
+        direction TB
+        auth_services_authelia[authelia<br/><small>+auth_services,reverse_proxy</small>]
+        auth_services_redis_authelia[redis-authelia]
+        auth_services_traefik[traefik<br/><small>+auth_services,monitoring, reverse_proxy</small>]
+    end
+
+    subgraph media_services_net["🔷 media_services Network<br/>10.89.1.0/24"]
+        direction TB
+        media_services_jellyfin[jellyfin<br/><small>+media_services,monitoring, reverse_proxy</small>]
+    end
+
+    subgraph monitoring_net["🔷 monitoring Network<br/>10.89.4.0/24"]
+        direction TB
+        monitoring_alert_discord_relay[alert-discord-relay]
+        monitoring_alertmanager[alertmanager<br/><small>+monitoring,reverse_proxy</small>]
+        monitoring_cadvisor[cadvisor]
+        monitoring_grafana[grafana<br/><small>+monitoring,reverse_proxy</small>]
+        monitoring_immich_server[immich-server<br/><small>+monitoring,photos, reverse_proxy</small>]
+        monitoring_loki[loki<br/><small>+monitoring,reverse_proxy</small>]
+        monitoring_nextcloud[nextcloud<br/><small>+monitoring,nextcloud, reverse_proxy</small>]
+        monitoring_nextcloud_db[nextcloud-db<br/><small>+monitoring,nextcloud</small>]
+        monitoring_nextcloud_redis[nextcloud-redis<br/><small>+monitoring,nextcloud</small>]
+        monitoring_node_exporter[node_exporter]
+        monitoring_prometheus[prometheus<br/><small>+monitoring,reverse_proxy</small>]
+        monitoring_promtail[promtail]
+    end
+
+    subgraph nextcloud_net["🔷 nextcloud Network<br/>10.89.10.0/24"]
+        direction TB
+        nextcloud_collabora[collabora<br/><small>+nextcloud,reverse_proxy</small>]
+    end
+
+    subgraph photos_net["🔷 photos Network<br/>10.89.5.0/24"]
+        direction TB
+        photos_immich_ml[immich-ml]
+        photos_postgresql_immich[postgresql-immich]
+        photos_redis_immich[redis-immich]
+    end
+
+    subgraph reverse_proxy_net["🔷 reverse_proxy Network<br/>10.89.2.0/24"]
+        direction TB
+        reverse_proxy_crowdsec[crowdsec]
+        reverse_proxy_homepage[homepage]
+        reverse_proxy_vaultwarden[vaultwarden]
+    end
+
+    %% Cross-network connections
+    GW -.->|Routes| reverse_proxy_net
+    reverse_proxy_net -.->|Scrapes metrics| monitoring_net
+    reverse_proxy_immich_server -.->|Backend| photos_net
+    reverse_proxy_nextcloud -.->|Backend| nextcloud_net
+    reverse_proxy_jellyfin -.->|Backend| media_services_net
+
+    %% Network styling
+    classDef gatewayNet fill:#e6f3ff,stroke:#1a5490,stroke-width:3px
+    classDef internalNet fill:#fff9e6,stroke:#d68910,stroke-width:2px
+    classDef backendNet fill:#f0f0f0,stroke:#666,stroke-width:2px
+
+    class reverse_proxy_net gatewayNet
+    class monitoring_net internalNet
+    class auth_services_net,photos_net,nextcloud_net,media_services_net backendNet
+```
+
+**Network Roles:**
+- **reverse_proxy** (Gateway) - Internet-accessible services, provides default route
+- **monitoring** (Observability) - Scrapes metrics from all services across networks
+- **auth_services**, **photos**, **nextcloud**, **media_services** (Backend) - Function-specific isolation
 
 ---
 
@@ -310,7 +341,7 @@ Services are organized into isolated networks based on function and trust level:
    - 4 members
 
 5. **nextcloud** (10.89.10.0/24) - **File Sync Network**
-   - Nextcloud application with PostgreSQL, Redis, and Collabora
+   - Nextcloud application with MariaDB, Redis, and Collabora
    - Backend databases accessible only within this network
    - 4 members
 
