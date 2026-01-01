@@ -116,18 +116,10 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Collabora Online - Office suite for Nextcloud
-    # Authentication handled by Nextcloud
-    collabora-secure:
-      rule: "Host(`collabora.patriark.org`)"
-      service: "collabora"
-      entryPoints:
-        - websecure
-      middlewares:
-        - crowdsec-bouncer@file
-        - rate-limit-webdav@file
-      tls:
-        certResolver: letsencrypt
+    # Collabora Online - INTERNAL ONLY (accessed by Nextcloud via http://collabora:9980)
+    # Removed public router - Collabora does not need Internet access
+    # Nextcloud communicates with it directly on the nextcloud network
+    # This reduces attack surface and follows least-privilege principle
 
     # Grafana Monitoring Dashboard
     grafana-secure:
@@ -176,7 +168,6 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - monitoring-api-whitelist@file
         - rate-limit@file
         - authelia@file
         - security-headers-strict@file
@@ -234,10 +225,7 @@ http:
         servers:
           - url: "http://nextcloud:80"
 
-    collabora:
-      loadBalancer:
-        servers:
-          - url: "http://collabora:9980"
+    # collabora: (removed - internal-only service, no public router needed)
 
   middlewares:
     # CalDAV/.well-known redirects for Nextcloud
