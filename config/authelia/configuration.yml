@@ -75,7 +75,6 @@ access_control:
         - 'prometheus.patriark.org'
         - 'traefik.patriark.org'
         - 'loki.patriark.org'
-        - 'alertmanager.patriark.org'
         - 'home.patriark.org'
         - 'patriark.org'
       policy: two_factor

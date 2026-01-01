@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2025-12-31 20:00:37 UTC
-**Total Documents:** 302
+**Generated:** 2026-01-01 06:03:57 UTC
+**Total Documents:** 304
 
 ---
 
@@ -183,7 +183,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (19 documents)
+### 99-reports/ (21 documents)
 
 **Automated system reports and point-in-time snapshots**
 

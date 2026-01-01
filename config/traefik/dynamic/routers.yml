@@ -160,19 +160,10 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Alertmanager - Alert Routing and Notification
-    alertmanager-secure:
-      rule: "Host(`alertmanager.patriark.org`)"
-      service: "alertmanager"
-      entryPoints:
-        - websecure
-      middlewares:
-        - crowdsec-bouncer@file
-        - rate-limit@file
-        - authelia@file
-        - security-headers-strict@file
-      tls:
-        certResolver: letsencrypt
+    # Alertmanager - INTERNAL ONLY (accessed via http://alertmanager:9093)
+    # Removed public router - Alertmanager is only for internal monitoring stack use
+    # Access via Grafana dashboards or direct container access
+    # This reduces attack surface for operational infrastructure
 
   services:
     homepage:
@@ -205,10 +196,7 @@ http:
         servers:
           - url: "http://loki:3100"
 
-    alertmanager:
-      loadBalancer:
-        servers:
-          - url: "http://alertmanager:9093"
+    # alertmanager: (removed - internal-only service, no public router needed)
 
     authelia:
       loadBalancer:

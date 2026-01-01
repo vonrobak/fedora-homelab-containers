@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2025-12-31 20:00:36 UTC
+**Generated:** 2026-01-01 06:03:55 UTC
 **System:** fedora-htpc
 
 ---
@@ -24,12 +24,12 @@
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
-| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
+| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | reverse_proxy,monitoring |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
+| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 
@@ -39,7 +39,7 @@
 
 - **Total Running:** 23
 - **Total Defined:** 23
-- **System Load:**  0,46, 0,40, 0,74
+- **System Load:**  2,50, 2,82, 2,73
 
 ---
 

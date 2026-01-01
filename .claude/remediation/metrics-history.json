@@ -409,6 +409,16 @@
       "services_restarted": "",
       "oom_detected": 0,
       "root_cause": ""
+    },
+    {
+      "playbook": "predictive-maintenance",
+      "status": "success",
+      "timestamp": 1767243643,
+      "duration": 3,
+      "disk_reclaimed": 0,
+      "services_restarted": "",
+      "oom_detected": 0,
+      "root_cause": ""
     }
   ]
 }

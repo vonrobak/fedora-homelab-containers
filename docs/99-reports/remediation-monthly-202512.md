@@ -1,6 +1,6 @@
 # Remediation Monthly Report - desember 2025
 
-**Generated:** 2025-12-25 22:07:12
+**Generated:** 2026-01-01 08:05:08
 **Period:** 2025-12 (31 days)
 **Report Type:** Automated Analytics
 
@@ -10,19 +10,19 @@
 
 **Key Metrics:**
 
-- **Total Executions:** 18
-- **Success Rate:** 94%
-- **Time Saved:** 8.0 hours
+- **Total Executions:** 41
+- **Success Rate:** 85%
+- **Time Saved:** 16.4 hours
 - **Disk Reclaimed:** 1.0 GB
 - **Services Recovered:** 0
 
-**Performance Status:** ✅ Excellent
+**Performance Status:** ⚠️ Good
 
 ---
 
 ## Top Performers
 
-1. **predictive-maintenance** - 14 runs, 92% success
+1. **predictive-maintenance** - 37 runs, 83% success
 1. **disk-cleanup** - 2 runs, 100% success
 1. **slo-violation-remediation** - 1 runs, 100% success
 1. **test** - 1 runs, 100% success
@@ -31,11 +31,11 @@
 
 ## Incidents Prevented
 
-- **Predictive Maintenance Runs:** 13
-- **Estimated Incidents Prevented:** 3
+- **Predictive Maintenance Runs:** 31
+- **Estimated Incidents Prevented:** 9
 - **Self-Healing Recoveries:** 0
 
-**Impact:** Proactive remediation prevented approximately 3 potential incidents before they affected users.
+**Impact:** Proactive remediation prevented approximately 9 potential incidents before they affected users.
 
 ---
 
@@ -43,7 +43,7 @@
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 disk-cleanup                         100%        10%       100%        63
-predictive-maintenance                92%        70%       100%        86
+predictive-maintenance                84%        70%       100%        82
 slo-violation-remediation            100%        50%        74%        69
 test                                 100%        50%       100%        75
 
@@ -60,7 +60,7 @@ Legend: ≥80 Excellent | 60-79 Good | <60 Needs Improvement
 Playbook                            First Half     Second Half           Trend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 disk-cleanup                                 0               2 \033[0;32m↑ New\033[0m
-predictive-maintenance                       0              14 \033[0;32m↑ New\033[0m
+predictive-maintenance                       0              38 \033[0;32m↑ New\033[0m
 slo-violation-remediation                    0               1 \033[0;32m↑ New\033[0m
 test                                         0               1 \033[0;32m↑ New\033[0m
 
@@ -71,7 +71,7 @@ test                                         0               1 \033[0;32m↑ New
 Playbook                            First Half     Second Half           Trend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 disk-cleanup                                0%            100% \033[0;36mNew\033[0m
-predictive-maintenance                      0%             92% \033[0;36mNew\033[0m
+predictive-maintenance                      0%             84% \033[0;36mNew\033[0m
 slo-violation-remediation                   0%            100% \033[0;36mNew\033[0m
 test                                        0%            100% \033[0;36mNew\033[0m
 
@@ -82,19 +82,17 @@ test                                        0%            100% \033[0;36mNew\033
 ═══ ROI Summary ═══
 
   In the last 31d, auto-remediation has:
-  • Prevented 3 incidents before they occurred
+  • Prevented 9 incidents before they occurred
   • Recovered 0 services automatically
-  • Avoided 20 manual interventions
-  • Saved 9.44 hours of operational time
+  • Avoided 45 manual interventions
+  • Saved 21.30 hours of operational time
 
-  ✓ Equivalent to 1.1 workdays saved
+  ✓ Equivalent to 2.6 workdays saved
 
 
 ---
 
 ## Recommendations
-
-✓ No recommendations - system performing well
 
 
 ---

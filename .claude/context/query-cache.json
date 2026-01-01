@@ -1,69 +1,69 @@
 {
   "top_memory_users": {
-    "timestamp": "2025-12-31T12:00:17+01:00",
+    "timestamp": "2026-01-01T12:04:07+01:00",
     "ttl": 300,
     "result": [
       {
+        "name": "jellyfin",
+        "memory_mb": 1376
+      },
+      {
+        "name": "grafana",
+        "memory_mb": 293
+      },
+      {
         "name": "prometheus",
-        "memory_mb": 349
+        "memory_mb": 260
       },
       {
         "name": "immich-server",
-        "memory_mb": 336
-      },
-      {
-        "name": "jellyfin",
-        "memory_mb": 286
+        "memory_mb": 248
       },
       {
         "name": "cadvisor",
-        "memory_mb": 236
-      },
-      {
-        "name": "nextcloud-db",
-        "memory_mb": 201
+        "memory_mb": 238
       }
     ]
   },
   "disk_usage": {
-    "timestamp": "2025-12-31T12:00:17+01:00",
+    "timestamp": "2026-01-01T12:04:07+01:00",
     "ttl": 600,
     "result": {
       "filesystems": [
         {
           "mount": "/",
-          "usage_pct": "68%"
+          "usage_pct": "58%"
         },
         {
           "mount": "/mnt/btrfs-pool",
-          "usage_pct": "71%"
+          "usage_pct": "72%"
         }
       ]
     }
   },
   "top_cpu_users": {
-    "timestamp": "2025-12-31T12:00:17+01:00",
+    "timestamp": "2026-01-01T12:04:07+01:00",
     "ttl": 60,
     "result": [
       {
+        "name": "jellyfin",
+        "cpu_pct": 37.48
+      },
+      {
         "name": "cadvisor",
-        "cpu_pct": 4.66
+        "cpu_pct": 4.71
       },
       {
         "name": "traefik",
-        "cpu_pct": 0.90
+        "cpu_pct": 0.91
+      },
+      {
+        "name": "nextcloud",
+        "cpu_pct": 0.85
       },
       {
         "name": "immich-ml",
-        "cpu_pct": 0.70
-      },
-      {
-        "name": "prometheus",
-        "cpu_pct": 0.63
-      },
-      {
-        "name": "loki",
-        "cpu_pct": 0.56
+        "cpu_pct": 0.71
       }
     ]
   },
@@ -406,7 +406,7 @@
     ]
   },
   "unhealthy_services": {
-    "timestamp": "2025-12-31T12:00:18+01:00",
+    "timestamp": "2026-01-01T12:04:08+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_services": []
@@ -499,7 +499,7 @@
     }
   },
   "unhealthy_dependencies": {
-    "timestamp": "2025-12-31T06:34:21+01:00",
+    "timestamp": "2026-01-01T06:31:22+01:00",
     "ttl": 60,
     "result": {
       "unhealthy_dependencies": [

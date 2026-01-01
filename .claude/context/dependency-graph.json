@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2025-12-31T06:01:57+01:00",
+  "generated_at": "2026-01-01T06:04:56+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -348,6 +348,25 @@
       "restart_priority": 0,
       "blast_radius": 1
     },
+    "ocis-test": {
+      "dependencies": [
+        {
+          "target": "traefik",
+          "type": "runtime",
+          "strength": "hard",
+          "source": "quadlet"
+        }
+      ],
+      "dependents": [],
+      "networks": [
+        "systemd-reverse_proxy.network",
+        "systemd-monitoring.network"
+      ],
+      "external_access": false,
+      "critical": false,
+      "restart_priority": 0,
+      "blast_radius": 0
+    },
     "postgresql-immich": {
       "dependencies": [
         {
@@ -558,6 +577,7 @@
         }
       ],
       "dependents": [
+        "ocis-test",
         "vaultwarden"
       ],
       "networks": [
@@ -568,7 +588,7 @@
       "external_access": false,
       "critical": true,
       "restart_priority": 0,
-      "blast_radius": 1
+      "blast_radius": 2
     },
     "vaultwarden": {
       "dependencies": [
@@ -698,13 +718,13 @@
     },
     "systemd-reverse_proxy": {
       "members": [
-        "vaultwarden",
         "homepage",
         "authelia",
         "traefik",
         "grafana",
         "immich-server",
         "nextcloud",
+        "vaultwarden",
         "collabora",
         "loki",
         "alertmanager",
@@ -716,8 +736,8 @@
     }
   },
   "metadata": {
-    "total_services": 29,
-    "total_dependencies": 42,
+    "total_services": 30,
+    "total_dependencies": 43,
     "sources": [
       "quadlets",
       "networks",
