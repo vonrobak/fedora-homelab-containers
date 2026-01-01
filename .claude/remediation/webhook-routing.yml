@@ -41,7 +41,7 @@ routes:
   # Immich SLO Violations
   - alert: SLOBurnRateTier1_Immich
     playbook: slo-violation-remediation
-    parameter: "--service immich --slo-target 99.9 --tier 1"
+    parameter: "--service immich-server --slo-target 99.9 --tier 1"
     confidence: 95
     priority: critical
     description: "Immich SLO violation - error budget exhausting in <3 hours"
@@ -50,7 +50,7 @@ routes:
 
   - alert: SLOBurnRateTier2_Immich
     playbook: slo-violation-remediation
-    parameter: "--service immich --slo-target 99.9 --tier 2"
+    parameter: "--service immich-server --slo-target 99.9 --tier 2"
     confidence: 90
     priority: high
     description: "Immich elevated burn rate - error budget exhausting in <1 day"
@@ -79,16 +79,16 @@ routes:
   # Nextcloud SLO Violations
   - alert: SLOBurnRateTier1_Nextcloud
     playbook: slo-violation-remediation
-    parameter: "--service nextcloud-aio-mastercontainer --slo-target 99.5 --tier 1"
+    parameter: "--service nextcloud --slo-target 99.5 --tier 1"
     confidence: 90
     priority: critical
     description: "Nextcloud SLO violation - file sync/access failures"
-    notes: "Tier 1: Users experiencing file access issues. Restart AIO stack."
+    notes: "Tier 1: Users experiencing file access issues. Restart Nextcloud service."
     requires_confirmation: false
 
   - alert: SLOBurnRateTier2_Nextcloud
     playbook: slo-violation-remediation
-    parameter: "--service nextcloud-aio-mastercontainer --slo-target 99.5 --tier 2"
+    parameter: "--service nextcloud --slo-target 99.5 --tier 2"
     confidence: 85
     priority: high
     description: "Nextcloud elevated burn rate - performance degradation"

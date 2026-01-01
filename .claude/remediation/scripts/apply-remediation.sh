@@ -991,11 +991,27 @@ execute_slo_violation_remediation() {
     # Simplified SLO remediation logic (until YAML executor is built)
     log "${BLUE}[Pre-Checks]${NC}"
 
+    # Map systemd service name to Prometheus metric name
+    # (systemd services: immich-server, nextcloud | Prometheus metrics: immich, nextcloud)
+    case "${SERVICE}" in
+        immich-server)
+            PROM_SERVICE="immich"
+            log "  Service mapping: ${SERVICE} → Prometheus: ${PROM_SERVICE}"
+            ;;
+        nextcloud)
+            PROM_SERVICE="nextcloud"
+            log "  Service mapping: ${SERVICE} → Prometheus: ${PROM_SERVICE}"
+            ;;
+        *)
+            PROM_SERVICE="${SERVICE}"
+            ;;
+    esac
+
     # Capture baseline SLO state
     log "  Capturing baseline SLO metrics..."
     if command -v curl >/dev/null 2>&1; then
-        SLI_BEFORE=$(curl -s "http://localhost:9090/api/v1/query?query=sli:${SERVICE}:availability:ratio" | jq -r '.data.result[0].value[1] // "N/A"' 2>/dev/null || echo "N/A")
-        BURN_RATE_BEFORE=$(curl -s "http://localhost:9090/api/v1/query?query=burn_rate:${SERVICE}:availability:1h" | jq -r '.data.result[0].value[1] // "0"' 2>/dev/null || echo "0")
+        SLI_BEFORE=$(curl -s "http://localhost:9090/api/v1/query?query=sli:${PROM_SERVICE}:availability:ratio" | jq -r '.data.result[0].value[1] // "N/A"' 2>/dev/null || echo "N/A")
+        BURN_RATE_BEFORE=$(curl -s "http://localhost:9090/api/v1/query?query=burn_rate:${PROM_SERVICE}:availability:1h" | jq -r '.data.result[0].value[1] // "0"' 2>/dev/null || echo "0")
         log "    SLI (before): ${SLI_BEFORE}"
         log "    Burn rate (before): ${BURN_RATE_BEFORE}x"
     else
@@ -1061,8 +1077,8 @@ execute_slo_violation_remediation() {
     # Measure SLO improvement
     log "  Measuring SLO improvement..."
     if command -v curl >/dev/null 2>&1 && [[ "$DRY_RUN" == "false" ]]; then
-        SLI_AFTER=$(curl -s "http://localhost:9090/api/v1/query?query=sli:${SERVICE}:availability:ratio" | jq -r '.data.result[0].value[1] // "N/A"' 2>/dev/null || echo "N/A")
-        BURN_RATE_AFTER=$(curl -s "http://localhost:9090/api/v1/query?query=burn_rate:${SERVICE}:availability:5m" | jq -r '.data.result[0].value[1] // "0"' 2>/dev/null || echo "0")
+        SLI_AFTER=$(curl -s "http://localhost:9090/api/v1/query?query=sli:${PROM_SERVICE}:availability:ratio" | jq -r '.data.result[0].value[1] // "N/A"' 2>/dev/null || echo "N/A")
+        BURN_RATE_AFTER=$(curl -s "http://localhost:9090/api/v1/query?query=burn_rate:${PROM_SERVICE}:availability:5m" | jq -r '.data.result[0].value[1] // "0"' 2>/dev/null || echo "0")
 
         log "    SLI (after): ${SLI_AFTER}"
         log "    Burn rate (after): ${BURN_RATE_AFTER}x"
