@@ -259,9 +259,12 @@ http:
     # ═══════════════════════════════════════════════════════════
     
     # Circuit breaker (prevents cascade failures)
+    # Tuned for low-traffic services: higher network error threshold (50%)
+    # to prevent false positives from single failures, while still protecting
+    # against server errors (30% threshold for 5xx responses)
     circuit-breaker:
       circuitBreaker:
-        expression: "NetworkErrorRatio() > 0.30"  # Open if >30% network errors
+        expression: "NetworkErrorRatio() > 0.50 || ResponseCodeRatio(500, 600, 0, 600) > 0.30"
         checkPeriod: 10s
         fallbackDuration: 30s
         recoveryDuration: 10s
