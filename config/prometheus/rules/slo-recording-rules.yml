@@ -68,7 +68,7 @@ groups:
       # Traefik Gateway - Uptime
       - record: sli:traefik:availability:ratio
         expr: |
-          avg_over_time(up{job="traefik"}[5m])
+          scalar(avg_over_time(up{job="traefik"}[5m]))
 
   # ===========================================================================
   # LATENCY SLIs (Response Time)
@@ -227,7 +227,7 @@ groups:
 
       - record: slo:traefik:availability:actual
         expr: |
-          avg_over_time(up{job="traefik"}[30d])
+          scalar(avg_over_time(up{job="traefik"}[30d]))
 
       - record: slo:traefik:availability:compliant
         expr: |
