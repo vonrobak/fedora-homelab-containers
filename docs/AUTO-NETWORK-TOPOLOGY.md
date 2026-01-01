@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-01-01 12:10:53 UTC
+**Generated:** 2026-01-01 13:19:40 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -47,84 +47,95 @@ graph TB
 
 ---
 
-## 2. Network Architecture & Boundaries
+## 2. Network Topology
 
-Shows Podman networks as isolated segments with services grouped by their **primary network** (first `Network=` line in quadlet = default route).
+Shows actual Podman network membership. Services appear in EVERY network they belong to (accuracy over brevity).
 
 ```mermaid
 graph TB
-    Internet[🌐 Internet]
-    Internet -.->|Port 80/443| GW[Gateway: Traefik]
 
-
-    subgraph auth_services_net["🔷 auth_services Network<br/>10.89.3.0/24"]
-        direction TB
-        auth_services_authelia[authelia<br/><small>+auth_services,reverse_proxy</small>]
+    subgraph auth_services["auth_services<br/>10.89.3.0/24"]
+        direction LR
+        auth_services_authelia[authelia]
         auth_services_redis_authelia[redis-authelia]
-        auth_services_traefik[traefik<br/><small>+auth_services,monitoring, reverse_proxy</small>]
+        auth_services_traefik[traefik]
     end
 
-    subgraph media_services_net["🔷 media_services Network<br/>10.89.1.0/24"]
-        direction TB
-        media_services_jellyfin[jellyfin<br/><small>+media_services,monitoring, reverse_proxy</small>]
+    subgraph media_services["media_services<br/>10.89.1.0/24"]
+        direction LR
+        media_services_jellyfin[jellyfin]
     end
 
-    subgraph monitoring_net["🔷 monitoring Network<br/>10.89.4.0/24"]
-        direction TB
+    subgraph monitoring["monitoring<br/>10.89.4.0/24"]
+        direction LR
         monitoring_alert_discord_relay[alert-discord-relay]
-        monitoring_alertmanager[alertmanager<br/><small>+monitoring,reverse_proxy</small>]
+        monitoring_alertmanager[alertmanager]
         monitoring_cadvisor[cadvisor]
-        monitoring_grafana[grafana<br/><small>+monitoring,reverse_proxy</small>]
-        monitoring_immich_server[immich-server<br/><small>+monitoring,photos, reverse_proxy</small>]
-        monitoring_loki[loki<br/><small>+monitoring,reverse_proxy</small>]
-        monitoring_nextcloud[nextcloud<br/><small>+monitoring,nextcloud, reverse_proxy</small>]
-        monitoring_nextcloud_db[nextcloud-db<br/><small>+monitoring,nextcloud</small>]
-        monitoring_nextcloud_redis[nextcloud-redis<br/><small>+monitoring,nextcloud</small>]
+        monitoring_grafana[grafana]
+        monitoring_immich_server[immich-server]
+        monitoring_jellyfin[jellyfin]
+        monitoring_loki[loki]
+        monitoring_nextcloud[nextcloud]
+        monitoring_nextcloud_db[nextcloud-db]
+        monitoring_nextcloud_redis[nextcloud-redis]
         monitoring_node_exporter[node_exporter]
-        monitoring_prometheus[prometheus<br/><small>+monitoring,reverse_proxy</small>]
+        monitoring_prometheus[prometheus]
         monitoring_promtail[promtail]
+        monitoring_traefik[traefik]
     end
 
-    subgraph nextcloud_net["🔷 nextcloud Network<br/>10.89.10.0/24"]
-        direction TB
-        nextcloud_collabora[collabora<br/><small>+nextcloud,reverse_proxy</small>]
+    subgraph nextcloud["nextcloud<br/>10.89.10.0/24"]
+        direction LR
+        nextcloud_collabora[collabora]
+        nextcloud_nextcloud[nextcloud]
+        nextcloud_nextcloud_db[nextcloud-db]
+        nextcloud_nextcloud_redis[nextcloud-redis]
     end
 
-    subgraph photos_net["🔷 photos Network<br/>10.89.5.0/24"]
-        direction TB
+    subgraph photos["photos<br/>10.89.5.0/24"]
+        direction LR
         photos_immich_ml[immich-ml]
+        photos_immich_server[immich-server]
         photos_postgresql_immich[postgresql-immich]
         photos_redis_immich[redis-immich]
     end
 
-    subgraph reverse_proxy_net["🔷 reverse_proxy Network<br/>10.89.2.0/24"]
-        direction TB
+    subgraph reverse_proxy["reverse_proxy<br/>10.89.2.0/24"]
+        direction LR
+        reverse_proxy_alertmanager[alertmanager]
+        reverse_proxy_authelia[authelia]
+        reverse_proxy_collabora[collabora]
         reverse_proxy_crowdsec[crowdsec]
+        reverse_proxy_grafana[grafana]
         reverse_proxy_homepage[homepage]
+        reverse_proxy_immich_server[immich-server]
+        reverse_proxy_jellyfin[jellyfin]
+        reverse_proxy_loki[loki]
+        reverse_proxy_nextcloud[nextcloud]
+        reverse_proxy_prometheus[prometheus]
+        reverse_proxy_traefik[traefik]
         reverse_proxy_vaultwarden[vaultwarden]
     end
 
-    %% Cross-network connections
-    GW -.->|Routes| reverse_proxy_net
-    reverse_proxy_net -.->|Scrapes metrics| monitoring_net
-    reverse_proxy_immich_server -.->|Backend| photos_net
-    reverse_proxy_nextcloud -.->|Backend| nextcloud_net
-    reverse_proxy_jellyfin -.->|Backend| media_services_net
-
     %% Network styling
     classDef gatewayNet fill:#e6f3ff,stroke:#1a5490,stroke-width:3px
-    classDef internalNet fill:#fff9e6,stroke:#d68910,stroke-width:2px
+    classDef observeNet fill:#fff9e6,stroke:#d68910,stroke-width:3px
     classDef backendNet fill:#f0f0f0,stroke:#666,stroke-width:2px
 
-    class reverse_proxy_net gatewayNet
-    class monitoring_net internalNet
-    class auth_services_net,photos_net,nextcloud_net,media_services_net backendNet
+    class reverse_proxy gatewayNet
+    class monitoring observeNet
+    class auth_services,photos,nextcloud,media_services backendNet
 ```
 
-**Network Roles:**
-- **reverse_proxy** (Gateway) - Internet-accessible services, provides default route
-- **monitoring** (Observability) - Scrapes metrics from all services across networks
-- **auth_services**, **photos**, **nextcloud**, **media_services** (Backend) - Function-specific isolation
+**Network Functions:**
+- **reverse_proxy** (10.89.2.0/24) - Gateway for Internet-accessible services
+- **monitoring** (10.89.4.0/24) - Observability network (scrapes metrics from all services)
+- **auth_services** (10.89.3.0/24) - Authentication and session management
+- **photos** (10.89.5.0/24) - Immich stack isolation
+- **nextcloud** (10.89.10.0/24) - Nextcloud stack isolation
+- **media_services** (10.89.1.0/24) - Jellyfin media processing
+
+**Note:** Services appear in multiple network boxes if they belong to multiple networks. This accurately represents Podman network membership.
 
 ---
 

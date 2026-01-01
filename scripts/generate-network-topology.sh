@@ -196,75 +196,60 @@ EOF
 
 ---
 
-## 2. Network Architecture & Boundaries
+## 2. Network Topology
 
-Shows Podman networks as isolated segments with services grouped by their **primary network** (first `Network=` line in quadlet = default route).
+Shows actual Podman network membership. Services appear in EVERY network they belong to (accuracy over brevity).
 
 ```mermaid
 graph TB
-    Internet[🌐 Internet]
-    Internet -.->|Port 80/443| GW[Gateway: Traefik]
-
 EOF
 
-    # Build network-centric view dynamically
+    # Build accurate network topology - services appear in ALL networks they're in
     log "Building network topology..."
 
-    # Process each network
+    # Process each network and show ALL its members
     for network in $(get_networks); do
         local network_short=$(echo "$network" | sed 's/systemd-//')
         local subnet=$(get_network_subnet "$network")
 
         cat >> "$OUTPUT_FILE" <<EOF
 
-    subgraph ${network_short}_net["🔷 ${network_short} Network<br/>${subnet}"]
-        direction TB
+    subgraph ${network_short}["${network_short}<br/>${subnet}"]
+        direction LR
 EOF
 
-        # Add services that have this as PRIMARY network
-        for container in $(get_all_containers); do
-            local primary_net=$(get_primary_network "$container")
-            if [[ "$primary_net" == "$network_short" ]]; then
-                local node_name=$(echo "$container" | sed 's/-/_/g')
-                local networks=$(get_container_networks "$container")
-                local network_count=$(echo "$networks" | tr ',' '\n' | wc -l)
-
-                # Add badge for multi-network services
-                if [[ $network_count -gt 1 ]]; then
-                    echo "        ${network_short}_${node_name}[${container}<br/><small>+${network_short},$(echo $networks | sed "s/${network_short},//;s/,/, /g")</small>]" >> "$OUTPUT_FILE"
-                else
-                    echo "        ${network_short}_${node_name}[${container}]" >> "$OUTPUT_FILE"
-                fi
-            fi
+        # Add ALL services in this network
+        for container in $(get_network_members "$network"); do
+            local node_name=$(echo "$container" | sed 's/-/_/g')
+            # Unique node ID per network to avoid conflicts
+            echo "        ${network_short}_${node_name}[${container}]" >> "$OUTPUT_FILE"
         done
 
         echo "    end" >> "$OUTPUT_FILE"
     done
 
-    # Add cross-network connections
+    # Network styling based on function
     cat >> "$OUTPUT_FILE" <<'EOF'
-
-    %% Cross-network connections
-    GW -.->|Routes| reverse_proxy_net
-    reverse_proxy_net -.->|Scrapes metrics| monitoring_net
-    reverse_proxy_immich_server -.->|Backend| photos_net
-    reverse_proxy_nextcloud -.->|Backend| nextcloud_net
-    reverse_proxy_jellyfin -.->|Backend| media_services_net
 
     %% Network styling
     classDef gatewayNet fill:#e6f3ff,stroke:#1a5490,stroke-width:3px
-    classDef internalNet fill:#fff9e6,stroke:#d68910,stroke-width:2px
+    classDef observeNet fill:#fff9e6,stroke:#d68910,stroke-width:3px
     classDef backendNet fill:#f0f0f0,stroke:#666,stroke-width:2px
 
-    class reverse_proxy_net gatewayNet
-    class monitoring_net internalNet
-    class auth_services_net,photos_net,nextcloud_net,media_services_net backendNet
+    class reverse_proxy gatewayNet
+    class monitoring observeNet
+    class auth_services,photos,nextcloud,media_services backendNet
 ```
 
-**Network Roles:**
-- **reverse_proxy** (Gateway) - Internet-accessible services, provides default route
-- **monitoring** (Observability) - Scrapes metrics from all services across networks
-- **auth_services**, **photos**, **nextcloud**, **media_services** (Backend) - Function-specific isolation
+**Network Functions:**
+- **reverse_proxy** (10.89.2.0/24) - Gateway for Internet-accessible services
+- **monitoring** (10.89.4.0/24) - Observability network (scrapes metrics from all services)
+- **auth_services** (10.89.3.0/24) - Authentication and session management
+- **photos** (10.89.5.0/24) - Immich stack isolation
+- **nextcloud** (10.89.10.0/24) - Nextcloud stack isolation
+- **media_services** (10.89.1.0/24) - Jellyfin media processing
+
+**Note:** Services appear in multiple network boxes if they belong to multiple networks. This accurately represents Podman network membership.
 
 ---
 
