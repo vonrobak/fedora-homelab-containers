@@ -1,103 +1,147 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2025-12-31 20:00:36 UTC
+**Generated:** 2026-01-01 11:08:03 UTC
 **System:** fedora-htpc
 
-This document provides visual representations of the homelab network architecture using Mermaid diagrams.
+This document provides visual representations of the homelab network architecture.
 
 ---
 
-## Network Overview
+## Hierarchical Network Architecture
 
-Shows all Podman networks and their member services.
+Shows the layered architecture from Internet to services. Each service appears **once** in its primary functional layer.
 
 ```mermaid
 graph TB
-    subgraph Internet
-        User[User/Browser]
-        WAN[Internet<br/>Port 80/443]
-    end
+    %% Internet Layer
+    Internet[🌐 Internet<br/>Port 80/443]
 
-    WAN -->|Port Forward| Traefik
+    %% Gateway Layer - Entry point
+    Internet -->|Port Forward| Traefik
 
+    %% Security Middleware
+    Traefik -->|1. IP Check| CrowdSec[CrowdSec<br/>IP Reputation]
+    Traefik -->|2. Auth| Authelia[Authelia<br/>SSO + YubiKey]
 
-    subgraph auth_services[auth_services Network<br/>10.89.3.0/24]
-        authelia[authelia]
-        redis_authelia[redis-authelia]
-        traefik[traefik]
-    end
+    %% Public Services (Internet-accessible via reverse_proxy network)
+    Traefik -->|Routes| Jellyfin[Jellyfin<br/>Media Server]
+    Traefik -->|Routes| Immich[Immich<br/>Photo Management]
+    Traefik -->|Routes| Nextcloud[Nextcloud<br/>File Sync]
+    Traefik -->|Routes| Vaultwarden[Vaultwarden<br/>Passwords]
+    Traefik -->|Routes| Collabora[Collabora<br/>Office Suite]
+    Traefik -->|Routes| Homepage[Homepage<br/>Dashboard]
 
-    subgraph media_services[media_services Network<br/>10.89.1.0/24]
-        jellyfin[jellyfin]
-    end
+    %% Monitoring Services (reverse_proxy + monitoring networks)
+    Traefik -->|Routes| Prometheus[Prometheus<br/>Metrics]
+    Traefik -->|Routes| Grafana[Grafana<br/>Dashboards]
+    Traefik -->|Routes| Loki[Loki<br/>Logs]
+    Traefik -->|Routes| Alertmanager[Alertmanager<br/>Alerts]
 
-    subgraph monitoring[monitoring Network<br/>10.89.4.0/24]
-        alert_discord_relay[alert-discord-relay]
-        alertmanager[alertmanager]
-        cadvisor[cadvisor]
-        grafana[grafana]
-        immich_server[immich-server]
-        jellyfin[jellyfin]
-        loki[loki]
-        nextcloud[nextcloud]
-        nextcloud_db[nextcloud-db]
-        nextcloud_redis[nextcloud-redis]
-        node_exporter[node_exporter]
-        prometheus[prometheus]
-        promtail[promtail]
-        traefik[traefik]
-    end
+    %% Backend Services (Internal only - monitoring network)
+    Prometheus -.->|Scrapes| NodeExporter[Node Exporter<br/>Host Metrics]
+    Prometheus -.->|Scrapes| cAdvisor[cAdvisor<br/>Container Metrics]
+    Prometheus -.->|Scrapes| Promtail[Promtail<br/>Log Collection]
+    Alertmanager -.->|Webhooks| DiscordRelay[Discord Relay<br/>Notifications]
 
-    subgraph nextcloud[nextcloud Network<br/>10.89.10.0/24]
-        collabora[collabora]
-        nextcloud[nextcloud]
-        nextcloud_db[nextcloud-db]
-        nextcloud_redis[nextcloud-redis]
-    end
+    %% Support Services
+    Authelia -->|Session| RedisAuth[(Redis<br/>Auth Sessions)]
+    Jellyfin -.->|Media Storage| MediaLib[/Media Library<br/>BTRFS/]
 
-    subgraph photos[photos Network<br/>10.89.5.0/24]
-        immich_ml[immich-ml]
-        immich_server[immich-server]
-        postgresql_immich[postgresql-immich]
-        redis_immich[redis-immich]
-    end
+    Immich -->|ML Processing| ImmichML[Immich ML<br/>Recognition]
+    Immich -->|Photos| PostgresImmich[(PostgreSQL<br/>Immich DB)]
+    Immich -->|Cache| RedisImmich[(Redis<br/>Immich Cache)]
 
-    subgraph reverse_proxy[reverse_proxy Network<br/>10.89.2.0/24]
-        alertmanager[alertmanager]
-        authelia[authelia]
-        collabora[collabora]
-        crowdsec[crowdsec]
-        grafana[grafana]
-        homepage[homepage]
-        immich_server[immich-server]
-        jellyfin[jellyfin]
-        loki[loki]
-        nextcloud[nextcloud]
-        prometheus[prometheus]
-        traefik[traefik]
-        vaultwarden[vaultwarden]
-    end
+    Nextcloud -->|Database| NextcloudDB[(PostgreSQL<br/>Nextcloud DB)]
+    Nextcloud -->|Cache| NextcloudRedis[(Redis<br/>Nextcloud Cache)]
 
-    Traefik -->|Routes to| jellyfin
-    Traefik -->|Routes to| immich_server
-    Traefik -->|Routes to| nextcloud
-    Traefik -->|Routes to| vaultwarden
-    Traefik -->|Routes to| grafana
-    Traefik -->|Routes to| prometheus
-    Traefik -->|Auth check| authelia
-    authelia -->|Session storage| redis_authelia
-    Traefik -->|Security check| crowdsec
+    %% Styling - Readable colors with good contrast
+    style Traefik fill:#1a5490,stroke:#0d2a45,stroke-width:4px,color:#fff
+    style CrowdSec fill:#c41e3a,stroke:#8b1528,stroke-width:2px,color:#fff
+    style Authelia fill:#2d5016,stroke:#1a3010,stroke-width:2px,color:#fff
 
-    style Traefik fill:#f9f,stroke:#333,stroke-width:4px
-    style authelia fill:#bbf,stroke:#333,stroke-width:2px
-    style crowdsec fill:#fbb,stroke:#333,stroke-width:2px
+    style Jellyfin fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
+    style Immich fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
+    style Nextcloud fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
+    style Vaultwarden fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
+    style Collabora fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
+    style Homepage fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#000
+
+    style Prometheus fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
+    style Grafana fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
+    style Loki fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
+    style Alertmanager fill:#fff4e6,stroke:#d68910,stroke-width:2px,color:#000
+
+    style NodeExporter fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
+    style cAdvisor fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
+    style Promtail fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
+    style DiscordRelay fill:#f5f5f5,stroke:#888,stroke-width:1px,color:#000
+
+    style ImmichML fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    style PostgresImmich fill:#d4e6f1,stroke:#5499c7,stroke-width:2px,color:#000
+    style RedisImmich fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
+    style NextcloudDB fill:#d4e6f1,stroke:#5499c7,stroke-width:2px,color:#000
+    style NextcloudRedis fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
+    style RedisAuth fill:#fadbd8,stroke:#e74c3c,stroke-width:2px,color:#000
 ```
+
+**Legend:**
+- 🔵 **Blue** = Gateway (Traefik)
+- 🔴 **Red** = Security (CrowdSec)
+- 🟢 **Green** = Authentication (Authelia)
+- ⚪ **Light Blue** = Public Services
+- 🟡 **Cream** = Monitoring Services
+- ⚫ **Gray** = Internal Services
+- 🗄️ **Databases** = Cylinder shape
+- **Solid arrows** = Primary traffic flow
+- **Dotted arrows** = Backend/scraping connections
+
+---
+
+## Network Membership Matrix
+
+Shows which services belong to which networks. Many services are members of multiple networks.
+
+| Service | reverse_proxy | monitoring | auth_services | photos | nextcloud | media_services |
+|---------|:-------------:|:----------:|:-------------:|:------:|:---------:|:--------------:|
+| **Gateway & Security** |
+| traefik | ✅ | ✅ | ✅ | - | - | - |
+| crowdsec | ✅ | - | - | - | - | - |
+| authelia | ✅ | - | ✅ | - | - | - |
+| redis-authelia | - | - | ✅ | - | - | - |
+| **Public Services** |
+| jellyfin | ✅ | ✅ | - | - | - | ✅ |
+| immich-server | ✅ | ✅ | - | ✅ | - | - |
+| nextcloud | ✅ | ✅ | - | - | ✅ | - |
+| vaultwarden | ✅ | - | - | - | - | - |
+| collabora | ✅ | - | - | - | ✅ | - |
+| homepage | ✅ | - | - | - | - | - |
+| **Monitoring** |
+| prometheus | ✅ | ✅ | - | - | - | - |
+| grafana | ✅ | ✅ | - | - | - | - |
+| loki | ✅ | ✅ | - | - | - | - |
+| alertmanager | ✅ | ✅ | - | - | - | - |
+| node_exporter | - | ✅ | - | - | - | - |
+| cadvisor | - | ✅ | - | - | - | - |
+| promtail | - | ✅ | - | - | - | - |
+| alert-discord-relay | - | ✅ | - | - | - | - |
+| **Backend Services** |
+| postgresql-immich | - | - | - | ✅ | - | - |
+| redis-immich | - | - | - | ✅ | - | - |
+| immich-ml | - | - | - | ✅ | - | - |
+| nextcloud-db | - | ✅ | - | - | ✅ | - |
+| nextcloud-redis | - | ✅ | - | - | ✅ | - |
+
+**Key Insights:**
+- **Traefik** is in 3 networks (gateway, monitoring, auth) to route traffic and be monitored
+- **Internet-facing services** are all in `reverse_proxy` (primary) + their functional network
+- **Monitoring network** has the most members (14 services) - observability across all tiers
+- **Backend databases/caches** are isolated to their functional networks only
 
 ---
 
 ## Request Flow
 
-Shows the path of an authenticated request through the system.
+Shows the path of an authenticated request through the middleware layers.
 
 ```mermaid
 sequenceDiagram
@@ -109,12 +153,12 @@ sequenceDiagram
 
     User->>Traefik: HTTPS Request<br/>jellyfin.patriark.org
 
-    Note over Traefik: Layer 1: Security
+    Note over Traefik: Layer 1: IP Reputation
     Traefik->>CrowdSec: Check IP reputation
     CrowdSec-->>Traefik: ✓ IP not banned
 
     Note over Traefik: Layer 2: Rate Limiting
-    Traefik->>Traefik: Check rate limit<br/>(200 req/min)
+    Traefik->>Traefik: Check rate limit<br/>(100-200 req/min)
 
     Note over Traefik: Layer 3: Authentication
     Traefik->>Authelia: Verify session
@@ -128,10 +172,16 @@ sequenceDiagram
 
     Authelia-->>Traefik: ✓ Valid session
 
-    Note over Traefik: Layer 4: Headers & Proxy
-    Traefik->>Service: Forward request<br/>+ security headers
+    Note over Traefik: Layer 4: Security Headers
+    Traefik->>Service: Forward request<br/>+ HSTS, CSP, etc.
     Service-->>User: Response
 ```
+
+**Middleware Ordering (fail-fast principle):**
+1. **CrowdSec** - Fastest (cache lookup) - reject banned IPs immediately
+2. **Rate Limiting** - Fast (counter check) - prevent DoS
+3. **Authelia** - Expensive (session validation + SSO) - only for legitimate traffic
+4. **Security Headers** - Applied on response
 
 ---
 
@@ -235,57 +285,89 @@ sequenceDiagram
 
 ## Architecture Principles
 
-### Network Segmentation
+### Network Segmentation Strategy
 
 Services are organized into isolated networks based on function and trust level:
 
-1. **reverse_proxy** - Gateway network
+1. **reverse_proxy** (10.89.2.0/24) - **Gateway Network**
    - Contains Traefik and all internet-accessible services
-   - First network in quadlets (gets default route for internet access)
+   - **Critical:** First network in quadlets (gets default route for internet access)
+   - 13 members including all public-facing services
 
-2. **auth_services** - Authentication network
-   - Authelia SSO and Redis session storage
-   - Isolated from direct internet access
+2. **monitoring** (10.89.4.0/24) - **Observability Network**
+   - Prometheus, Grafana, Loki, exporters, and relay services
+   - Scrapes metrics from services across all other networks
+   - 14 members (most connected network)
 
-3. **monitoring** - Observability network
-   - Prometheus, Grafana, Loki, exporters
-   - Scrapes metrics from all services
+3. **auth_services** (10.89.3.0/24) - **Authentication Network**
+   - Authelia SSO, Redis session storage, and Traefik
+   - Isolated from direct internet except through reverse proxy
+   - 3 members (tightly controlled)
 
-4. **media_services** - Media processing
-   - Jellyfin and related media services
+4. **photos** (10.89.5.0/24) - **Photo Management Network**
+   - Immich application stack with PostgreSQL, Redis, and ML
+   - Backend services isolated from internet
+   - 4 members
 
-5. **photos** - Photo management
-   - Immich and its supporting services (PostgreSQL, Redis, ML)
+5. **nextcloud** (10.89.10.0/24) - **File Sync Network**
+   - Nextcloud application with PostgreSQL, Redis, and Collabora
+   - Backend databases accessible only within this network
+   - 4 members
 
-### Network Ordering
+6. **media_services** (10.89.1.0/24) - **Media Processing Network**
+   - Jellyfin and media-related services
+   - 1 member (Jellyfin also in reverse_proxy and monitoring)
 
-**Critical:** First network in quadlet `Network=` lines gets the default route.
+### Multi-Network Services
+
+**Why multiple networks?**
+- **reverse_proxy** = Internet accessibility
+- **monitoring** = Metrics scraping
+- **Functional network** = Backend communication (databases, caches)
+
+**Examples:**
+- **Traefik (3 networks):** reverse_proxy (gateway), auth_services (Authelia access), monitoring (metrics)
+- **Jellyfin (3 networks):** reverse_proxy (internet), monitoring (metrics), media_services (function)
+- **Immich (3 networks):** reverse_proxy (internet), monitoring (metrics), photos (backend DB/cache)
+- **Nextcloud (3 networks):** reverse_proxy (internet), monitoring (metrics), nextcloud (backend DB/cache)
+
+### Network Ordering in Quadlets
+
+**Critical:** First `Network=` line in quadlet gets the default route (internet access).
 
 ```ini
-# Correct - can reach internet
+# ✅ Correct - can reach internet AND internal services
 Network=systemd-reverse_proxy.network
 Network=systemd-monitoring.network
+Network=systemd-photos.network
 
-# Wrong - cannot reach internet
+# ❌ Wrong - cannot reach internet (monitoring is internal-only)
 Network=systemd-monitoring.network
 Network=systemd-reverse_proxy.network
 ```
 
-### Service Discovery
+**Rule of thumb:**
+- Internet-facing services: `reverse_proxy` first
+- Internal services: Functional network first (photos, nextcloud, etc.)
+- Monitoring-only: `monitoring` network only (no internet needed)
 
-Services on the same network can communicate using container names as hostnames (Podman DNS):
-- `http://authelia:9091` - Traefik can reach Authelia
-- `http://redis-authelia:6379` - Authelia can reach Redis
+### Service Discovery (Podman DNS)
+
+Services on the same network can communicate using container names as hostnames:
+- `http://authelia:9091` - Traefik reaches Authelia (both in auth_services)
+- `http://redis-authelia:6379` - Authelia reaches Redis (both in auth_services)
+- `http://postgresql-immich:5432` - Immich reaches database (both in photos)
+- `http://prometheus:9090` - Grafana reaches Prometheus (both in monitoring)
 
 ---
 
 ## Quick Links
 
-- [Service Catalog](AUTO-SERVICE-CATALOG.md) - What's running
-- [Dependency Graph](AUTO-DEPENDENCY-GRAPH.md) - Service relationships (when generated)
+- [Service Catalog](AUTO-SERVICE-CATALOG.md) - Complete service inventory
+- [Dependency Graph](AUTO-DEPENDENCY-GRAPH.md) - Service dependencies
 - [Homelab Architecture](20-operations/guides/homelab-architecture.md) - Full documentation
 
 ---
 
 *Auto-generated by `scripts/generate-network-topology.sh`*
-*GitHub renders Mermaid diagrams automatically*
+*GitHub renders Mermaid diagrams automatically - view this file on GitHub for best experience*
