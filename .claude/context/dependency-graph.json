@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated_at": "2026-01-01T06:04:56+01:00",
+  "generated_at": "2026-01-02T00:04:35+01:00",
   "services": {
     "alert-discord-relay": {
       "dependencies": [
@@ -29,9 +29,7 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [
-        "traefik"
-      ],
+      "dependents": [],
       "networks": [
         "systemd-reverse_proxy",
         "systemd-monitoring"
@@ -39,7 +37,7 @@
       "external_access": false,
       "critical": true,
       "restart_priority": 0,
-      "blast_radius": 1
+      "blast_radius": 0
     },
     "authelia": {
       "dependencies": [
@@ -101,9 +99,7 @@
           "source": "quadlet"
         }
       ],
-      "dependents": [
-        "traefik"
-      ],
+      "dependents": [],
       "networks": [
         "systemd-reverse_proxy",
         "systemd-nextcloud"
@@ -111,7 +107,7 @@
       "external_access": false,
       "critical": false,
       "restart_priority": 0,
-      "blast_radius": 1
+      "blast_radius": 0
     },
     "crowdsec": {
       "dependencies": [],
@@ -541,13 +537,6 @@
           "router": "nextcloud-secure"
         },
         {
-          "target": "collabora",
-          "type": "routing",
-          "strength": "soft",
-          "source": "traefik-router",
-          "router": "collabora-secure"
-        },
-        {
           "target": "grafana",
           "type": "routing",
           "strength": "soft",
@@ -567,13 +556,6 @@
           "strength": "soft",
           "source": "traefik-router",
           "router": "loki-secure"
-        },
-        {
-          "target": "alertmanager",
-          "type": "routing",
-          "strength": "soft",
-          "source": "traefik-router",
-          "router": "alertmanager-secure"
         }
       ],
       "dependents": [
@@ -667,9 +649,9 @@
   "networks": {
     "systemd-auth_services": {
       "members": [
-        "redis-authelia",
+        "traefik",
         "authelia",
-        "traefik"
+        "redis-authelia"
       ],
       "gateway": false
     },
@@ -683,15 +665,15 @@
       "members": [
         "alert-discord-relay",
         "cadvisor",
-        "promtail",
-        "nextcloud-db",
         "traefik",
+        "promtail",
+        "alertmanager",
+        "nextcloud-db",
         "grafana",
         "nextcloud-redis",
         "immich-server",
         "nextcloud",
         "loki",
-        "alertmanager",
         "node_exporter",
         "jellyfin",
         "prometheus"
@@ -718,16 +700,16 @@
     },
     "systemd-reverse_proxy": {
       "members": [
-        "homepage",
-        "authelia",
         "traefik",
+        "authelia",
+        "homepage",
+        "alertmanager",
         "grafana",
         "immich-server",
         "nextcloud",
-        "vaultwarden",
         "collabora",
+        "vaultwarden",
         "loki",
-        "alertmanager",
         "crowdsec",
         "jellyfin",
         "prometheus"
@@ -737,7 +719,7 @@
   },
   "metadata": {
     "total_services": 30,
-    "total_dependencies": 43,
+    "total_dependencies": 41,
     "sources": [
       "quadlets",
       "networks",

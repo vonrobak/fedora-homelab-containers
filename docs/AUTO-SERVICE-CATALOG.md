@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-01 06:03:55 UTC
+**Generated:** 2026-01-01 23:03:56 UTC
 **System:** fedora-htpc
 
 ---
@@ -17,21 +17,21 @@
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
 | loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
-| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
-| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | reverse_proxy,monitoring |
-| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
+| grafana | grafana/grafana:latest | ✅ Up | reverse_proxy,monitoring |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
+| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
+| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 
 ---
 
@@ -39,7 +39,7 @@
 
 - **Total Running:** 23
 - **Total Defined:** 23
-- **System Load:**  2,50, 2,82, 2,73
+- **System Load:**  0,94, 0,84, 0,84
 
 ---
 

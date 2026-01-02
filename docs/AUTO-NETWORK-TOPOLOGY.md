@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-01-01 13:19:40 UTC
+**Generated:** 2026-01-01 23:03:57 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -21,13 +21,13 @@ graph TB
 
     %% Services requiring Authelia SSO
     CrowdSec -->|Rate Limit| Authelia[Authelia<br/>SSO + YubiKey]
-    Authelia -->|Proxy| alertmanager[alertmanager]
     Authelia -->|Proxy| grafana[grafana]
     Authelia -->|Proxy| homepage[homepage]
     Authelia -->|Proxy| loki[loki]
     Authelia -->|Proxy| prometheus[prometheus]
 
     %% Services with native authentication (bypass Authelia)
+    CrowdSec -->|Rate Limit| alertmanager[alertmanager]
     CrowdSec -->|Rate Limit| collabora[collabora]
     CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]

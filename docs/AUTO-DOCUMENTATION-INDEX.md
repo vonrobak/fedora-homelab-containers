@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-01 06:03:57 UTC
-**Total Documents:** 304
+**Generated:** 2026-01-01 23:04:02 UTC
+**Total Documents:** 305
 
 ---
 
@@ -183,7 +183,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (21 documents)
+### 99-reports/ (22 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -212,7 +212,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2025-12-27: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
 - 2025-12-30: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 2025-12-30: [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
-- 2025-12-25: [2025-12-24-remediation-phase-5-implementation.md](98-journals/2025-12-24-remediation-phase-5-implementation.md)
+- 2025-12-26: [2025-12-26-monitoring-alerting-investigation.md](98-journals/2025-12-26-monitoring-alerting-investigation.md)
 
 ---
 
