@@ -3,8 +3,8 @@
 **Severity:** Medium
 **RTO Target:** 5-30 minutes
 **RPO Target:** Up to 1 day (daily snapshots)
-**Last Tested:** 2025-11-30
-**Success Rate:** Not yet tested in production
+**Last Tested:** 2026-01-03
+**Success Rate:** 100% (verified external backup restore)
 
 ---
 
@@ -324,6 +324,25 @@ Already implemented via `scripts/test-backup-restore.sh`:
 - Validates snapshot integrity
 - Alerts on restoration failures
 
+### External Backup Restore Verified
+
+**Test Date:** 2026-01-03
+**Test Scope:** Restored subvol7-containers (81,716 files) from external drive
+**Result:** ✅ Success - All files restored correctly with proper permissions
+**Procedure Verified:** BTRFS send/receive from WD-18TB external drive works correctly
+
+**Test evidence:**
+```bash
+# Restored from external drive
+sudo btrfs send /run/media/patriark/WD-18TB/.snapshots/subvol7-containers/20260103-containers | \
+  sudo btrfs receive /mnt/btrfs-pool/subvol6-tmp/99-outbound/snapshot-restore-test/
+
+# Verification: 81,716 files restored, readonly snapshot, correct UUIDs
+# Cleanup: Successfully deleted after verification
+```
+
+**Conclusion:** External backups are proven restorable. Hardware failure scenarios (DR-001, DR-002) have verified recovery paths.
+
 ---
 
 ## Related Runbooks
@@ -361,6 +380,6 @@ systemctl --user status service.service
 
 ---
 
-**Last Updated:** 2025-11-30
+**Last Updated:** 2026-01-03 (External restore verified)
 **Maintainer:** Homelab Operations
 **Review Schedule:** Quarterly

@@ -88,8 +88,9 @@ groups:
           description: "External backup drive may not be mounted or backups failing."
 
       # Warning: Backup taking too long
+      # Auto-resolves after 1h to prevent persistent alerts on weekly/monthly backups
       - alert: BackupSlowDuration
-        expr: backup_duration_seconds > 3600
+        expr: backup_duration_seconds > 3600 AND (time() - backup_last_success_timestamp) < 3600
         for: 5m
         labels:
           severity: warning
@@ -97,4 +98,4 @@ groups:
           component: btrfs-snapshot-backup
         annotations:
           summary: "Backup taking unusually long for {{ $labels.subvolume }}"
-          description: "Last backup took {{ $value | humanizeDuration }}. May indicate performance issues."
+          description: "Last backup took {{ $value | humanizeDuration }}. May indicate performance issues. Alert auto-resolves after 1h for weekly/monthly backups."
