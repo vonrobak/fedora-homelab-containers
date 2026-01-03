@@ -48,8 +48,10 @@ config/jellyfin/log/
 config/jellyfin/transcodes/
 config/jellyfin/transcoding-temp/
 
-# Large JSON reports (keep small ones)
-docs/99-reports/lastfm.json
+# Automated Reports Directory
+# Contains system-generated reports (intel, resource forecasts, diagnostics)
+# that are regenerated regularly and don't need version control
+docs/99-reports/
 
 # Container Runtime
 *.pid
