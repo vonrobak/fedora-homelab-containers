@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-01 23:04:02 UTC
-**Total Documents:** 305
+**Generated:** 2026-01-04 23:01:26 UTC
+**Total Documents:** 307
 
 ---
 
@@ -146,7 +146,7 @@
 
 ---
 
-### 97-plans/ (23 documents)
+### 97-plans/ (24 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-11-10-authelia-implementation-plan.md](97-plans/2025-11-10-authelia-implementation-plan.md)
@@ -154,6 +154,7 @@
 - 📋 [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
 - 📋 [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 📋 [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
+- 📋 [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
 - ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
@@ -175,7 +176,7 @@
 
 ---
 
-### 98-journals/ (119 documents)
+### 98-journals/ (120 documents)
 
 **Chronological project history (append-only log)**
 
@@ -203,16 +204,16 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2025-12-31: [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
 - 2025-12-31: [traefik.md](10-services/guides/traefik.md)
 - 2025-12-31: [2025-11-14-ADR-010-pattern-based-deployment.md](20-operations/decisions/2025-11-14-ADR-010-pattern-based-deployment.md)
-- 2025-12-26: [automation-reference.md](20-operations/guides/automation-reference.md)
 - 2025-12-31: [drift-detection-workflow.md](20-operations/guides/drift-detection-workflow.md)
 - 2025-12-31: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - 2025-12-29: [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
+- 2026-01-03: [DR-003-accidental-deletion.md](20-operations/runbooks/DR-003-accidental-deletion.md)
+- 2026-01-03: [DR-004-total-catastrophe.md](20-operations/runbooks/DR-004-total-catastrophe.md)
 - 2025-12-31: [secrets-management.md](30-security/guides/secrets-management.md)
-- 2025-12-26: [loki-remediation-queries.md](40-monitoring-and-documentation/guides/loki-remediation-queries.md)
-- 2025-12-27: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
 - 2025-12-30: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 2025-12-30: [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
-- 2025-12-26: [2025-12-26-monitoring-alerting-investigation.md](98-journals/2025-12-26-monitoring-alerting-investigation.md)
+- 2026-01-04: [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
+- 2025-12-30: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
 
 ---
 

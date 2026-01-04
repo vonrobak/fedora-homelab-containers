@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-01 23:03:56 UTC
+**Generated:** 2026-01-04 23:01:22 UTC
 **System:** fedora-htpc
 
 ---
@@ -22,16 +22,16 @@
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
-| grafana | grafana/grafana:latest | ✅ Up | reverse_proxy,monitoring |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 
 ---
 
@@ -39,7 +39,7 @@
 
 - **Total Running:** 23
 - **Total Defined:** 23
-- **System Load:**  0,94, 0,84, 0,84
+- **System Load:**  2,06, 1,25, 1,08
 
 ---
 
