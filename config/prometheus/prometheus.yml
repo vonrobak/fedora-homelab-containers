@@ -94,5 +94,13 @@ scrape_configs:
           instance: 'fedora-htpc'
           service: 'cadvisor'
 
+  # Unpoller - UniFi Network metrics exporter
+  - job_name: 'unpoller'
+    static_configs:
+      - targets: ['unpoller:9130']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'unpoller'
+
   # Nextcloud monitoring removed - ServerInfo endpoint requires auth
   # Nextcloud availability monitored via Traefik metrics (SLO recording rules)
