@@ -2,7 +2,7 @@
 
 A learning-focused homelab project documenting the journey of building a production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets.
 
-**Latest Milestone:** Autonomous Operations Framework Complete - Self-managing infrastructure with predictive analytics, natural language queries, and automated security hardening (2025-11-30)
+**Latest Milestone:** Complete Disaster Recovery Capability Achieved - Verified external backup restore from WD-18TB drive (81,716 files), confirmed off-site mirror exists. Full protection from hardware failures and location-level disasters. (2026-01-03)
 
 ## Systems
 
@@ -67,7 +67,7 @@ A learning-focused homelab project documenting the journey of building a product
 - **Security Framework** - Automated security audits, ADR compliance checking, and incident response runbooks
 - **Vulnerability Scanning** - Weekly CVE scanning with Trivy, Discord notifications for critical issues
 - **Layered Defense** - CrowdSec IP reputation → Rate limiting → Authelia YubiKey auth → Security headers
-- **Disaster Recovery** - 4 runbooks covering system SSD failure, BTRFS corruption, accidental deletion, and total catastrophe
+- **Disaster Recovery** - 4 runbooks covering all scenarios; verified external backup restore capability (Level 2 + off-site mirror Level 3)
 
 **Operational Excellence:**
 - **Pattern-Based Deployment** - 9 battle-tested deployment patterns with validation and health checks
@@ -75,7 +75,9 @@ A learning-focused homelab project documenting the journey of building a product
 - **Weekly Intelligence Reports** - Automated Friday summaries with health scores, predictions, and recommendations
 - **Skill-Based Automation** - Context-aware skill recommendations with usage analytics
 
-## Documentation Structure (well defined documentation logic in ~/containers/docs/CONTRIBUTING.md and ~/containers/docs/README.md)
+## Documentation Structure
+
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) and [docs/README.md](docs/README.md) for detailed documentation conventions.
 
 - `00-foundation/` - Core concepts and fundamentals
 - `10-services/` - Service-specific documentation
@@ -83,7 +85,7 @@ A learning-focused homelab project documenting the journey of building a product
 - `30-security/` - Security configurations and guides (includes incident response runbooks)
 - `40-monitoring-and-documentation/` - System monitoring and docs
 - `90-archive/` - Historical documentation
-- `99-reports/` - System state reports and diagnostics
+- `98-journals/` - Chronological learning log (120+ entries documenting the journey)
 
 ## Learning Goals
 

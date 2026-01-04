@@ -53,6 +53,11 @@ config/jellyfin/transcoding-temp/
 # that are regenerated regularly and don't need version control
 docs/99-reports/
 
+# Claude Code Context Files
+# Ephemeral state files that change constantly and aren't valuable in git history
+.claude/context/
+.claude/remediation/metrics-history.json
+
 # Container Runtime
 *.pid
 *.sock

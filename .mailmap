@@ -1,0 +1,8 @@
+# Git author name mapping
+# Maps old/incorrect author info to canonical identity
+
+# Map "Your Name" commits to canonical identity
+vonrobak <blyhode@hotmail.com> Your Name <blyhode@hotmail.com>
+
+# Map Claude commits to consistent identity
+Claude Sonnet 4.5 <noreply@anthropic.com> Claude <noreply@anthropic.com>
