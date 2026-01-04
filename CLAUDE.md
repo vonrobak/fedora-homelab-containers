@@ -371,6 +371,57 @@ curl -f http://localhost:3100/ready            # Loki
 
 **Documentation:** `docs/10-services/guides/skill-recommendation.md`
 
+## Slash Commands & Subagents
+
+### Slash Commands
+
+**Available Commands:**
+- `/commit-push-pr [prefix]` - Complete git workflow automation
+  - Pre-computes git status for speed (~0.5s)
+  - Auto-detects change type (deployment, config, docs)
+  - Generates structured commit messages with homelab context
+  - Stages, commits (GPG-signed), pushes, creates PR with gh CLI
+  - Includes deployment logs and verification results in PR
+  - Usage: `/commit-push-pr` or `/commit-push-pr feat`
+
+**Benefits:**
+- **Fast**: Parallel git operations for speed
+- **Context-aware**: References deployment journals and issue history
+- **Consistent**: Follows homelab commit conventions
+- **Complete**: One command from uncommitted changes to PR
+
+### Subagents
+
+Specialized agents for specific tasks, invoked automatically or on-demand:
+
+**infrastructure-architect** - Design decisions before deployment
+- Network topology design (which networks, proper ordering)
+- Security architecture selection (middleware chains)
+- Deployment pattern selection (9 patterns available)
+- Resource allocation (memory, storage strategy)
+- Integration design (auth, monitoring, backups)
+- ADR compliance checking
+- **When to use:** Before deploying new services, when asking "how should I deploy..."
+
+**service-validator** *(Coming in Phase 2)* - Deployment verification
+- 7-level verification framework (health, network, routing, auth, monitoring, drift, security)
+- "Assume failure until proven otherwise" mindset
+- Structured verification reports
+- **When to use:** Automatically after deployment, manual verification requests
+
+**code-simplifier** *(Coming in Phase 3)* - Post-deployment refactoring
+- Removes config bloat and maintains pattern compliance
+- Consolidates quadlet directives and Traefik routes
+- Aligns with homelab patterns and ADRs
+- **When to use:** After successful deployment, before git commit
+
+**Integration:** Subagents work together in deployment workflow:
+1. `infrastructure-architect` → Design decisions
+2. `homelab-deployment` skill → Implementation
+3. `service-validator` → Verification
+4. `code-simplifier` → Cleanup (optional)
+5. `/commit-push-pr` → Git workflow
+
 ## Security & Runbooks
 
 **Security operations:**
