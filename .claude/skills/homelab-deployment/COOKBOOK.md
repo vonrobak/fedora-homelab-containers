@@ -2,7 +2,7 @@
 
 **Quick recipes for common deployment tasks**
 
-**Last Updated:** 2025-11-14
+**Last Updated:** 2026-01-04
 
 ---
 
@@ -18,6 +18,8 @@
 8. [Change Service Memory Limit](#recipe-8-change-service-memory)
 9. [Add Service to Additional Network](#recipe-9-add-network)
 10. [Remove Service](#recipe-10-remove-service)
+11. [Verify Existing Deployment](#recipe-11-verify-deployment)
+12. [Simplify Over-Complex Config](#recipe-12-simplify-config)
 
 ---
 
@@ -483,6 +485,111 @@ journalctl --user --vacuum-time=7d
 | Metrics exporter | monitoring-exporter |
 
 **Still not sure?** See `docs/10-services/guides/pattern-selection-guide.md`
+
+---
+
+## Recipe 11: Verify Deployment
+
+**Goal:** Comprehensive verification of running service using service-validator subagent
+
+**Time:** <30 seconds
+
+**Use when:** After deployment, after config changes, troubleshooting, manual verification requests
+
+```bash
+# Quick verification (homelab-intel wraps basic checks)
+~/containers/scripts/homelab-intel.sh --verify-service jellyfin
+
+# Detailed verification report (comprehensive 7-level framework)
+cd ~/.claude/skills/homelab-deployment
+./scripts/verify-deployment.sh jellyfin https://jellyfin.patriark.org true
+
+# Verification levels:
+# 1. Service Health: systemd, container, health checks, logs
+# 2. Network Connectivity: networks, internal endpoint, DNS
+# 3. External Routing: Traefik, TLS, security headers
+# 4. Authentication Flow: Authelia redirect, middleware
+# 5. Monitoring Integration: Prometheus, Grafana, Loki
+# 6. Configuration Drift: running vs quadlet
+# 7. Security Posture: CrowdSec, rate limiting, no direct exposure
+
+# Check specific verification level
+~/containers/scripts/verify-security-posture.sh jellyfin
+~/containers/scripts/verify-monitoring.sh jellyfin
+./scripts/check-drift.sh jellyfin --verbose
+```
+
+**Expected output:**
+- Verification report with confidence score (>90% = verified)
+- Pass/Warn/Fail status for each level
+- Actionable remediation steps if failures found
+
+**Interpret results:**
+- **VERIFIED (>90%)**: Deployment successful, proceed to documentation
+- **WARNINGS (70-90%)**: Review warnings, may be acceptable depending on service type
+- **FAILED (<70%)**: Investigate failures, invoke systematic-debugging skill
+
+---
+
+## Recipe 12: Simplify Over-Complex Config
+
+**Goal:** Refactor quadlet/config to match homelab patterns and remove bloat
+
+**Time:** 2 minutes
+
+**Use when:** After deployment stabilizes, config has grown complex, before git commit
+
+```bash
+# Option 1: Invoke code-simplifier subagent (via Claude)
+# Ask Claude: "Simplify the jellyfin quadlet configuration"
+# Subagent will:
+# - Create BTRFS snapshot before changes
+# - Consolidate duplicate directives
+# - Use systemd variables (%h for home)
+# - Remove commented-out lines
+# - Align with pattern templates
+# - Restart and re-verify service
+
+# Option 2: Manual review against pattern
+diff ~/.config/containers/systemd/jellyfin.container \
+     ~/.claude/skills/homelab-deployment/templates/quadlets/media-server.container
+
+# Option 3: Regenerate from pattern (destructive - backup first!)
+cd ~/.claude/skills/homelab-deployment
+./scripts/deploy-from-pattern.sh \
+  --pattern media-server-stack \
+  --service-name jellyfin \
+  --regenerate-only  # Only regenerate config, don't deploy
+
+# Common simplifications:
+# - Consolidate multiple volume mounts under single parent
+# - Replace absolute paths with %h systemd variable
+# - Remove redundant environment variables (use defaults)
+# - Deduplicate Traefik middleware chains
+# - Remove commented configuration (unless it's examples)
+```
+
+**Expected:**
+- Lines reduced by 10-30%
+- Config matches pattern template structure
+- Service still healthy after simplification (re-verify!)
+
+**Safety:**
+- **ALWAYS** create BTRFS snapshot before simplification
+- **ALWAYS** restart and re-verify after changes
+- **NEVER** simplify security-critical configs (Authelia, CrowdSec)
+- **SKIP** if config less than 24 hours old (let it stabilize)
+
+**Rollback if needed:**
+```bash
+# If simplification broke something
+sudo btrfs subvolume snapshot -r \
+  /mnt/btrfs-pool/.snapshots/simplify-jellyfin-<timestamp> \
+  /mnt/btrfs-pool/current
+
+systemctl --user daemon-reload
+systemctl --user restart jellyfin.service
+```
 
 ---
 

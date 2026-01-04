@@ -36,6 +36,38 @@ Systematic service deployment workflow that eliminates common mistakes and ensur
 
 **No ad-hoc deployments. No manual config editing without validation.**
 
+## Integration with Subagents
+
+This skill integrates with specialized subagents for design decisions, verification, and cleanup:
+
+**Before Deployment (Phase 1):**
+- **infrastructure-architect** - Design network topology, security architecture, deployment pattern selection
+- Invoked when: User asks "how should I deploy..." or design questions exist
+- Output: Comprehensive design document with network, security, resource, and integration decisions
+
+**After Deployment (Phase 5):**
+- **service-validator** - Comprehensive 7-level verification with "assume failure" mindset
+- Invoked automatically: After service starts, before documentation
+- Output: Structured verification report with confidence score, pass/warn/fail status
+
+**After Verification (Phase 5.5 - Optional):**
+- **code-simplifier** - Refactor configs to maintain pattern compliance, remove bloat
+- Invoked optionally: After successful verification, for config cleanup
+- Output: Simplified configs aligned with homelab patterns and ADRs
+
+**Workflow with Subagents:**
+```
+User Request → infrastructure-architect (design)
+            ↓
+    homelab-deployment (implement)
+            ↓
+    service-validator (verify)
+            ↓
+    code-simplifier (cleanup - optional)
+            ↓
+    Documentation + Git Commit
+```
+
 ## The Deployment Workflow
 
 ### Phase 1: Discovery & Planning
@@ -199,36 +231,69 @@ systemctl --user restart prometheus.service
 
 ### Phase 5: Post-Deployment Verification
 
-**Verify deployment succeeded:**
+**Invoke service-validator subagent for comprehensive verification:**
+
+The service-validator subagent uses a 7-level verification framework with an "assume failure until proven otherwise" mindset:
+
+1. **Level 1: Service Health** (CRITICAL) - Systemd active, container running, health checks passing, no crash loops, clean logs
+2. **Level 2: Network Connectivity** (HIGH) - On expected networks, internal endpoint accessible, DNS resolution
+3. **Level 3: External Routing** (HIGH) - Traefik route exists, external URL responds, TLS valid, security headers present
+4. **Level 4: Authentication Flow** (HIGH) - Authelia redirect working, middleware chain correct
+5. **Level 5: Monitoring Integration** (MEDIUM) - Prometheus scraping, Loki ingestion, Grafana dashboard
+6. **Level 6: Configuration Drift** (LOW) - Running config matches quadlet definition
+7. **Level 7: Security Posture** (CRITICAL) - CrowdSec active, rate limiting, no direct host exposure
+
+**Automated verification:**
 
 ```bash
-# Verification checklist:
-# ✓ Service running
-systemctl --user status jellyfin.service
+# Claude automatically invokes service-validator subagent
+# Which runs: ~/.claude/skills/homelab-deployment/scripts/verify-deployment.sh
 
-# ✓ Health check passing
-podman healthcheck run jellyfin
-
-# ✓ Internal endpoint accessible
-curl http://localhost:8096/
-
-# ✓ Traefik route exists in dashboard
-# Check: http://localhost:8080/dashboard/
-
-# ✓ External URL accessible
-curl -I https://jellyfin.patriark.org
-
-# ✓ Authentication working (redirect to Authelia)
-# Browser test: https://jellyfin.patriark.org
-
-# ✓ Monitoring scraping (Prometheus target UP)
-# Check: http://localhost:9090/targets
-
-# ✓ Logs clean (no errors in journalctl)
-journalctl --user -u jellyfin.service -n 50
+# Manual verification (if needed):
+~/.claude/skills/homelab-deployment/scripts/verify-deployment.sh \
+  jellyfin \
+  https://jellyfin.patriark.org \
+  true  # expect Authelia auth
 ```
 
-**If verification fails, investigate with systematic-debugging skill.**
+**Verification outcomes:**
+
+- **VERIFIED (>90% confidence)**: Proceed to Phase 5.5 (optional simplification), then Phase 6 (documentation)
+- **WARNINGS (70-90% confidence)**: Review warnings, decide if acceptable, proceed with caution
+- **FAILED (<70% confidence)**: STOP - Invoke systematic-debugging skill, investigate failures, consider rollback
+
+**Never document failed deployments.** Verification must pass before proceeding.
+
+### Phase 5.5: Code Simplification (Optional)
+
+**Invoke code-simplifier subagent to refactor configs:**
+
+After successful verification, optionally clean up configurations to maintain pattern compliance:
+
+```bash
+# Claude may invoke code-simplifier subagent
+# Simplifies: Quadlet directives, Traefik routes, environment variables
+# Aligns with: Homelab patterns, ADRs, template standards
+```
+
+**Simplification examples:**
+
+- Consolidate duplicate volume mounts
+- Use systemd variables (%h for home directory)
+- Deduplicate middleware chains in Traefik
+- Remove commented-out configuration
+- Align with pattern templates
+
+**Safety:**
+- BTRFS snapshot created before simplification
+- Service restarted and re-verified after changes
+- Rollback if re-verification fails
+
+**Skip simplification if:**
+- First deployment for this pattern (let it stabilize first)
+- Security-critical configs (don't simplify Authelia, CrowdSec)
+- Workarounds for known issues
+- Config less than 24 hours old
 
 ### Phase 6: Documentation
 
