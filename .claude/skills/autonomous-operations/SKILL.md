@@ -314,6 +314,276 @@ service_overrides:
     restart_timeout_seconds: 90
 ```
 
+## Verification Feedback Loop
+
+**NEW: Actions are verified and confidence scores are updated based on outcomes.**
+
+This creates a learning system - successful actions increase autonomy, failed actions increase caution.
+
+### Enhanced ACT Phase
+
+The ACT phase now includes verification and confidence learning:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       ACT (Enhanced)                                │
+│                                                                     │
+│  1. Create pre-action snapshot (BTRFS)                              │
+│  2. Capture before-state (homelab-intel.sh --json)                  │
+│  3. Execute via appropriate skill/playbook                          │
+│  4. Wait for stabilization (10-30s depending on action)             │
+│                                                                     │
+│  5. VERIFY OUTCOME (NEW)                                            │
+│     ├─ Run verify-autonomous-outcome.sh                             │
+│     ├─ Compare before/after state                                   │
+│     ├─ For services: run service-validator                          │
+│     └─ Calculate verification confidence                            │
+│                                                                     │
+│  6. UPDATE CONFIDENCE (NEW)                                         │
+│     ├─ Verified success: confidence +5%                             │
+│     ├─ Warnings: confidence +2%                                     │
+│     ├─ Failed verification: confidence -10%                         │
+│     └─ Track in decision log                                        │
+│                                                                     │
+│  7. Auto-rollback if verification fails                             │
+│  8. Log decision with verification details                          │
+│  9. Update circuit breaker state                                    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Verification by Action Type
+
+**disk-cleanup:**
+```bash
+# Verify disk space actually freed (>3% improvement)
+~/containers/scripts/verify-autonomous-outcome.sh \
+  disk-cleanup \
+  /tmp/before-state.json \
+  30  # wait 30s
+
+# Success: Freed 12% → confidence +5%
+# Minimal: Freed 1% → confidence +2% (warning)
+# Failed: No space freed → confidence -10%, rollback
+```
+
+**service-restart:**
+```bash
+# Verify service healthy after restart
+~/containers/scripts/verify-autonomous-outcome.sh \
+  service-restart \
+  /tmp/before-state-jellyfin.json \
+  30
+
+# Also run service-validator for comprehensive checks
+~/.claude/skills/homelab-deployment/scripts/verify-deployment.sh \
+  jellyfin \
+  https://jellyfin.patriark.org \
+  true
+
+# Success: Service up + all checks pass → confidence +5%
+# Warning: Service up but warnings → confidence +2%
+# Failed: Service crashed or checks fail → confidence -10%, rollback
+```
+
+**drift-reconciliation:**
+```bash
+# Verify drift actually resolved
+~/containers/scripts/verify-autonomous-outcome.sh \
+  drift-reconciliation \
+  /tmp/before-state.json \
+  30
+
+# Success: Drift status = MATCH → confidence +5%
+# Failed: Drift still present → confidence -10%, rollback
+```
+
+**resource-pressure:**
+```bash
+# Verify memory/CPU pressure relieved
+~/containers/scripts/verify-autonomous-outcome.sh \
+  resource-pressure \
+  /tmp/before-state.json \
+  30
+
+# Success: Pressure reduced >5% → confidence +5%
+# Minimal: Pressure reduced <5% → confidence +2%
+# Failed: Pressure not reduced → confidence -10%
+```
+
+### Confidence Learning
+
+Confidence scores are tracked per action type and updated based on verification outcomes:
+
+**Before verification (historical only):**
+```json
+{
+  "action_type": "disk-cleanup",
+  "base_confidence": 0.92,
+  "historical_success_rate": 12/12,
+  "recent_executions": []
+}
+```
+
+**After 3 verified successes:**
+```json
+{
+  "action_type": "disk-cleanup",
+  "base_confidence": 0.97,  // +5% after each success
+  "historical_success_rate": 15/15,
+  "recent_executions": [
+    {"date": "2026-01-01", "verified": true, "delta": +5},
+    {"date": "2026-01-02", "verified": true, "delta": +5},
+    {"date": "2026-01-03", "verified": true, "delta": +5}
+  ],
+  "trend": "increasing"
+}
+```
+
+**After 1 failed verification:**
+```json
+{
+  "action_type": "service-restart",
+  "base_confidence": 0.79,  // -10% after failure
+  "historical_success_rate": 14/15,
+  "recent_executions": [
+    {"date": "2026-01-01", "verified": true, "delta": +5},
+    {"date": "2026-01-02", "verified": true, "delta": +5},
+    {"date": "2026-01-03", "verified": false, "delta": -10}
+  ],
+  "trend": "stable (recent failure)"
+}
+```
+
+### State File Updates
+
+**autonomous-state.json** now includes verification tracking:
+
+```json
+{
+  "enabled": true,
+  "last_check": "2026-01-04T06:30:00+01:00",
+  "verification": {
+    "enabled": true,
+    "last_verification": "2026-01-04T06:35:00+01:00",
+    "verification_pass_rate_7d": 0.95,
+    "failures_requiring_rollback": 0
+  },
+  "confidence_trends": {
+    "disk-cleanup": {
+      "current": 0.97,
+      "trend": "increasing",
+      "last_updated": "2026-01-03T06:30:00+01:00"
+    },
+    "service-restart": {
+      "current": 0.89,
+      "trend": "stable",
+      "last_updated": "2026-01-02T06:30:00+01:00"
+    },
+    "drift-reconciliation": {
+      "current": 0.82,
+      "trend": "stable",
+      "last_updated": "2026-01-01T06:30:00+01:00"
+    }
+  },
+  "circuit_breaker": {
+    "threshold": 3,
+    "triggered": false,
+    "consecutive_failures": 0
+  }
+}
+```
+
+**decision-log.json** now includes verification results:
+
+```json
+{
+  "decisions": [
+    {
+      "id": "decision-042",
+      "timestamp": "2026-01-04T06:30:00+01:00",
+      "action_type": "service-restart",
+      "service": "jellyfin",
+      "trigger": "health check failing",
+      "confidence": 0.87,
+      "risk": "low",
+      "decision": "auto-execute",
+      "outcome": "success",
+      "verification": {
+        "status": "VERIFIED",
+        "confidence": 95,
+        "checks_passed": 6,
+        "checks_warned": 1,
+        "checks_failed": 0,
+        "report_path": "/tmp/verification-jellyfin-1704351000.txt",
+        "verification_time_seconds": 24
+      },
+      "confidence_delta": 5,
+      "new_confidence": 0.92,
+      "details": "Service restarted successfully, all verification checks passed",
+      "duration_seconds": 45
+    }
+  ]
+}
+```
+
+### Benefits of Verification Feedback
+
+**1. Learning from Experience**
+- Actions that consistently verify successfully → higher confidence → more autonomy
+- Actions that fail verification → lower confidence → more caution/user approval
+
+**2. Earlier Problem Detection**
+- Verification catches issues immediately after action
+- Auto-rollback prevents prolonged outages
+- User sees verification reports in decision log
+
+**3. Improved Decision Making**
+- Confidence scores reflect actual success rates (not just historical)
+- Recent failures appropriately reduce autonomy
+- Recent successes appropriately increase autonomy
+
+**4. Auditable Outcomes**
+- Every action has verification report
+- Can review why action succeeded/failed
+- Track verification pass rates over time
+
+### Example: Confidence Evolution
+
+**Week 1: Initial deployment**
+```
+disk-cleanup confidence: 0.85 (based on historical data)
+→ Execute action
+→ Verify: 15% disk freed ✓
+→ New confidence: 0.90 (+5%)
+```
+
+**Week 2: Continued success**
+```
+disk-cleanup confidence: 0.90
+→ Execute action
+→ Verify: 12% disk freed ✓
+→ New confidence: 0.95 (+5%)
+```
+
+**Week 3: First failure**
+```
+disk-cleanup confidence: 0.95
+→ Execute action
+→ Verify: 0% disk freed ✗ (logs already rotated elsewhere)
+→ Rollback triggered
+→ New confidence: 0.85 (-10%)
+```
+
+**Week 4: Recovery**
+```
+disk-cleanup confidence: 0.85
+→ Execute action
+→ Verify: 8% disk freed ✓
+→ New confidence: 0.90 (+5%)
+```
+
+**Result:** System learned that disk-cleanup success rate is ~75%, not 100%. Confidence stabilizes at ~0.90, which is more accurate than initial 0.95 assumption.
+
 ## Systemd Integration
 
 ### Timer: autonomous-check.timer
