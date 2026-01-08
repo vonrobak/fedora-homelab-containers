@@ -28,14 +28,15 @@ groups:
           description: "Root filesystem has less than 10% space available ({{ $value | humanizePercentage }})"
 
       # Certificate expiry (7 days)
+      # Only check the NEWEST certificate per domain (Traefik keeps old certs in metrics after renewal)
       - alert: CertificateExpiringSoon
-        expr: (traefik_tls_certs_not_after - time()) / 86400 < 7
+        expr: max by(cn) ((traefik_tls_certs_not_after - time()) / 86400) < 7
         for: 1h
         labels:
           severity: critical
         annotations:
           summary: "TLS certificate expires in less than 7 days"
-          description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}"
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value }} days. Auto-renewal may have failed!"
 
       # Prometheus itself is down
       - alert: PrometheusDown
@@ -74,14 +75,15 @@ groups:
       # (that one uses >90% threshold which is more appropriate)
 
       # Certificate expiry warning (30 days)
+      # Only check the NEWEST certificate per domain (Traefik keeps old certs in metrics after renewal)
       - alert: CertificateExpiryWarning
-        expr: (traefik_tls_certs_not_after - time()) / 86400 < 30 and (traefik_tls_certs_not_after - time()) / 86400 >= 7
+        expr: max by(cn) ((traefik_tls_certs_not_after - time()) / 86400) < 30 and max by(cn) ((traefik_tls_certs_not_after - time()) / 86400) >= 7
         for: 24h
         labels:
           severity: warning
         annotations:
           summary: "TLS certificate expires in less than 30 days"
-          description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}. Consider renewal."
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value }} days. Let's Encrypt should auto-renew at ~30 days."
 
       # Container restarts - only alert on MULTIPLE restarts (crash loop)
       # Threshold raised from >0 to >0.1 to ignore single intentional restarts
