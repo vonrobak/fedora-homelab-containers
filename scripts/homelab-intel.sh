@@ -408,19 +408,30 @@ check_monitoring() {
     fi
 
     # Loki
-    # Use podman's built-in healthcheck status
-    local loki_health=$(podman inspect loki --format '{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
-    if [[ "$loki_health" == "healthy" ]]; then
-        METRICS[loki_healthy]=1
-        add_info "I006" "Loki responding"
+    # Note: Loki container intentionally has no healthcheck (minimal image lacks wget/curl)
+    # Instead verify: (1) service is running, (2) Promtail is successfully sending logs
+    if systemctl --user is-active loki.service &>/dev/null; then
+        # Check if Promtail is also running and can connect to Loki
+        if systemctl --user is-active promtail.service &>/dev/null; then
+            # Check Promtail logs for Loki connection errors (last 50 lines)
+            local promtail_errors=$(podman logs promtail --tail 50 2>&1 | grep -i "error.*loki\|failed.*loki" | wc -l)
+            if [ "$promtail_errors" -eq 0 ]; then
+                METRICS[loki_healthy]=1
+                add_info "I006" "Loki responding (verified via Promtail)"
+            else
+                METRICS[loki_healthy]=0
+                if ! is_in_grace_period "loki.service"; then
+                    add_warning "W009" "Promtail reporting Loki connection errors" "Check: podman logs loki --tail 50"
+                fi
+            fi
+        else
+            # Promtail not running - can't verify Loki, assume healthy if running
+            METRICS[loki_healthy]=1
+            add_info "I006" "Loki service running"
+        fi
     else
         METRICS[loki_healthy]=0
-        # Only warn if service is running and not in grace period
-        if systemctl --user is-active loki.service &>/dev/null; then
-            if ! is_in_grace_period "loki.service"; then
-                add_warning "W009" "Loki health check failed (service running)" "May be network/startup delay"
-            fi
-        fi
+        add_warning "W009" "Loki service not running" "Start with: systemctl --user start loki.service"
     fi
 }
 
