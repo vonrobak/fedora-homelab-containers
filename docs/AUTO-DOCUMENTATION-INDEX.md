@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-04 23:01:26 UTC
-**Total Documents:** 307
+**Generated:** 2026-01-07 23:04:55 UTC
+**Total Documents:** 310
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (10 documents)
+### 00-foundation/ (11 documents)
 
 **Fundamentals and core concepts**
 
@@ -39,6 +39,7 @@
 - ADR-009: [2025-11-13-ADR-009-config-data-directory-strategy](00-foundation/decisions/2025-11-13-ADR-009-config-data-directory-strategy.md)
 - ADR-015: [2025-12-22-ADR-015-container-update-strategy](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
 - ADR-016: [2025-12-31-ADR-016-configuration-design-principles](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
+- ADR-017: [2026-01-05-ADR-017-slash-commands-and-subagents](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
 
 ---
 
@@ -131,7 +132,7 @@
 
 ---
 
-### 40-monitoring-and-documentation/ (8 documents)
+### 40-monitoring-and-documentation/ (9 documents)
 
 **Monitoring stack, SLOs, and documentation practices**
 
@@ -139,6 +140,7 @@
 - [git-workflow.md](40-monitoring-and-documentation/guides/git-workflow.md)
 - [homelab-snapshot-development.md](40-monitoring-and-documentation/guides/homelab-snapshot-development.md)
 - [loki-remediation-queries.md](40-monitoring-and-documentation/guides/loki-remediation-queries.md)
+- [maximizing-workflow-impact.md](40-monitoring-and-documentation/guides/maximizing-workflow-impact.md)
 - [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
 - [natural-language-queries.md](40-monitoring-and-documentation/guides/natural-language-queries.md)
 - [slo-based-alerting.md](40-monitoring-and-documentation/guides/slo-based-alerting.md)
@@ -176,7 +178,7 @@
 
 ---
 
-### 98-journals/ (120 documents)
+### 98-journals/ (121 documents)
 
 **Chronological project history (append-only log)**
 
@@ -194,26 +196,20 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2025-12-31: [2025-10-25-decision-002-systemd-quadlets-over-compose.md](00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md)
-- 2025-12-31: [2025-12-31-ADR-016-configuration-design-principles.md](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
-- 2025-12-31: [configuration-design-quick-reference.md](00-foundation/guides/configuration-design-quick-reference.md)
-- 2025-12-31: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
-- 2025-12-31: [middleware-configuration.md](00-foundation/guides/middleware-configuration.md)
-- 2025-12-31: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
-- 2025-12-31: [pattern-customization-guide.md](10-services/guides/pattern-customization-guide.md)
-- 2025-12-31: [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
-- 2025-12-31: [traefik.md](10-services/guides/traefik.md)
-- 2025-12-31: [2025-11-14-ADR-010-pattern-based-deployment.md](20-operations/decisions/2025-11-14-ADR-010-pattern-based-deployment.md)
-- 2025-12-31: [drift-detection-workflow.md](20-operations/guides/drift-detection-workflow.md)
-- 2025-12-31: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
-- 2025-12-29: [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
+- 2026-01-05: [2026-01-05-ADR-017-slash-commands-and-subagents.md](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
+- 2026-01-07: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
 - 2026-01-03: [DR-003-accidental-deletion.md](20-operations/runbooks/DR-003-accidental-deletion.md)
 - 2026-01-03: [DR-004-total-catastrophe.md](20-operations/runbooks/DR-004-total-catastrophe.md)
-- 2025-12-31: [secrets-management.md](30-security/guides/secrets-management.md)
-- 2025-12-30: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
-- 2025-12-30: [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
+- 2026-01-05: [maximizing-workflow-impact.md](40-monitoring-and-documentation/guides/maximizing-workflow-impact.md)
 - 2026-01-04: [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
-- 2025-12-30: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
+- 2026-01-03: [2026-01-03-disaster-recovery-verification-milestone.md](98-journals/2026-01-03-disaster-recovery-verification-milestone.md)
+- 2026-01-05: [2026-01-05-workflow-enhancements-implementation.md](98-journals/2026-01-05-workflow-enhancements-implementation.md)
+- 2026-01-01: [2026-01-01-skill-usage-report.md](99-reports/2026-01-01-skill-usage-report.md)
+- 2026-01-01: [remediation-monthly-202512.md](99-reports/remediation-monthly-202512.md)
+- 2026-01-08: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-01-08: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-08: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-01-08: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

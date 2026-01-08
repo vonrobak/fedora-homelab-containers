@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-01-04 23:01:25 UTC
+**Generated:** 2026-01-07 23:04:55 UTC
 **System:** fedora-htpc
 
 This document visualizes service dependencies and critical paths in the homelab infrastructure.
@@ -178,7 +178,7 @@ Services on the same network can communicate:
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,immich-server,jellyfin,loki,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,immich-server,jellyfin,loki,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
 
 **nextcloud:** collabora,nextcloud,nextcloud-db,nextcloud-redis
 

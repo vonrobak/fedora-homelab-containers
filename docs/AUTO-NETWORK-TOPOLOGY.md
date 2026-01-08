@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-01-04 23:01:23 UTC
+**Generated:** 2026-01-07 23:04:54 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -82,6 +82,7 @@ graph TB
         monitoring_prometheus[prometheus]
         monitoring_promtail[promtail]
         monitoring_traefik[traefik]
+        monitoring_unpoller[unpoller]
     end
 
     subgraph nextcloud["nextcloud<br/>10.89.10.0/24"]
@@ -256,7 +257,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 14
+- **Services:** 15
 
 **Members:**
 - alert-discord-relay
@@ -273,6 +274,7 @@ sequenceDiagram
 - prometheus
 - promtail
 - traefik
+- unpoller
 
 
 ### nextcloud
