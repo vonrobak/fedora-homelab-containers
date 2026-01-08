@@ -1,0 +1,73 @@
+# UniFi Network SLO Tracking Rules
+# Track network availability and connectivity SLOs
+# Created: 2026-01-08
+
+groups:
+  - name: unifi_slo
+    interval: 15s
+    rules:
+      # SLO: UDM Pro availability (99.9% target = 43 min/month error budget)
+      - record: slo:udm_availability:ratio_rate5m
+        expr: avg_over_time(up{job="unpoller"}[5m])
+
+      # SLO: Homelab network connectivity (99.5% target = 216 min/month error budget)
+      # Measures if UDM Pro can see the homelab IP
+      - record: slo:homelab_connectivity:ratio_rate5m
+        expr: |
+          (
+            up{job="unpoller"}
+            * on() group_left()
+            (count(unpoller_device_stat_gw_uptime_seconds) > 0 OR on() vector(1))
+          )
+
+      # Error budget burn rate for UDM Pro (1h window)
+      # Burn rate > 1.0 means consuming error budget faster than sustainable
+      - record: slo:udm_availability:error_budget_burn_rate_1h
+        expr: |
+          (1 - avg_over_time(up{job="unpoller"}[1h]))
+          / (1 - 0.999)  # SLO target: 99.9%
+
+      # Error budget burn rate for UDM Pro (6h window)
+      - record: slo:udm_availability:error_budget_burn_rate_6h
+        expr: |
+          (1 - avg_over_time(up{job="unpoller"}[6h]))
+          / (1 - 0.999)
+
+      # Error budget burn rate for UDM Pro (24h window)
+      - record: slo:udm_availability:error_budget_burn_rate_24h
+        expr: |
+          (1 - avg_over_time(up{job="unpoller"}[24h]))
+          / (1 - 0.999)
+
+      # Error budget burn rate for UDM Pro (7d window)
+      - record: slo:udm_availability:error_budget_burn_rate_7d
+        expr: |
+          (1 - avg_over_time(up{job="unpoller"}[7d]))
+          / (1 - 0.999)
+
+      # Availability percentage over 7 days
+      - record: slo:udm_availability:ratio_7d
+        expr: avg_over_time(up{job="unpoller"}[7d])
+
+      # Availability percentage over 30 days
+      - record: slo:udm_availability:ratio_30d
+        expr: avg_over_time(up{job="unpoller"}[30d])
+
+      # Error budget remaining (minutes) for 30-day window
+      # 99.9% = 43.2 minutes/month error budget
+      - record: slo:udm_availability:error_budget_remaining_minutes_30d
+        expr: |
+          43.2 - (
+            (1 - avg_over_time(up{job="unpoller"}[30d]))
+            * 30 * 24 * 60
+          )
+
+      # Client connectivity health (wireless signal quality)
+      # Target: >80% of clients have good signal (>-70 dBm)
+      - record: slo:client_signal_quality:ratio
+        expr: |
+          (
+            count(unpoller_client_radio_signal_db > -70) OR on() vector(0)
+          ) / (
+            count(unpoller_client_radio_signal_db) OR on() vector(1)
+          )

@@ -1,0 +1,59 @@
+# UniFi Network Metrics - Recording Rules
+# Pre-compute expensive queries for faster dashboard rendering
+# Created: 2026-01-08
+
+groups:
+  - name: unifi_metrics
+    interval: 15s
+    rules:
+      # Total bandwidth to homelab (192.168.1.70)
+      - record: homelab:bandwidth_bytes_per_second:rate5m
+        expr: |
+          sum(rate(unpoller_client_receive_bytes_total{ip="192.168.1.70"}[5m]))
+          +
+          sum(rate(unpoller_client_transmit_bytes_total{ip="192.168.1.70"}[5m]))
+
+      # VPN client count (presence detection for Home Assistant)
+      - record: homelab:vpn_clients:count
+        expr: count(unpoller_client_uptime_seconds{network=~".*[Ww]ire[Gg]uard.*|.*VPN.*"}) OR on() vector(0)
+
+      # UDM Pro health status
+      - record: homelab:udm_health:up
+        expr: up{job="unpoller"}
+
+      # Firewall blocks per minute
+      - record: homelab:firewall_blocks_per_minute:rate5m
+        expr: sum(rate(unpoller_device_stat_gw_user_num_blocked_total[5m])) * 60 OR on() vector(0)
+
+      # DPI security threat bytes (if available)
+      - record: homelab:dpi_security_bytes:rate5m
+        expr: |
+          sum(rate(unpoller_device_dpi_app_bytes{category=~".*[Ss]ecurity.*|.*[Tt]hreat.*|.*[Mm]alware.*"}[5m])) OR on() vector(0)
+
+      # Connected wireless clients
+      - record: homelab:wireless_clients:count
+        expr: count(unpoller_client_uptime_seconds{wired="false"}) OR on() vector(0)
+
+      # Connected wired clients
+      - record: homelab:wired_clients:count
+        expr: count(unpoller_client_uptime_seconds{wired="true"}) OR on() vector(0)
+
+      # Total clients
+      - record: homelab:total_clients:count
+        expr: count(unpoller_client_uptime_seconds) OR on() vector(0)
+
+      # Average client signal strength (wireless only)
+      - record: homelab:avg_wireless_signal_db
+        expr: avg(unpoller_client_radio_signal_db) OR on() vector(0)
+
+      # UDM Pro CPU usage percentage
+      - record: homelab:udm_cpu_percent
+        expr: avg(unpoller_device_stat_gw_system_stats_cpu_percent) OR on() vector(0)
+
+      # UDM Pro memory usage percentage
+      - record: homelab:udm_memory_percent
+        expr: avg(unpoller_device_stat_gw_system_stats_mem_percent) OR on() vector(0)
+
+      # UDM Pro uptime in days
+      - record: homelab:udm_uptime_days
+        expr: (avg(unpoller_device_stat_gw_uptime_seconds) / 86400) OR on() vector(0)

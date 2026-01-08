@@ -1,0 +1,103 @@
+# UniFi Network Monitoring - Conservative Alert Rules
+# Only CRITICAL alerts to reduce alert fatigue
+# Created: 2026-01-08
+
+groups:
+  - name: unifi_critical
+    interval: 15s
+    rules:
+      # Alert: UDM Pro offline
+      - alert: UDMProDown
+        expr: up{job="unpoller"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: network
+          remediation: none  # Manual investigation required
+        annotations:
+          summary: "UDM Pro is unreachable"
+          description: "Unpoller cannot scrape metrics from UDM Pro at {{ $labels.source }}. Network gateway may be offline. CRITICAL: All internet access lost."
+          runbook_url: "https://github.com/patriark/containers/blob/main/docs/30-security/runbooks/IR-001-network-outage.md"
+
+      # Alert: Unpoller scrape failures
+      - alert: UnpollerScrapeFailed
+        expr: up{job="unpoller"} == 0 OR absent(up{job="unpoller"})
+        for: 3m
+        labels:
+          severity: critical
+          component: monitoring
+          remediation: service-restart
+        annotations:
+          summary: "Unpoller metrics collection failing"
+          description: "Prometheus cannot scrape Unpoller metrics. Check service: systemctl --user status unpoller.service"
+          playbook: "service-restart"
+          service: "unpoller"
+
+      # Alert: Extreme bandwidth spike (>100 MB/s = ~800 Mbps for 1Gbps link)
+      - alert: ExtremeBandwidthSpike
+        expr: homelab:bandwidth_bytes_per_second:rate5m > 100000000
+        for: 5m
+        labels:
+          severity: critical
+          component: network
+          remediation: none  # Investigation required
+        annotations:
+          summary: "Extreme bandwidth usage to homelab (>80% capacity)"
+          description: "Sustained bandwidth spike {{ $value | humanize }}B/s to 192.168.1.70. Possible DDoS or data exfiltration. Investigate immediately."
+          query: "homelab:bandwidth_bytes_per_second:rate5m"
+
+      # Alert: DPI security threat detected (if metrics available)
+      - alert: DPISecurityThreatDetected
+        expr: homelab:dpi_security_bytes:rate5m > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: security
+          remediation: none  # Manual analysis required
+        annotations:
+          summary: "UDM Pro DPI detected security threat"
+          description: "Deep Packet Inspection identified malicious traffic ({{ $value | humanize }}B/s). Check DPI logs in UDM Pro UI and correlate with Traefik/CrowdSec."
+          investigation_steps: |
+            1. Check UDM Pro DPI logs: https://unifi.patriark.org
+            2. Identify source IP and correlate with Traefik access logs
+            3. Verify if CrowdSec has banned the IP
+            4. Review firewall rules and consider additional blocking
+
+      # Alert: High firewall block rate (sustained blocking activity)
+      - alert: HighFirewallBlockRate
+        expr: homelab:firewall_blocks_per_minute:rate5m > 10
+        for: 10m
+        labels:
+          severity: warning
+          component: security
+          remediation: none
+        annotations:
+          summary: "Elevated firewall blocking activity"
+          description: "UDM Pro firewall blocking {{ $value | humanize }} connections per minute. Possible attack or misconfiguration."
+          query: "homelab:firewall_blocks_per_minute:rate5m"
+
+      # Alert: UDM Pro high CPU usage
+      - alert: UDMProHighCPU
+        expr: homelab:udm_cpu_percent > 90
+        for: 15m
+        labels:
+          severity: warning
+          component: network
+          remediation: none
+        annotations:
+          summary: "UDM Pro CPU usage critically high"
+          description: "UDM Pro CPU usage at {{ $value }}% for 15+ minutes. May impact network performance."
+          query: "homelab:udm_cpu_percent"
+
+      # Alert: UDM Pro high memory usage
+      - alert: UDMProHighMemory
+        expr: homelab:udm_memory_percent > 85
+        for: 15m
+        labels:
+          severity: warning
+          component: network
+          remediation: none
+        annotations:
+          summary: "UDM Pro memory usage critically high"
+          description: "UDM Pro memory usage at {{ $value }}% for 15+ minutes. May impact network stability."
+          query: "homelab:udm_memory_percent"
