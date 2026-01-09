@@ -83,6 +83,103 @@ Grafana Dashboards + Alertmanager
 
 ---
 
+### 4. Security Overview Dashboard (Enhanced with UniFi)
+**Purpose:** Unified security monitoring correlating network and application-layer threats
+
+**File:** `/home/patriark/containers/config/grafana/provisioning/dashboards/json/security-overview.json`
+
+**Access:** https://grafana.patriark.org/d/security-overview/
+
+This dashboard combines Traefik/CrowdSec/Authelia metrics with UniFi network-layer monitoring for comprehensive threat detection.
+
+#### Section 1: Application Security (Existing)
+**Row 1 - Stats:**
+- Total Requests (5m): Traefik entry point traffic
+- 4xx Errors (5m): Client errors, possible probing
+- 5xx Errors (5m): Server errors, service issues
+- Blocked Requests (403): CrowdSec and rate limiting blocks
+
+**Row 2 - Timeseries:**
+- Request Rate by Status Code: HTTP status trend analysis
+- Request Rate by Service: Per-service traffic distribution
+
+**Row 3 - Logs:**
+- CrowdSec Ban Events: Real-time IP bans
+- Authelia Failed Login Attempts: Authentication failures
+
+**Row 4 - Logs:**
+- Traefik Access Logs: Recent IP addresses and requests
+
+#### Section 2: Network Security Monitoring (UniFi)
+**Row 5 - Stats:**
+- **VPN Clients Connected:** WireGuard VPN presence count
+  - **Purpose:** Presence detection for Matter home automation (Phase 2)
+  - **Thresholds:** Red (0 clients) = nobody home, Green (1+) = presence detected
+  - **Query:** `homelab:vpn_clients:count`
+
+- **Firewall Blocks/min:** UDM Pro firewall blocking rate
+  - **Purpose:** Network-layer threat detection (complements CrowdSec application-layer)
+  - **Thresholds:** Green (<5/min), Yellow (5-20/min), Red (>20/min = active attack)
+  - **Query:** `homelab:firewall_blocks_per_minute:rate5m`
+
+**Row 6 - Timeseries:**
+- **Port Forwarding Traffic (80/443 → 192.168.1.70):** Total bandwidth to homelab
+  - **Purpose:** Correlate network spikes with Traefik rate limits and CrowdSec bans
+  - **Threshold Line:** Red at 100 MB/s (80% of 1Gbps capacity = extreme bandwidth)
+  - **Query:** `homelab:bandwidth_bytes_per_second:rate5m`
+
+**Row 7 - Table + Heatmap:**
+- **DPI Security Threats (Table):** UDM Pro Deep Packet Inspection detections
+  - **Purpose:** ANY value > 0 requires immediate investigation
+  - **Investigation:** Source IP → Traefik logs → CrowdSec status → UDM Pro DPI logs
+  - **Query:** `homelab:dpi_security_bytes:rate5m`
+
+- **Bandwidth Usage Heatmap (24h Profile):** Hourly traffic distribution
+  - **Purpose:** Establish baseline, detect anomalies (spikes outside normal hours)
+  - **Baseline:** 7-day learning period, typical pattern: low 0-6am, peak 6-11pm
+  - **Query:** `sum(increase(unifi_client_received_bytes_total{ip="192.168.1.70"}[1h])) + sum(increase(unifi_client_transmitted_bytes_total{ip="192.168.1.70"}[1h]))`
+
+#### Section 3: Correlation Matrix (Unified Security View)
+**Row 8 - 3x2 Grid:**
+
+Single-pane-of-glass security correlation showing all events concurrently (synchronized time range).
+
+**Top Row (Network + Application Layer):**
+1. **Traefik 403s (5m):** Application-layer blocks
+2. **CrowdSec Active Bans:** Current banned IPs
+3. **UDM Firewall Blocks/min:** Network-layer blocks
+
+**Bottom Row (Threats + Traffic + Auth):**
+4. **DPI Threats (B/s):** Deep Packet Inspection detections
+5. **Bandwidth to Homelab:** Network traffic rate
+6. **Auth Failures (5m):** Authelia login failures
+
+**Investigation Patterns:**
+- **Bandwidth spike?** → Check Traefik 403s, CrowdSec bans, firewall blocks (correlation)
+- **DPI threat detected?** → Identify source IP in UDM, cross-reference Traefik logs
+- **Auth failures?** → Check if same IP triggering firewall blocks (coordinated attack)
+- **Firewall blocks + no Traefik blocks?** → Threat stopped at network layer (UDM caught it first)
+
+**Use Case Example:**
+```
+Timeline: 14:23-14:28
+
+Correlation Matrix shows:
+- Bandwidth: Spike to 85 MB/s (yellow threshold)
+- Traefik 403s: 47 blocked requests
+- CrowdSec Bans: 2 new IPs banned
+- Firewall Blocks: 18/min (yellow threshold)
+- DPI Threats: 0 (green, no malicious traffic detected by DPI)
+- Auth Failures: 0 (no authentication attempts)
+
+Conclusion: Legitimate traffic spike (no DPI threats), but some IPs triggered
+rate limits (Traefik 403s) and CrowdSec bans (automated response). UDM firewall
+also blocking related IPs. System working as designed - threat mitigated at
+multiple layers.
+```
+
+---
+
 ## Recording Rules
 
 Pre-computed metrics for faster dashboard rendering:
