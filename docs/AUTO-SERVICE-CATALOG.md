@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-08 06:03:14 UTC
+**Generated:** 2026-01-09 06:00:55 UTC
 **System:** fedora-htpc
 
 ---
@@ -16,23 +16,23 @@
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
 | loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
-| grafana | grafana/grafana:latest | ✅ Up | reverse_proxy,monitoring |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | nextcloud-db | mariadb:11 | ✅ Up | nextcloud,monitoring |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | monitoring,reverse_proxy,media_services |
+| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
-| traefik | traefik:latest | ✅ Up | reverse_proxy,auth_services,monitoring |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
-| unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
+| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
+| unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 
 ---
 
@@ -40,7 +40,7 @@
 
 - **Total Running:** 24
 - **Total Defined:** 24
-- **System Load:**  0,68, 0,86, 0,56
+- **System Load:**  1,14, 0,61, 0,61
 
 ---
 

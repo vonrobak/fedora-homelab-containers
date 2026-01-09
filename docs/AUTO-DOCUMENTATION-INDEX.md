@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-08 06:03:16 UTC
-**Total Documents:** 310
+**Generated:** 2026-01-09 06:00:57 UTC
+**Total Documents:** 316
 
 ---
 
@@ -106,7 +106,7 @@
 
 ---
 
-### 30-security/ (14 documents)
+### 30-security/ (16 documents)
 
 **Security architecture, configurations, and incident response**
 
@@ -116,6 +116,7 @@
 - [crowdsec-phase3-threat-intelligence.md](30-security/guides/crowdsec-phase3-threat-intelligence.md)
 - [crowdsec-phase4-configuration-management.md](30-security/guides/crowdsec-phase4-configuration-management.md)
 - [secrets-management.md](30-security/guides/secrets-management.md)
+- [security-audit.md](30-security/guides/security-audit.md)
 - [sshd-deployment-procedure.md](30-security/guides/sshd-deployment-procedure.md)
 - [ssh-hardening.md](30-security/guides/ssh-hardening.md)
 
@@ -129,10 +130,11 @@
 - [IR-002-unauthorized-port](30-security/runbooks/IR-002-unauthorized-port.md)
 - [IR-003-critical-cve](30-security/runbooks/IR-003-critical-cve.md)
 - [IR-004-compliance-failure](30-security/runbooks/IR-004-compliance-failure.md)
+- [IR-005-network-security-event](30-security/runbooks/IR-005-network-security-event.md)
 
 ---
 
-### 40-monitoring-and-documentation/ (9 documents)
+### 40-monitoring-and-documentation/ (10 documents)
 
 **Monitoring stack, SLOs, and documentation practices**
 
@@ -145,12 +147,15 @@
 - [natural-language-queries.md](40-monitoring-and-documentation/guides/natural-language-queries.md)
 - [slo-based-alerting.md](40-monitoring-and-documentation/guides/slo-based-alerting.md)
 - [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
+- [unifi-security-monitoring.md](40-monitoring-and-documentation/guides/unifi-security-monitoring.md)
 
 ---
 
-### 97-plans/ (24 documents)
+### 97-plans/ (26 documents)
 
 **Strategic plans and forward-looking projects**
+- 📋 [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
+- 📋 [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
 - 📋 [2025-11-10-authelia-implementation-plan.md](97-plans/2025-11-10-authelia-implementation-plan.md)
 - 📋 [2025-11-10-authelia-implementation-plan-revised.md](97-plans/2025-11-10-authelia-implementation-plan-revised.md)
 - 📋 [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
@@ -178,7 +183,7 @@
 
 ---
 
-### 98-journals/ (121 documents)
+### 98-journals/ (122 documents)
 
 **Chronological project history (append-only log)**
 
@@ -200,16 +205,21 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-07: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
 - 2026-01-03: [DR-003-accidental-deletion.md](20-operations/runbooks/DR-003-accidental-deletion.md)
 - 2026-01-03: [DR-004-total-catastrophe.md](20-operations/runbooks/DR-004-total-catastrophe.md)
+- 2026-01-09: [security-audit.md](30-security/guides/security-audit.md)
+- 2026-01-09: [IR-005-network-security-event.md](30-security/runbooks/IR-005-network-security-event.md)
 - 2026-01-05: [maximizing-workflow-impact.md](40-monitoring-and-documentation/guides/maximizing-workflow-impact.md)
+- 2026-01-08: [unifi-security-monitoring.md](40-monitoring-and-documentation/guides/unifi-security-monitoring.md)
+- 2026-01-08: [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
+- 2026-01-09: [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
+- 2026-01-09: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 2026-01-04: [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
 - 2026-01-03: [2026-01-03-disaster-recovery-verification-milestone.md](98-journals/2026-01-03-disaster-recovery-verification-milestone.md)
 - 2026-01-05: [2026-01-05-workflow-enhancements-implementation.md](98-journals/2026-01-05-workflow-enhancements-implementation.md)
-- 2026-01-01: [2026-01-01-skill-usage-report.md](99-reports/2026-01-01-skill-usage-report.md)
-- 2026-01-01: [remediation-monthly-202512.md](99-reports/remediation-monthly-202512.md)
-- 2026-01-08: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-01-08: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-01-08: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-01-08: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-01-08: [2026-01-08-monitoring-alert-fatigue-fixes.md](98-journals/2026-01-08-monitoring-alert-fatigue-fixes.md)
+- 2026-01-09: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-01-09: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-09: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-01-09: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
