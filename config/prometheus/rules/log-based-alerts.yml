@@ -1,0 +1,105 @@
+# Log-Based Alert Rules
+# Created: 2026-01-11
+# Purpose: Alert on log-derived metrics for proactive issue detection
+#
+# How it works:
+# 1. Promtail extracts metrics from logs at ingestion time
+# 2. Metrics exposed at promtail:9080/metrics with `promtail_custom_` prefix
+# 3. Prometheus scrapes Promtail every 15s
+# 4. Alerts fire based on rate/increase of these counters
+#
+# Philosophy: Catch specific errors BEFORE they cause SLO violations
+
+groups:
+  - name: log_based_alerts
+    rules:
+      # ========================================================================
+      # ALERT 1: High Service Error Rate
+      # ========================================================================
+      - alert: ServiceErrorRateHigh
+        expr: rate(promtail_custom_service_errors_total[5m]) > 0.03  # >10 errors in 5min
+        for: 5m
+        labels:
+          severity: warning
+          category: reliability
+        annotations:
+          summary: "High error rate in {{ $labels.syslog_id }}"
+          description: |
+            Service {{ $labels.syslog_id }} logging {{ $value | humanize }} errors/sec (>10 in 5min).
+
+            Check logs: journalctl --user -u {{ $labels.syslog_id }}.service --priority=err -n 20
+
+      # ========================================================================
+      # ALERT 2: Immich Thumbnail Failures
+      # ========================================================================
+      - alert: ImmichThumbnailFailureHigh
+        expr: rate(promtail_custom_immich_thumbnail_failures_total[1h]) > 0.0014  # >5 in 1h
+        for: 10m
+        labels:
+          severity: warning
+          category: media_processing
+        annotations:
+          summary: "Immich thumbnail generation failing"
+          description: |
+            {{ $value | humanize }} thumbnail failures/sec (>5 in 1h). Usually corrupt media files.
+
+            Find failing assets:
+            journalctl --user -u immich-server.service --since "1 hour ago" | grep "AssetGenerateThumbnails.*ERROR"
+
+      # ========================================================================
+      # ALERT 3: Nextcloud Cron Failure
+      # ========================================================================
+      - alert: NextcloudCronFailure
+        expr: increase(promtail_custom_nextcloud_cron_failures_total[10m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: background_jobs
+        annotations:
+          summary: "Nextcloud background jobs failing"
+          description: |
+            Cron failed {{ $value }} times in 10min. Background jobs NOT running (file sync, CalDAV, previews).
+
+            Check: systemctl --user status nextcloud-cron.timer
+
+      # ========================================================================
+      # ALERT 4: Jellyfin Transcoding Failures
+      # ========================================================================
+      - alert: JellyfinTranscodingFailureHigh
+        expr: rate(promtail_custom_jellyfin_transcoding_failures_total[30m]) > 0.0017  # >3 in 30min
+        for: 5m
+        labels:
+          severity: warning
+          category: media_processing
+        annotations:
+          summary: "Jellyfin transcoding failing"
+          description: |
+            {{ $value | humanize }} transcoding failures/sec. Check codec/hardware acceleration.
+
+      # ========================================================================
+      # ALERT 5: Authelia Auth Failure Spike
+      # ========================================================================
+      - alert: AutheliaAuthFailureSpike
+        expr: rate(promtail_custom_authelia_auth_failures_total[5m]) > 0.03  # >10 in 5min
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: |
+            {{ $value | humanize }} auth failures/sec. Check CrowdSec: podman exec crowdsec cscli decisions list
+
+      # ========================================================================
+      # ALERT 6: Container Restart Loop
+      # ========================================================================
+      - alert: ContainerRestartLoop
+        expr: rate(promtail_custom_container_unplanned_restarts_total[10m]) > 0.005  # >3 in 10min
+        for: 2m
+        labels:
+          severity: critical
+          category: stability
+        annotations:
+          summary: "Container restart loop detected"
+          description: |
+            {{ $value | humanize }} restarts/sec. Check memory: podman stats --no-stream

@@ -30,6 +30,99 @@ scrape_configs:
           unit:
           hostname:
           syslog_id:
+
+      # ======================================================================
+      # METRIC EXTRACTION: Convert log patterns to Prometheus metrics
+      # ======================================================================
+
+      # METRIC 1: Service errors (priority <=3)
+      - match:
+          selector: '{priority=~"[0-3]"}'
+          stages:
+            - metrics:
+                service_errors_total:
+                  type: Counter
+                  description: "Total service errors from systemd journal (priority <=3)"
+                  source: priority
+                  config:
+                    action: inc
+
+      # METRIC 2: Immich thumbnail failures
+      - match:
+          selector: '{syslog_id="immich-server"}'
+          pipeline_name: "immich_metrics"
+          stages:
+            - regex:
+                expression: '.*AssetGenerateThumbnails.*ERROR.*'
+            - metrics:
+                immich_thumbnail_failures_total:
+                  type: Counter
+                  description: "Immich thumbnail generation failures"
+                  config:
+                    match_all: true
+                    action: inc
+
+      # METRIC 3: Nextcloud cron failures
+      - match:
+          selector: '{syslog_id=~"nextcloud.*"}'
+          pipeline_name: "nextcloud_metrics"
+          stages:
+            - regex:
+                expression: '.*(failed|error|ERROR|not found).*'
+            - metrics:
+                nextcloud_cron_failures_total:
+                  type: Counter
+                  description: "Nextcloud cron/background job failures"
+                  config:
+                    match_all: true
+                    action: inc
+
+      # METRIC 4: Jellyfin transcoding failures
+      - match:
+          selector: '{syslog_id="jellyfin"}'
+          pipeline_name: "jellyfin_metrics"
+          stages:
+            - regex:
+                expression: '.*Transcoding.*ERROR.*'
+            - metrics:
+                jellyfin_transcoding_failures_total:
+                  type: Counter
+                  description: "Jellyfin transcoding failures"
+                  config:
+                    match_all: true
+                    action: inc
+
+      # METRIC 5: Authelia auth failures
+      - match:
+          selector: '{syslog_id="authelia"}'
+          pipeline_name: "authelia_metrics"
+          stages:
+            - regex:
+                expression: '.*Authentication.*(failed|denied|invalid).*'
+            - metrics:
+                authelia_auth_failures_total:
+                  type: Counter
+                  description: "Authelia authentication failures"
+                  config:
+                    match_all: true
+                    action: inc
+
+      # METRIC 6: Container restarts (simplified - excludes exec completions manually)
+      - match:
+          selector: '{syslog_id="podman"}'
+          pipeline_name: "container_metrics"
+          stages:
+            - regex:
+                expression: '.*(container died|container killed|Exited with error).*'
+            - metrics:
+                container_unplanned_restarts_total:
+                  type: Counter
+                  description: "Unplanned container restarts (died/killed/error exits)"
+                  config:
+                    match_all: true
+                    action: inc
+
+      # Final output stage
       - output:
           source: message
 
