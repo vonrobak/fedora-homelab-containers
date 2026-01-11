@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-09 06:00:57 UTC
-**Total Documents:** 316
+**Generated:** 2026-01-10 23:01:04 UTC
+**Total Documents:** 320
 
 ---
 
@@ -43,7 +43,7 @@
 
 ---
 
-### 10-services/ (21 documents)
+### 10-services/ (20 documents)
 
 **Service-specific documentation and deployment guides**
 
@@ -58,7 +58,6 @@
 - [jellyfin-gpu-acceleration-troubleshooting.md](10-services/guides/jellyfin-gpu-acceleration-troubleshooting.md)
 - [jellyfin.md](10-services/guides/jellyfin.md)
 - [nextcloud.md](10-services/guides/nextcloud.md)
-- [ocis.md](10-services/guides/ocis.md)
 - [pattern-customization-guide.md](10-services/guides/pattern-customization-guide.md)
 - [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
 - [skill-integration-guide.md](10-services/guides/skill-integration-guide.md)
@@ -134,7 +133,7 @@
 
 ---
 
-### 40-monitoring-and-documentation/ (10 documents)
+### 40-monitoring-and-documentation/ (11 documents)
 
 **Monitoring stack, SLOs, and documentation practices**
 
@@ -146,6 +145,7 @@
 - [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
 - [natural-language-queries.md](40-monitoring-and-documentation/guides/natural-language-queries.md)
 - [slo-based-alerting.md](40-monitoring-and-documentation/guides/slo-based-alerting.md)
+- [slo-calibration-process.md](40-monitoring-and-documentation/guides/slo-calibration-process.md)
 - [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
 - [unifi-security-monitoring.md](40-monitoring-and-documentation/guides/unifi-security-monitoring.md)
 
@@ -183,7 +183,7 @@
 
 ---
 
-### 98-journals/ (122 documents)
+### 98-journals/ (125 documents)
 
 **Chronological project history (append-only log)**
 
@@ -203,23 +203,24 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 - 2026-01-05: [2026-01-05-ADR-017-slash-commands-and-subagents.md](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
 - 2026-01-07: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
-- 2026-01-03: [DR-003-accidental-deletion.md](20-operations/runbooks/DR-003-accidental-deletion.md)
-- 2026-01-03: [DR-004-total-catastrophe.md](20-operations/runbooks/DR-004-total-catastrophe.md)
 - 2026-01-09: [security-audit.md](30-security/guides/security-audit.md)
 - 2026-01-09: [IR-005-network-security-event.md](30-security/runbooks/IR-005-network-security-event.md)
 - 2026-01-05: [maximizing-workflow-impact.md](40-monitoring-and-documentation/guides/maximizing-workflow-impact.md)
-- 2026-01-08: [unifi-security-monitoring.md](40-monitoring-and-documentation/guides/unifi-security-monitoring.md)
+- 2026-01-09: [slo-calibration-process.md](40-monitoring-and-documentation/guides/slo-calibration-process.md)
+- 2026-01-09: [unifi-security-monitoring.md](40-monitoring-and-documentation/guides/unifi-security-monitoring.md)
 - 2026-01-08: [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
 - 2026-01-09: [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
 - 2026-01-09: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 2026-01-04: [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
-- 2026-01-03: [2026-01-03-disaster-recovery-verification-milestone.md](98-journals/2026-01-03-disaster-recovery-verification-milestone.md)
 - 2026-01-05: [2026-01-05-workflow-enhancements-implementation.md](98-journals/2026-01-05-workflow-enhancements-implementation.md)
 - 2026-01-08: [2026-01-08-monitoring-alert-fatigue-fixes.md](98-journals/2026-01-08-monitoring-alert-fatigue-fixes.md)
-- 2026-01-09: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-01-09: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-01-09: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-01-09: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-01-09: [2026-01-09-comprehensive-security-audit.md](98-journals/2026-01-09-comprehensive-security-audit.md)
+- 2026-01-09: [2026-01-09-course-2-operational-excellence-completion.md](98-journals/2026-01-09-course-2-operational-excellence-completion.md)
+- 2026-01-09: [2026-01-09-memory-limit-standardization.md](98-journals/2026-01-09-memory-limit-standardization.md)
+- 2026-01-11: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-01-11: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-11: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-01-11: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

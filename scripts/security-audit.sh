@@ -136,8 +136,17 @@ echo "[7] Checking firewall..."
 LISTENING_PORTS=$(ss -tlnp 2>/dev/null | grep LISTEN | awk '{print $4}' | grep -oE '[0-9]+$' | sort -u)
 UNEXPECTED=""
 for port in $LISTENING_PORTS; do
-    # Expected ports: 80, 443, high ports for container networking, local services
-    if [ "$port" -lt 1024 ] && [ "$port" != "80" ] && [ "$port" != "443" ]; then
+    # Expected ports:
+    # - 80, 443: HTTP/HTTPS (Traefik)
+    # - 22: SSH (hardened)
+    # - 53: DNS (systemd-resolved)
+    # - 139, 445: SMB (internal file sharing)
+    # - 631: CUPS (printing service)
+    if [ "$port" -lt 1024 ] && \
+       [ "$port" != "80" ] && [ "$port" != "443" ] && \
+       [ "$port" != "22" ] && [ "$port" != "53" ] && \
+       [ "$port" != "139" ] && [ "$port" != "445" ] && \
+       [ "$port" != "631" ]; then
         UNEXPECTED="$UNEXPECTED $port"
     fi
 done
@@ -182,17 +191,20 @@ fi
 # Check 10: Container resource limits
 # ============================================================================
 echo "[10] Checking container resource limits..."
+# For systemd quadlets, check MemoryMax in quadlet files, not podman HostConfig
 NO_LIMITS=$(timeout 10 bash -c '
-    count=0
-    podman ps --format "{{.Names}}" 2>/dev/null | while read -r name; do
-        MEM=$(podman inspect "$name" --format "{{.HostConfig.Memory}}" 2>/dev/null || echo "0")
-        if [ "$MEM" = "0" ]; then
-            echo -n "$name "
-            count=$((count + 1))
-            [ $count -ge 5 ] && break
+    for quadlet in ~/.config/containers/systemd/*.container; do
+        [ -f "$quadlet" ] || continue
+        name=$(basename "$quadlet" .container)
+        # Check if service is running
+        if systemctl --user is-active "${name}.service" &>/dev/null; then
+            # Check for MemoryMax or MemoryHigh in quadlet
+            if ! grep -q "^MemoryMax=\|^MemoryHigh=" "$quadlet" 2>/dev/null; then
+                echo -n "$name "
+            fi
         fi
     done
-' 2>/dev/null || true)
+' 2>/dev/null | head -c 200 || true)  # Limit output length
 
 if [ -z "$NO_LIMITS" ]; then
     pass "All containers have memory limits"
