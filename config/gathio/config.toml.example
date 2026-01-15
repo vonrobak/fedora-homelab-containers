@@ -1,0 +1,35 @@
+# Gathio Configuration Template
+# Copy this file to config.toml and update values
+# See: https://docs.gath.io/running-gathio/configuration/
+
+# General Settings
+domain = "events.patriark.org"
+port = 3000
+email = "admin@patriark.org"
+site_name = "Patriark Events"
+
+# Federation
+is_federated = false
+
+# Event Management
+delete_after_days = 30
+show_public_event_list = false
+
+# Access Control - Whitelist of emails allowed to create events
+# Empty array = anyone with link can create events
+creator_email_addresses = []
+
+# MongoDB Connection
+# REPLACE with actual connection string using podman secret password
+mongodb_url = "mongodb://gathio:REPLACE_WITH_PASSWORD@gathio-db:27017/gathio?authSource=admin"
+
+# Email Configuration (optional)
+# mail_service = "nodemailer"
+# mail_transport = "smtp"
+# mail_smtp_host = "smtp.example.com"
+# mail_smtp_port = 587
+# mail_smtp_user = "your-email@example.com"
+# mail_smtp_pass = "your-password"
+
+# Customization
+show_kofi = false

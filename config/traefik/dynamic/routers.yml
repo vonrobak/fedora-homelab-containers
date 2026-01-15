@@ -165,6 +165,20 @@ http:
     # Access via Grafana dashboards or direct container access
     # This reduces attack surface for operational infrastructure
 
+    # Gathio Event Management Platform
+    gathio-secure:
+      rule: "Host(`events.patriark.org`)"
+      service: "gathio"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit@file
+        - authelia@file               # Protect event creation interface
+        - security-headers-gathio@file  # Relaxed CSP for CDN resources
+      tls:
+        certResolver: letsencrypt
+
   services:
     homepage:
       loadBalancer:
@@ -214,6 +228,11 @@ http:
           - url: "http://nextcloud:80"
 
     # collabora: (removed - internal-only service, no public router needed)
+
+    gathio:
+      loadBalancer:
+        servers:
+          - url: "http://gathio:3000"
 
   middlewares:
     # CalDAV/.well-known redirects for Nextcloud

@@ -97,6 +97,33 @@ access_control:
       subject:
         - 'group:users'
 
+    # Gathio Event Management - Path-based protection
+    # Protect event CREATION (admin only)
+    - domain: 'events.patriark.org'
+      policy: two_factor
+      subject:
+        - 'group:users'
+      resources:
+        - '^/new.*'         # Event creation page
+        - '^/event$'        # Event creation POST endpoint (exact match)
+        - '^/group$'        # Group creation POST endpoint
+        - '^/edit/.*'       # Event editing (backup - also password protected)
+
+    # Public access for event VIEWING and RSVP (shareable links)
+    - domain: 'events.patriark.org'
+      policy: bypass
+      resources:
+        - '^/$'             # Homepage (if you want public event list)
+        - '^/[A-Za-z0-9_-]{10,30}.*$'  # Event/group pages by ID (e.g., /TvdMqJQ4jZfJXsUSyZgUf)
+        - '^/attendee/.*'   # Attendee management (RSVP, add/remove attendees)
+        - '^/comment/.*'    # Comments on events
+        - '^/api/.*'        # Public API endpoints
+        - '^/css/.*'        # CSS files (required for page rendering)
+        - '^/js/.*'         # JavaScript files (required for buttons)
+        - '^/fonts/.*'      # Web fonts
+        - '^/images/.*'     # Static images
+        - '^/.*\.(ico|png|jpg|svg|webmanifest|xml)$'  # Favicon and icons
+
     # Immich - Not protected by Authelia (uses native authentication)
     # Removed from Authelia to allow consistent mobile + web experience
 

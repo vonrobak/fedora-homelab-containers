@@ -1,0 +1,10 @@
+# Add to config.toml for SendGrid email
+
+[general]
+mail_service = "sendgrid"
+
+[sendgrid]
+api_key = "YOUR_SENDGRID_API_KEY_HERE"
+
+# Your verified sender email (set in SendGrid)
+email = "surfaceideology@proton.me"
