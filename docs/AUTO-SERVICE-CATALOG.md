@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-15 12:24:45 UTC
+**Generated:** 2026-01-15 15:02:18 UTC
 **System:** fedora-htpc
 
 ---
@@ -9,14 +9,40 @@
 
 | Service | Image | Status | Networks |
 |---------|-------|--------|----------|
+| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
+| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
+| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
+| crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
+| cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
+| traefik | traefik:latest | ✅ Up | reverse_proxy,auth_services,monitoring |
+| homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
+| alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
+| gathio-db | mongo:7 | ✅ Up | gathio |
+| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
+| immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
+| postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
+| loki | grafana/loki:latest | ✅ Up | reverse_proxy,monitoring |
+| redis-authelia | redis:7-alpine | ✅ Up | auth_services |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
+| redis-immich | valkey/valkey:latest | ✅ Up | photos |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | reverse_proxy,monitoring |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
+| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
+| unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
+| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
+| promtail | grafana/promtail:latest | ✅ Up | monitoring |
+| gathio | lowercasename/gathio:latest | ✅ Up | reverse_proxy,gathio,monitoring |
+| collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 
 ---
 
 ## Statistics
 
-- **Total Running:** 0
-- **Total Defined:** 0
-- **System Load:**  0,39, 0,10, 0,03
+- **Total Running:** 26
+- **Total Defined:** 26
+- **System Load:**  2,38, 1,08, 0,76
 
 ---
 

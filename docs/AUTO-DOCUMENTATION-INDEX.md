@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-15 12:24:46 UTC
-**Total Documents:** 327
+**Generated:** 2026-01-15 15:02:20 UTC
+**Total Documents:** 328
 
 ---
 
@@ -187,7 +187,7 @@
 
 ---
 
-### 98-journals/ (127 documents)
+### 98-journals/ (128 documents)
 
 **Chronological project history (append-only log)**
 
@@ -205,7 +205,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-01-14: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
+- 2026-01-15: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
 - 2026-01-09: [security-audit.md](30-security/guides/security-audit.md)
 - 2026-01-09: [IR-005-network-security-event.md](30-security/runbooks/IR-005-network-security-event.md)
 - 2026-01-11: [daily-error-digest.md](40-monitoring-and-documentation/guides/daily-error-digest.md)
@@ -222,9 +222,9 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-09: [2026-01-09-memory-limit-standardization.md](98-journals/2026-01-09-memory-limit-standardization.md)
 - 2026-01-11: [2026-01-11-critical-fixes-nextcloud-slo.md](98-journals/2026-01-11-critical-fixes-nextcloud-slo.md)
 - 2026-01-11: [2026-01-11-week1-critical-fixes-and-loki-expansion.md](98-journals/2026-01-11-week1-critical-fixes-and-loki-expansion.md)
+- 2026-01-15: [2026-01-14-gathio-event-platform.md](98-journals/2026-01-14-gathio-event-platform.md)
 - 2026-01-14: [2026-01-14-gathio-deployment-security-analysis.md](99-reports/2026-01-14-gathio-deployment-security-analysis.md)
 - 2026-01-15: [remediation-monthly-202512.md](99-reports/remediation-monthly-202512.md)
-- 2026-01-15: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
 
 ---
 
