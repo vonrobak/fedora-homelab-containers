@@ -1,0 +1,29 @@
+# Option B: Brevo (formerly Sendinblue) - Free tier: 300 emails/day
+[general]
+mail_service = "nodemailer"
+
+[nodemailer]
+smtp_server = "smtp-relay.brevo.com"
+smtp_port = "587"
+smtp_username = "YOUR_BREVO_EMAIL"
+smtp_password = "YOUR_BREVO_SMTP_KEY"
+
+# Option C: Mailgun - Free tier: 100 emails/day (first 3 months)
+[general]
+mail_service = "nodemailer"
+
+[nodemailer]
+smtp_server = "smtp.mailgun.org"
+smtp_port = "587"
+smtp_username = "postmaster@YOUR_DOMAIN.mailgun.org"
+smtp_password = "YOUR_MAILGUN_SMTP_PASSWORD"
+
+# Option D: Create new Gmail account with password (not passwordless)
+[general]
+mail_service = "nodemailer"
+
+[nodemailer]
+smtp_server = "smtp.gmail.com"
+smtp_port = "587"
+smtp_username = "new-gathio-account@gmail.com"
+smtp_password = "app-specific-password"  # Generated in Google Account settings

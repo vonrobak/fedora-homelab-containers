@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-10 23:01:04 UTC
-**Total Documents:** 320
+**Generated:** 2026-01-15 12:24:46 UTC
+**Total Documents:** 327
 
 ---
 
@@ -43,13 +43,14 @@
 
 ---
 
-### 10-services/ (20 documents)
+### 10-services/ (21 documents)
 
 **Service-specific documentation and deployment guides**
 
 **Service Guides:**
 - [authelia.md](10-services/guides/authelia.md)
 - [crowdsec.md](10-services/guides/crowdsec.md)
+- [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
 - [homepage-widget-configuration.md](10-services/guides/homepage-widget-configuration.md)
 - [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
 - [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
@@ -133,13 +134,16 @@
 
 ---
 
-### 40-monitoring-and-documentation/ (11 documents)
+### 40-monitoring-and-documentation/ (14 documents)
 
 **Monitoring stack, SLOs, and documentation practices**
 
 **Guides:**
+- [daily-error-digest.md](40-monitoring-and-documentation/guides/daily-error-digest.md)
 - [git-workflow.md](40-monitoring-and-documentation/guides/git-workflow.md)
 - [homelab-snapshot-development.md](40-monitoring-and-documentation/guides/homelab-snapshot-development.md)
+- [log-to-metric-dashboard-panels.md](40-monitoring-and-documentation/guides/log-to-metric-dashboard-panels.md)
+- [log-to-metric-implementation.md](40-monitoring-and-documentation/guides/log-to-metric-implementation.md)
 - [loki-remediation-queries.md](40-monitoring-and-documentation/guides/loki-remediation-queries.md)
 - [maximizing-workflow-impact.md](40-monitoring-and-documentation/guides/maximizing-workflow-impact.md)
 - [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
@@ -183,7 +187,7 @@
 
 ---
 
-### 98-journals/ (125 documents)
+### 98-journals/ (127 documents)
 
 **Chronological project history (append-only log)**
 
@@ -191,7 +195,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (22 documents)
+### 99-reports/ (23 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -201,26 +205,26 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-01-05: [2026-01-05-ADR-017-slash-commands-and-subagents.md](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
-- 2026-01-07: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
+- 2026-01-14: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
 - 2026-01-09: [security-audit.md](30-security/guides/security-audit.md)
 - 2026-01-09: [IR-005-network-security-event.md](30-security/runbooks/IR-005-network-security-event.md)
-- 2026-01-05: [maximizing-workflow-impact.md](40-monitoring-and-documentation/guides/maximizing-workflow-impact.md)
+- 2026-01-11: [daily-error-digest.md](40-monitoring-and-documentation/guides/daily-error-digest.md)
+- 2026-01-11: [log-to-metric-dashboard-panels.md](40-monitoring-and-documentation/guides/log-to-metric-dashboard-panels.md)
+- 2026-01-11: [log-to-metric-implementation.md](40-monitoring-and-documentation/guides/log-to-metric-implementation.md)
 - 2026-01-09: [slo-calibration-process.md](40-monitoring-and-documentation/guides/slo-calibration-process.md)
 - 2026-01-09: [unifi-security-monitoring.md](40-monitoring-and-documentation/guides/unifi-security-monitoring.md)
+- 2026-01-11: [ocis.md](90-archive/ocis.md)
 - 2026-01-08: [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
-- 2026-01-09: [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
+- 2026-01-11: [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
 - 2026-01-09: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
-- 2026-01-04: [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
-- 2026-01-05: [2026-01-05-workflow-enhancements-implementation.md](98-journals/2026-01-05-workflow-enhancements-implementation.md)
-- 2026-01-08: [2026-01-08-monitoring-alert-fatigue-fixes.md](98-journals/2026-01-08-monitoring-alert-fatigue-fixes.md)
-- 2026-01-09: [2026-01-09-comprehensive-security-audit.md](98-journals/2026-01-09-comprehensive-security-audit.md)
+- 2026-01-11: [2026-01-09-comprehensive-security-audit.md](98-journals/2026-01-09-comprehensive-security-audit.md)
 - 2026-01-09: [2026-01-09-course-2-operational-excellence-completion.md](98-journals/2026-01-09-course-2-operational-excellence-completion.md)
 - 2026-01-09: [2026-01-09-memory-limit-standardization.md](98-journals/2026-01-09-memory-limit-standardization.md)
-- 2026-01-11: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-01-11: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-01-11: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-01-11: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-01-11: [2026-01-11-critical-fixes-nextcloud-slo.md](98-journals/2026-01-11-critical-fixes-nextcloud-slo.md)
+- 2026-01-11: [2026-01-11-week1-critical-fixes-and-loki-expansion.md](98-journals/2026-01-11-week1-critical-fixes-and-loki-expansion.md)
+- 2026-01-14: [2026-01-14-gathio-deployment-security-analysis.md](99-reports/2026-01-14-gathio-deployment-security-analysis.md)
+- 2026-01-15: [remediation-monthly-202512.md](99-reports/remediation-monthly-202512.md)
+- 2026-01-15: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
 
 ---
 

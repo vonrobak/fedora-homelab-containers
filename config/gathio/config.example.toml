@@ -1,0 +1,69 @@
+[general]
+# Your domain goes here. If there is a port it should be 'domain.com:port', but
+# otherwise just 'domain.com'.
+domain = "localhost:3000"
+port = "3000"
+email = "contact@example.com"
+site_name = "Gathio"
+is_federated = true
+# Events will be deleted this many days after they have ended. Set to 0 to
+# disable automatic deletion (old events will never be deleted).
+delete_after_days = 7
+# If left blank, this defaults to
+# https://yourdomain.com/images/gathio-email-logo.gif. Set a full URL here to
+# change it to your own logo (or just change the file itself).
+email_logo_url = ""
+# Show a Ko-Fi box to donate money to Raphael (Gathio's creator) on the front
+# page.
+show_kofi = false
+# Show a list of events and groups on the front page which have been marked as
+# 'Display this event/group on the public event/group list'.
+show_public_event_list = false
+# Which mail service to use to send emails to hosts and attendees. Options are
+# 'nodemailer', 'sendgrid', or 'none'. Configure settings for this mail
+# service below.
+mail_service = "none"
+# An array of email addresses which are permitted to create events. If this is
+# empty, anyone can create events.
+# For example:
+# creator_email_addresses = ["test@test.com", "admin@test.com"]
+creator_email_addresses = []
+
+[database]
+# Set up for a locally running MongoDB connection. Change this to
+# 'mongodb://mongo:27017/gathio' for a Dockerised connection.
+mongodb_url = "mongodb://localhost:27017/gathio"
+
+[nodemailer]
+smtp_server = ""
+smtp_port = ""
+smtp_username = ""
+smtp_password = ""
+
+[sendgrid]
+api_key = ""
+
+[mailgun]
+# The base domain you have set up in Mailgun, for example 'mg.gath.io'.
+domain = ""
+# Your Mailgun sending API key for the domain you have set up.
+api_key = ""
+# This will be either https://api.mailgun.net (US) or https://api.eu.mailgun.net (EU)
+# depending on the region in your domain settings.
+api_url = "https://api.mailgun.net"
+
+
+# Links to static pages (for example a privacy policy) or an external community page,
+# which will be displayed in the footer.
+# If paths begin with a slash, they are treated as internal and will open the specified
+# Markdown or text file. If they are absolute (begin with https://), they will simply
+# link to the specified URL.
+
+# [[static_pages]]
+# title = "Privacy Policy"
+# path = "/privacy"
+# filename = "privacy-policy.md"
+
+# [[static_pages]]
+# title = "External Link"
+# path = "https://example.com"

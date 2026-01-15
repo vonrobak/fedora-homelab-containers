@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-10 23:01:02 UTC
+**Generated:** 2026-01-15 12:24:45 UTC
 **System:** fedora-htpc
 
 ---
@@ -9,38 +9,14 @@
 
 | Service | Image | Status | Networks |
 |---------|-------|--------|----------|
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
-| cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
-| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
-| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
-| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
-| promtail | grafana/promtail:latest | ✅ Up | monitoring |
-| alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
-| redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| redis-authelia | redis:7-alpine | ✅ Up | auth_services |
-| postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
-| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
-| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
-| immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
-| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
-| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
-| collabora | collabora/code:latest | ✅ Up | reverse_proxy,nextcloud |
-| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
-| crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
-| unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
-| homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 
 ---
 
 ## Statistics
 
-- **Total Running:** 24
-- **Total Defined:** 24
-- **System Load:**  1,96, 1,52, 1,17
+- **Total Running:** 0
+- **Total Defined:** 0
+- **System Load:**  0,39, 0,10, 0,03
 
 ---
 
