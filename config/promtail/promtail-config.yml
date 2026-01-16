@@ -70,7 +70,7 @@ scrape_configs:
           pipeline_name: "nextcloud_cron_success"
           stages:
             - regex:
-                expression: '.*Finished nextcloud-cron.service.*'
+                expression: '.*Finished nextcloud-cron\.service.*'
             - metrics:
                 nextcloud_cron_success_total:
                   type: Counter
