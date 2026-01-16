@@ -62,17 +62,19 @@ scrape_configs:
                     match_all: true
                     action: inc
 
-      # METRIC 3: Nextcloud cron failures (specific patterns only)
+      # METRIC 3: Nextcloud cron success counter (NOT a traditional counter - just tracks successes)
+      # Philosophy: Alert on "absence of success" not "presence of failure"
+      # Counter increments on each success. Use changes() to detect staleness.
       - match:
-          selector: '{syslog_id="nextcloud-cron"}'
-          pipeline_name: "nextcloud_cron_metrics"
+          selector: '{syslog_id="systemd"}'
+          pipeline_name: "nextcloud_cron_success"
           stages:
             - regex:
-                expression: '.*(Failed with result.*exit-code|Error:.*container|Fatal error|Exception|Call to undefined|failed to open stream|MySQL server has gone away).*'
+                expression: '.*Finished nextcloud-cron.service.*'
             - metrics:
-                nextcloud_cron_failures_total:
+                nextcloud_cron_success_total:
                   type: Counter
-                  description: "Nextcloud cron actual failures (service exits, exceptions, fatal errors)"
+                  description: "Increments on each successful cron completion (use changes() for staleness detection)"
                   config:
                     match_all: true
                     action: inc
@@ -107,20 +109,10 @@ scrape_configs:
                     match_all: true
                     action: inc
 
-      # METRIC 6: Container restarts (simplified - excludes exec completions manually)
-      - match:
-          selector: '{syslog_id="podman"}'
-          pipeline_name: "container_metrics"
-          stages:
-            - regex:
-                expression: '.*(container died|container killed|Exited with error).*'
-            - metrics:
-                container_unplanned_restarts_total:
-                  type: Counter
-                  description: "Unplanned container restarts (died/killed/error exits)"
-                  config:
-                    match_all: true
-                    action: inc
+      # METRIC 6: Container restarts - DISABLED (fundamentally flawed)
+      # Problem: Matches normal "container exec_died" events (cron executions)
+      # Solution: Use cAdvisor container health metrics instead
+      # See: Prometheus alert ContainerUnhealthy for proper health-based detection
 
       # Final output stage
       - output:

@@ -1,6 +1,6 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-15 15:02:20 UTC
+**Generated:** 2026-01-16 06:01:31 UTC
 **Total Documents:** 328
 
 ---
@@ -206,17 +206,13 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 ## Recently Updated (Last 7 Days)
 
 - 2026-01-15: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
-- 2026-01-09: [security-audit.md](30-security/guides/security-audit.md)
-- 2026-01-09: [IR-005-network-security-event.md](30-security/runbooks/IR-005-network-security-event.md)
 - 2026-01-11: [daily-error-digest.md](40-monitoring-and-documentation/guides/daily-error-digest.md)
 - 2026-01-11: [log-to-metric-dashboard-panels.md](40-monitoring-and-documentation/guides/log-to-metric-dashboard-panels.md)
 - 2026-01-11: [log-to-metric-implementation.md](40-monitoring-and-documentation/guides/log-to-metric-implementation.md)
 - 2026-01-09: [slo-calibration-process.md](40-monitoring-and-documentation/guides/slo-calibration-process.md)
 - 2026-01-09: [unifi-security-monitoring.md](40-monitoring-and-documentation/guides/unifi-security-monitoring.md)
 - 2026-01-11: [ocis.md](90-archive/ocis.md)
-- 2026-01-08: [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
 - 2026-01-11: [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
-- 2026-01-09: [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
 - 2026-01-11: [2026-01-09-comprehensive-security-audit.md](98-journals/2026-01-09-comprehensive-security-audit.md)
 - 2026-01-09: [2026-01-09-course-2-operational-excellence-completion.md](98-journals/2026-01-09-course-2-operational-excellence-completion.md)
 - 2026-01-09: [2026-01-09-memory-limit-standardization.md](98-journals/2026-01-09-memory-limit-standardization.md)
@@ -225,6 +221,10 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-15: [2026-01-14-gathio-event-platform.md](98-journals/2026-01-14-gathio-event-platform.md)
 - 2026-01-14: [2026-01-14-gathio-deployment-security-analysis.md](99-reports/2026-01-14-gathio-deployment-security-analysis.md)
 - 2026-01-15: [remediation-monthly-202512.md](99-reports/remediation-monthly-202512.md)
+- 2026-01-16: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-01-16: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-16: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-01-16: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
