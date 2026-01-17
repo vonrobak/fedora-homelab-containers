@@ -2,7 +2,7 @@
 # Rotate journal export log file
 # Runs hourly via systemd timer
 
-LOG_DIR="$HOME/containers/data/journal-export"
+LOG_DIR="/mnt/btrfs-pool/subvol7-containers/journal-export"
 LOG_FILE="$LOG_DIR/journal.log"
 MAX_SIZE=104857600  # 100 MB
 
