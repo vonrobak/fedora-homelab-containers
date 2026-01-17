@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-16 23:02:15 UTC
-**Total Documents:** 333
+**Generated:** 2026-01-17 06:04:04 UTC
+**Total Documents:** 334
 
 ---
 
@@ -187,7 +187,7 @@
 
 ---
 
-### 98-journals/ (130 documents)
+### 98-journals/ (131 documents)
 
 **Chronological project history (append-only log)**
 
@@ -217,6 +217,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-15: [2026-01-14-gathio-event-platform.md](98-journals/2026-01-14-gathio-event-platform.md)
 - 2026-01-16: [2026-01-16-alert-system-redesign.md](98-journals/2026-01-16-alert-system-redesign.md)
 - 2026-01-16: [2026-01-16-auth-transcoding-alert-fix.md](98-journals/2026-01-16-auth-transcoding-alert-fix.md)
+- 2026-01-17: [2026-01-16-nextcloud-cron-alert-fix-phase1.md](98-journals/2026-01-16-nextcloud-cron-alert-fix-phase1.md)
 - 2026-01-14: [2026-01-14-gathio-deployment-security-analysis.md](99-reports/2026-01-14-gathio-deployment-security-analysis.md)
 - 2026-01-16: [alert-false-positives-analysis-2026-01-16.md](99-reports/alert-false-positives-analysis-2026-01-16.md)
 - 2026-01-16: [alert-redesign-proposal.md](99-reports/alert-redesign-proposal.md)
@@ -224,7 +225,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-15: [remediation-monthly-202512.md](99-reports/remediation-monthly-202512.md)
 - 2026-01-17: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
 - 2026-01-17: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-01-17: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
 
 ---
 

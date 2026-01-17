@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-16 23:02:14 UTC
+**Generated:** 2026-01-17 06:04:01 UTC
 **System:** fedora-htpc
 
 ---
@@ -25,13 +25,13 @@
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | reverse_proxy,media_services,monitoring |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
-| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | photos,reverse_proxy,monitoring |
-| gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
+| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
+| gathio | lowercasename/gathio:latest | ✅ Up | monitoring,reverse_proxy,gathio |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
@@ -42,7 +42,7 @@
 
 - **Total Running:** 26
 - **Total Defined:** 26
-- **System Load:**  1,90, 1,68, 1,21
+- **System Load:**  0,82, 1,11, 0,82
 
 ---
 

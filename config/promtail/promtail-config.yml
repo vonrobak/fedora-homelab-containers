@@ -35,17 +35,22 @@ scrape_configs:
       # METRIC EXTRACTION: Convert log patterns to Prometheus metrics
       # ======================================================================
 
-      # METRIC 1: Service errors (priority <=3)
-      - match:
-          selector: '{priority=~"[0-3]"}'
-          stages:
-            - metrics:
-                service_errors_total:
-                  type: Counter
-                  description: "Total service errors from systemd journal (priority <=3)"
-                  source: priority
-                  config:
-                    action: inc
+      # METRIC 1: Service errors - DISABLED (fundamentally flawed)
+      # Problem: Generic priority <=3 matching catches everything (INFO logs at priority 3)
+      # Result: False positives (Loki INFO operations triggered ServiceErrorRateHigh)
+      # Solution: Use service-specific alerts instead (SLO, Traefik, cAdvisor)
+      # Removed: 2026-01-17 (Phase 3 - Eliminate Fragile Log-Based Metrics)
+      #
+      # - match:
+      #     selector: '{priority=~"[0-3]"}'
+      #     stages:
+      #       - metrics:
+      #           service_errors_total:
+      #             type: Counter
+      #             description: "Total service errors from systemd journal (priority <=3)"
+      #             source: priority
+      #             config:
+      #               action: inc
 
       # METRIC 2: Immich thumbnail failures
       - match:
@@ -79,35 +84,46 @@ scrape_configs:
                     match_all: true
                     action: inc
 
-      # METRIC 4: Jellyfin transcoding failures
-      - match:
-          selector: '{syslog_id="jellyfin"}'
-          pipeline_name: "jellyfin_metrics"
-          stages:
-            - regex:
-                expression: '.*Transcoding.*ERROR.*'
-            - metrics:
-                jellyfin_transcoding_failures_total:
-                  type: Counter
-                  description: "Jellyfin transcoding failures"
-                  config:
-                    match_all: true
-                    action: inc
+      # METRIC 4: Jellyfin transcoding failures - DISABLED (no activity)
+      # Problem: No transcoding activity in 24+ hours, metric not useful
+      # Result: Log-based counter accumulated historical data causing false positives
+      # Alternative: Monitor Jellyfin via Traefik 5xx errors if needed
+      # Removed: 2026-01-17 (Phase 3 - Eliminate Fragile Log-Based Metrics)
+      #
+      # - match:
+      #     selector: '{syslog_id="jellyfin"}'
+      #     pipeline_name: "jellyfin_metrics"
+      #     stages:
+      #       - regex:
+      #           expression: '.*Transcoding.*ERROR.*'
+      #       - metrics:
+      #           jellyfin_transcoding_failures_total:
+      #             type: Counter
+      #             description: "Jellyfin transcoding failures"
+      #             config:
+      #               match_all: true
+      #               action: inc
 
-      # METRIC 5: Authelia auth failures
-      - match:
-          selector: '{syslog_id="authelia"}'
-          pipeline_name: "authelia_metrics"
-          stages:
-            - regex:
-                expression: '.*Authentication.*(failed|denied|invalid).*'
-            - metrics:
-                authelia_auth_failures_total:
-                  type: Counter
-                  description: "Authelia authentication failures"
-                  config:
-                    match_all: true
-                    action: inc
+      # METRIC 5: Authelia auth failures - DISABLED (replaced by native metrics)
+      # Problem: Log-based counter affected by log rotation, caused false positives
+      # Solution: Use Traefik HTTP status codes (401/403) for auth failure detection
+      # See: AutheliaAuthFailureSpike alert uses traefik_service_requests_total
+      # Benefit: Native metrics, not affected by rotation, more reliable
+      # Removed: 2026-01-17 (Phase 3 - Eliminate Fragile Log-Based Metrics)
+      #
+      # - match:
+      #     selector: '{syslog_id="authelia"}'
+      #     pipeline_name: "authelia_metrics"
+      #     stages:
+      #       - regex:
+      #           expression: '.*Authentication.*(failed|denied|invalid).*'
+      #       - metrics:
+      #           authelia_auth_failures_total:
+      #             type: Counter
+      #             description: "Authelia authentication failures"
+      #             config:
+      #               match_all: true
+      #               action: inc
 
       # METRIC 6: Container restarts - DISABLED (fundamentally flawed)
       # Problem: Matches normal "container exec_died" events (cron executions)
