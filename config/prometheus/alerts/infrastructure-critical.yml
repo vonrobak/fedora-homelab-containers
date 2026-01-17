@@ -2,14 +2,24 @@
 # Created: 2026-01-17 (Phase 4 - Alert Consolidation)
 # Purpose: Service down, disk critical, cert expiry - immediate attention required
 # Severity: critical - All alerts trigger Discord notifications immediately
+#
+# Evaluation Interval Strategy:
+# - Critical alerts: 30s (fast detection of service failures)
+# - Warning alerts: 1m (balance between detection speed and resource usage)
+# - Meta-monitoring: 1m (detect monitoring system failures quickly)
+# - Less frequent checks (backups, SLOs): 5m (sufficient for batch operations)
 
 groups:
   - name: infrastructure_critical
-    interval: 30s
+    interval: 30s  # Fast evaluation for critical service failures
     rules:
       # ========================================================================
-      # ALERT 1: Host/Service Down
+      # ALERT 1: Host/Service Down (Catch-All Safety Net)
       # ========================================================================
+      # Note: Intentionally broad (checks ALL scrape targets)
+      # Specific services have dedicated alerts (TraefikDown, PrometheusDown, etc.)
+      # This is a safety net to catch anything we might have missed
+      # Defense in depth: critical services get specific alerts + this generic one
       - alert: HostDown
         expr: up == 0
         for: 5m

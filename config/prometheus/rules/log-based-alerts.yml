@@ -110,16 +110,13 @@ groups:
       # ========================================================================
       # ALERT 7: Promtail Metric Extraction Stale (META-MONITORING)
       # ========================================================================
-      # Detects when Promtail custom metrics stop updating (silent failures)
-      # Uses Immich thumbnail metric as canary (should have some activity)
+      # Detects when Promtail custom metric extraction stops working (silent failures)
+      # Uses nextcloud_cron_success_total as canary (increments every 5 minutes)
+      # Note: immich_thumbnail_failures_total only exists when failures occur, so not checked
       # Added: 2026-01-17 (Phase 3 - Meta-monitoring)
+      # Updated: 2026-01-17 (Post-merge - removed Immich check to avoid false positives)
       - alert: PromtailMetricExtractionStale
-        expr: |
-          (
-            absent(promtail_custom_immich_thumbnail_failures_total)
-            or
-            absent(promtail_custom_nextcloud_cron_success_total)
-          )
+        expr: absent(promtail_custom_nextcloud_cron_success_total)
         for: 30m
         labels:
           severity: warning
@@ -127,19 +124,23 @@ groups:
         annotations:
           summary: "Promtail metric extraction may have failed"
           description: |
-            One or more Promtail custom metrics are missing, indicating metric extraction failure.
+            Nextcloud cron success metric is missing, indicating Promtail metric extraction failure.
+
+            This metric should always exist and increment every 5 minutes (verified in Phase 1).
+            Absence indicates the Promtail pipeline is not extracting custom metrics.
 
             Possible causes:
             1. Promtail pipeline configuration error (regex mismatch)
             2. Log rotation position file issue
             3. Journal export service down
             4. Promtail container restarted and lost position
+            5. Nextcloud cron timer stopped
 
             Check:
             - podman logs promtail --tail 100 | grep -i error
             - systemctl --user status journal-export.service
-            - curl http://localhost:9080/metrics | grep promtail_custom
+            - systemctl --user status nextcloud-cron.timer
+            - curl http://localhost:9080/metrics | grep promtail_custom_nextcloud_cron_success_total
 
-            Active metrics (should exist):
-            - promtail_custom_immich_thumbnail_failures_total
-            - promtail_custom_nextcloud_cron_success_total
+            Expected metric:
+            - promtail_custom_nextcloud_cron_success_total (should increment every 5 minutes)
