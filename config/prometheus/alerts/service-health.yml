@@ -1,0 +1,79 @@
+# Service Health Alerts
+# Created: 2026-01-17 (Phase 4 - Alert Consolidation)
+# Purpose: Service-specific health checks for containers
+# Severity: warning - Indicates service degradation, not total outage
+
+groups:
+  - name: service_health
+    interval: 30s
+    rules:
+      # ========================================================================
+      # ALERT 1: Container Restarting (Crash Loop)
+      # ========================================================================
+      # Only alert on MULTIPLE restarts (crash loop)
+      # Threshold raised from >0 to >0.1 to ignore single intentional restarts
+      - alert: ContainerRestarting
+        expr: rate(container_restarts_total[15m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: reliability
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} is crash-looping"
+          description: "Container has restarted {{ $value | humanize }} times in the last 15 minutes. This indicates a crash loop."
+
+      # ========================================================================
+      # ALERT 2: Container Memory Pressure
+      # ========================================================================
+      # Warning: Container using >95% of memory limit
+      # Raised threshold from 90% to 95% - databases often run at 85-92% by design
+      # Hysteresis: Fire >95%, resolve <90% (prevents flapping)
+      - alert: ContainerMemoryPressure
+        expr: |
+          (
+            (
+              container_memory_working_set_bytes{name!~"POD|pause"}
+              /
+              container_spec_memory_limit_bytes{name!~"POD|pause"}
+            ) > 0.95
+            and
+            ALERTS{alertname="ContainerMemoryPressure"} != 1
+          )
+          or
+          (
+            (
+              container_memory_working_set_bytes{name!~"POD|pause"}
+              /
+              container_spec_memory_limit_bytes{name!~"POD|pause"}
+            ) > 0.90
+            and
+            ALERTS{alertname="ContainerMemoryPressure"} == 1
+          )
+          and container_spec_memory_limit_bytes > 0
+        for: 15m
+        labels:
+          severity: warning
+          category: performance
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} memory pressure high"
+          description: "Container {{ $labels.name }} is using {{ $value | humanizePercentage }} of its memory limit. May be at risk of OOM kill."
+
+      # ========================================================================
+      # ALERT 3: Container Not Running
+      # ========================================================================
+      # Warning: Container not seen for >5 minutes (expected to be up)
+      - alert: ContainerNotRunning
+        expr: |
+          (
+            time() - container_last_seen{name!~"POD|pause"} > 300
+          )
+        for: 5m
+        labels:
+          severity: warning
+          category: availability
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} not running"
+          description: "Container {{ $labels.name }} has not been seen for more than 5 minutes. It may have crashed or been stopped."

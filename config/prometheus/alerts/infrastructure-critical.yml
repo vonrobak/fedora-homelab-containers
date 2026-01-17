@@ -1,0 +1,230 @@
+# Infrastructure Critical Alerts
+# Created: 2026-01-17 (Phase 4 - Alert Consolidation)
+# Purpose: Service down, disk critical, cert expiry - immediate attention required
+# Severity: critical - All alerts trigger Discord notifications immediately
+
+groups:
+  - name: infrastructure_critical
+    interval: 30s
+    rules:
+      # ========================================================================
+      # ALERT 1: Host/Service Down
+      # ========================================================================
+      - alert: HostDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.job }} on {{ $labels.instance }} is down"
+          description: "{{ $labels.job }} has been unreachable for more than 5 minutes."
+
+      # ========================================================================
+      # ALERT 2: System Disk Space Critical
+      # ========================================================================
+      - alert: SystemDiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.20
+        for: 2m
+        labels:
+          severity: critical
+          category: capacity
+          component: system
+        annotations:
+          summary: "CRITICAL: System disk space dangerously low"
+          description: "System SSD {{ $labels.instance }} has only {{ $value | humanizePercentage }} free space. Immediate cleanup required!"
+
+      # ========================================================================
+      # ALERT 3: TLS Certificate Expiring Soon
+      # ========================================================================
+      # Only check the NEWEST certificate per domain (Traefik keeps old certs in metrics after renewal)
+      - alert: CertificateExpiringSoon
+        expr: max by(cn) ((traefik_tls_certs_not_after - time()) / 86400) < 7
+        for: 1h
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "TLS certificate expires in less than 7 days"
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value }} days. Auto-renewal may have failed!"
+
+      # ========================================================================
+      # ALERT 4: Prometheus Down
+      # ========================================================================
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Prometheus monitoring system is down"
+          description: "The Prometheus service has been down for more than 5 minutes. Monitoring is blind!"
+
+      # ========================================================================
+      # ALERT 5: Alertmanager Down
+      # ========================================================================
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 10m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Alertmanager is down"
+          description: "Alertmanager has been unreachable for more than 10 minutes. No alerts will be delivered!"
+
+      # ========================================================================
+      # ALERT 6: Traefik Down
+      # ========================================================================
+      - alert: TraefikDown
+        expr: up{job="traefik"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: networking
+        annotations:
+          summary: "Traefik reverse proxy is down"
+          description: "All services are likely inaccessible. Traefik has been down for more than 5 minutes."
+
+      # ========================================================================
+      # ALERT 7: Grafana Down
+      # ========================================================================
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 10m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Grafana dashboard is down"
+          description: "Grafana has been unreachable for more than 10 minutes. Dashboard unavailable."
+
+      # ========================================================================
+      # ALERT 8: Loki Down
+      # ========================================================================
+      - alert: LokiDown
+        expr: up{job="loki"} == 0
+        for: 10m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Loki log aggregation is down"
+          description: "Loki has been unreachable for more than 10 minutes. Log ingestion is stopped!"
+
+      # ========================================================================
+      # ALERT 9: Node Exporter Down
+      # ========================================================================
+      - alert: NodeExporterDown
+        expr: up{job="node_exporter"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Node Exporter is down"
+          description: "System metrics collection has stopped. Node Exporter has been down for more than 5 minutes."
+
+      # ========================================================================
+      # ALERT 10: CrowdSec Down
+      # ========================================================================
+      - alert: CrowdSecDown
+        expr: up{job="crowdsec"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: security
+          component: security
+        annotations:
+          summary: "CrowdSec security monitoring is down"
+          description: "CrowdSec has been unreachable for more than 5 minutes. IP reputation filtering is disabled!"
+
+  # ==========================================================================
+  # META-MONITORING ALERTS (Phase 5)
+  # ==========================================================================
+  # Detect failures in the monitoring system itself
+  # Philosophy: "Who watches the watchers?" - Failures should be self-detecting
+  # ==========================================================================
+
+  - name: meta_monitoring
+    interval: 1m
+    rules:
+      # ========================================================================
+      # ALERT 11: Promtail Logs Stale (META-MONITORING)
+      # ========================================================================
+      # Detects when Promtail stops sending logs to Loki
+      - alert: PromtailLogsStale
+        expr: rate(promtail_sent_entries_total[5m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+          category: monitoring
+          component: logging
+        annotations:
+          summary: "Promtail not sending logs to Loki"
+          description: |
+            No log entries sent in 10 minutes. Log ingestion pipeline may be broken.
+
+            Possible causes:
+            - journal-export.service stopped
+            - Promtail container down or restarted
+            - Loki unreachable
+            - Position file corruption
+
+            Check:
+            - systemctl --user status journal-export.service
+            - systemctl --user status promtail.service
+            - podman logs promtail --tail 50
+            - curl http://localhost:9080/metrics | grep promtail_sent_entries
+
+      # ========================================================================
+      # ALERT 12: Prometheus Rule Evaluation Failed (META-MONITORING)
+      # ========================================================================
+      # Detects when Prometheus fails to evaluate alert rules
+      - alert: PrometheusRuleEvaluationFailed
+        expr: rate(prometheus_rule_evaluation_failures_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          category: monitoring
+          component: alerting
+        annotations:
+          summary: "Prometheus rule evaluation failing"
+          description: |
+            {{ $value }} rule evaluations failed in last 5 minutes.
+
+            Possible causes:
+            - Invalid rule syntax
+            - Missing metrics referenced in rules
+            - Query timeout
+            - Memory pressure
+
+            Check: podman logs prometheus --tail 100 | grep ERROR
+
+      # ========================================================================
+      # ALERT 13: Alertmanager Notifications Failing (META-MONITORING)
+      # ========================================================================
+      # Detects when Alertmanager fails to deliver notifications (Discord)
+      - alert: AlertmanagerNotificationsFailing
+        expr: rate(alertmanager_notifications_failed_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: critical
+          category: monitoring
+          component: alerting
+        annotations:
+          summary: "Alertmanager failing to send notifications"
+          description: |
+            {{ $value }} notifications/sec failing. Alerts are not reaching Discord!
+
+            Possible causes:
+            - Discord webhook endpoint down
+            - Network connectivity issues
+            - Rate limiting by Discord
+            - Invalid webhook URL
+
+            Check:
+            - podman logs alertmanager --tail 50 | grep -i error
+            - Test webhook: curl -X POST <discord-webhook-url>
+            - Verify network: ping discord.com

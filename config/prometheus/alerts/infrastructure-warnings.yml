@@ -1,0 +1,176 @@
+# Infrastructure Warning Alerts
+# Created: 2026-01-17 (Phase 4 - Alert Consolidation)
+# Purpose: Performance degradation, capacity warnings - proactive monitoring
+# Severity: warning - Discord during waking hours only (7am-11pm)
+
+groups:
+  - name: infrastructure_warnings
+    interval: 1m
+    rules:
+      # ========================================================================
+      # ALERT 1: System Disk Space Warning
+      # ========================================================================
+      # With hysteresis to prevent flapping: fire <25%, resolve >30%
+      - alert: SystemDiskSpaceWarning
+        expr: |
+          (
+            (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.25
+            and
+            ALERTS{alertname="SystemDiskSpaceWarning"} != 1
+          )
+          or
+          (
+            (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.30
+            and
+            ALERTS{alertname="SystemDiskSpaceWarning"} == 1
+          )
+        for: 5m
+        labels:
+          severity: warning
+          category: capacity
+          component: system
+        annotations:
+          summary: "System disk space low"
+          description: "System SSD {{ $labels.instance }} has {{ $value | humanizePercentage }} free space remaining (Warning threshold: <25%)"
+
+      # ========================================================================
+      # ALERT 2: BTRFS Pool Space Warning
+      # ========================================================================
+      - alert: BtrfsPoolSpaceWarning
+        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/btrfs-pool"} / node_filesystem_size_bytes{mountpoint="/mnt/btrfs-pool"}) < 0.20
+        for: 10m
+        labels:
+          severity: warning
+          category: capacity
+          component: storage
+        annotations:
+          summary: "BTRFS pool space low"
+          description: "BTRFS pool {{ $labels.instance }} has {{ $value | humanizePercentage }} free space remaining (Warning threshold: <20%)"
+
+      # ========================================================================
+      # ALERT 3: TLS Certificate Expiry Warning
+      # ========================================================================
+      # Only check the NEWEST certificate per domain (Traefik keeps old certs in metrics after renewal)
+      - alert: CertificateExpiryWarning
+        expr: max by(cn) ((traefik_tls_certs_not_after - time()) / 86400) < 30 and max by(cn) ((traefik_tls_certs_not_after - time()) / 86400) >= 7
+        for: 24h
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "TLS certificate expires in less than 30 days"
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value }} days. Let's Encrypt should auto-renew at ~30 days."
+
+      # ========================================================================
+      # ALERT 4: High CPU Usage
+      # ========================================================================
+      # Hysteresis: Fire >90%, resolve <85% (prevents flapping)
+      # Note: Jellyfin transcoding legitimately uses 50-80% CPU (per CLAUDE.md)
+      - alert: HighCPUUsage
+        expr: |
+          (
+            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+            and
+            ALERTS{alertname="HighCPUUsage"} != 1
+          )
+          or
+          (
+            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+            and
+            ALERTS{alertname="HighCPUUsage"} == 1
+          )
+        for: 20m
+        labels:
+          severity: warning
+          category: performance
+          component: system
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 90% ({{ $value | humanize }}%) for more than 20 minutes. This may indicate system overload."
+
+      # ========================================================================
+      # ALERT 5: Filesystem Filling Up (Predictive)
+      # ========================================================================
+      # Predict if filesystem will fill in 4 hours based on current growth rate
+      - alert: FilesystemFillingUp
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"} > 0
+            and
+            predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[1h], 4*3600) < 0
+          )
+        for: 1h
+        labels:
+          severity: warning
+          category: capacity
+          component: system
+        annotations:
+          summary: "Filesystem is predicted to fill up"
+          description: "Filesystem on {{ $labels.instance }} is predicted to run out of space within 4 hours based on current growth rate."
+
+      # ========================================================================
+      # ALERT 6: Memory Pressure High
+      # ========================================================================
+      # With hysteresis: fire >90%, resolve <85%
+      - alert: MemoryPressureHigh
+        expr: |
+          (
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.90
+            and
+            ALERTS{alertname="MemoryPressureHigh"} != 1
+          )
+          or
+          (
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
+            and
+            ALERTS{alertname="MemoryPressureHigh"} == 1
+          )
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+          component: system
+        annotations:
+          summary: "Memory pressure high"
+          description: "System memory usage is {{ $value | humanizePercentage }}. May cause OOM kills."
+
+      # ========================================================================
+      # ALERT 7: Swap Thrashing
+      # ========================================================================
+      # Detects performance degradation from swap I/O (zram swap can be near-full normally)
+      - alert: SwapThrashing
+        expr: rate(node_vmstat_pswpin[5m]) > 300 or rate(node_vmstat_pswpout[5m]) > 300
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+          component: system
+        annotations:
+          summary: "System is swap thrashing"
+          description: "High swap I/O detected ({{ $value | humanize }} pages/sec). Performance degradation likely. Consider adding RAM or reducing container memory usage."
+
+      # ========================================================================
+      # ALERT 8: High System Load
+      # ========================================================================
+      # Hysteresis: Fire >1.5x, resolve <1.3x (prevents flapping)
+      - alert: HighSystemLoad
+        expr: |
+          (
+            node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.5
+            and
+            ALERTS{alertname="HighSystemLoad"} != 1
+          )
+          or
+          (
+            node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.3
+            and
+            ALERTS{alertname="HighSystemLoad"} == 1
+          )
+        for: 15m
+        labels:
+          severity: warning
+          category: performance
+          component: system
+        annotations:
+          summary: "High system load sustained for 15+ minutes"
+          description: "15-minute load average is {{ $value | humanize }}x CPU count. System may be overloaded."

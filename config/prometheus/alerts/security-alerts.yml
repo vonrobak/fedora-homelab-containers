@@ -1,0 +1,49 @@
+# Security Alerts
+# Created: 2026-01-17 (Phase 4 - Alert Consolidation)
+# Purpose: CrowdSec, authentication, and network security monitoring
+# Severity: warning/critical - Security events requiring attention
+
+groups:
+  - name: security_alerts
+    interval: 5m
+    rules:
+      # ========================================================================
+      # ALERT 1: CrowdSec Ban Spike
+      # ========================================================================
+      # Detects potential attacks by monitoring ban rate
+      - alert: CrowdSecBanSpike
+        expr: |
+          (
+            rate(crowdsec_decisions_total[1h]) > 10
+          )
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+          component: security
+        annotations:
+          summary: "CrowdSec ban rate spike detected"
+          description: "CrowdSec is banning IPs at {{ $value | humanize }} per hour. This may indicate an active attack or scan."
+
+      # ========================================================================
+      # ALERT 2: Authelia Authentication Failure Spike
+      # ========================================================================
+      # Uses native Traefik HTTP status metrics (401/403)
+      # Redesigned in Phase 1 to use Traefik metrics instead of log parsing
+      - alert: AutheliaAuthFailureSpike
+        expr: rate(traefik_service_requests_total{exported_service="authelia@file", code=~"401|403"}[5m]) > 0.03  # >10 in 5min
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+          component: authentication
+        annotations:
+          summary: "High authentication failure rate"
+          description: |
+            {{ $value | humanize }} auth failures/sec (HTTP 401/403 from Traefik).
+
+            401 = User not authenticated (not logged in)
+            403 = Authentication failed or IP banned
+
+            Check CrowdSec: podman exec crowdsec cscli decisions list
+            Check Authelia logs: podman logs authelia --tail 50
