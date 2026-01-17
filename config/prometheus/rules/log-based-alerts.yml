@@ -14,20 +14,24 @@ groups:
   - name: log_based_alerts
     rules:
       # ========================================================================
-      # ALERT 1: High Service Error Rate
+      # ALERT 1: High Service Error Rate - DISABLED (fundamentally flawed)
       # ========================================================================
-      - alert: ServiceErrorRateHigh
-        expr: rate(promtail_custom_service_errors_total[5m]) > 0.03  # >10 errors in 5min
-        for: 5m
-        labels:
-          severity: warning
-          category: reliability
-        annotations:
-          summary: "High error rate in {{ $labels.syslog_id }}"
-          description: |
-            Service {{ $labels.syslog_id }} logging {{ $value | humanize }} errors/sec (>10 in 5min).
-
-            Check logs: journalctl --user -u {{ $labels.syslog_id }}.service --priority=err -n 20
+      # Problem: Generic priority <=3 matching caused false positives
+      # Example: Loki INFO logs at priority 3 triggered alert (25,275 "errors")
+      # Solution: Use service-specific alerts (SLO, Traefik, cAdvisor)
+      # Removed: 2026-01-17 (Phase 3 - Eliminate Fragile Log-Based Metrics)
+      #
+      # - alert: ServiceErrorRateHigh
+      #   expr: rate(promtail_custom_service_errors_total[5m]) > 0.03
+      #   for: 5m
+      #   labels:
+      #     severity: warning
+      #     category: reliability
+      #   annotations:
+      #     summary: "High error rate in {{ $labels.syslog_id }}"
+      #     description: |
+      #       Service {{ $labels.syslog_id }} logging {{ $value | humanize }} errors/sec (>10 in 5min).
+      #       Check logs: journalctl --user -u {{ $labels.syslog_id }}.service --priority=err -n 20
 
       # ========================================================================
       # ALERT 2: Immich Thumbnail Failures
@@ -114,3 +118,40 @@ groups:
       # - alert: ContainerRestartLoop  # DISABLED
       #   expr: rate(promtail_custom_container_unplanned_restarts_total[10m]) > 0.005
       #   [REMOVED]
+
+      # ========================================================================
+      # ALERT 7: Promtail Metric Extraction Stale (META-MONITORING)
+      # ========================================================================
+      # Detects when Promtail custom metrics stop updating (silent failures)
+      # Uses Immich thumbnail metric as canary (should have some activity)
+      # Added: 2026-01-17 (Phase 3 - Meta-monitoring)
+      - alert: PromtailMetricExtractionStale
+        expr: |
+          (
+            absent(promtail_custom_immich_thumbnail_failures_total)
+            or
+            absent(promtail_custom_nextcloud_cron_success_total)
+          )
+        for: 30m
+        labels:
+          severity: warning
+          category: monitoring
+        annotations:
+          summary: "Promtail metric extraction may have failed"
+          description: |
+            One or more Promtail custom metrics are missing, indicating metric extraction failure.
+
+            Possible causes:
+            1. Promtail pipeline configuration error (regex mismatch)
+            2. Log rotation position file issue
+            3. Journal export service down
+            4. Promtail container restarted and lost position
+
+            Check:
+            - podman logs promtail --tail 100 | grep -i error
+            - systemctl --user status journal-export.service
+            - curl http://localhost:9080/metrics | grep promtail_custom
+
+            Active metrics (should exist):
+            - promtail_custom_immich_thumbnail_failures_total
+            - promtail_custom_nextcloud_cron_success_total

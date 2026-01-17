@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-01-16 23:02:15 UTC
+**Generated:** 2026-01-17 06:04:04 UTC
 **System:** fedora-htpc
 
 This document visualizes service dependencies and critical paths in the homelab infrastructure.
