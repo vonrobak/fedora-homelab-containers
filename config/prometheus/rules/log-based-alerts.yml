@@ -87,27 +87,15 @@ groups:
       #   for: 5m
 
       # ========================================================================
-      # ALERT 5: Authelia Auth Failure Spike (REDESIGNED - Traefik metrics)
+      # ALERT 5: Authelia Auth Failure Spike - MOVED to security-alerts.yml
       # ========================================================================
-      # Changed from log-based to Traefik HTTP status codes (2026-01-16)
-      # Reason: Counter accumulation from log rotation caused false positives
-      # Benefit: Native metrics, not affected by log rotation, more reliable
-      - alert: AutheliaAuthFailureSpike
-        expr: rate(traefik_service_requests_total{exported_service="authelia@file", code=~"401|403"}[5m]) > 0.03  # >10 in 5min
-        for: 2m
-        labels:
-          severity: warning
-          category: security
-        annotations:
-          summary: "High authentication failure rate"
-          description: |
-            {{ $value | humanize }} auth failures/sec (HTTP 401/403 from Traefik).
-
-            401 = User not authenticated (not logged in)
-            403 = Authentication failed or IP banned
-
-            Check CrowdSec: podman exec crowdsec cscli decisions list
-            Check Authelia logs: podman logs authelia --tail 50
+      # Moved: 2026-01-17 (Phase 4 - Alert Consolidation)
+      # Reason: Uses native Traefik metrics (not log-based), belongs in security category
+      # Location: config/prometheus/alerts/security-alerts.yml
+      #
+      # - alert: AutheliaAuthFailureSpike
+      #   expr: rate(traefik_service_requests_total{exported_service="authelia@file", code=~"401|403"}[5m]) > 0.03
+      #   [MOVED]
 
       # ========================================================================
       # ALERT 6: Container Restart Loop - DISABLED (fundamentally flawed)
