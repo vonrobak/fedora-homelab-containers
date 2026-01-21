@@ -1,5 +1,6 @@
 # Extended Burn Rate Recording Rules
 # Created: 2025-12-19
+# FIXED: 2026-01-22 - Calculate actual short-term failure rates, not 30-day averages
 # Purpose: Add longer time windows for multi-tier burn rate detection
 #
 # Burn Rate Tiers (Google SRE Book methodology):
@@ -19,20 +20,35 @@ groups:
       # 1-day burn rate (medium-term trend)
       - record: burn_rate:jellyfin:availability:1d
         expr: |
-          (1 - avg_over_time(sli:jellyfin:availability:ratio[1d]))
-          / error_budget:jellyfin:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[1d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[1d]))
+            )
+          ) / error_budget:jellyfin:availability:budget_total
 
       # 2-hour burn rate (medium-term confirmation)
       - record: burn_rate:jellyfin:availability:2h
         expr: |
-          (1 - avg_over_time(sli:jellyfin:availability:ratio[2h]))
-          / error_budget:jellyfin:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[2h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[2h]))
+            )
+          ) / error_budget:jellyfin:availability:budget_total
 
       # 3-day burn rate (long-term trend)
       - record: burn_rate:jellyfin:availability:3d
         expr: |
-          (1 - avg_over_time(sli:jellyfin:availability:ratio[3d]))
-          / error_budget:jellyfin:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[3d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[3d]))
+            )
+          ) / error_budget:jellyfin:availability:budget_total
 
       # ===========================================================================
       # IMMICH - Extended burn rate windows
@@ -40,18 +56,33 @@ groups:
 
       - record: burn_rate:immich:availability:1d
         expr: |
-          (1 - avg_over_time(sli:immich:availability:ratio[1d]))
-          / error_budget:immich:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[1d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="immich@file"}[1d]))
+            )
+          ) / error_budget:immich:availability:budget_total
 
       - record: burn_rate:immich:availability:2h
         expr: |
-          (1 - avg_over_time(sli:immich:availability:ratio[2h]))
-          / error_budget:immich:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[2h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="immich@file"}[2h]))
+            )
+          ) / error_budget:immich:availability:budget_total
 
       - record: burn_rate:immich:availability:3d
         expr: |
-          (1 - avg_over_time(sli:immich:availability:ratio[3d]))
-          / error_budget:immich:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[3d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="immich@file"}[3d]))
+            )
+          ) / error_budget:immich:availability:budget_total
 
       # ===========================================================================
       # AUTHELIA - Extended burn rate windows
@@ -59,36 +90,51 @@ groups:
 
       - record: burn_rate:authelia:availability:1d
         expr: |
-          (1 - avg_over_time(sli:authelia:availability:ratio[1d]))
-          / error_budget:authelia:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[1d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[1d]))
+            )
+          ) / error_budget:authelia:availability:budget_total
 
       - record: burn_rate:authelia:availability:2h
         expr: |
-          (1 - avg_over_time(sli:authelia:availability:ratio[2h]))
-          / error_budget:authelia:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[2h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[2h]))
+            )
+          ) / error_budget:authelia:availability:budget_total
 
       - record: burn_rate:authelia:availability:3d
         expr: |
-          (1 - avg_over_time(sli:authelia:availability:ratio[3d]))
-          / error_budget:authelia:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[3d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[3d]))
+            )
+          ) / error_budget:authelia:availability:budget_total
 
       # ===========================================================================
-      # TRAEFIK - Extended burn rate windows
+      # TRAEFIK - Extended burn rate windows (using up metric)
       # ===========================================================================
 
       - record: burn_rate:traefik:availability:1d
         expr: |
-          (1 - avg_over_time(sli:traefik:availability:ratio[1d]))
+          (1 - avg_over_time(up{job="traefik"}[1d]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:2h
         expr: |
-          (1 - avg_over_time(sli:traefik:availability:ratio[2h]))
+          (1 - avg_over_time(up{job="traefik"}[2h]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:3d
         expr: |
-          (1 - avg_over_time(sli:traefik:availability:ratio[3d]))
+          (1 - avg_over_time(up{job="traefik"}[3d]))
           / error_budget:traefik:availability:budget_total
 
       # ===========================================================================
@@ -97,18 +143,33 @@ groups:
 
       - record: burn_rate:nextcloud:availability:1d
         expr: |
-          (1 - avg_over_time(sli:nextcloud:availability:ratio[1d]))
-          / error_budget:nextcloud:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[1d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1d]))
+            )
+          ) / error_budget:nextcloud:availability:budget_total
 
       - record: burn_rate:nextcloud:availability:2h
         expr: |
-          (1 - avg_over_time(sli:nextcloud:availability:ratio[2h]))
-          / error_budget:nextcloud:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[2h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[2h]))
+            )
+          ) / error_budget:nextcloud:availability:budget_total
 
       - record: burn_rate:nextcloud:availability:3d
         expr: |
-          (1 - avg_over_time(sli:nextcloud:availability:ratio[3d]))
-          / error_budget:nextcloud:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[3d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[3d]))
+            )
+          ) / error_budget:nextcloud:availability:budget_total
 
       # ===========================================================================
       # ERROR BUDGET FORECASTING
