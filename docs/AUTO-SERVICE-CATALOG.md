@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-17 06:04:01 UTC
+**Generated:** 2026-01-21 23:04:05 UTC
 **System:** fedora-htpc
 
 ---
@@ -9,32 +9,32 @@
 
 | Service | Image | Status | Networks |
 |---------|-------|--------|----------|
-| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
-| gathio-db | mongo:7 | ✅ Up | gathio |
-| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
-| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
+| loki | grafana/loki:latest | ✅ Up | reverse_proxy,monitoring |
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | reverse_proxy,media_services,monitoring |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
-| gathio | lowercasename/gathio:latest | ✅ Up | monitoring,reverse_proxy,gathio |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
+| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
+| gathio-db | mongo:7 | ✅ Up | gathio |
+| gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
+| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 
 ---
 
@@ -42,7 +42,7 @@
 
 - **Total Running:** 26
 - **Total Defined:** 26
-- **System Load:**  0,82, 1,11, 0,82
+- **System Load:**  0,82, 1,46, 1,33
 
 ---
 
