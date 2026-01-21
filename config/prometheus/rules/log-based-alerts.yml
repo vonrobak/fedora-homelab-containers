@@ -56,7 +56,7 @@ groups:
       # Philosophy: Alert on "absence of success" not "presence of failure"
       # Uses changes() to detect if counter incremented recently
       - alert: NextcloudCronStale
-        expr: changes(promtail_custom_nextcloud_cron_success_total[10m]) == 0
+        expr: sum(changes(promtail_custom_nextcloud_cron_success_total[10m])) == 0
         for: 2m
         labels:
           severity: critical

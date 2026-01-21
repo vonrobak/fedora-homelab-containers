@@ -17,7 +17,7 @@ if [ -f "$LOG_FILE" ]; then
         mv "$LOG_FILE" "${LOG_FILE}.1"
 
         # Compress old log
-        gzip "${LOG_FILE}.1" 2>/dev/null
+        gzip -f "${LOG_FILE}.1" 2>/dev/null
 
         # Create new empty file
         touch "$LOG_FILE"
