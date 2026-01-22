@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-17 06:04:04 UTC
-**Total Documents:** 334
+**Generated:** 2026-01-21 23:04:06 UTC
+**Total Documents:** 338
 
 ---
 
@@ -187,7 +187,7 @@
 
 ---
 
-### 98-journals/ (131 documents)
+### 98-journals/ (135 documents)
 
 **Chronological project history (append-only log)**
 
@@ -206,25 +206,22 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 ## Recently Updated (Last 7 Days)
 
 - 2026-01-15: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
-- 2026-01-11: [daily-error-digest.md](40-monitoring-and-documentation/guides/daily-error-digest.md)
-- 2026-01-11: [log-to-metric-dashboard-panels.md](40-monitoring-and-documentation/guides/log-to-metric-dashboard-panels.md)
-- 2026-01-11: [log-to-metric-implementation.md](40-monitoring-and-documentation/guides/log-to-metric-implementation.md)
-- 2026-01-11: [ocis.md](90-archive/ocis.md)
-- 2026-01-11: [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
-- 2026-01-11: [2026-01-09-comprehensive-security-audit.md](98-journals/2026-01-09-comprehensive-security-audit.md)
-- 2026-01-11: [2026-01-11-critical-fixes-nextcloud-slo.md](98-journals/2026-01-11-critical-fixes-nextcloud-slo.md)
-- 2026-01-11: [2026-01-11-week1-critical-fixes-and-loki-expansion.md](98-journals/2026-01-11-week1-critical-fixes-and-loki-expansion.md)
 - 2026-01-15: [2026-01-14-gathio-event-platform.md](98-journals/2026-01-14-gathio-event-platform.md)
 - 2026-01-16: [2026-01-16-alert-system-redesign.md](98-journals/2026-01-16-alert-system-redesign.md)
 - 2026-01-16: [2026-01-16-auth-transcoding-alert-fix.md](98-journals/2026-01-16-auth-transcoding-alert-fix.md)
 - 2026-01-17: [2026-01-16-nextcloud-cron-alert-fix-phase1.md](98-journals/2026-01-16-nextcloud-cron-alert-fix-phase1.md)
-- 2026-01-14: [2026-01-14-gathio-deployment-security-analysis.md](99-reports/2026-01-14-gathio-deployment-security-analysis.md)
+- 2026-01-17: [2026-01-17-alert-consolidation-meta-monitoring-phase4-5.md](98-journals/2026-01-17-alert-consolidation-meta-monitoring-phase4-5.md)
+- 2026-01-17: [2026-01-17-log-metric-cleanup-phase3.md](98-journals/2026-01-17-log-metric-cleanup-phase3.md)
+- 2026-01-17: [2026-01-17-log-storage-migration-phase2.md](98-journals/2026-01-17-log-storage-migration-phase2.md)
+- 2026-01-21: [2026-01-21-alert-flapping-root-cause-fix.md](98-journals/2026-01-21-alert-flapping-root-cause-fix.md)
 - 2026-01-16: [alert-false-positives-analysis-2026-01-16.md](99-reports/alert-false-positives-analysis-2026-01-16.md)
 - 2026-01-16: [alert-redesign-proposal.md](99-reports/alert-redesign-proposal.md)
 - 2026-01-16: [auth-transcoding-alert-redesign.md](99-reports/auth-transcoding-alert-redesign.md)
 - 2026-01-15: [remediation-monthly-202512.md](99-reports/remediation-monthly-202512.md)
-- 2026-01-17: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-01-17: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-22: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-01-22: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-22: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-01-22: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

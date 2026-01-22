@@ -316,6 +316,7 @@ groups:
 
   # ===========================================================================
   # BURN RATE CALCULATIONS (for multi-window alerting)
+  # FIXED: 2026-01-22 - Calculate actual short-term failure rates, not 30-day averages
   # ===========================================================================
   - name: burn_rate
     interval: 1m
@@ -323,107 +324,187 @@ groups:
       # Jellyfin - 1h burn rate (used for fast alerts)
       - record: burn_rate:jellyfin:availability:1h
         expr: |
-          (1 - avg_over_time(sli:jellyfin:availability:ratio[1h]))
-          / error_budget:jellyfin:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[1h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[1h]))
+            )
+          ) / error_budget:jellyfin:availability:budget_total
 
       # Jellyfin - 5m burn rate (used for fast alert confirmation)
       - record: burn_rate:jellyfin:availability:5m
         expr: |
-          (1 - avg_over_time(sli:jellyfin:availability:ratio[5m]))
-          / error_budget:jellyfin:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[5m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[5m]))
+            )
+          ) / error_budget:jellyfin:availability:budget_total
 
       # Jellyfin - 6h burn rate (used for slow alerts)
       - record: burn_rate:jellyfin:availability:6h
         expr: |
-          (1 - avg_over_time(sli:jellyfin:availability:ratio[6h]))
-          / error_budget:jellyfin:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[6h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[6h]))
+            )
+          ) / error_budget:jellyfin:availability:budget_total
 
       # Jellyfin - 30m burn rate (used for slow alert confirmation)
       - record: burn_rate:jellyfin:availability:30m
         expr: |
-          (1 - avg_over_time(sli:jellyfin:availability:ratio[30m]))
-          / error_budget:jellyfin:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[30m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[30m]))
+            )
+          ) / error_budget:jellyfin:availability:budget_total
 
       # Immich - Burn rates
       - record: burn_rate:immich:availability:1h
         expr: |
-          (1 - avg_over_time(sli:immich:availability:ratio[1h]))
-          / error_budget:immich:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[1h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="immich@file"}[1h]))
+            )
+          ) / error_budget:immich:availability:budget_total
 
       - record: burn_rate:immich:availability:5m
         expr: |
-          (1 - avg_over_time(sli:immich:availability:ratio[5m]))
-          / error_budget:immich:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[5m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="immich@file"}[5m]))
+            )
+          ) / error_budget:immich:availability:budget_total
 
       - record: burn_rate:immich:availability:6h
         expr: |
-          (1 - avg_over_time(sli:immich:availability:ratio[6h]))
-          / error_budget:immich:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[6h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="immich@file"}[6h]))
+            )
+          ) / error_budget:immich:availability:budget_total
 
       - record: burn_rate:immich:availability:30m
         expr: |
-          (1 - avg_over_time(sli:immich:availability:ratio[30m]))
-          / error_budget:immich:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[30m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="immich@file"}[30m]))
+            )
+          ) / error_budget:immich:availability:budget_total
 
       # Authelia - Burn rates
       - record: burn_rate:authelia:availability:1h
         expr: |
-          (1 - avg_over_time(sli:authelia:availability:ratio[1h]))
-          / error_budget:authelia:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[1h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[1h]))
+            )
+          ) / error_budget:authelia:availability:budget_total
 
       - record: burn_rate:authelia:availability:5m
         expr: |
-          (1 - avg_over_time(sli:authelia:availability:ratio[5m]))
-          / error_budget:authelia:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[5m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[5m]))
+            )
+          ) / error_budget:authelia:availability:budget_total
 
       - record: burn_rate:authelia:availability:6h
         expr: |
-          (1 - avg_over_time(sli:authelia:availability:ratio[6h]))
-          / error_budget:authelia:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[6h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[6h]))
+            )
+          ) / error_budget:authelia:availability:budget_total
 
       - record: burn_rate:authelia:availability:30m
         expr: |
-          (1 - avg_over_time(sli:authelia:availability:ratio[30m]))
-          / error_budget:authelia:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[30m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[30m]))
+            )
+          ) / error_budget:authelia:availability:budget_total
 
       # Nextcloud - Burn rates
       - record: burn_rate:nextcloud:availability:1h
         expr: |
-          (1 - avg_over_time(sli:nextcloud:availability:ratio[1h]))
-          / error_budget:nextcloud:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[1h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1h]))
+            )
+          ) / error_budget:nextcloud:availability:budget_total
 
       - record: burn_rate:nextcloud:availability:5m
         expr: |
-          (1 - avg_over_time(sli:nextcloud:availability:ratio[5m]))
-          / error_budget:nextcloud:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[5m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m]))
+            )
+          ) / error_budget:nextcloud:availability:budget_total
 
       - record: burn_rate:nextcloud:availability:6h
         expr: |
-          (1 - avg_over_time(sli:nextcloud:availability:ratio[6h]))
-          / error_budget:nextcloud:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[6h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[6h]))
+            )
+          ) / error_budget:nextcloud:availability:budget_total
 
       - record: burn_rate:nextcloud:availability:30m
         expr: |
-          (1 - avg_over_time(sli:nextcloud:availability:ratio[30m]))
-          / error_budget:nextcloud:availability:budget_total
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[30m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[30m]))
+            )
+          ) / error_budget:nextcloud:availability:budget_total
 
-      # Traefik - Burn rates
+      # Traefik - Burn rates (already correct - uses actual up metric)
       - record: burn_rate:traefik:availability:1h
         expr: |
-          (1 - avg_over_time(sli:traefik:availability:ratio[1h]))
+          (1 - avg_over_time(up{job="traefik"}[1h]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:5m
         expr: |
-          (1 - avg_over_time(sli:traefik:availability:ratio[5m]))
+          (1 - avg_over_time(up{job="traefik"}[5m]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:6h
         expr: |
-          (1 - avg_over_time(sli:traefik:availability:ratio[6h]))
+          (1 - avg_over_time(up{job="traefik"}[6h]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:30m
         expr: |
-          (1 - avg_over_time(sli:traefik:availability:ratio[30m]))
+          (1 - avg_over_time(up{job="traefik"}[30m]))
           / error_budget:traefik:availability:budget_total
