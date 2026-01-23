@@ -137,17 +137,51 @@ groups:
       # ========================================================================
       # ALERT 7: Swap Thrashing
       # ========================================================================
-      # Detects performance degradation from swap I/O (zram swap can be near-full normally)
+      # Calibrated for zram (compressed in-memory swap):
+      # - Baseline zram activity: ~230 pages/sec (normal)
+      # - Alert threshold: 1000 pages/sec (indicates actual problem)
+      # - Hysteresis: Fire at 1000, resolve at 600 (prevents flapping)
+      # - Requires system impact: High load OR memory pressure to confirm degradation
+      #
+      # Note: zram swap I/O is CPU-bound compression, NOT disk I/O.
+      # High page rates without load impact are normal zram behavior.
       - alert: SwapThrashing
-        expr: rate(node_vmstat_pswpin[5m]) > 300 or rate(node_vmstat_pswpout[5m]) > 300
+        expr: |
+          (
+            (
+              rate(node_vmstat_pswpin[5m]) > 1000 or rate(node_vmstat_pswpout[5m]) > 1000
+            )
+            and
+            (
+              node_load5 / count(node_cpu_seconds_total{mode="idle"}) > 0.7
+              or
+              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.15
+            )
+            and
+            ALERTS{alertname="SwapThrashing"} != 1
+          )
+          or
+          (
+            (
+              rate(node_vmstat_pswpin[5m]) > 600 or rate(node_vmstat_pswpout[5m]) > 600
+            )
+            and
+            (
+              node_load5 / count(node_cpu_seconds_total{mode="idle"}) > 0.5
+              or
+              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.20
+            )
+            and
+            ALERTS{alertname="SwapThrashing"} == 1
+          )
         for: 10m
         labels:
           severity: warning
           category: performance
           component: system
         annotations:
-          summary: "System is swap thrashing"
-          description: "High swap I/O detected ({{ $value | humanize }} pages/sec). Performance degradation likely. Consider adding RAM or reducing container memory usage."
+          summary: "System is swap thrashing with performance impact"
+          description: "Swap I/O is {{ $value | humanize }} pages/sec with elevated system load. This indicates memory pressure causing actual performance degradation. Check for memory-hungry processes or abnormal virtual memory allocation (e.g., browser tab explosion)."
 
       # ========================================================================
       # ALERT 8: High System Load
