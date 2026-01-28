@@ -1,0 +1,42 @@
+[Unit]
+Description=Nextcloud Redis Cache
+After=network-online.target
+Wants=network-online.target
+
+
+[Container]
+Image=docker.io/library/redis:7-alpine
+ContainerName=nextcloud-redis
+AutoUpdate=registry
+
+# Redis password authentication (using podman secret)
+Secret=nextcloud_redis_password
+Exec=sh -c 'redis-server --requirepass "$(cat /run/secrets/nextcloud_redis_password)"'
+
+# Storage
+Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud-redis/data:/data:Z
+
+# Networks
+Network=systemd-nextcloud
+Network=systemd-monitoring
+
+# Health check
+HealthCmd=sh -c 'redis-cli --no-auth-warning -a "$(cat /run/secrets/nextcloud_redis_password)" ping'
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=5
+
+# Labels for Prometheus
+Label=prometheus.scrape=true
+Label=prometheus.port=6379
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+# Resource limits (systemd memory control)
+MemoryMax=256M
+MemoryHigh=230M
+
+[Install]
+WantedBy=default.target

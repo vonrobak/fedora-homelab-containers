@@ -1,0 +1,11 @@
+[Unit]
+Description=Gathio Application Network
+Documentation=man:podman-network(1)
+
+[Network]
+NetworkName=systemd-gathio
+Driver=bridge
+Internal=true
+
+[Install]
+WantedBy=default.target

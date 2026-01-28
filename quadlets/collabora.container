@@ -35,15 +35,16 @@ HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=5
 
-# Resource limits
-Memory=2048M
-
 # Traefik routing configured via file provider (config/traefik/dynamic/routers.yml)
 # No labels needed - cleaner separation of concerns
 
 [Service]
 Restart=always
 TimeoutStartSec=300
+
+# Resource limits (systemd memory control)
+MemoryMax=2G
+MemoryHigh=1.8G
 
 [Install]
 WantedBy=default.target

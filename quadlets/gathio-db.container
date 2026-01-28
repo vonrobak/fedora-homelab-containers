@@ -1,0 +1,42 @@
+[Unit]
+Description=MongoDB Database for Gathio
+After=network-online.target gathio-network.service
+Wants=network-online.target
+Requires=gathio-network.service
+
+[Container]
+Image=docker.io/library/mongo:7
+ContainerName=gathio-db
+HostName=gathio-db
+AutoUpdate=registry
+
+# Database configuration (using podman secrets - Pattern 2: type=env)
+Secret=gathio_mongodb_password,type=env,target=MONGO_INITDB_ROOT_PASSWORD
+Environment=MONGO_INITDB_ROOT_USERNAME=gathio
+
+# Storage (will set NOCOW attribute)
+Volume=/mnt/btrfs-pool/subvol7-containers/gathio-db:/data/db:Z
+
+# Network (dedicated Gathio network)
+Network=systemd-gathio
+
+# Health Check
+HealthCmd=mongosh --quiet --eval "db.adminCommand('ping')" || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+[Service]
+Slice=container.slice
+Restart=always
+TimeoutStartSec=300
+
+# Resource Limits (Best Practice: MemoryHigh + MemoryMax in [Service] section)
+# MemoryHigh: soft limit - throttles when exceeded
+# MemoryMax: hard limit - OOM kill
+MemoryHigh=384M
+MemoryMax=512M
+
+[Install]
+WantedBy=default.target

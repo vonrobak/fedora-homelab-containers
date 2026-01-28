@@ -23,6 +23,7 @@ Volume=/mnt/btrfs-pool/subvol7-containers/postgresql-immich:/var/lib/postgresql/
 
 # Resources
 PodmanArgs=--shm-size=128m
+Memory=1G
 
 # Health check
 HealthCmd=pg_isready -U immich -d immich
@@ -31,11 +32,14 @@ HealthTimeout=5s
 HealthRetries=5
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=900
 
 # Resource Limits
 MemoryMax=1G
+MemoryHigh=900M
+MemorySwapMax=16M  # Minimal swap for database
 
 [Install]
 WantedBy=default.target

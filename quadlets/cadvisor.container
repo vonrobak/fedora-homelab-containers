@@ -5,23 +5,25 @@ Wants=network-online.target
 Requires=monitoring-network.service
 
 [Container]
-Image=gcr.io/cadvisor/cadvisor:v0.50.0
+Image=gcr.io/cadvisor/cadvisor:latest
 ContainerName=cadvisor
 HostName=cadvisor
+AutoUpdate=registry
 Network=systemd-monitoring
 
 # cAdvisor needs access to host resources
 Volume=/:/rootfs:ro
 Volume=/run/user/1000/podman/podman.sock:/var/run/docker.sock:ro
-Volume=/sys:/sys:ro
+Volume=/sys:/sys:rw
 Volume=%h/.local/share/containers:/var/lib/containers:ro
 Volume=/dev/disk:/dev/disk:ro
 
 # Note: Port 8080 is NOT published on host - accessed via systemd-monitoring network only
 # Prometheus scrapes http://cadvisor:8080/metrics internally
 
-# Required capabilities for cAdvisor
-AddCapability=SYS_ADMIN
+# Required capabilities and privileged mode for cAdvisor
+# Note: Privileged mode required for cgroup access in rootless containers
+PodmanArgs=--privileged --cgroupns=host
 
 DNS=192.168.1.69
 
@@ -32,11 +34,13 @@ HealthTimeout=10s
 HealthRetries=3
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=60
 
 # Resource Limits
 MemoryMax=256M
+MemoryHigh=230M
 
 [Install]
 WantedBy=default.target

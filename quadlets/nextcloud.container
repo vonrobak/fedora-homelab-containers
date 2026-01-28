@@ -61,9 +61,6 @@ HealthTimeout=10s
 HealthRetries=5
 HealthStartPeriod=120s
 
-# Resource limits
-Memory=1536M
-
 # Traefik routing configured via file provider (config/traefik/dynamic/routers.yml)
 # No labels needed - cleaner separation of concerns
 # CalDAV/.well-known redirects also defined in routers.yml
@@ -76,6 +73,10 @@ Label=prometheus.path=/ocs/v2.php/apps/serverinfo/api/v1/info
 [Service]
 Restart=always
 TimeoutStartSec=300
+
+# Resource limits (systemd memory control)
+MemoryMax=2G
+MemoryHigh=1.8G
 
 [Install]
 WantedBy=default.target

@@ -1,0 +1,48 @@
+[Unit]
+Description=Authelia - SSO & MFA Authentication Server (YubiKey-First)
+After=network-online.target redis-authelia.service reverse_proxy-network.service auth_services-network.service
+Wants=network-online.target
+Requires=redis-authelia.service reverse_proxy-network.service auth_services-network.service
+
+[Container]
+Image=docker.io/authelia/authelia:latest
+ContainerName=authelia
+AutoUpdate=registry
+
+# Multi-network: Serves SSO portal + handles auth verification
+Network=systemd-reverse_proxy
+Network=systemd-auth_services
+
+# Configuration and data (SELinux :Z labels)
+Volume=%h/containers/config/authelia:/config:Z
+Volume=%h/containers/data/authelia:/data:Z
+
+# Secrets (Podman secrets - mounted as files in /run/secrets/)
+Secret=authelia_jwt_secret
+Secret=authelia_session_secret
+Secret=authelia_storage_key
+
+# Expose metrics for Prometheus
+Environment=AUTHELIA_SERVER_DISABLE_HEALTHCHECK=false
+
+# Health check
+HealthCmd=wget --no-verbose --tries=1 --spider http://127.0.0.1:9091/api/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=90s
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+RestartSec=30s
+TimeoutStopSec=70s
+TimeoutStartSec=300
+
+# Resource limits (SSO can be memory intensive with sessions)
+MemoryMax=512M
+MemoryHigh=460M
+CPUQuota=100%
+
+[Install]
+WantedBy=default.target
