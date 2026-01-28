@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-01-27 23:01:42 UTC
+**Generated:** 2026-01-28 06:01:36 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -23,6 +23,7 @@ graph TB
     CrowdSec -->|Rate Limit| Authelia[Authelia<br/>SSO + YubiKey]
     Authelia -->|Proxy| gathio[gathio]
     Authelia -->|Proxy| grafana[grafana]
+    Authelia -->|Proxy| home_assistant[home-assistant]
     Authelia -->|Proxy| homepage[homepage]
     Authelia -->|Proxy| loki[loki]
     Authelia -->|Proxy| prometheus[prometheus]
@@ -68,6 +69,11 @@ graph TB
         gathio_gathio_db[gathio-db]
     end
 
+    subgraph home_automation["home_automation<br/>10.89.6.0/24"]
+        direction LR
+        home_automation_home_assistant[home-assistant]
+    end
+
     subgraph media_services["media_services<br/>10.89.1.0/24"]
         direction LR
         media_services_jellyfin[jellyfin]
@@ -80,6 +86,7 @@ graph TB
         monitoring_cadvisor[cadvisor]
         monitoring_gathio[gathio]
         monitoring_grafana[grafana]
+        monitoring_home_assistant[home-assistant]
         monitoring_immich_server[immich-server]
         monitoring_jellyfin[jellyfin]
         monitoring_loki[loki]
@@ -117,6 +124,7 @@ graph TB
         reverse_proxy_crowdsec[crowdsec]
         reverse_proxy_gathio[gathio]
         reverse_proxy_grafana[grafana]
+        reverse_proxy_home_assistant[home-assistant]
         reverse_proxy_homepage[homepage]
         reverse_proxy_immich_server[immich-server]
         reverse_proxy_jellyfin[jellyfin]
@@ -263,6 +271,16 @@ sequenceDiagram
 - gathio-db
 
 
+### home_automation
+
+- **Full Name:** `systemd-home_automation`
+- **Subnet:** 10.89.6.0/24
+- **Services:** 1
+
+**Members:**
+- home-assistant
+
+
 ### media_services
 
 - **Full Name:** `systemd-media_services`
@@ -277,7 +295,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 16
+- **Services:** 17
 
 **Members:**
 - alert-discord-relay
@@ -285,6 +303,7 @@ sequenceDiagram
 - cadvisor
 - gathio
 - grafana
+- home-assistant
 - immich-server
 - jellyfin
 - loki
@@ -328,7 +347,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 14
+- **Services:** 15
 
 **Members:**
 - alertmanager
@@ -337,6 +356,7 @@ sequenceDiagram
 - crowdsec
 - gathio
 - grafana
+- home-assistant
 - homepage
 - immich-server
 - jellyfin
