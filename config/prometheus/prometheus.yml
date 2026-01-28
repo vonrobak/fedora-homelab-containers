@@ -104,3 +104,13 @@ scrape_configs:
 
   # Nextcloud monitoring removed - ServerInfo endpoint requires auth
   # Nextcloud availability monitored via Traefik metrics (SLO recording rules)
+
+  # Home Assistant - Home Automation Hub
+  - job_name: 'home-assistant'
+    static_configs:
+      - targets: ['home-assistant:8123']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'home-assistant'
+    metrics_path: '/api/prometheus'
+    bearer_token: 'PLACEHOLDER_TOKEN'  # TODO: Generate long-lived access token
