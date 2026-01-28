@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-27 23:01:44 UTC
-**Total Documents:** 342
+**Generated:** 2026-01-28 06:01:38 UTC
+**Total Documents:** 343
 
 ---
 
@@ -188,7 +188,7 @@
 
 ---
 
-### 98-journals/ (138 documents)
+### 98-journals/ (139 documents)
 
 **Chronological project history (append-only log)**
 
@@ -211,6 +211,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-22: [2026-01-22-burn-rate-calculation-fix.md](98-journals/2026-01-22-burn-rate-calculation-fix.md)
 - 2026-01-22: [2026-01-22-slo-operational-excellence-phase1-2-findings.md](98-journals/2026-01-22-slo-operational-excellence-phase1-2-findings.md)
 - 2026-01-23: [2026-01-23-swap-thrashing-investigation-alert-recalibration.md](98-journals/2026-01-23-swap-thrashing-investigation-alert-recalibration.md)
+- 2026-01-28: [2026-01-28-matter-hybrid-week1-home-assistant-deployment.md](98-journals/2026-01-28-matter-hybrid-week1-home-assistant-deployment.md)
 - 2026-01-28: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
 - 2026-01-28: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
 - 2026-01-28: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)

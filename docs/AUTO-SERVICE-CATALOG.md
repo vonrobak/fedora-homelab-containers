@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-27 23:01:42 UTC
+**Generated:** 2026-01-28 06:01:36 UTC
 **System:** fedora-htpc
 
 ---
@@ -18,31 +18,32 @@
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| authelia | authelia/authelia:latest | ✅ Up | reverse_proxy,auth_services |
-| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
+| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | gathio-db | mongo:7 | ✅ Up | gathio |
 | gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
+| home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | reverse_proxy,monitoring |
 
 ---
 
 ## Statistics
 
-- **Total Running:** 26
-- **Total Defined:** 26
-- **System Load:**  2,55, 2,29, 2,23
+- **Total Running:** 27
+- **Total Defined:** 27
+- **System Load:**  0,44, 0,63, 0,59
 
 ---
 
