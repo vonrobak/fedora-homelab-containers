@@ -113,4 +113,4 @@ scrape_configs:
           instance: 'fedora-htpc'
           service: 'home-assistant'
     metrics_path: '/api/prometheus'
-    bearer_token: 'PLACEHOLDER_TOKEN'  # TODO: Generate long-lived access token
+    bearer_token_file: '/run/secrets/ha-prometheus-token'

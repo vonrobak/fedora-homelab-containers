@@ -189,7 +189,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit@file
         - authelia@file
-        - security-headers@file
+        - security-headers-ha@file
       tls:
         certResolver: letsencrypt
 

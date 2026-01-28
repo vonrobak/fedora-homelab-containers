@@ -227,6 +227,28 @@ http:
           Server: ""
           X-Powered-By: ""
 
+    # Home Assistant - Relaxed CSP for WebSockets and modern web features
+    security-headers-ha:
+      headers:
+        frameDeny: false
+        customFrameOptionsValue: "SAMEORIGIN"
+        browserXssFilter: true
+        contentTypeNosniff: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        # Relaxed CSP - Allow WebSockets, workers, and HA requirements
+        contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; worker-src 'self' blob:; child-src 'self' blob:; frame-ancestors 'self';"
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+        customResponseHeaders:
+          X-Content-Type-Options: "nosniff"
+          X-Frame-Options: "SAMEORIGIN"
+          X-XSS-Protection: "1; mode=block"
+          Server: ""
+          X-Powered-By: ""
+
     # HSTS-only for Nextcloud (sets own CSP, just needs HSTS)
     hsts-only:
       headers:
