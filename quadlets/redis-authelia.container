@@ -25,11 +25,13 @@ HealthTimeout=5s
 HealthRetries=5
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
 
 # Resource Limits
 MemoryMax=256M
+MemoryHigh=230M
 
 [Install]
 WantedBy=default.target

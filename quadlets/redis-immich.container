@@ -5,7 +5,7 @@ Wants=network-online.target
 Requires=photos-network.service
 
 [Container]
-Image=docker.io/valkey/valkey:8
+Image=docker.io/valkey/valkey:latest
 ContainerName=redis-immich
 AutoUpdate=registry
 
@@ -22,11 +22,13 @@ HealthTimeout=5s
 HealthRetries=5
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
 
 # Resource Limits
 MemoryMax=512M
+MemoryHigh=460M
 
 [Install]
 WantedBy=default.target

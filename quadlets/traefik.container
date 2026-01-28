@@ -5,7 +5,7 @@ Wants=network-online.target
 Requires=reverse_proxy-network.service auth_services-network.service monitoring-network.service
 
 [Container]
-Image=docker.io/library/traefik:v3.2
+Image=docker.io/library/traefik:latest
 ContainerName=traefik
 HostName=traefik
 AutoUpdate=registry
@@ -20,6 +20,9 @@ Volume=%h/containers/config/traefik/dynamic:/etc/traefik/dynamic:ro,Z
 Volume=%h/containers/config/traefik/letsencrypt:/letsencrypt:Z
 Volume=/run/user/%U/podman/podman.sock:/var/run/podman/podman.sock:ro
 Volume=%h/containers/scripts/traefik-entrypoint.sh:/traefik-entrypoint.sh:ro,Z
+
+# Access logs
+Volume=/mnt/btrfs-pool/subvol7-containers/traefik-logs:/var/log/traefik:z
 Secret=crowdsec_api_key
 Entrypoint=/traefik-entrypoint.sh
 Exec=traefik
@@ -32,11 +35,13 @@ HealthTimeout=10s
 HealthRetries=3
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
 
 # Resource Limits
 MemoryMax=512M
+MemoryHigh=460M
 
 [Install]
 WantedBy=default.target

@@ -4,7 +4,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Container]
-Image=ghcr.io/crowdsecurity/crowdsec:latest
+Image=docker.io/crowdsecurity/crowdsec:latest
 ContainerName=crowdsec
 AutoUpdate=registry
 Network=systemd-reverse_proxy
@@ -24,11 +24,13 @@ HealthTimeout=10s
 HealthRetries=3
 
 [Service]
+Slice=container.slice
 Restart=always
 TimeoutStartSec=900
 
 # Resource Limits
 MemoryMax=512M
+MemoryHigh=460M
 
 [Install]
 WantedBy=default.target

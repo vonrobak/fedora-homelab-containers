@@ -5,9 +5,14 @@ Wants=network-online.target
 Requires=photos-network.service postgresql-immich.service redis-immich.service
 
 [Container]
-Image=ghcr.io/immich-app/immich-server:release
+Image=ghcr.io/immich-app/immich-server:v2.4.1
 ContainerName=immich-server
 AutoUpdate=registry
+
+# Run as non-root user (security: ADR-001 Rootless Containers)
+# NOTE: User=1000:1000 removed due to Immich folder integrity check incompatibility
+# Security provided by rootless Podman (UID 0 inside → UID 1000 outside) + Traefik layers
+# TODO: Revisit after consulting Immich community or upstream fix
 
 # Networks (multiple - order matters for default route)
 Network=systemd-reverse_proxy
@@ -39,8 +44,12 @@ Volume=/mnt/btrfs-pool/subvol3-opptak/immich:/usr/src/app/upload:Z
 # NEW: Mount library folder to a DIFFERENT container path (outside /usr/src/app/upload)
 Volume=/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media:ro,Z
 
-# Expose port for Traefik
-PublishPort=2283:2283
+# Hardware Acceleration - GPU access for VAAPI transcoding
+AddDevice=/dev/dri:/dev/dri
+
+# Port exposure: Use Traefik exclusively (no direct port binding)
+# Removed PublishPort - access via https://photos.patriark.org only
+# PublishPort=2283:2283
 
 # Health check
 HealthCmd=curl -f http://localhost:2283/api/server/ping || exit 1
@@ -50,11 +59,14 @@ HealthRetries=3
 HealthStartPeriod=300s
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=900
 
 # Resource Limits
-MemoryMax=2G
+MemoryMax=4G
+MemoryHigh=3.6G
+MemorySwapMax=1G
 
 [Install]
 WantedBy=default.target

@@ -5,17 +5,17 @@ Wants=network-online.target
 Requires=monitoring-network.service
 
 [Container]
-Image=docker.io/grafana/grafana:11.3.0
+Image=docker.io/grafana/grafana:latest
 ContainerName=grafana
 HostName=grafana
 Network=systemd-reverse_proxy
 Network=systemd-monitoring
 
-# Grafana Configuration
+# Grafana Configuration (using podman secrets)
 Environment=GF_SERVER_ROOT_URL=https://grafana.patriark.org
 Environment=GF_SERVER_DOMAIN=grafana.patriark.org
 Environment=GF_SECURITY_ADMIN_USER=patriark
-Environment=GF_SECURITY_ADMIN_PASSWORD=REPLACE_WITH_YOUR_PASSWORD
+Secret=grafana_admin_password,type=env,target=GF_SECURITY_ADMIN_PASSWORD
 Environment=GF_AUTH_DISABLE_LOGIN_FORM=false
 Environment=GF_AUTH_PROXY_ENABLED=true
 Environment=GF_AUTH_PROXY_HEADER_NAME=X-Forwarded-User
@@ -36,6 +36,9 @@ HealthRetries=3
 AutoUpdate=registry
 
 [Service]
+Slice=container.slice
+MemoryMax=1G
+MemoryHigh=900M
 Restart=on-failure
 TimeoutStartSec=300
 

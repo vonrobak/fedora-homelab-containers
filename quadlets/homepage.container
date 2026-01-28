@@ -1,0 +1,55 @@
+[Unit]
+Description=Homepage - Homelab Dashboard
+After=network-online.target reverse_proxy-network.service
+Wants=network-online.target
+Requires=reverse_proxy-network.service
+
+[Container]
+Image=ghcr.io/gethomepage/homepage:latest
+ContainerName=homepage
+AutoUpdate=registry
+
+# Network
+Network=systemd-reverse_proxy
+
+# Configuration (SELinux :Z labels)
+Volume=%h/containers/config/homepage:/app/config:Z
+
+# Optional: Podman socket for container auto-discovery
+# Uncomment to enable:
+# Volume=/run/user/%U/podman/podman.sock:/var/run/docker.sock:ro
+
+# Host validation - allow both domains
+Environment=HOMEPAGE_ALLOWED_HOSTS=patriark.org,home.patriark.org
+
+# Widget credentials via Podman secrets
+Secret=homepage_grafana_user,type=env,target=HOMEPAGE_VAR_GRAFANA_USER
+Secret=homepage_grafana_password,type=env,target=HOMEPAGE_VAR_GRAFANA_PASSWORD
+Secret=homepage_jellyfin_api_key,type=env,target=HOMEPAGE_VAR_JELLYFIN_API_KEY
+Secret=homepage_immich_api_key,type=env,target=HOMEPAGE_VAR_IMMICH_API_KEY
+# Secret=homepage_openweather_api_key,type=env,target=HOMEPAGE_VAR_OPENWEATHER_API_KEY
+
+# Health check
+HealthCmd=wget --no-verbose --tries=1 --spider http://127.0.0.1:3000 || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+
+# Security - run as unprivileged user
+User=1000:1000
+NoNewPrivileges=true
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+RestartSec=30s
+TimeoutStopSec=70s
+
+# Resource limits
+MemoryMax=256M
+MemoryHigh=230M
+CPUQuota=50%
+
+[Install]
+WantedBy=default.target

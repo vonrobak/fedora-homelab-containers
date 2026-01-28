@@ -30,9 +30,6 @@ HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=5
 
-# Resource limits
-Memory=512M
-
 # Labels for Prometheus
 Label=prometheus.scrape=true
 Label=prometheus.port=3306
@@ -40,6 +37,10 @@ Label=prometheus.port=3306
 [Service]
 Restart=always
 TimeoutStartSec=300
+
+# Resource limits (systemd memory control)
+MemoryMax=1G
+MemoryHigh=900M
 
 [Install]
 WantedBy=default.target
