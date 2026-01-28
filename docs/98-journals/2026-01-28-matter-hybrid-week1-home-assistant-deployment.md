@@ -116,11 +116,52 @@ Added scrape target (line ~107):
    - Create admin account
    - Complete initial setup wizard
 
-2. **Generate Prometheus bearer token:**
+2. **Configure Prometheus authentication (Podman secrets approach):**
+
+   **Generate HA token:**
    - HA UI → Profile → Long-Lived Access Tokens
    - Create token named "Prometheus Scraping"
-   - Replace `PLACEHOLDER_TOKEN` in `prometheus.yml`
-   - Restart Prometheus: `systemctl --user restart prometheus.service`
+   - Copy token to clipboard
+
+   **Store as Podman secret (recommended for security):**
+   ```bash
+   # Create secret from token
+   echo "eyJ0eXAiOiJKV1QiLCJhbGc..." | podman secret create ha-prometheus-token -
+
+   # Verify secret created
+   podman secret ls | grep ha-prometheus
+   ```
+
+   **Update Prometheus configuration:**
+   ```yaml
+   # config/prometheus/prometheus.yml (line ~115)
+   # Replace:
+   bearer_token: 'PLACEHOLDER_TOKEN'
+   # With:
+   bearer_token_file: /run/secrets/ha-prometheus-token
+   ```
+
+   **Mount secret in Prometheus container:**
+   ```bash
+   # Add to quadlets/prometheus.container [Container] section:
+   Secret=ha-prometheus-token,type=mount,target=/run/secrets/ha-prometheus-token
+
+   # Reload and restart
+   systemctl --user daemon-reload
+   systemctl --user restart prometheus.service
+   ```
+
+   **Verify scraping works:**
+   ```bash
+   # Check Prometheus targets page
+   curl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | select(.labels.job=="home-assistant")'
+   ```
+
+   **Why Podman secrets?**
+   - Token never written to disk in plaintext config files
+   - Follows homelab security patterns (e.g., CrowdSec, Authelia)
+   - Secrets excluded from Git automatically
+   - Easy rotation without config file changes
 
 ### Week 2 Implementation Tasks
 
@@ -170,6 +211,23 @@ NO Traefik labels in quadlet (correct). All routing defined in `routers.yml` per
 
 Current: 387MB, Target: 2GB max (plan estimates 2G for HA)
 19% utilization indicates room for integrations and automations.
+
+### Health Check Validation
+
+Health check using `curl` is working correctly. The official Home Assistant image includes curl 8.14.1:
+
+```bash
+$ podman healthcheck run home-assistant
+# Exit code: 0 (success)
+
+$ podman inspect home-assistant --format '{{.State.Health.Status}}'
+healthy
+
+$ podman exec home-assistant curl --version
+curl 8.14.1 (x86_64-alpine-linux-musl)
+```
+
+The health check command `curl -f http://localhost:8123/manifest.json` executes successfully every 30 seconds with 90s startup grace period.
 
 ---
 
