@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-21 23:04:05 UTC
+**Generated:** 2026-01-27 23:01:42 UTC
 **System:** fedora-htpc
 
 ---
@@ -11,23 +11,18 @@
 |---------|-------|--------|----------|
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
-| crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
-| homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
 | immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
-| loki | grafana/loki:latest | ✅ Up | reverse_proxy,monitoring |
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
-| nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
+| authelia | authelia/authelia:latest | ✅ Up | reverse_proxy,auth_services |
+| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
-| promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
@@ -35,6 +30,11 @@
 | gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
+| crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
+| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
+| promtail | grafana/promtail:latest | ✅ Up | monitoring |
+| homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 
 ---
 
@@ -42,7 +42,7 @@
 
 - **Total Running:** 26
 - **Total Defined:** 26
-- **System Load:**  0,82, 1,46, 1,33
+- **System Load:**  2,55, 2,29, 2,23
 
 ---
 

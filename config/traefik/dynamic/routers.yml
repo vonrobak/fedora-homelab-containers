@@ -179,6 +179,20 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # Home Assistant - Home Automation Hub
+    home-assistant-secure:
+      rule: "Host(`ha.patriark.org`)"
+      service: "home-assistant"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit@file
+        - authelia@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
   services:
     homepage:
       loadBalancer:
@@ -233,6 +247,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://gathio:3000"
+
+    home-assistant:
+      loadBalancer:
+        servers:
+          - url: "http://home-assistant:8123"
 
   middlewares:
     # CalDAV/.well-known redirects for Nextcloud
