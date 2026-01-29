@@ -2,7 +2,7 @@
 
 **Started:** 2026-01-29
 **Guide Reference:** `docs/10-services/guides/home-assistant-learning-path.md`
-**Status:** 🟢 In Progress - Phase 1 Exercise 1.1 Complete
+**Status:** 🟢 In Progress - Phase 1 Exercises 1.1-1.3 Complete
 
 **Philosophy:** This journal tracks actual progress through the HA learning path, documenting deviations from the guide, obstacles encountered, and solutions implemented. The guide remains immutable as a reference; this journal reflects reality.
 
@@ -12,7 +12,7 @@
 
 | Phase | Status | Started | Completed | Notes |
 |-------|--------|---------|-----------|-------|
-| **Phase 1: Philips Hue** | 🟡 In Progress | 2026-01-29 | - | Exercise 1.1 complete |
+| **Phase 1: Philips Hue** | 🟡 In Progress | 2026-01-29 | - | Exercises 1.1-1.3 complete |
 | Phase 2: Dashboards | ⏳ Not Started | - | - | - |
 | Phase 3: Air Quality | ⏳ Not Started | - | - | - |
 | Phase 4: Roborock + Focus | ⏳ Not Started | - | - | - |
@@ -26,7 +26,7 @@
 
 **Guide Reference:** Phase 1, Exercises 1.1-1.7 (~3 hours total)
 
-**Current Status:** Exercise 1.1 complete ✅
+**Current Status:** Exercises 1.1-1.3 complete ✅
 
 ---
 
@@ -198,17 +198,207 @@ Ports: 80 (HTTP), 443 (HTTPS)
 #### Next Steps
 
 **Remaining Phase 1 Exercises:**
-- [ ] Exercise 1.2: Understanding Light Control Concepts (~15 min)
-- [ ] Exercise 1.3: Hue Scenes - Best of Both Worlds (~20 min)
+- [x] Exercise 1.2: Understanding Light Control Concepts (~15 min) ✅
+- [x] Exercise 1.3: Hue Scenes - Best of Both Worlds (~20 min) ✅
 - [ ] Exercise 1.4: Time-Based Lighting Automation (~30 min)
 - [ ] Exercise 1.5: Presence-Based Lighting (~30 min)
 - [ ] Exercise 1.6: Norwegian Winter Lighting (~45 min)
 - [ ] Exercise 1.7: Hue Remote Integration (~20 min)
 - [ ] Phase 1 Checkpoint: Build First Dashboard (~30 min)
 
-**Estimated Time Remaining:** ~2.5 hours
+**Estimated Time Remaining:** ~2 hours
 
-**Ready to Continue:** Yes - Hue integration working, all prerequisites met
+**Ready to Continue:** Yes - Exercises 1.1-1.3 complete, ready for automations
+
+---
+
+### Exercise 1.2: Understanding Light Control Concepts
+
+**Started:** 2026-01-29
+**Status:** ✅ Complete
+**Time Spent:** ~15 minutes
+
+#### Entities Discovered
+
+**6 Light Entities Created:**
+- `light.hue_wca_stua_bokhylla` (Living room bookshelf)
+- `light.kjokken_spisebord` (Kitchen dining table)
+- `light.hue_wca_stua_mellom_vinduer` (Living room between windows)
+- `light.sort_gulvlampe` (Black floor lamp)
+- `light.stua` (Living room group)
+- `light.kjokken` (Kitchen group)
+
+**10 Scene Entities Imported:**
+- Living room: `scene.stua_concentrate`, `scene.stua_rolling_hills`, `scene.stua_relax`, `scene.stua_nightlight`, `scene.stua_rest`, `scene.stua_stua_industrial_blue`, `scene.stua_unwind`, `scene.stua_galaxy`, `scene.stua_energize`
+- Kitchen: `scene.kjokken_energize`
+
+#### Core Concepts Validated
+
+**States vs Attributes:**
+- ✅ **State:** Simple on/off (verified via Developer Tools → States)
+- ✅ **Attributes:** Rich details (brightness: 0-255, rgb_color, color_temp, xy_color)
+
+**Services (Actions):**
+- ✅ Tested `light.turn_on` with various parameters
+- ✅ Brightness control (0-100% via `brightness_pct`)
+- ✅ Color temperature (mired scale: 153-500)
+- ✅ Turn off (`light.turn_off`)
+
+**Tests Performed:**
+1. Simple on/off: ✅ Working
+2. Brightness (50%): ✅ Working
+3. Color temperature (400 mired, warm): ✅ Working
+4. RGB color: ⚠️ See issue below
+
+#### Deviation: Home Assistant Version Terminology Change
+
+**Guide Assumption:** Developer Tools has "Services" tab
+
+**Reality:** HA version uses "Actions" tab (terminology updated)
+- Old: Developer Tools → **Services**
+- New: Developer Tools → **Actions**
+- Old YAML: `service:`
+- New YAML: `action:`
+
+**Impact:** Minor - same functionality, just renamed for clarity
+
+**Time Lost:** ~2 minutes (quickly adapted)
+
+#### Issue Encountered: Mutually Exclusive Color Modes
+
+**Problem:** RGB color command failed with error:
+```
+Failed to perform the action light.turn_on.
+two or more values in the same group of exclusion 'Color descriptors' @ data[<Color descriptors>].
+Got None
+```
+
+**Root Cause:** Color modes are mutually exclusive:
+- **Color Temperature** (`color_temp`) = White light (warm to cool)
+- **RGB Color** (`rgb_color`) = Full color spectrum
+- Cannot use both simultaneously
+
+**Solution:** Disable color temperature mode before setting RGB colors
+- In HA UI: Untick "Color Temperature" when setting RGB values
+- Light must be in one color mode at a time
+
+**Alternative Attempted:** XY color space (`xy_color`)
+- Tried Hue's native XY format
+- Also failed with similar exclusion error
+- RGB with color_temp disabled was simpler solution
+
+**Key Learning:**
+- Hue bulbs operate in different color modes
+- Switching modes requires clearing previous mode
+- For automations, pick one mode per scene (temp OR color, not both)
+
+**Time Lost:** ~5 minutes troubleshooting
+
+**Prevention:** Guide should note color mode exclusivity upfront
+
+#### Hue Remote Coexistence Verified
+
+**Test:** Used physical Hue remote to control lights while HA running
+
+**Results:**
+- ✅ Remote changes lights instantly (via Hue Bridge)
+- ✅ HA Developer Tools → States updates reflect remote changes
+- ✅ HA can simultaneously control same lights (no conflicts)
+- ✅ Bidirectional synchronization working perfectly
+
+**Validation:** "Keep Hue Bridge + HA" architecture decision confirmed optimal
+
+---
+
+### Exercise 1.3: Hue Scenes - Best of Both Worlds
+
+**Started:** 2026-01-29
+**Status:** ✅ Complete
+**Time Spent:** ~20 minutes
+
+#### Scene Activation Tests
+
+**Method:** Developer Tools → Actions → `scene.turn_on`
+
+**Scenes Tested:**
+1. ✅ `scene.stua_energize` (bright, cool - morning)
+2. ✅ `scene.stua_relax` (warm, dim - evening)
+3. ✅ `scene.stua_galaxy` (colorful, decorative)
+4. ✅ `scene.stua_nightlight` (very dim, path lighting)
+5. ✅ `scene.kjokken_energize` (kitchen bright)
+
+**Performance Observations:**
+- ⚡ **Instant activation** (all lights change simultaneously)
+- ⚡ **Smooth transitions** (no sequential lag between bulbs)
+- ⚡ **Colors/brightness preserved** from Hue app configuration
+- ⚡ **Reliable** (Hue Bridge optimization vs individual commands)
+
+#### Why Scenes Excel
+
+**Validated Benefits:**
+1. **Simultaneous control:** One command → Hue Bridge → all bulbs at once
+2. **Hue-optimized:** Bridge handles coordination internally
+3. **Faster than individual commands:** No network latency per bulb
+4. **Preserves configurations:** Complex scenes (colors, brightness per bulb) work perfectly
+5. **Works without HA:** Hue app/remote can still activate same scenes
+
+**vs Individual Light Commands:**
+- ❌ Sequential (light1, wait, light2, wait...)
+- ❌ Slower (network roundtrip per bulb × 8 bulbs)
+- ❌ Complex to configure (need each bulb's exact settings)
+
+**Guide Validation:** "Using Hue scenes is recommended for controlling multiple lights at once" - confirmed via hands-on testing
+
+#### Advanced: hue.activate_scene Service
+
+**Not tested in this exercise** - requires exact Hue room names from Hue app
+- Enables runtime overrides (brightness, transition time)
+- Deferred to future exercises when needed
+
+**Reason:** Simple `scene.turn_on` sufficient for current learning phase
+
+#### Workflow Established
+
+**Best Practice Confirmed:**
+1. **Create scenes in Philips Hue app** (easy UI, per-bulb control)
+2. **Scenes auto-import to HA** (no manual configuration needed)
+3. **Activate scenes from HA** (via automations, dashboards, voice, etc.)
+4. **Hue remote still works** (activates same scenes via bridge)
+
+**This workflow optimizes:**
+- ✅ Scene creation (Hue app UI is excellent)
+- ✅ Scene execution (Hue Bridge optimization)
+- ✅ Integration simplicity (automatic import)
+- ✅ Reliability (multiple control paths: app, HA, remote)
+
+#### Key Learnings
+
+1. **Scene entity format:** `scene.<room>_<scene_name>`
+   - Example: `scene.stua_energize` (Stua = living room in Norwegian)
+
+2. **Imported scenes preserve Hue app settings:**
+   - Per-bulb brightness
+   - Per-bulb colors
+   - Transition speeds
+   - Room groupings
+
+3. **Scene activation is fire-and-forget:**
+   - No need to track individual bulb states
+   - Hue Bridge handles coordination
+   - HA just sends "activate scene X" command
+
+4. **Scenes vs Individual Control use cases:**
+   - **Scenes:** Pre-defined lighting moods, multi-room control
+   - **Individual:** Fine-tuning single bulb, testing, diagnostics
+
+#### Next Exercise Preparation
+
+**Exercise 1.4 will use scenes in automations:**
+- Time triggers → activate scenes (morning energize, evening relax)
+- Sun triggers → activate scenes (sunset → nightlight)
+- Presence triggers → activate scenes (arriving home → relax)
+
+**Scenes are the building blocks for automation** - this exercise established the foundation.
 
 ---
 
@@ -496,9 +686,9 @@ Ports: 80 (HTTP), 443 (HTTPS)
 ## Next Session TODO
 
 **Immediate Next Steps:**
-- [ ] Exercise 1.2: Test light control services (15 min)
-- [ ] Exercise 1.3: Create/import additional Hue scenes (20 min)
-- [ ] Exercise 1.4: First automation - time-based lighting (30 min)
+- [x] Exercise 1.2: Test light control services (15 min) ✅
+- [x] Exercise 1.3: Create/import additional Hue scenes (20 min) ✅
+- [ ] Exercise 1.4: First automation - time-based lighting (30 min) ← **NEXT**
 
 **Before Phase 2:**
 - [ ] Complete all Phase 1 exercises (1.2-1.7)
@@ -532,5 +722,5 @@ Ports: 80 (HTTP), 443 (HTTPS)
 ---
 
 **Journal Status:** Active - append progress as exercises completed
-**Last Updated:** 2026-01-29
-**Next Update:** After Exercise 1.2 or next major milestone
+**Last Updated:** 2026-01-29 (Exercises 1.1-1.3 complete)
+**Next Update:** After Exercise 1.4 (first automation) or next major milestone
