@@ -36,8 +36,12 @@ groups:
       # ========================================================================
       # ALERT 2: Immich Thumbnail Failures
       # ========================================================================
+      # Fixed: 2026-01-29 - Changed from rate() to increase() to prevent false positives
+      # Issue: Sparse counters with rate() trigger false alerts during log rotation
+      # Root cause: Prometheus rate() misinterprets counter initialization as activity
+      # Solution: Use increase() + existence check (only alerts when metric exists AND has failures)
       - alert: ImmichThumbnailFailureHigh
-        expr: rate(promtail_custom_immich_thumbnail_failures_total[1h]) > 0.0014  # >5 in 1h
+        expr: increase(promtail_custom_immich_thumbnail_failures_total[1h]) > 5 and promtail_custom_immich_thumbnail_failures_total > 0
         for: 10m
         labels:
           severity: warning
@@ -45,7 +49,7 @@ groups:
         annotations:
           summary: "Immich thumbnail generation failing"
           description: |
-            {{ $value | humanize }} thumbnail failures/sec (>5 in 1h). Usually corrupt media files.
+            {{ $value | humanize }} thumbnail failures in last hour (>5). Usually corrupt media files.
 
             Find failing assets:
             journalctl --user -u immich-server.service --since "1 hour ago" | grep "AssetGenerateThumbnails.*ERROR"
