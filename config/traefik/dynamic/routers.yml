@@ -179,7 +179,8 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Home Assistant - Home Automation Hub
+    # Home Assistant - NO Authelia (has own built-in authentication)
+    # Mobile app + Web UI work seamlessly without SSO layer
     home-assistant-secure:
       rule: "Host(`ha.patriark.org`)"
       service: "home-assistant"
@@ -188,7 +189,7 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit@file
-        - authelia@file
+        # NO authelia@file - HA has robust built-in auth
         - security-headers-ha@file
       tls:
         certResolver: letsencrypt

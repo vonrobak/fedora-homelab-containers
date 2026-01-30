@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-28 06:01:38 UTC
-**Total Documents:** 343
+**Generated:** 2026-01-29 23:03:37 UTC
+**Total Documents:** 351
 
 ---
 
@@ -43,7 +43,7 @@
 
 ---
 
-### 10-services/ (21 documents)
+### 10-services/ (25 documents)
 
 **Service-specific documentation and deployment guides**
 
@@ -51,6 +51,10 @@
 - [authelia.md](10-services/guides/authelia.md)
 - [crowdsec.md](10-services/guides/crowdsec.md)
 - [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
+- [home-assistant-learning-path.md](10-services/guides/home-assistant-learning-path.md)
+- [home-assistant-phase3-air-quality.md](10-services/guides/home-assistant-phase3-air-quality.md)
+- [home-assistant-phase4-roborock-focus.md](10-services/guides/home-assistant-phase4-roborock-focus.md)
+- [home-assistant-phase7-calendar-matter-plugs.md](10-services/guides/home-assistant-phase7-calendar-matter-plugs.md)
 - [homepage-widget-configuration.md](10-services/guides/homepage-widget-configuration.md)
 - [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
 - [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
@@ -74,7 +78,7 @@
 
 ---
 
-### 20-operations/ (25 documents)
+### 20-operations/ (26 documents)
 
 **Operational procedures, runbooks, and architecture**
 
@@ -96,6 +100,7 @@
 - [resource-limits-configuration.md](20-operations/guides/resource-limits-configuration.md)
 - [storage-layout.md](20-operations/guides/storage-layout.md)
 - [tier3-initial-backup.md](20-operations/guides/tier3-initial-backup.md)
+- [unpoller-metrics-guide.md](20-operations/guides/unpoller-metrics-guide.md)
 
 **Runbooks:**
 - [DR-001-system-ssd-failure](20-operations/runbooks/DR-001-system-ssd-failure.md)
@@ -188,7 +193,7 @@
 
 ---
 
-### 98-journals/ (139 documents)
+### 98-journals/ (142 documents)
 
 **Chronological project history (append-only log)**
 
@@ -206,16 +211,20 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-01-22: [2026-01-22-monthly-review-matter-hybrid-approach.md](97-plans/2026-01-22-monthly-review-matter-hybrid-approach.md)
-- 2026-01-21: [2026-01-21-alert-flapping-root-cause-fix.md](98-journals/2026-01-21-alert-flapping-root-cause-fix.md)
-- 2026-01-22: [2026-01-22-burn-rate-calculation-fix.md](98-journals/2026-01-22-burn-rate-calculation-fix.md)
-- 2026-01-22: [2026-01-22-slo-operational-excellence-phase1-2-findings.md](98-journals/2026-01-22-slo-operational-excellence-phase1-2-findings.md)
+- 2026-01-28: [home-assistant-learning-path.md](10-services/guides/home-assistant-learning-path.md)
+- 2026-01-28: [home-assistant-phase3-air-quality.md](10-services/guides/home-assistant-phase3-air-quality.md)
+- 2026-01-28: [home-assistant-phase4-roborock-focus.md](10-services/guides/home-assistant-phase4-roborock-focus.md)
+- 2026-01-28: [home-assistant-phase7-calendar-matter-plugs.md](10-services/guides/home-assistant-phase7-calendar-matter-plugs.md)
+- 2026-01-28: [unpoller-metrics-guide.md](20-operations/guides/unpoller-metrics-guide.md)
 - 2026-01-23: [2026-01-23-swap-thrashing-investigation-alert-recalibration.md](98-journals/2026-01-23-swap-thrashing-investigation-alert-recalibration.md)
 - 2026-01-28: [2026-01-28-matter-hybrid-week1-home-assistant-deployment.md](98-journals/2026-01-28-matter-hybrid-week1-home-assistant-deployment.md)
-- 2026-01-28: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-01-28: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-01-28: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-01-28: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-01-28: [2026-01-28-matter-hybrid-week2-matter-server-deployment.md](98-journals/2026-01-28-matter-hybrid-week2-matter-server-deployment.md)
+- 2026-01-28: [2026-01-28-quadlet-tracking-migration.md](98-journals/2026-01-28-quadlet-tracking-migration.md)
+- 2026-01-29: [2026-01-29-home-assistant-learning-journey-start.md](98-journals/2026-01-29-home-assistant-learning-journey-start.md)
+- 2026-01-30: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-01-30: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-30: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-01-30: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

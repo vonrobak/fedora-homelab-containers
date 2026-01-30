@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-01-28 06:01:38 UTC
+**Generated:** 2026-01-29 23:03:37 UTC
 **System:** fedora-htpc
 
 This document visualizes service dependencies and critical paths in the homelab infrastructure.
@@ -178,7 +178,7 @@ Services on the same network can communicate:
 
 **gathio:** gathio,gathio-db
 
-**home_automation:** home-assistant
+**home_automation:** home-assistant,matter-server
 
 **media_services:** jellyfin
 

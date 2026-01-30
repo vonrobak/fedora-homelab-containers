@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-01-28 06:01:36 UTC
+**Generated:** 2026-01-29 23:03:34 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -72,6 +72,7 @@ graph TB
     subgraph home_automation["home_automation<br/>10.89.6.0/24"]
         direction LR
         home_automation_home_assistant[home-assistant]
+        home_automation_matter_server[matter-server]
     end
 
     subgraph media_services["media_services<br/>10.89.1.0/24"]
@@ -275,10 +276,11 @@ sequenceDiagram
 
 - **Full Name:** `systemd-home_automation`
 - **Subnet:** 10.89.6.0/24
-- **Services:** 1
+- **Services:** 2
 
 **Members:**
 - home-assistant
+- matter-server
 
 
 ### media_services
