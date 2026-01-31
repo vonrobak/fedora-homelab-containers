@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-30 06:02:55 UTC
-**Total Documents:** 351
+**Generated:** 2026-01-31 06:00:36 UTC
+**Total Documents:** 353
 
 ---
 
@@ -43,11 +43,12 @@
 
 ---
 
-### 10-services/ (25 documents)
+### 10-services/ (26 documents)
 
 **Service-specific documentation and deployment guides**
 
 **Service Guides:**
+- [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
 - [authelia.md](10-services/guides/authelia.md)
 - [crowdsec.md](10-services/guides/crowdsec.md)
 - [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
@@ -193,7 +194,7 @@
 
 ---
 
-### 98-journals/ (142 documents)
+### 98-journals/ (143 documents)
 
 **Chronological project history (append-only log)**
 
@@ -211,20 +212,21 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
+- 2026-01-30: [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
 - 2026-01-28: [home-assistant-learning-path.md](10-services/guides/home-assistant-learning-path.md)
 - 2026-01-28: [home-assistant-phase3-air-quality.md](10-services/guides/home-assistant-phase3-air-quality.md)
 - 2026-01-28: [home-assistant-phase4-roborock-focus.md](10-services/guides/home-assistant-phase4-roborock-focus.md)
 - 2026-01-28: [home-assistant-phase7-calendar-matter-plugs.md](10-services/guides/home-assistant-phase7-calendar-matter-plugs.md)
 - 2026-01-28: [unpoller-metrics-guide.md](20-operations/guides/unpoller-metrics-guide.md)
-- 2026-01-23: [2026-01-23-swap-thrashing-investigation-alert-recalibration.md](98-journals/2026-01-23-swap-thrashing-investigation-alert-recalibration.md)
 - 2026-01-28: [2026-01-28-matter-hybrid-week1-home-assistant-deployment.md](98-journals/2026-01-28-matter-hybrid-week1-home-assistant-deployment.md)
 - 2026-01-28: [2026-01-28-matter-hybrid-week2-matter-server-deployment.md](98-journals/2026-01-28-matter-hybrid-week2-matter-server-deployment.md)
 - 2026-01-28: [2026-01-28-quadlet-tracking-migration.md](98-journals/2026-01-28-quadlet-tracking-migration.md)
 - 2026-01-29: [2026-01-29-home-assistant-learning-journey-start.md](98-journals/2026-01-29-home-assistant-learning-journey-start.md)
-- 2026-01-30: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-01-30: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-01-30: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-01-30: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-01-30: [2026-01-30-phase2-dashboards-and-apple-integration.md](98-journals/2026-01-30-phase2-dashboards-and-apple-integration.md)
+- 2026-01-31: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-01-31: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-01-31: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-01-31: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

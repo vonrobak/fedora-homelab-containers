@@ -100,7 +100,7 @@ Combined with existing infrastructure (UDM Pro with IoT VLAN, Traefik reverse pr
 - Single Home Assistant container on homelab network
 - Firewall rule allows HA to reach IoT VLAN (unidirectional)
 - HA discovers devices via mDNS/SSDP/API
-- Expose HA UI via Traefik (homeassistant.patriark.org)
+- Expose HA UI via Traefik (ha.patriark.org)
 - Protect with Authelia (YubiKey required)
 - Export metrics to Prometheus
 
@@ -339,7 +339,7 @@ WantedBy=default.target
 http:
   routers:
     home-assistant:
-      rule: "Host(`homeassistant.patriark.org`)"
+      rule: "Host(`ha.patriark.org`)"
       service: home-assistant
       entryPoints:
         - websecure
@@ -1276,7 +1276,7 @@ action:
    - Simple scheduling (heaters on/off)
 
 **Success Criteria:**
-- HA accessible at homeassistant.patriark.org
+- HA accessible at ha.patriark.org
 - All existing devices visible in HA
 - At least 3 basic automations working
 

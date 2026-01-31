@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-30 06:02:52 UTC
+**Generated:** 2026-01-31 06:00:34 UTC
 **System:** fedora-htpc
 
 ---
@@ -20,21 +20,21 @@
 | nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | monitoring,photos,reverse_proxy |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
-| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
+| nextcloud-db | mariadb:11 | ✅ Up | nextcloud,monitoring |
 | gathio-db | mongo:7 | ✅ Up | gathio |
 | gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
+| loki | grafana/loki:latest | ✅ Up | reverse_proxy,monitoring |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
-| authelia | authelia/authelia:latest | ✅ Up | reverse_proxy,auth_services |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | matter-server | home-assistant-libs/python-matter-server | ✅ Up | home_automation |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
-| grafana | grafana/grafana:latest | ✅ Up | reverse_proxy,monitoring |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
+| traefik | traefik:latest | ✅ Up | reverse_proxy,auth_services,monitoring |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
 
@@ -44,7 +44,7 @@
 
 - **Total Running:** 28
 - **Total Defined:** 28
-- **System Load:**  0,51, 0,61, 0,64
+- **System Load:**  0,61, 0,38, 0,36
 
 ---
 
