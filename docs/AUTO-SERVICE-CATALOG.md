@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-01-31 23:04:46 UTC
+**Generated:** 2026-02-01 06:04:12 UTC
 **System:** fedora-htpc
 
 ---
@@ -9,34 +9,34 @@
 
 | Service | Image | Status | Networks |
 |---------|-------|--------|----------|
-| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
 | immich-ml | immich-app/immich-machine-learning:v2.4. | ✅ Up | photos |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
-| redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | nextcloud | nextcloud:30 | ✅ Up | monitoring,nextcloud,reverse_proxy |
-| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | reverse_proxy,monitoring,photos |
-| collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
+| immich-server | immich-app/immich-server:v2.4.1 | ✅ Up | photos,reverse_proxy,monitoring |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
-| gathio-db | mongo:7 | ✅ Up | gathio |
-| gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | monitoring,reverse_proxy,media_services |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
-| authelia | authelia/authelia:latest | ✅ Up | reverse_proxy,auth_services |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | matter-server | home-assistant-libs/python-matter-server | ✅ Up | home_automation |
-| unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
-| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
-| traefik | traefik:latest | ✅ Up | monitoring,reverse_proxy,auth_services |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
+| collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
+| gathio-db | mongo:7 | ✅ Up | gathio |
+| gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
+| redis-authelia | redis:7-alpine | ✅ Up | auth_services |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
+| unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
+| nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 
 ---
 
@@ -44,7 +44,7 @@
 
 - **Total Running:** 28
 - **Total Defined:** 28
-- **System Load:**  1,29, 1,74, 1,85
+- **System Load:**  0,20, 0,45, 0,65
 
 ---
 

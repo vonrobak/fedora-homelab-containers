@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-31 23:04:49 UTC
-**Total Documents:** 357
+**Generated:** 2026-02-01 06:04:15 UTC
+**Total Documents:** 358
 
 ---
 
@@ -193,7 +193,7 @@
 
 ---
 
-### 98-journals/ (145 documents)
+### 98-journals/ (146 documents)
 
 **Chronological project history (append-only log)**
 
@@ -224,13 +224,13 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-30: [2026-01-30-phase2-dashboards-and-apple-integration.md](98-journals/2026-01-30-phase2-dashboards-and-apple-integration.md)
 - 2026-01-31: [2026-01-31-learning-journey-completion.md](98-journals/2026-01-31-learning-journey-completion.md)
 - 2026-01-31: [2026-01-31-mill-air-purifier-feature-request.md](98-journals/2026-01-31-mill-air-purifier-feature-request.md)
+- 2026-02-01: [2026-01-31-roborock-automation-optimization.md](98-journals/2026-01-31-roborock-automation-optimization.md)
 - 2026-02-01: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
 - 2026-02-01: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
 - 2026-02-01: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
 - 2026-02-01: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 - 2026-01-31: [FINAL-IMPLEMENTATION-SUMMARY.md](FINAL-IMPLEMENTATION-SUMMARY.md)
 - 2026-01-31: [IMPLEMENTATION-NEXT-STEPS.md](IMPLEMENTATION-NEXT-STEPS.md)
-- 2026-01-31: [ROBOROCK-IMPLEMENTATION-COMPLETE.md](ROBOROCK-IMPLEMENTATION-COMPLETE.md)
 
 ---
 

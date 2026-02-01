@@ -3,7 +3,7 @@
 **Status:** Production (40 automations, 20+ devices)
 **Platform:** Fedora Workstation 42 (Podman container)
 **Access:** https://ha.patriark.org
-**Location:** `/home/patriark/containers/config/home-assistant/`
+**Location:** `~/containers/config/home-assistant/`
 
 ## Current System State
 
@@ -14,11 +14,11 @@
 - 4 iOS integration (Siri webhooks, focus detection)
 
 **Integrated Devices:**
-- Philips Hue (12 bulbs, 1 bridge, 1 remote)
+- Philips Hue (8 bulbs, 1 bridge, 1 remote)
 - Roborock Saros 10 (vacuum + 14 sensors)
 - Mill (3 heaters, 1 air sensor)
-- iOS (iPhone 16, Apple Watch)
-- UniFi (network presence)
+- iOS (iPhone 16, Apple Watch, iPad Pro)
+- UniFi (network presence through Unpoller)
 
 ## Architecture Principles
 
@@ -27,7 +27,7 @@
 **Keep device hubs when they add value:**
 - Hue Bridge: Instant physical control, firmware updates, reliability
 - Roborock App: Scheduled cleans, map management
-- Mill App: Device configuration
+- Mill App: Device configuration, air purifier management
 
 **Use Home Assistant for:**
 - Cross-device orchestration
