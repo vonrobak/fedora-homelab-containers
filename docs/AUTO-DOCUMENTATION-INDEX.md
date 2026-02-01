@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-01-31 06:00:36 UTC
-**Total Documents:** 353
+**Generated:** 2026-01-31 23:04:49 UTC
+**Total Documents:** 357
 
 ---
 
@@ -43,7 +43,7 @@
 
 ---
 
-### 10-services/ (26 documents)
+### 10-services/ (25 documents)
 
 **Service-specific documentation and deployment guides**
 
@@ -52,20 +52,19 @@
 - [authelia.md](10-services/guides/authelia.md)
 - [crowdsec.md](10-services/guides/crowdsec.md)
 - [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
-- [home-assistant-learning-path.md](10-services/guides/home-assistant-learning-path.md)
-- [home-assistant-phase3-air-quality.md](10-services/guides/home-assistant-phase3-air-quality.md)
-- [home-assistant-phase4-roborock-focus.md](10-services/guides/home-assistant-phase4-roborock-focus.md)
-- [home-assistant-phase7-calendar-matter-plugs.md](10-services/guides/home-assistant-phase7-calendar-matter-plugs.md)
+- [home-assistant.md](10-services/guides/home-assistant.md)
 - [homepage-widget-configuration.md](10-services/guides/homepage-widget-configuration.md)
 - [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
 - [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
 - [immich.md](10-services/guides/immich.md)
 - [immich-ml-troubleshooting.md](10-services/guides/immich-ml-troubleshooting.md)
+- [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
 - [jellyfin-gpu-acceleration-troubleshooting.md](10-services/guides/jellyfin-gpu-acceleration-troubleshooting.md)
 - [jellyfin.md](10-services/guides/jellyfin.md)
 - [nextcloud.md](10-services/guides/nextcloud.md)
 - [pattern-customization-guide.md](10-services/guides/pattern-customization-guide.md)
 - [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
+- [roborock-room-cleaning-setup.md](10-services/guides/roborock-room-cleaning-setup.md)
 - [skill-integration-guide.md](10-services/guides/skill-integration-guide.md)
 - [skill-recommendation.md](10-services/guides/skill-recommendation.md)
 - [traefik.md](10-services/guides/traefik.md)
@@ -194,7 +193,7 @@
 
 ---
 
-### 98-journals/ (143 documents)
+### 98-journals/ (145 documents)
 
 **Chronological project history (append-only log)**
 
@@ -213,20 +212,25 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 ## Recently Updated (Last 7 Days)
 
 - 2026-01-30: [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
-- 2026-01-28: [home-assistant-learning-path.md](10-services/guides/home-assistant-learning-path.md)
-- 2026-01-28: [home-assistant-phase3-air-quality.md](10-services/guides/home-assistant-phase3-air-quality.md)
-- 2026-01-28: [home-assistant-phase4-roborock-focus.md](10-services/guides/home-assistant-phase4-roborock-focus.md)
-- 2026-01-28: [home-assistant-phase7-calendar-matter-plugs.md](10-services/guides/home-assistant-phase7-calendar-matter-plugs.md)
+- 2026-01-31: [home-assistant.md](10-services/guides/home-assistant.md)
+- 2026-01-31: [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
+- 2026-01-31: [roborock-room-cleaning-setup.md](10-services/guides/roborock-room-cleaning-setup.md)
 - 2026-01-28: [unpoller-metrics-guide.md](20-operations/guides/unpoller-metrics-guide.md)
+- 2026-01-31: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
 - 2026-01-28: [2026-01-28-matter-hybrid-week1-home-assistant-deployment.md](98-journals/2026-01-28-matter-hybrid-week1-home-assistant-deployment.md)
 - 2026-01-28: [2026-01-28-matter-hybrid-week2-matter-server-deployment.md](98-journals/2026-01-28-matter-hybrid-week2-matter-server-deployment.md)
 - 2026-01-28: [2026-01-28-quadlet-tracking-migration.md](98-journals/2026-01-28-quadlet-tracking-migration.md)
 - 2026-01-29: [2026-01-29-home-assistant-learning-journey-start.md](98-journals/2026-01-29-home-assistant-learning-journey-start.md)
 - 2026-01-30: [2026-01-30-phase2-dashboards-and-apple-integration.md](98-journals/2026-01-30-phase2-dashboards-and-apple-integration.md)
-- 2026-01-31: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-01-31: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-01-31: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-01-31: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-01-31: [2026-01-31-learning-journey-completion.md](98-journals/2026-01-31-learning-journey-completion.md)
+- 2026-01-31: [2026-01-31-mill-air-purifier-feature-request.md](98-journals/2026-01-31-mill-air-purifier-feature-request.md)
+- 2026-02-01: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-02-01: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-02-01: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-02-01: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-01-31: [FINAL-IMPLEMENTATION-SUMMARY.md](FINAL-IMPLEMENTATION-SUMMARY.md)
+- 2026-01-31: [IMPLEMENTATION-NEXT-STEPS.md](IMPLEMENTATION-NEXT-STEPS.md)
+- 2026-01-31: [ROBOROCK-IMPLEMENTATION-COMPLETE.md](ROBOROCK-IMPLEMENTATION-COMPLETE.md)
 
 ---
 
