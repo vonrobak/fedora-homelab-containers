@@ -1,0 +1,85 @@
+# Network Security Alerts - Actionable Threats Only
+# Principle: Only alert on actual suspicious activity requiring human intervention
+# Normal traffic (downloads, streaming, syncing) NEVER triggers alerts
+# Created: 2026-02-01 (Redesigned)
+
+groups:
+  - name: network_security
+    interval: 30s
+    rules:
+      # CRITICAL: Service under active attack (request flood + degradation)
+      # This indicates actual DDoS, not just high traffic
+      - alert: ServiceUnderAttack
+        expr: |
+          (
+            rate(traefik_entrypoint_requests_total{entrypoint="websecure"}[1m]) > 1000
+            AND
+            rate(traefik_entrypoint_requests_total{entrypoint="websecure",code=~"5.."}[1m]) > 100
+          )
+        for: 3m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "Service under active attack - requests overwhelming servers"
+          description: |
+            DDoS attack detected:
+            - Request rate: {{ $value }} req/s (normal: <100)
+            - Error rate elevated (5xx responses = services failing)
+
+            Services are actively degraded and responding with errors.
+
+            Immediate actions:
+            1. Verify services accessible: curl -I https://vaultwarden.patriark.org
+            2. Check CrowdSec bans: podman exec crowdsec cscli decisions list
+            3. Review attacking IPs in Grafana Security Overview
+
+            Mitigation: CrowdSec + rate limiting should auto-block.
+            If overwhelmed, consider temporary Cloudflare proxy.
+
+      # CRITICAL: Multiple authentication failures (credential stuffing/brute force)
+      # Indicates active attack on Authelia/Vaultwarden
+      - alert: BruteForceAttackDetected
+        expr: |
+          rate(traefik_entrypoint_requests_total{entrypoint="websecure",code="401"}[5m]) > 1
+        for: 5m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "Multiple authentication failures detected - possible brute force"
+          description: |
+            Repeated 401 Unauthorized responses at {{ $value }} per second.
+            This indicates failed login attempts.
+
+            Investigation:
+            1. Check Grafana Security Overview for source IPs
+            2. Review CrowdSec decisions: podman exec crowdsec cscli decisions list
+            3. Check Authelia logs: podman logs authelia --tail 100
+
+            Active password guessing/credential stuffing detected.
+            CrowdSec should auto-ban after threshold. Verify it's working.
+
+      # CRITICAL: Service down that should be always running
+      # Only alert on critical services (gateway to everything)
+      - alert: CriticalServiceDown
+        expr: |
+          up{job=~"traefik|authelia|vaultwarden"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Critical service {{ $labels.job }} is down"
+          description: |
+            {{ $labels.job }} is not responding.
+
+            Impact:
+            - traefik: ALL services inaccessible
+            - authelia: Cannot access admin services
+            - vaultwarden: Password vault unavailable
+
+            Actions:
+            1. Check service: systemctl --user status {{ $labels.job }}.service
+            2. Check logs: journalctl --user -u {{ $labels.job }}.service -n 50
+            3. Restart if needed: systemctl --user restart {{ $labels.job }}.service
