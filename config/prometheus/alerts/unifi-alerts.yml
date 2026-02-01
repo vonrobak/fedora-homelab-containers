@@ -33,18 +33,9 @@ groups:
           playbook: "service-restart"
           service: "unpoller"
 
-      # Alert: Extreme bandwidth spike (>100 MB/s = ~800 Mbps for 1Gbps link)
-      - alert: ExtremeBandwidthSpike
-        expr: homelab:bandwidth_bytes_per_second:rate5m > 100000000
-        for: 5m
-        labels:
-          severity: critical
-          component: network
-          remediation: none  # Investigation required
-        annotations:
-          summary: "Extreme bandwidth usage to homelab (>80% capacity)"
-          description: "Sustained bandwidth spike {{ $value | humanize }}B/s to 192.168.1.70. Possible DDoS or data exfiltration. Investigate immediately."
-          query: "homelab:bandwidth_bytes_per_second:rate5m"
+      # Removed: Flawed bandwidth alert (replaced with network-security-alerts.yml)
+      # Reason: Inbound bandwidth is not data exfiltration
+      # See: network-security-alerts.yml for properly designed security alerts
 
       # Alert: DPI security threat detected (if metrics available)
       - alert: DPISecurityThreatDetected

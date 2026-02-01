@@ -536,6 +536,175 @@ podman logs home-assistant 2>&1 | grep -i error
 
 **Can combine trajectories:** All three are compatible and complementary. Suggested order: 1 → 3 → 2 (easiest to hardest).
 
+## Dashboard Troubleshooting
+
+### Evening Relaxation Dashboard Fixes (2026-02-01)
+
+Two configuration errors were resolved in the Evening Relaxation dashboard:
+
+#### Issue #1: Brightness Sliders (Tile #3)
+
+**Error:** "Custom element not found: slider-entity-row"
+
+**Root Cause:** The `custom:slider-entity-row` component was not installed. This is a HACS custom component that requires separate installation.
+
+**Solution:** Replaced custom slider with built-in Home Assistant light controls.
+
+**Before (broken):**
+```yaml
+- entity: light.stua
+  name: Stue Lysstyrke
+  type: custom:slider-entity-row
+  full_row: true
+```
+
+**After (working):**
+```yaml
+- entity: light.stua
+  name: Stue Lysstyrke
+```
+
+**Explanation:** Light entities in an `entities` card automatically render with brightness sliders - no custom component needed. This is native Home Assistant functionality.
+
+**Verification:**
+1. Open dashboard: https://home-assistant.patriark.org/evening/evening
+2. Tile #3 "Lysstyrke Kontroll" should show sliders for all 3 lights
+3. Dragging sliders should adjust brightness in real-time
+
+---
+
+#### Issue #2: Bedtime Conditional Card (Tile #10)
+
+**Error:** "Configuration error. Conditions are invalid"
+
+**Root Cause:** Lovelace conditional cards don't support `template` conditions. The syntax used was for automations, not dashboards.
+
+**Broken configuration:**
+```yaml
+- type: conditional
+  conditions:
+    - condition: template
+      value_template: |
+        {{ now().hour >= 22 }}
+```
+
+**Solution:** Created template binary sensor in `configuration.yaml`, then referenced it in conditional card.
+
+**Step 1: Add template sensor to configuration.yaml**
+```yaml
+template:
+  - binary_sensor:
+      - name: "Is Bedtime"
+        unique_id: is_bedtime_sensor
+        state: "{{ now().hour >= 22 }}"
+        icon: >
+          {% if now().hour >= 22 %}
+            mdi:sleep
+          {% else %}
+            mdi:weather-night
+          {% endif %}
+```
+
+**Step 2: Update dashboard to use sensor**
+```yaml
+- type: conditional
+  conditions:
+    - entity: binary_sensor.is_bedtime
+      state: "on"
+  card:
+    type: markdown
+    content: |
+      ## 😴 Sengetid snart!
+      ...
+```
+
+**Explanation:**
+- Lovelace conditional cards only support `entity` + `state` conditions (not templates)
+- Template logic must be moved to a binary sensor in `configuration.yaml`
+- Binary sensor evaluates template every update (default: every minute)
+- Dashboard simply checks if sensor is "on" or "off"
+
+**Apply Changes:**
+```bash
+# 1. Restart Home Assistant to load new binary sensor
+podman restart home-assistant
+
+# 2. Wait ~30 seconds for restart
+
+# 3. Verify sensor exists (Developer Tools → States)
+# Search for: binary_sensor.is_bedtime
+
+# 4. Dashboard will automatically reload
+```
+
+**Verification:**
+1. Before 22:00 (10 PM): Tile #10 should NOT appear
+2. After 22:00 (10 PM): Tile #10 "Sengetid snart!" should appear
+3. Check sensor state: Developer Tools → States → `binary_sensor.is_bedtime`
+
+**Testing bedtime logic:**
+```yaml
+# Temporarily modify configuration.yaml for testing
+state: "{{ now().hour >= 15 }}"  # Change 22 to 15 (3 PM) for testing
+
+# Restart Home Assistant
+podman restart home-assistant
+
+# Card should now appear after 3 PM
+# Don't forget to change back to 22!
+```
+
+---
+
+### Common Dashboard Patterns
+
+**Conditional cards (state-based):**
+```yaml
+# Show card only when home
+- type: conditional
+  conditions:
+    - entity: person.bjorn_robak
+      state: "home"
+  card:
+    type: markdown
+    content: "Welcome home!"
+```
+
+**Conditional cards (time-based):**
+```yaml
+# Create binary sensor in configuration.yaml first:
+template:
+  - binary_sensor:
+      - name: "Is Morning"
+        state: "{{ 6 <= now().hour < 12 }}"
+
+# Then use in dashboard:
+- type: conditional
+  conditions:
+    - entity: binary_sensor.is_morning
+      state: "on"
+  card:
+    type: markdown
+    content: "Good morning!"
+```
+
+**Built-in controls (no custom components):**
+```yaml
+# Light with brightness slider (automatic)
+- entity: light.living_room
+
+# Climate with temperature controls (automatic)
+- entity: climate.bedroom_heater
+
+# Cover with up/down buttons (automatic)
+- entity: cover.bedroom_blinds
+
+# Input number with slider (automatic)
+- entity: input_number.comfort_temperature
+```
+
+---
+
 ## Resources
 
 **Official Documentation:**
