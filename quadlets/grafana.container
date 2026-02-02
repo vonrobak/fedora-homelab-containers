@@ -8,8 +8,9 @@ Requires=monitoring-network.service
 Image=docker.io/grafana/grafana:latest
 ContainerName=grafana
 HostName=grafana
-Network=systemd-reverse_proxy
-Network=systemd-monitoring
+# Static IPs assigned to ensure consistent DNS resolution
+Network=systemd-reverse_proxy:ip=10.89.2.9
+Network=systemd-monitoring:ip=10.89.4.12
 
 # Grafana Configuration (using podman secrets)
 Environment=GF_SERVER_ROOT_URL=https://grafana.patriark.org
