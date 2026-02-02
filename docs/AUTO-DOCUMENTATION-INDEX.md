@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-01 06:04:15 UTC
-**Total Documents:** 358
+**Generated:** 2026-02-02 06:00:29 UTC
+**Total Documents:** 361
 
 ---
 
@@ -193,7 +193,7 @@
 
 ---
 
-### 98-journals/ (146 documents)
+### 98-journals/ (147 documents)
 
 **Chronological project history (append-only log)**
 
@@ -201,7 +201,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (26 documents)
+### 99-reports/ (28 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -212,7 +212,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 ## Recently Updated (Last 7 Days)
 
 - 2026-01-30: [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
-- 2026-01-31: [home-assistant.md](10-services/guides/home-assistant.md)
+- 2026-02-01: [home-assistant.md](10-services/guides/home-assistant.md)
 - 2026-01-31: [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
 - 2026-01-31: [roborock-room-cleaning-setup.md](10-services/guides/roborock-room-cleaning-setup.md)
 - 2026-01-28: [unpoller-metrics-guide.md](20-operations/guides/unpoller-metrics-guide.md)
@@ -225,12 +225,12 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-31: [2026-01-31-learning-journey-completion.md](98-journals/2026-01-31-learning-journey-completion.md)
 - 2026-01-31: [2026-01-31-mill-air-purifier-feature-request.md](98-journals/2026-01-31-mill-air-purifier-feature-request.md)
 - 2026-02-01: [2026-01-31-roborock-automation-optimization.md](98-journals/2026-01-31-roborock-automation-optimization.md)
-- 2026-02-01: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-02-01: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-02-01: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-02-01: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
-- 2026-01-31: [FINAL-IMPLEMENTATION-SUMMARY.md](FINAL-IMPLEMENTATION-SUMMARY.md)
-- 2026-01-31: [IMPLEMENTATION-NEXT-STEPS.md](IMPLEMENTATION-NEXT-STEPS.md)
+- 2026-02-01: [2026-02-01-february-security-posture-evaluation.md](98-journals/2026-02-01-february-security-posture-evaluation.md)
+- 2026-02-01: [2026-02-01-skill-usage-report.md](99-reports/2026-02-01-skill-usage-report.md)
+- 2026-02-02: [remediation-monthly-202601.md](99-reports/remediation-monthly-202601.md)
+- 2026-02-02: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-02-02: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-02-02: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
 
 ---
 
