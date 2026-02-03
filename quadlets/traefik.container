@@ -9,9 +9,9 @@ Image=docker.io/library/traefik:latest
 ContainerName=traefik
 HostName=traefik
 AutoUpdate=registry
-Network=systemd-reverse_proxy
-Network=systemd-auth_services
-Network=systemd-monitoring
+Network=systemd-reverse_proxy:ip=10.89.2.69
+Network=systemd-auth_services:ip=10.89.3.69
+Network=systemd-monitoring:ip=10.89.4.69
 PublishPort=80:80
 PublishPort=443:443
 PublishPort=8080:8080

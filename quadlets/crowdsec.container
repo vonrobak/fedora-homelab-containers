@@ -7,7 +7,7 @@ Wants=network-online.target
 Image=docker.io/crowdsecurity/crowdsec:latest
 ContainerName=crowdsec
 AutoUpdate=registry
-Network=systemd-reverse_proxy
+Network=systemd-reverse_proxy:ip=10.89.2.70
 
 # Volumes
 Volume=%h/containers/data/crowdsec/db:/var/lib/crowdsec/data:Z

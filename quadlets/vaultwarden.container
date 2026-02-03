@@ -22,7 +22,7 @@ ContainerName=vaultwarden
 # User directive removed - Vaultwarden image uses vaultwarden user (UID 1000) internally
 
 # Networks
-Network=reverse_proxy.network
+Network=systemd-reverse_proxy:ip=10.89.2.71
 
 # Volumes
 Volume=/mnt/btrfs-pool/subvol7-containers/vaultwarden:/data:Z
