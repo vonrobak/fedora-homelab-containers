@@ -5,7 +5,7 @@ Wants=network-online.target
 
 
 [Container]
-Image=docker.io/library/nextcloud:31
+Image=docker.io/library/nextcloud:30
 ContainerName=nextcloud
 AutoUpdate=registry
 
@@ -50,10 +50,9 @@ Volume=/mnt/btrfs-pool/subvol1-docs:/external/user-documents:Z
 Volume=/mnt/btrfs-pool/subvol2-pics:/external/user-photos:Z
 
 # Networks (reverse_proxy FIRST for internet access!)
-# Static IPs assigned to ensure consistent DNS resolution
-Network=systemd-reverse_proxy:ip=10.89.2.14
-Network=systemd-nextcloud:ip=10.89.10.4
-Network=systemd-monitoring:ip=10.89.4.21
+Network=systemd-reverse_proxy
+Network=systemd-nextcloud
+Network=systemd-monitoring
 
 # Health check
 HealthCmd=curl -f http://localhost:80/status.php

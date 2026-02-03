@@ -1,0 +1,36 @@
+[Unit]
+Description=Matter Server (python-matter-server)
+After=network-online.target home_automation-network.service
+Wants=network-online.target
+Requires=home_automation-network.service
+
+[Container]
+Image=ghcr.io/home-assistant-libs/python-matter-server:stable
+ContainerName=matter-server
+HostName=matter-server
+AutoUpdate=registry
+
+# Network (home_automation only - no internet needed)
+Network=systemd-home_automation
+
+# Storage
+Volume=%h/containers/data/matter-server:/data:Z
+
+# Health check - Python socket check on WebSocket port
+HealthCmd=python3 -c "import socket; s=socket.socket(); s.settimeout(5); s.connect(('localhost', 5580)); s.close()" || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=90s
+
+[Service]
+Slice=container.slice
+Restart=always
+TimeoutStartSec=300
+
+# Resource Limits
+MemoryMax=512M
+MemoryHigh=460M
+
+[Install]
+WantedBy=default.target

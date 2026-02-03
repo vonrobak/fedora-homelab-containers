@@ -1,0 +1,53 @@
+[Unit]
+Description=Prometheus Metrics Database
+After=network-online.target monitoring-network.service node_exporter.service
+Wants=network-online.target node_exporter.service
+Requires=monitoring-network.service
+
+[Container]
+Image=quay.io/prometheus/prometheus:latest
+ContainerName=prometheus
+HostName=prometheus
+Network=systemd-reverse_proxy
+Network=systemd-monitoring
+
+# Prometheus configuration and data
+Volume=%h/containers/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+Volume=%h/containers/config/prometheus/alerts:/etc/prometheus/alerts:ro,Z
+Volume=%h/containers/config/prometheus/rules:/etc/prometheus/rules:ro,Z
+Volume=/mnt/btrfs-pool/subvol7-containers/prometheus:/prometheus:Z
+
+# Podman secrets for authentication
+Secret=ha-prometheus-token,type=mount,target=/run/secrets/ha-prometheus-token
+
+# Prometheus command line arguments
+Exec=--config.file=/etc/prometheus/prometheus.yml \
+     --storage.tsdb.path=/prometheus \
+     --storage.tsdb.retention.time=15d \
+     --web.console.libraries=/usr/share/prometheus/console_libraries \
+     --web.console.templates=/usr/share/prometheus/consoles \
+     --web.enable-lifecycle
+
+DNS=192.168.1.69
+
+# Resource limits (podman runtime)
+Memory=1G
+
+# Health check
+HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+AutoUpdate=registry
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=120
+
+# Resource Limits
+MemoryMax=1G
+MemoryHigh=900M
+
+[Install]
+WantedBy=default.target

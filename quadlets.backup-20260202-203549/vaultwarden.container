@@ -1,0 +1,74 @@
+# ~/.config/containers/systemd/vaultwarden.container
+# Vaultwarden Password Manager - Self-hosted Bitwarden Compatible Server
+# Created: 2025-11-12
+# Documentation: https://github.com/dani-garcia/vaultwarden/wiki
+
+# ═══════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════
+[Unit]
+Description=Vaultwarden Password Manager
+Documentation=https://github.com/dani-garcia/vaultwarden
+After=network-online.target traefik.service
+Wants=network-online.target
+Requires=traefik.service
+
+# ═══════════════════════════════════════════════════════════
+# CONTAINER CONFIGURATION
+# ═══════════════════════════════════════════════════════════
+[Container]
+Image=docker.io/vaultwarden/server:latest
+ContainerName=vaultwarden
+# User directive removed - Vaultwarden image uses vaultwarden user (UID 1000) internally
+
+# Networks
+Network=reverse_proxy.network
+
+# Volumes
+Volume=/mnt/btrfs-pool/subvol7-containers/vaultwarden:/data:Z
+
+# Secret (Pattern 2: type=env - migrated 2025-12-31, Argon2 hash applied)
+# Admin panel DISABLED - no admin token provided (uncomment Secret line to re-enable)
+# Secret=vaultwarden_admin_token,type=env,target=ADMIN_TOKEN
+
+# Essential configuration (non-secrets)
+Environment=DOMAIN=https://vault.patriark.org
+# DISABLE_ADMIN_TOKEN removed - when no ADMIN_TOKEN is set, admin panel is inaccessible
+Environment=SIGNUPS_ALLOWED=false
+Environment=INVITATIONS_ALLOWED=true
+Environment=DATABASE_URL=/data/db.sqlite3
+Environment=WEBSOCKET_ENABLED=true
+Environment=WEBSOCKET_ADDRESS=0.0.0.0
+Environment=WEBSOCKET_PORT=3012
+Environment=PASSWORD_ITERATIONS=600000
+Environment=LOG_LEVEL=info
+Environment=IP_HEADER=X-Forwarded-For
+Environment=ROCKET_ADDRESS=0.0.0.0
+Environment=ROCKET_PORT=80
+
+# Health check
+HealthCmd=curl -f http://localhost:80/ || exit 1
+HealthInterval=30s
+HealthTimeout=3s
+HealthRetries=3
+HealthStartPeriod=10s
+
+# ═══════════════════════════════════════════════════════════
+# SERVICE BEHAVIOR
+# ═══════════════════════════════════════════════════════════
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=300
+RestartSec=10s
+
+# Resource Limits (Added: 2025-11-12)
+# Vaultwarden is critical infrastructure - prevent OOM conditions
+MemoryMax=1G
+MemoryHigh=800M
+
+# ═══════════════════════════════════════════════════════════
+# INSTALLATION
+# ═══════════════════════════════════════════════════════════
+[Install]
+WantedBy=default.target
