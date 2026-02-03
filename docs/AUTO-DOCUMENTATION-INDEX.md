@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-02 06:00:29 UTC
-**Total Documents:** 361
+**Generated:** 2026-02-03 06:02:25 UTC
+**Total Documents:** 368
 
 ---
 
@@ -193,7 +193,7 @@
 
 ---
 
-### 98-journals/ (147 documents)
+### 98-journals/ (154 documents)
 
 **Chronological project history (append-only log)**
 
@@ -226,11 +226,11 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-31: [2026-01-31-mill-air-purifier-feature-request.md](98-journals/2026-01-31-mill-air-purifier-feature-request.md)
 - 2026-02-01: [2026-01-31-roborock-automation-optimization.md](98-journals/2026-01-31-roborock-automation-optimization.md)
 - 2026-02-01: [2026-02-01-february-security-posture-evaluation.md](98-journals/2026-02-01-february-security-posture-evaluation.md)
-- 2026-02-01: [2026-02-01-skill-usage-report.md](99-reports/2026-02-01-skill-usage-report.md)
-- 2026-02-02: [remediation-monthly-202601.md](99-reports/remediation-monthly-202601.md)
-- 2026-02-02: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-02-02: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-02-02: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-02-02: [2026-02-02-backup-compression-strategy-evaluation.md](98-journals/2026-02-02-backup-compression-strategy-evaluation.md)
+- 2026-02-03: [2026-02-02-catastrophic-network-failure-investigation.md](98-journals/2026-02-02-catastrophic-network-failure-investigation.md)
+- 2026-02-03: [2026-02-02-kernel-rollback-test-procedure.md](98-journals/2026-02-02-kernel-rollback-test-procedure.md)
+- 2026-02-03: [2026-02-02-post-reboot-analysis-symlink-test-failed.md](98-journals/2026-02-02-post-reboot-analysis-symlink-test-failed.md)
+- 2026-02-03: [2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md](98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md)
 
 ---
 

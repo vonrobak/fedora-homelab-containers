@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-02-02 06:00:27 UTC
+**Generated:** 2026-02-03 06:02:22 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -31,7 +31,6 @@ graph TB
     %% Services with native authentication (bypass Authelia)
     CrowdSec -->|Rate Limit| alertmanager[alertmanager]
     CrowdSec -->|Rate Limit| collabora[collabora]
-    CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
     CrowdSec -->|Rate Limit| nextcloud[nextcloud]
     CrowdSec -->|Rate Limit| vaultwarden[vaultwarden]
@@ -88,7 +87,6 @@ graph TB
         monitoring_gathio[gathio]
         monitoring_grafana[grafana]
         monitoring_home_assistant[home-assistant]
-        monitoring_immich_server[immich-server]
         monitoring_jellyfin[jellyfin]
         monitoring_loki[loki]
         monitoring_nextcloud[nextcloud]
@@ -112,7 +110,6 @@ graph TB
     subgraph photos["photos<br/>10.89.5.0/24"]
         direction LR
         photos_immich_ml[immich-ml]
-        photos_immich_server[immich-server]
         photos_postgresql_immich[postgresql-immich]
         photos_redis_immich[redis-immich]
     end
@@ -127,7 +124,6 @@ graph TB
         reverse_proxy_grafana[grafana]
         reverse_proxy_home_assistant[home-assistant]
         reverse_proxy_homepage[homepage]
-        reverse_proxy_immich_server[immich-server]
         reverse_proxy_jellyfin[jellyfin]
         reverse_proxy_loki[loki]
         reverse_proxy_nextcloud[nextcloud]
@@ -297,7 +293,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 17
+- **Services:** 16
 
 **Members:**
 - alert-discord-relay
@@ -306,7 +302,6 @@ sequenceDiagram
 - gathio
 - grafana
 - home-assistant
-- immich-server
 - jellyfin
 - loki
 - nextcloud
@@ -336,11 +331,10 @@ sequenceDiagram
 
 - **Full Name:** `systemd-photos`
 - **Subnet:** 10.89.5.0/24
-- **Services:** 4
+- **Services:** 3
 
 **Members:**
 - immich-ml
-- immich-server
 - postgresql-immich
 - redis-immich
 
@@ -349,7 +343,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 15
+- **Services:** 14
 
 **Members:**
 - alertmanager
@@ -360,7 +354,6 @@ sequenceDiagram
 - grafana
 - home-assistant
 - homepage
-- immich-server
 - jellyfin
 - loki
 - nextcloud

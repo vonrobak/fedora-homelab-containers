@@ -29,6 +29,10 @@
 # Monitoring & Logging
 10.89.2.15  loki
 
+# Dashboard & Security
+10.89.2.73  homepage
+10.89.2.71  vaultwarden
+
 # Note: These IPs are now statically assigned in each service's quadlet file
 # using the Network=systemd-reverse_proxy:ip=X.X.X.X syntax, ensuring they
 # remain stable across container restarts.
