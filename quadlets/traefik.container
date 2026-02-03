@@ -23,6 +23,11 @@ Volume=%h/containers/scripts/traefik-entrypoint.sh:/traefik-entrypoint.sh:ro,Z
 
 # Access logs
 Volume=/mnt/btrfs-pool/subvol7-containers/traefik-logs:/var/log/traefik:z
+
+# Static hosts file - forces DNS resolution to reverse_proxy network IPs
+# Solves Podman aardvark-dns undefined ordering issue (see ADR-XXX)
+Volume=%h/containers/config/traefik/hosts:/etc/hosts:ro,Z
+
 Secret=crowdsec_api_key
 Entrypoint=/traefik-entrypoint.sh
 Exec=traefik

@@ -1,0 +1,34 @@
+# Static host mappings for Traefik backend services
+# Forces DNS resolution to use reverse_proxy network IPs
+#
+# Context: Podman's aardvark-dns returns container IPs in undefined order.
+# When DNS returns monitoring network IPs first, Traefik routes traffic
+# through the wrong network, violating network segmentation.
+#
+# Solution: Override DNS resolution with static /etc/hosts entries pointing
+# to reverse_proxy network IPs, ensuring correct routing.
+#
+# See: docs/98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md
+# Date: 2026-02-02
+# Status: PRODUCTION
+
+# Core Services
+10.89.2.8   home-assistant
+10.89.2.10  authelia
+10.89.2.9   grafana
+10.89.2.11  prometheus
+
+# Media & Collaboration
+10.89.2.13  jellyfin
+10.89.2.14  nextcloud
+
+# Photos & Events
+10.89.2.12  immich-server
+10.89.2.16  gathio
+
+# Monitoring & Logging
+10.89.2.15  loki
+
+# Note: These IPs are now statically assigned in each service's quadlet file
+# using the Network=systemd-reverse_proxy:ip=X.X.X.X syntax, ensuring they
+# remain stable across container restarts.
