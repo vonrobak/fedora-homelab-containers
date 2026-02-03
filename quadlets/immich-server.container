@@ -5,7 +5,7 @@ Wants=network-online.target
 Requires=photos-network.service postgresql-immich.service redis-immich.service
 
 [Container]
-Image=ghcr.io/immich-app/immich-server:v2.4.1
+Image=ghcr.io/immich-app/immich-server:v2.5.2
 ContainerName=immich-server
 AutoUpdate=registry
 
@@ -17,7 +17,7 @@ AutoUpdate=registry
 # Networks (multiple - order matters for default route)
 # Static IPs assigned to ensure consistent DNS resolution
 Network=systemd-reverse_proxy:ip=10.89.2.12
-Network=systemd-photos:ip=10.89.7.3
+Network=systemd-photos:ip=10.89.5.5
 Network=systemd-monitoring:ip=10.89.4.22
 
 # Environment - Database

@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-02-02 06:00:27 UTC
+**Generated:** 2026-02-03 06:02:22 UTC
 **System:** fedora-htpc
 
 ---
@@ -12,39 +12,38 @@
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
+| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
+| redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
-| alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
 | gathio-db | mongo:7 | ✅ Up | gathio |
-| redis-immich | valkey/valkey:latest | ✅ Up | photos |
-| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
+| immich-ml | immich-app/immich-machine-learning:v2.5. | ✅ Up | photos |
 | homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 | postgresql-immich | immich-app/postgres:14-vectorchord0.4.3- | ✅ Up | photos |
-| home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
-| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
-| node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
+| alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
 | matter-server | home-assistant-libs/python-matter-server | ✅ Up | home_automation |
-| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
-| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
-| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
-| nextcloud | nextcloud:30 | ✅ Up | nextcloud,reverse_proxy,monitoring |
+| loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
+| nextcloud | nextcloud:30 | ✅ Up | reverse_proxy,monitoring,nextcloud |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
-| immich-ml | immich-app/immich-machine-learning:v2.5. | ✅ Up | photos |
-| immich-server | immich-app/immich-server:v2.5.2 | ✅ Up | monitoring,photos,reverse_proxy |
-| gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
+| home-assistant | home-assistant/home-assistant:stable | ✅ Up | reverse_proxy,home_automation,monitoring |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
+| grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
+| gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
+| traefik | traefik:latest | ✅ Up | monitoring,reverse_proxy,auth_services |
+| vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 
 ---
 
 ## Statistics
 
-- **Total Running:** 28
-- **Total Defined:** 28
-- **System Load:**  0,36, 0,34, 0,40
+- **Total Running:** 27
+- **Total Defined:** 27
+- **System Load:**  0,51, 0,68, 0,63
 
 ---
 

@@ -10,7 +10,7 @@ ContainerName=homepage
 AutoUpdate=registry
 
 # Network
-Network=systemd-reverse_proxy
+Network=systemd-reverse_proxy:ip=10.89.2.73
 
 # Configuration (SELinux :Z labels)
 Volume=%h/containers/config/homepage:/app/config:Z

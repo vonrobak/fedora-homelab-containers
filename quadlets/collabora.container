@@ -26,8 +26,8 @@ Secret=collabora_admin_password,type=env,target=password
 AddCapability=MKNOD
 
 # Networks (reverse_proxy FIRST for internet access!)
-Network=systemd-reverse_proxy
-Network=systemd-nextcloud
+Network=systemd-reverse_proxy:ip=10.89.2.74
+Network=systemd-nextcloud:ip=10.89.10.74
 
 # Health check
 HealthCmd=curl -f http://localhost:9980/hosting/discovery

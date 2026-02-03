@@ -52,7 +52,7 @@ Volume=/mnt/btrfs-pool/subvol2-pics:/external/user-photos:Z
 # Networks (reverse_proxy FIRST for internet access!)
 # Static IPs assigned to ensure consistent DNS resolution
 Network=systemd-reverse_proxy:ip=10.89.2.14
-Network=systemd-nextcloud:ip=10.89.1.3
+Network=systemd-nextcloud:ip=10.89.10.4
 Network=systemd-monitoring:ip=10.89.4.21
 
 # Health check

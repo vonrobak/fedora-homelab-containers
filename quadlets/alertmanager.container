@@ -8,8 +8,8 @@ Requires=monitoring-network.service
 Image=quay.io/prometheus/alertmanager:latest
 ContainerName=alertmanager
 HostName=alertmanager
-Network=systemd-reverse_proxy
-Network=systemd-monitoring
+Network=systemd-reverse_proxy:ip=10.89.2.72
+Network=systemd-monitoring:ip=10.89.4.72
 AutoUpdate=registry
 
 # Configuration and data
