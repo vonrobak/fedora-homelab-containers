@@ -1,7 +1,0 @@
-[Unit]
-Description=Media Services Network
-
-[Network]
-Subnet=10.89.1.0/24
-Gateway=10.89.1.1
-DNS=192.168.1.69
