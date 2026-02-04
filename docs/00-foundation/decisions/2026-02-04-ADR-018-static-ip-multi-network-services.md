@@ -1,4 +1,4 @@
-# ADR-017: Static IP Assignment for Multi-Network Services
+# ADR-018: Static IP Assignment for Multi-Network Services
 
 **Status:** Accepted
 **Date:** 2026-02-04

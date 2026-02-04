@@ -116,13 +116,12 @@ journalctl --user -u home-assistant.service | grep -i plejd
 ## Post-Setup
 
 **What to keep:**
-- ✅ Mosquitto MQTT broker (useful for other integrations)
 - ✅ hci0 Bluetooth (Gnome's adapter)
-- ❓ hci1 Bluetooth (spare USB dongle - can remove if not needed)
+- ✅ hci1 Bluetooth (spare USB dongle - available for other uses)
 
 **No longer needed:**
-- ❌ Plejd2MQTT bridge (removed)
-- ❌ Custom Python scripts (removed)
+- ❌ Custom Plejd bridge (rejected - too complex)
+- ❌ MQTT broker (ESPHome uses native API, not MQTT)
 - ❌ Dedicated hci1 for Plejd (ESP32 replaces this)
 
 ## Next Steps

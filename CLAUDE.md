@@ -475,13 +475,13 @@ Specialized agents for specific tasks, invoked automatically or on-demand:
 
 **Root Cause:** Podman's aardvark-dns returns container IPs in undefined order. When monitoring network IPs resolve first, Traefik routes traffic through the wrong network, violating trusted_proxies configuration.
 
-**Solution:** Static IP assignment + Traefik /etc/hosts override (implemented in ADR-017)
+**Solution:** Static IP assignment + Traefik /etc/hosts override (implemented in ADR-018)
 1. **Verify static IPs:** `podman exec <service> ip addr show | grep "inet 10.89.2"`
 2. **Check Traefik hosts file:** `podman inspect traefik | jq '.[0].Mounts[] | select(.Destination=="/etc/hosts")'`
 3. **Test DNS resolution:** `podman exec traefik getent hosts <service>` (should return 10.89.2.x)
 4. **Verify no errors:** `journalctl --user -u home-assistant.service | grep -i untrusted`
 
-**See:** docs/00-foundation/decisions/2026-02-04-ADR-017-static-ip-multi-network-services.md
+**See:** docs/00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md
 
 ## Key Design Principles
 
@@ -509,7 +509,7 @@ Specialized agents for specific tasks, invoked automatically or on-demand:
 - **ADR-009: Config vs Data Directory Strategy** - Storage organization: `/config` (version-controlled), `/data` (ephemeral/large).
 - **ADR-010: Pattern-Based Deployment** - Automated service deployment using 9 battle-tested patterns with validation.
 - **ADR-016: Configuration Design Principles** - **CRITICAL:** Separation of concerns (quadlets = deployment, Traefik = routing). ALL Traefik routing in dynamic config files, NEVER in labels.
-- **ADR-017: Static IP Multi-Network Services** - Static IP assignment + Traefik /etc/hosts override to bypass Podman's undefined DNS ordering. Required for predictable routing.
+- **ADR-018: Static IP Multi-Network Services** - Static IP assignment + Traefik /etc/hosts override to bypass Podman's undefined DNS ordering. Required for predictable routing.
 
 **Supporting ADRs (implementation details):**
 - ADR-004: Immich Deployment (multi-container, GPU/ML)

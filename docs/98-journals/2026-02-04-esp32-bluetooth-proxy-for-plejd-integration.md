@@ -7,7 +7,7 @@
 
 ## Context
 
-Home Assistant runs in a rootless Podman container with network segmentation (ADR-017 static IPs). User has 4 Plejd devices (2× DIM-01-2P dimmers, 2× WRT-01 controllers) that need integration with Home Assistant for automation and monitoring.
+Home Assistant runs in a rootless Podman container with network segmentation (ADR-018 static IPs). User has 4 Plejd devices (2× DIM-01-2P dimmers, 2× WRT-01 controllers) that need integration with Home Assistant for automation and monitoring.
 
 ### Devices
 
@@ -28,7 +28,7 @@ All devices paired in Plejd app and functioning locally.
 - ❌ D-Bus socket mount with security contexts - Permission denied
 - ❌ USB Bluetooth dongle passthrough - Requires rootful container or complex udev rules
 - ❌ Host network mode - Breaks network segmentation architecture (unacceptable)
-- ❌ Custom Plejd2MQTT bridge - Complex protocol implementation (8-16 hours work)
+- ❌ Custom Plejd bridge - Complex protocol implementation (8-16 hours work)
 
 **Chosen Solution:** ESPHome Bluetooth Proxy via ESP32 D1 Mini
 
@@ -329,7 +329,7 @@ nc -zv 192.168.2.x 6053
 ```
 
 **Network segmentation preserved:**
-- HA remains on isolated Podman networks (ADR-017)
+- HA remains on isolated Podman networks (ADR-018)
 - ESP32 on segregated IoT network (VLAN2)
 - Firewall controls HA ↔ ESP32 communication
 - No container modifications needed
@@ -568,11 +568,11 @@ If ESP32 becomes unreliable, alternative approach:
 - **ESPHome Bluetooth Proxy:** https://esphome.io/components/bluetooth_proxy.html
 - **Plejd HACS Integration:** https://github.com/thomasloven/hass-plejd
 - **ESP32 Datasheet:** https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
-- **ADR-017:** Static IP Multi-Network Services (network segmentation rationale)
+- **ADR-018:** Static IP Multi-Network Services (network segmentation rationale)
 
 ## Related Issues
 
-- **Untrusted Proxy Errors:** Resolved via ADR-017 static IPs
+- **Untrusted Proxy Errors:** Resolved via ADR-018 static IPs
 - **Rootless Podman Bluetooth Access:** Architectural constraint, solved by ESP32 proxy
 - **D-Bus Authentication Failures:** No longer relevant with ESP32 approach
 
