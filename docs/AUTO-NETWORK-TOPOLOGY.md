@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-02-03 06:02:22 UTC
+**Generated:** 2026-02-04 06:02:57 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -31,6 +31,7 @@ graph TB
     %% Services with native authentication (bypass Authelia)
     CrowdSec -->|Rate Limit| alertmanager[alertmanager]
     CrowdSec -->|Rate Limit| collabora[collabora]
+    CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
     CrowdSec -->|Rate Limit| nextcloud[nextcloud]
     CrowdSec -->|Rate Limit| vaultwarden[vaultwarden]
@@ -72,6 +73,7 @@ graph TB
         direction LR
         home_automation_home_assistant[home-assistant]
         home_automation_matter_server[matter-server]
+        home_automation_mosquitto[mosquitto]
     end
 
     subgraph media_services["media_services<br/>10.89.1.0/24"]
@@ -87,8 +89,10 @@ graph TB
         monitoring_gathio[gathio]
         monitoring_grafana[grafana]
         monitoring_home_assistant[home-assistant]
+        monitoring_immich_server[immich-server]
         monitoring_jellyfin[jellyfin]
         monitoring_loki[loki]
+        monitoring_mosquitto[mosquitto]
         monitoring_nextcloud[nextcloud]
         monitoring_nextcloud_db[nextcloud-db]
         monitoring_nextcloud_redis[nextcloud-redis]
@@ -110,6 +114,7 @@ graph TB
     subgraph photos["photos<br/>10.89.5.0/24"]
         direction LR
         photos_immich_ml[immich-ml]
+        photos_immich_server[immich-server]
         photos_postgresql_immich[postgresql-immich]
         photos_redis_immich[redis-immich]
     end
@@ -124,6 +129,7 @@ graph TB
         reverse_proxy_grafana[grafana]
         reverse_proxy_home_assistant[home-assistant]
         reverse_proxy_homepage[homepage]
+        reverse_proxy_immich_server[immich-server]
         reverse_proxy_jellyfin[jellyfin]
         reverse_proxy_loki[loki]
         reverse_proxy_nextcloud[nextcloud]
@@ -272,11 +278,12 @@ sequenceDiagram
 
 - **Full Name:** `systemd-home_automation`
 - **Subnet:** 10.89.6.0/24
-- **Services:** 2
+- **Services:** 3
 
 **Members:**
 - home-assistant
 - matter-server
+- mosquitto
 
 
 ### media_services
@@ -293,7 +300,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 16
+- **Services:** 18
 
 **Members:**
 - alert-discord-relay
@@ -302,8 +309,10 @@ sequenceDiagram
 - gathio
 - grafana
 - home-assistant
+- immich-server
 - jellyfin
 - loki
+- mosquitto
 - nextcloud
 - nextcloud-db
 - nextcloud-redis
@@ -331,10 +340,11 @@ sequenceDiagram
 
 - **Full Name:** `systemd-photos`
 - **Subnet:** 10.89.5.0/24
-- **Services:** 3
+- **Services:** 4
 
 **Members:**
 - immich-ml
+- immich-server
 - postgresql-immich
 - redis-immich
 
@@ -343,7 +353,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 14
+- **Services:** 15
 
 **Members:**
 - alertmanager
@@ -354,6 +364,7 @@ sequenceDiagram
 - grafana
 - home-assistant
 - homepage
+- immich-server
 - jellyfin
 - loki
 - nextcloud

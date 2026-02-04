@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-03 06:02:25 UTC
-**Total Documents:** 368
+**Generated:** 2026-02-04 06:02:59 UTC
+**Total Documents:** 370
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (11 documents)
+### 00-foundation/ (12 documents)
 
 **Fundamentals and core concepts**
 
@@ -40,6 +40,7 @@
 - ADR-015: [2025-12-22-ADR-015-container-update-strategy](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
 - ADR-016: [2025-12-31-ADR-016-configuration-design-principles](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
 - ADR-017: [2026-01-05-ADR-017-slash-commands-and-subagents](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
+- ADR-017: [2026-02-04-ADR-017-static-ip-multi-network-services](00-foundation/decisions/2026-02-04-ADR-017-static-ip-multi-network-services.md)
 
 ---
 
@@ -193,7 +194,7 @@
 
 ---
 
-### 98-journals/ (154 documents)
+### 98-journals/ (155 documents)
 
 **Chronological project history (append-only log)**
 
@@ -211,6 +212,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
+- 2026-02-04: [2026-02-04-ADR-017-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-017-static-ip-multi-network-services.md)
 - 2026-01-30: [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
 - 2026-02-01: [home-assistant.md](10-services/guides/home-assistant.md)
 - 2026-01-31: [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
@@ -230,7 +232,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-02-03: [2026-02-02-catastrophic-network-failure-investigation.md](98-journals/2026-02-02-catastrophic-network-failure-investigation.md)
 - 2026-02-03: [2026-02-02-kernel-rollback-test-procedure.md](98-journals/2026-02-02-kernel-rollback-test-procedure.md)
 - 2026-02-03: [2026-02-02-post-reboot-analysis-symlink-test-failed.md](98-journals/2026-02-02-post-reboot-analysis-symlink-test-failed.md)
-- 2026-02-03: [2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md](98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md)
 
 ---
 
