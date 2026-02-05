@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-05 06:01:15 UTC
-**Total Documents:** 373
+**Generated:** 2026-02-05 23:04:03 UTC
+**Total Documents:** 378
 
 ---
 
@@ -44,13 +44,15 @@
 
 ---
 
-### 10-services/ (26 documents)
+### 10-services/ (29 documents)
 
 **Service-specific documentation and deployment guides**
 
 **Service Guides:**
+- [alert-discord-relay.md](10-services/guides/alert-discord-relay.md)
 - [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
 - [authelia.md](10-services/guides/authelia.md)
+- [collabora.md](10-services/guides/collabora.md)
 - [crowdsec.md](10-services/guides/crowdsec.md)
 - [esp32-plejd-quick-start.md](10-services/guides/esp32-plejd-quick-start.md)
 - [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
@@ -63,6 +65,7 @@
 - [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
 - [jellyfin-gpu-acceleration-troubleshooting.md](10-services/guides/jellyfin-gpu-acceleration-troubleshooting.md)
 - [jellyfin.md](10-services/guides/jellyfin.md)
+- [matter-server.md](10-services/guides/matter-server.md)
 - [nextcloud.md](10-services/guides/nextcloud.md)
 - [pattern-customization-guide.md](10-services/guides/pattern-customization-guide.md)
 - [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
@@ -196,7 +199,7 @@
 
 ---
 
-### 98-journals/ (156 documents)
+### 98-journals/ (157 documents)
 
 **Chronological project history (append-only log)**
 
@@ -215,25 +218,25 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 ## Recently Updated (Last 7 Days)
 
 - 2026-02-04: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
+- 2026-02-05: [alert-discord-relay.md](10-services/guides/alert-discord-relay.md)
 - 2026-01-30: [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
+- 2026-02-05: [collabora.md](10-services/guides/collabora.md)
 - 2026-02-04: [esp32-plejd-quick-start.md](10-services/guides/esp32-plejd-quick-start.md)
 - 2026-02-01: [home-assistant.md](10-services/guides/home-assistant.md)
 - 2026-01-31: [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
+- 2026-02-05: [matter-server.md](10-services/guides/matter-server.md)
+- 2026-02-05: [nextcloud.md](10-services/guides/nextcloud.md)
 - 2026-01-31: [roborock-room-cleaning-setup.md](10-services/guides/roborock-room-cleaning-setup.md)
+- 2026-02-05: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - 2026-02-04: [esp32-vlan2-firewall-rule.md](30-security/guides/esp32-vlan2-firewall-rule.md)
+- 2026-02-05: [STATE-OF-HOMELAB-2025-12-31-baseline.md](90-archive/STATE-OF-HOMELAB-2025-12-31-baseline.md)
 - 2026-01-31: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
-- 2026-01-29: [2026-01-29-home-assistant-learning-journey-start.md](98-journals/2026-01-29-home-assistant-learning-journey-start.md)
 - 2026-01-30: [2026-01-30-phase2-dashboards-and-apple-integration.md](98-journals/2026-01-30-phase2-dashboards-and-apple-integration.md)
 - 2026-01-31: [2026-01-31-learning-journey-completion.md](98-journals/2026-01-31-learning-journey-completion.md)
 - 2026-01-31: [2026-01-31-mill-air-purifier-feature-request.md](98-journals/2026-01-31-mill-air-purifier-feature-request.md)
 - 2026-02-01: [2026-01-31-roborock-automation-optimization.md](98-journals/2026-01-31-roborock-automation-optimization.md)
 - 2026-02-01: [2026-02-01-february-security-posture-evaluation.md](98-journals/2026-02-01-february-security-posture-evaluation.md)
 - 2026-02-02: [2026-02-02-backup-compression-strategy-evaluation.md](98-journals/2026-02-02-backup-compression-strategy-evaluation.md)
-- 2026-02-03: [2026-02-02-catastrophic-network-failure-investigation.md](98-journals/2026-02-02-catastrophic-network-failure-investigation.md)
-- 2026-02-03: [2026-02-02-kernel-rollback-test-procedure.md](98-journals/2026-02-02-kernel-rollback-test-procedure.md)
-- 2026-02-03: [2026-02-02-post-reboot-analysis-symlink-test-failed.md](98-journals/2026-02-02-post-reboot-analysis-symlink-test-failed.md)
-- 2026-02-03: [2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md](98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md)
-- 2026-02-03: [2026-02-02-solution-implemented-pending-reboot-verification.md](98-journals/2026-02-02-solution-implemented-pending-reboot-verification.md)
 
 ---
 

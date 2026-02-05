@@ -107,10 +107,11 @@ http:
             depth: 1
 
     # Nextcloud (authenticated users - high capacity for WebDAV sync, bulk imports)
+    # Burst sized for Music library tree walk (2,080+ directories via PROPFIND)
     rate-limit-nextcloud:
       rateLimit:
-        average: 400      # Higher sustained rate for file/calendar/contact sync
-        burst: 1400       # Support bulk operations (1300+ contact CSV imports)
+        average: 600      # Higher sustained rate for file/calendar/contact sync
+        burst: 3000       # Support full directory tree PROPFIND + bulk operations
         period: 1m
         sourceCriterion:
           ipStrategy:
