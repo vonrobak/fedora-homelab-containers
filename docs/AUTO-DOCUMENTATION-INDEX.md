@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-04 06:02:59 UTC
-**Total Documents:** 370
+**Generated:** 2026-02-05 06:01:15 UTC
+**Total Documents:** 373
 
 ---
 
@@ -40,11 +40,11 @@
 - ADR-015: [2025-12-22-ADR-015-container-update-strategy](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
 - ADR-016: [2025-12-31-ADR-016-configuration-design-principles](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
 - ADR-017: [2026-01-05-ADR-017-slash-commands-and-subagents](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
-- ADR-017: [2026-02-04-ADR-017-static-ip-multi-network-services](00-foundation/decisions/2026-02-04-ADR-017-static-ip-multi-network-services.md)
+- ADR-018: [2026-02-04-ADR-018-static-ip-multi-network-services](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 
 ---
 
-### 10-services/ (25 documents)
+### 10-services/ (26 documents)
 
 **Service-specific documentation and deployment guides**
 
@@ -52,6 +52,7 @@
 - [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
 - [authelia.md](10-services/guides/authelia.md)
 - [crowdsec.md](10-services/guides/crowdsec.md)
+- [esp32-plejd-quick-start.md](10-services/guides/esp32-plejd-quick-start.md)
 - [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
 - [home-assistant.md](10-services/guides/home-assistant.md)
 - [homepage-widget-configuration.md](10-services/guides/homepage-widget-configuration.md)
@@ -112,7 +113,7 @@
 
 ---
 
-### 30-security/ (16 documents)
+### 30-security/ (17 documents)
 
 **Security architecture, configurations, and incident response**
 
@@ -121,6 +122,7 @@
 - [crowdsec-phase2-and-5-advanced-features.md](30-security/guides/crowdsec-phase2-and-5-advanced-features.md)
 - [crowdsec-phase3-threat-intelligence.md](30-security/guides/crowdsec-phase3-threat-intelligence.md)
 - [crowdsec-phase4-configuration-management.md](30-security/guides/crowdsec-phase4-configuration-management.md)
+- [esp32-vlan2-firewall-rule.md](30-security/guides/esp32-vlan2-firewall-rule.md)
 - [secrets-management.md](30-security/guides/secrets-management.md)
 - [security-audit.md](30-security/guides/security-audit.md)
 - [sshd-deployment-procedure.md](30-security/guides/sshd-deployment-procedure.md)
@@ -194,7 +196,7 @@
 
 ---
 
-### 98-journals/ (155 documents)
+### 98-journals/ (156 documents)
 
 **Chronological project history (append-only log)**
 
@@ -212,16 +214,14 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-02-04: [2026-02-04-ADR-017-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-017-static-ip-multi-network-services.md)
+- 2026-02-04: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 - 2026-01-30: [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
+- 2026-02-04: [esp32-plejd-quick-start.md](10-services/guides/esp32-plejd-quick-start.md)
 - 2026-02-01: [home-assistant.md](10-services/guides/home-assistant.md)
 - 2026-01-31: [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
 - 2026-01-31: [roborock-room-cleaning-setup.md](10-services/guides/roborock-room-cleaning-setup.md)
-- 2026-01-28: [unpoller-metrics-guide.md](20-operations/guides/unpoller-metrics-guide.md)
+- 2026-02-04: [esp32-vlan2-firewall-rule.md](30-security/guides/esp32-vlan2-firewall-rule.md)
 - 2026-01-31: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
-- 2026-01-28: [2026-01-28-matter-hybrid-week1-home-assistant-deployment.md](98-journals/2026-01-28-matter-hybrid-week1-home-assistant-deployment.md)
-- 2026-01-28: [2026-01-28-matter-hybrid-week2-matter-server-deployment.md](98-journals/2026-01-28-matter-hybrid-week2-matter-server-deployment.md)
-- 2026-01-28: [2026-01-28-quadlet-tracking-migration.md](98-journals/2026-01-28-quadlet-tracking-migration.md)
 - 2026-01-29: [2026-01-29-home-assistant-learning-journey-start.md](98-journals/2026-01-29-home-assistant-learning-journey-start.md)
 - 2026-01-30: [2026-01-30-phase2-dashboards-and-apple-integration.md](98-journals/2026-01-30-phase2-dashboards-and-apple-integration.md)
 - 2026-01-31: [2026-01-31-learning-journey-completion.md](98-journals/2026-01-31-learning-journey-completion.md)
@@ -232,6 +232,8 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-02-03: [2026-02-02-catastrophic-network-failure-investigation.md](98-journals/2026-02-02-catastrophic-network-failure-investigation.md)
 - 2026-02-03: [2026-02-02-kernel-rollback-test-procedure.md](98-journals/2026-02-02-kernel-rollback-test-procedure.md)
 - 2026-02-03: [2026-02-02-post-reboot-analysis-symlink-test-failed.md](98-journals/2026-02-02-post-reboot-analysis-symlink-test-failed.md)
+- 2026-02-03: [2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md](98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md)
+- 2026-02-03: [2026-02-02-solution-implemented-pending-reboot-verification.md](98-journals/2026-02-02-solution-implemented-pending-reboot-verification.md)
 
 ---
 

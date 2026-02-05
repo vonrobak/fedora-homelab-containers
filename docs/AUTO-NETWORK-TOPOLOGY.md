@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-02-04 06:02:57 UTC
+**Generated:** 2026-02-05 06:01:13 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -73,7 +73,6 @@ graph TB
         direction LR
         home_automation_home_assistant[home-assistant]
         home_automation_matter_server[matter-server]
-        home_automation_mosquitto[mosquitto]
     end
 
     subgraph media_services["media_services<br/>10.89.1.0/24"]
@@ -92,7 +91,6 @@ graph TB
         monitoring_immich_server[immich-server]
         monitoring_jellyfin[jellyfin]
         monitoring_loki[loki]
-        monitoring_mosquitto[mosquitto]
         monitoring_nextcloud[nextcloud]
         monitoring_nextcloud_db[nextcloud-db]
         monitoring_nextcloud_redis[nextcloud-redis]
@@ -278,12 +276,11 @@ sequenceDiagram
 
 - **Full Name:** `systemd-home_automation`
 - **Subnet:** 10.89.6.0/24
-- **Services:** 3
+- **Services:** 2
 
 **Members:**
 - home-assistant
 - matter-server
-- mosquitto
 
 
 ### media_services
@@ -300,7 +297,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 18
+- **Services:** 17
 
 **Members:**
 - alert-discord-relay
@@ -312,7 +309,6 @@ sequenceDiagram
 - immich-server
 - jellyfin
 - loki
-- mosquitto
 - nextcloud
 - nextcloud-db
 - nextcloud-redis

@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-02-04 06:02:57 UTC
+**Generated:** 2026-02-05 06:01:13 UTC
 **System:** fedora-htpc
 
 ---
@@ -12,7 +12,7 @@
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
-| traefik | traefik:latest | ✅ Up | monitoring,reverse_proxy,auth_services |
+| traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
@@ -28,24 +28,23 @@
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
-| authelia | authelia/authelia:latest | ✅ Up | reverse_proxy,auth_services |
+| authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | nextcloud | nextcloud:31 | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | immich-server | immich-app/immich-server:v2.5.2 | ✅ Up | reverse_proxy,monitoring,photos |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
-| collabora | collabora/code:latest | ✅ Up | reverse_proxy,nextcloud |
-| mosquitto | eclipse-mosquitto:2 | ✅ Up | home_automation,monitoring |
+| collabora | collabora/code:latest | ✅ Up | nextcloud,reverse_proxy |
 | home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
 
 ---
 
 ## Statistics
 
-- **Total Running:** 29
-- **Total Defined:** 29
-- **System Load:**  0,64, 0,48, 0,47
+- **Total Running:** 28
+- **Total Defined:** 28
+- **System Load:**  0,29, 0,39, 0,41
 
 ---
 
