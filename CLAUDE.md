@@ -4,9 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A learning-focused homelab project building production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets. Platform: Fedora Workstation 42.
+A learning-focused homelab project building production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets. Platform: Fedora Workstation 43.
 
-**Current Services:** Traefik (reverse proxy + CrowdSec), Jellyfin (media server), Authelia (SSO + YubiKey MFA), Prometheus/Grafana/Loki (monitoring), Alertmanager (alerting), Immich (photo management)
+**Current Services (28 containers, 14 service groups):**
+- **Core Infrastructure:** Traefik (reverse proxy), CrowdSec (threat intel), Authelia + Redis (SSO + YubiKey MFA)
+- **Applications:** Nextcloud + Collabora + MariaDB + Redis (file sync/office), Vaultwarden (passwords), Jellyfin (media), Immich + PostgreSQL + Redis + ML (photos), Gathio + MongoDB (events), Homepage (dashboard)
+- **Home Automation:** Home Assistant + Matter Server (smart home, Plejd integration planned)
+- **Monitoring:** Prometheus, Grafana, Loki, Alertmanager, Promtail, cAdvisor, Node Exporter, UnPoller, Alert Discord Relay
 
 ## Architecture
 
@@ -37,7 +41,15 @@ Backend Service
 
 **Why this order matters:** Each layer is more expensive than the last. Reject malicious IPs immediately before wasting resources on auth checks.
 
-**Network Segmentation:** 5 networks for trust boundaries (see `AUTO-NETWORK-TOPOLOGY.md` for topology diagrams)
+**Network Segmentation:** 8 networks for trust boundaries (see `AUTO-NETWORK-TOPOLOGY.md` for topology diagrams)
+- `reverse_proxy` - Internet-facing services + Traefik (default route for internet access)
+- `monitoring` - Prometheus, Grafana, Loki, exporters (cross-network scraping)
+- `auth_services` - Authelia + Redis (isolated auth backend)
+- `media_services` - Jellyfin (media isolation)
+- `photos` - Immich stack (photo processing isolation)
+- `nextcloud` - Nextcloud + Collabora + MariaDB + Redis
+- `home_automation` - Home Assistant + Matter Server
+- `gathio` - Gathio + MongoDB
 
 Services join networks based on trust/access requirements. Key principle: **First network gets default route** (see Common Gotchas).
 
@@ -101,7 +113,7 @@ cat docs/10-services/guides/pattern-selection-guide.md
 
 **Why?**
 - ✅ Separation of concerns (ADR-016: quadlets = deployment, Traefik = routing)
-- ✅ Centralized security (all routes auditable in one 248-line file)
+- ✅ Centralized security (all routes auditable in one file: `config/traefik/dynamic/routers.yml`)
 - ✅ Fail-fast middleware ordering enforced consistently
 - ✅ Single source of truth (no label/config sync issues)
 - ✅ Git-friendly (routing changes isolated from service changes)
@@ -219,7 +231,7 @@ podman logs -f traefik                         # View logs
 ls -lh ~/containers/data/letsencrypt/acme.json
 
 # Routing configuration files
-cat ~/containers/config/traefik/dynamic/routers.yml      # All routes (248 lines)
+cat ~/containers/config/traefik/dynamic/routers.yml      # All routes (13 routers, 11 services)
 cat ~/containers/config/traefik/dynamic/middleware.yml   # Security policies (13KB)
 
 # Force config reload (optional - auto-reloads after 60s)
@@ -324,10 +336,11 @@ systemctl --user is-active alertmanager.service  # Alert routing
 systemctl --user is-active grafana.service       # Monitoring dashboard
 ```
 
-**Expected Resource Usage:**
-- **Memory:** Total ~2-3GB | Traefik: ~50MB | Jellyfin: ~200MB (idle) / 500MB-1GB (transcoding) | Prometheus: ~80MB | Grafana: ~120MB | Loki: ~60MB
+**Expected Resource Usage (28 containers, measured February 2026):**
+- **Memory:** Total ~4-5GB | Jellyfin: ~200MB idle / 500MB-1GB transcoding | Prometheus: ~300MB | Loki: ~200MB | Grafana: ~200MB | Traefik: ~80MB | Immich-server: ~350MB | Nextcloud: ~200MB
 - **CPU:** Idle: >90% | Normal: 2-5% | Transcoding: 50-80% (normal spike)
-- **Disk:** System SSD: <60% (⚠️ >70%, 🚨 >80%) | BTRFS pool: Plenty of space
+- **Disk:** System SSD: <70% normal (⚠️ >75%, 🚨 >85%) | BTRFS pool: ~73% used (4TB free of 14.5TB)
+- **Swap:** ~1GB typical (normal for long-running services with 28 containers)
 
 **Health Checks:**
 ```bash
@@ -403,13 +416,13 @@ Specialized agents for specific tasks, invoked automatically or on-demand:
 - ADR compliance checking
 - **When to use:** Before deploying new services, when asking "how should I deploy..."
 
-**service-validator** *(Coming in Phase 2)* - Deployment verification
+**service-validator** - Deployment verification
 - 7-level verification framework (health, network, routing, auth, monitoring, drift, security)
 - "Assume failure until proven otherwise" mindset
 - Structured verification reports
 - **When to use:** Automatically after deployment, manual verification requests
 
-**code-simplifier** *(Coming in Phase 3)* - Post-deployment refactoring
+**code-simplifier** - Post-deployment refactoring
 - Removes config bloat and maintains pattern compliance
 - Consolidates quadlet directives and Traefik routes
 - Aligns with homelab patterns and ADRs
@@ -432,9 +445,9 @@ Specialized agents for specific tasks, invoked automatically or on-demand:
 
 **Automated:** Weekly vulnerability scanning (Sundays 06:00), ADR compliance validation
 
-**Runbooks:** 9 total (4 DR, 4 IR, + procedures). See:
+**Runbooks:** 10 total (4 DR, 5 IR, + procedures). See:
 - **Disaster Recovery:** `docs/20-operations/runbooks/` (DR-001 through DR-004)
-- **Incident Response:** `docs/30-security/runbooks/` (IR-001 through IR-004)
+- **Incident Response:** `docs/30-security/runbooks/` (IR-001 through IR-005)
 - **Security Guides:** `docs/30-security/guides/` (7 guides including CrowdSec phases, SSH hardening, secrets management)
 
 ## Troubleshooting
@@ -498,12 +511,12 @@ Specialized agents for specific tasks, invoked automatically or on-demand:
 
 ## Architecture Decision Records (ADRs)
 
-**16 ADRs documenting architectural decisions** (see `docs/*/decisions/` for full details)
+**18 ADRs documenting architectural decisions** (see `docs/*/decisions/` for full details)
 
 **Design-Guiding ADRs (affect future decisions):**
 - **ADR-001: Rootless Containers** - All containers run as unprivileged user (UID 1000). Requires `:Z` SELinux labels on all volume mounts.
 - **ADR-002: Systemd Quadlets Over Docker Compose** - Native systemd integration for unified logging and dependency management.
-- **ADR-003: Monitoring Stack** - Prometheus + Grafana + Loki for observability (~340MB RAM overhead).
+- **ADR-003: Monitoring Stack** - Prometheus + Grafana + Loki for observability (~700MB RAM overhead with all exporters).
 - **ADR-006: YubiKey-First Authentication** - Phishing-resistant hardware auth via FIDO2/WebAuthn for Authelia SSO.
 - **ADR-008: CrowdSec Security Architecture** - IP reputation with fail-fast middleware ordering (cheapest checks first).
 - **ADR-009: Config vs Data Directory Strategy** - Storage organization: `/config` (version-controlled), `/data` (ephemeral/large).
@@ -520,6 +533,9 @@ Specialized agents for specific tasks, invoked automatically or on-demand:
 - ADR-013: Nextcloud Native Authentication
 - ADR-014: Nextcloud Passwordless Auth
 - ADR-015: Container Update Strategy (`:latest` tags + strategic pinning)
+- ADR-017: Slash Commands & Subagents (automation workflow)
+
+**Using ADRs:**
 
 **Using ADRs:**
 1. Check if an ADR exists explaining the current approach before proposing changes
@@ -539,7 +555,7 @@ due to [reason for change].
 
 **Architecture & Services:**
 - Complete service catalog: `AUTO-SERVICE-CATALOG.md` (updated daily)
-- Network topology: `AUTO-NETWORK-TOPOLOGY.md` (diagrams, 5 networks)
+- Network topology: `AUTO-NETWORK-TOPOLOGY.md` (diagrams, 8 networks)
 - Service dependencies: `AUTO-DEPENDENCY-GRAPH.md` (4-tier graph, critical paths)
 - Architecture overview: `docs/20-operations/guides/homelab-architecture.md`
 
@@ -553,7 +569,7 @@ due to [reason for change].
 - SLO framework: `docs/40-monitoring-and-documentation/guides/slo-framework.md` (9 SLOs)
 - Monitoring stack: `docs/40-monitoring-and-documentation/guides/monitoring-stack.md`
 - Loki queries: `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
-- Security guides: `docs/30-security/guides/` (7 guides + 4 runbooks)
+- Security guides: `docs/30-security/guides/` (7 guides + 5 runbooks)
 
 **Documentation:**
 - Complete index: `AUTO-DOCUMENTATION-INDEX.md` (298 files)

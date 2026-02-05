@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-02-04 06:02:59 UTC
+**Generated:** 2026-02-05 06:01:15 UTC
 **System:** fedora-htpc
 
 This document visualizes service dependencies and critical paths in the homelab infrastructure.
@@ -178,11 +178,11 @@ Services on the same network can communicate:
 
 **gathio:** gathio,gathio-db
 
-**home_automation:** home-assistant,matter-server,mosquitto
+**home_automation:** home-assistant,matter-server
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,immich-server,jellyfin,loki,mosquitto,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,immich-server,jellyfin,loki,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
 
 **nextcloud:** collabora,nextcloud,nextcloud-db,nextcloud-redis
 
