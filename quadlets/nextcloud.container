@@ -5,7 +5,7 @@ Wants=network-online.target
 
 
 [Container]
-Image=docker.io/library/nextcloud:30
+Image=docker.io/library/nextcloud:latest
 ContainerName=nextcloud
 AutoUpdate=registry
 

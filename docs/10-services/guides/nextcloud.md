@@ -1,10 +1,10 @@
 # Nextcloud Service Guide
 
-**Service:** Nextcloud File Sync and Collaboration  
-**Version:** Nextcloud 30 + MariaDB 11 + Redis 7 + Collabora Online  
-**Deployment:** Systemd Quadlets (Rootless Podman)  
-**Status:** ✅ Production  
-**Last Updated:** 2025-12-20
+**Service:** Nextcloud File Sync and Collaboration
+**Version:** Nextcloud 32.0.5 (Hub 11) + MariaDB 11 + Redis 7 + Collabora Online
+**Deployment:** Systemd Quadlets (Rootless Podman)
+**Status:** ✅ Production
+**Last Updated:** 2026-02-05
 
 ---
 
@@ -15,7 +15,7 @@
 - **CalDAV:** https://nextcloud.patriark.org/remote.php/dav/calendars/USERNAME/
 - **CardDAV:** https://nextcloud.patriark.org/remote.php/dav/addressbooks/users/USERNAME/
 - **WebDAV:** https://nextcloud.patriark.org/remote.php/dav/files/USERNAME/
-- **Collabora Admin:** https://collabora.patriark.org/browser/dist/admin/admin.html
+- **Collabora Admin:** Internal only (no public route) - access via `podman exec collabora` or Nextcloud Office settings
 
 **Service Management:**
 ```bash
@@ -70,7 +70,7 @@ curl -f https://nextcloud.patriark.org/status.php
 │    ┌──────────────────────────────────────┐        │
 │    │  Middleware Stack (layered)          │        │
 │    │  1. CrowdSec Bouncer (IP reputation) │        │
-│    │  2. Rate Limit (200 req/min)         │        │
+│    │  2. Rate Limit (600/min, 3000 burst)  │        │
 │    │  3. Circuit Breaker                  │        │
 │    │  4. Retry                            │        │
 │    │  5. CalDAV Redirects                 │        │
@@ -587,7 +587,7 @@ podman exec -u www-data nextcloud php occ app:list | grep richdocuments
 
 # 4. Check WOPI URL
 podman exec -u www-data nextcloud php occ config:app:get richdocuments wopi_url
-# Should be: https://collabora.patriark.org
+# Should be: http://collabora:9980 (internal, no public route)
 ```
 
 **Common Causes:**
@@ -657,7 +657,7 @@ podman exec -u www-data nextcloud php occ background:cron
 **Enabled by Default:**
 - Nextcloud built-in throttling (3 failed attempts → delay)
 - CrowdSec perimeter defense (18 HTTP attack scenarios)
-- Rate limiting (200 req/min via Traefik)
+- Rate limiting (600 req/min, 3000 burst via Traefik)
 
 **Check Ban Status:**
 ```bash
@@ -721,16 +721,85 @@ podman auto-update --dry-run
 
 ---
 
+## Client Setup
+
+### Desktop Clients (macOS / Windows / Linux)
+
+**Download:** https://nextcloud.com/install/#install-clients
+
+**Initial Setup:**
+1. Open Nextcloud desktop client
+2. Server URL: `https://nextcloud.patriark.org`
+3. Authenticate via browser (FIDO2/WebAuthn or password)
+4. Choose sync folder location
+
+**Virtual Files (Files On-Demand):**
+- Enable "Virtual file support" during setup or in Settings → Account
+- Files appear as placeholders locally (no disk space used)
+- Download on first access, pin for offline availability
+- Particularly valuable for large external storage (Multimedia, Music, Opptak)
+- Similar to OneDrive "Files On-Demand" or iCloud "Optimized Storage"
+
+**Recommended Configuration:**
+- Enable VFS for all sync connections
+- Pin frequently-used folders for offline access
+- Leave large media directories (Multimedia, Music, Opptak) as virtual
+
+### Mobile Clients (iOS / Android)
+
+**Download:** App Store / Google Play → "Nextcloud"
+
+**Initial Setup:**
+1. Server URL: `https://nextcloud.patriark.org`
+2. Authenticate via browser
+3. Grant photo upload permission (optional)
+
+**Configuration:**
+- **Auto-upload photos:** Settings → Auto Upload (optional)
+- **Offline files:** Long-press → "Available offline" for specific files/folders
+- Do NOT set large directories (Multimedia, Music) as offline
+
+### CalDAV / CardDAV Setup
+
+**iOS / macOS:**
+1. Settings → Calendar → Accounts → Add Account → Other
+2. CalDAV: Server `https://nextcloud.patriark.org`
+3. Username + app password (generate in Nextcloud → Settings → Security → Devices & sessions)
+4. Auto-discovery via `/.well-known/caldav` handles the rest
+5. Repeat for Contacts (CardDAV)
+
+**Note:** If using FIDO2 passwordless login, CalDAV/CardDAV requires an app-specific password.
+
+---
+
+## Sharing Best Practices
+
+### Public Link Sharing
+- Share files/folders via "Share link" in Nextcloud
+- Shared links pass through full middleware chain (CrowdSec → rate limit → circuit breaker)
+- Always set expiration dates on public shares
+- Use password protection for sensitive content
+- Read-only by default; enable editing only when needed
+
+### Security Notes
+- Shared links use HTTPS with HSTS preload
+- CrowdSec IP reputation applies to all shared link access
+- Rate limiting (400/min) protects against abuse
+- External storage shares respect underlying read-only permissions
+
+---
+
 ## Related Documentation
 
-- **ADR-007:** Native Authentication Strategy
-- **ADR-008:** Passwordless Authentication (FIDO2/WebAuthn)
-- **Migration-001:** Secrets Migration
+- **ADR-013:** Native Authentication Strategy
+- **ADR-014:** Passwordless Authentication (FIDO2/WebAuthn)
+- **ADR-016:** Configuration Design Principles (routing in dynamic config)
+- **ADR-018:** Static IP Multi-Network Services
 - **Runbook:** Nextcloud Operations (`docs/20-operations/runbooks/nextcloud-operations.md`)
 - **CLAUDE.md:** Quick reference and best practices
 
 ---
 
-**Guide Version:** 1.0  
-**Last Updated:** 2025-12-20  
+**Guide Version:** 2.0
+**Last Updated:** 2026-02-05
 **Maintained By:** patriark + Claude Code

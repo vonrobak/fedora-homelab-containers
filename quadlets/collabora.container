@@ -13,6 +13,9 @@ AutoUpdate=registry
 Environment=aliasgroup1=https://nextcloud.patriark.org
 
 # Collabora configuration
+# server_name tells Collabora its public hostname for correct WOPI discovery URLs
+# Without this, discovery returns http://collabora:9980 (internal) instead of public URL
+Environment=server_name=collabora.patriark.org
 Environment=extra_params=--o:ssl.enable=false --o:ssl.termination=true
 
 # Locale

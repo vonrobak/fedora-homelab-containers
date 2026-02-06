@@ -108,7 +108,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit-nextcloud@file     # High capacity for WebDAV sync, bulk imports (400/min, 1400 burst)
+        - rate-limit-nextcloud@file     # High capacity for WebDAV sync (600/min, 3000 burst for PROPFIND tree walks)
         - circuit-breaker@file          # Prevent cascade failures
         - retry@file                    # Retry transient errors
         - nextcloud-caldav              # CalDAV/.well-known redirects
@@ -116,10 +116,20 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Collabora Online - INTERNAL ONLY (accessed by Nextcloud via http://collabora:9980)
-    # Removed public router - Collabora does not need Internet access
-    # Nextcloud communicates with it directly on the nextcloud network
-    # This reduces attack surface and follows least-privilege principle
+    # Collabora Online - Browser needs direct access to load editor iframe
+    # Server-to-server WOPI calls go via internal network (http://collabora:9980)
+    # But browser must load cool.html from Collabora directly
+    collabora-secure:
+      rule: "Host(`collabora.patriark.org`)"
+      service: "collabora"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit@file
+        - hsts-only@file                # Collabora sets own CSP/frame-ancestors - just add HSTS
+      tls:
+        certResolver: letsencrypt
 
     # Grafana Monitoring Dashboard
     grafana-secure:
@@ -242,7 +252,10 @@ http:
         servers:
           - url: "http://nextcloud:80"
 
-    # collabora: (removed - internal-only service, no public router needed)
+    collabora:
+      loadBalancer:
+        servers:
+          - url: "http://collabora:9980"
 
     gathio:
       loadBalancer:
