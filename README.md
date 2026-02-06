@@ -6,12 +6,12 @@ A learning-focused homelab project documenting the journey of building productio
 
 | Host | Platform | Role | Storage |
 |------|----------|------|---------|
-| Primary server | Fedora Workstation 43 | Container host (28 containers) | BTRFS (SSD + 14.5TB HDD pool) |
+| Primary server | Fedora Workstation 43 | Container host (27 containers) | BTRFS (SSD + 14.5TB HDD pool) |
 | Control center | Fedora Workstation 43 | Workstation | Encrypted BTRFS |
 | DNS server | Debian 12 (PiOS) | Pi-hole | SD card |
 | Laptop | macOS | Command center | Time Machine |
 
-## Services (14 groups, 28 containers)
+## Services (13 groups, 27 containers)
 
 **Core Infrastructure:**
 - **Traefik** - Reverse proxy with Let's Encrypt SSL and layered middleware
@@ -19,7 +19,7 @@ A learning-focused homelab project documenting the journey of building productio
 - **CrowdSec** - Threat intelligence and IP reputation filtering
 
 **Applications:**
-- **Nextcloud** - File sync and collaboration (with Collabora, MariaDB, Redis)
+- **Nextcloud** - File sync and collaboration (with MariaDB, Redis)
 - **Jellyfin** - Media streaming server
 - **Immich** - Photo and video management (with ML, PostgreSQL, Redis)
 - **Vaultwarden** - Password manager
