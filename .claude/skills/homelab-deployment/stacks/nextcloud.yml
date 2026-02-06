@@ -2,14 +2,14 @@
 # nextcloud.yml
 # Complete Nextcloud collaboration stack
 #
-# Services: 4 (mariadb, redis, nextcloud, collabora)
+# Services: 3 (mariadb, redis, nextcloud)
 # Deployment order:
 #   Phase 1 (parallel): nextcloud-db, nextcloud-redis
 #   Phase 2: nextcloud
-#   Phase 3: collabora
 #
-# Total memory: ~4.3GB
-# Estimated deployment time: 6-8 minutes
+# Total memory: ~2.3GB
+# Estimated deployment time: 4-6 minutes
+# Note: Collabora Online was decommissioned 2026-02-06 (persistent WOPI integration issues)
 
 stack:
   name: nextcloud
@@ -22,7 +22,7 @@ shared:
     - systemd-nextcloud
     - systemd-monitoring
   resources:
-    total_memory_mb: 4352  # 512M + 256M + 1.5G + 2G
+    total_memory_mb: 2304  # 512M + 256M + 1.5G
   domain: nextcloud.patriark.org
   storage_base: /mnt/btrfs-pool/subvol7-containers
 
@@ -156,49 +156,6 @@ services:
       type: healthcheck
       timeout: 300s  # Initial container setup + database migrations
 
-  # Phase 3: Collabora Online (Office suite)
-  - name: collabora
-    pattern: reverse-proxy-backend
-    dependencies:
-      - nextcloud
-    configuration:
-      image: docker.io/collabora/code:latest
-      memory: 2048M
-      environment:
-        # Nextcloud domain whitelist
-        aliasgroup1: https://nextcloud.patriark.org
-        # Collabora configuration
-        extra_params: --o:ssl.enable=false --o:ssl.termination=true
-        # Locale
-        dictionaries: "en_US no_NO"
-        # Security
-        username: admin
-        password: "${NEXTCLOUD_ADMIN_PASSWORD}"
-      # Capabilities for LibreOffice
-      capabilities:
-        - MKNOD
-      networks:
-        - systemd-reverse_proxy  # FIRST for internet access
-        - systemd-nextcloud
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:9980/hosting/discovery"]
-        interval: 30s
-        timeout: 10s
-        retries: 5
-      labels:
-        # Traefik routing
-        - "traefik.enable=true"
-        - "traefik.http.routers.collabora.rule=Host(`collabora.patriark.org`)"
-        - "traefik.http.routers.collabora.entrypoints=websecure"
-        - "traefik.http.routers.collabora.tls=true"
-        - "traefik.http.routers.collabora.tls.certresolver=letsencrypt"
-        - "traefik.http.services.collabora.loadbalancer.server.port=9980"
-        # Middleware (NO Authelia - Nextcloud handles auth)
-        - "traefik.http.routers.collabora.middlewares=crowdsec-bouncer@file,rate-limit-ocis@file"
-    ready_criteria:
-      type: healthcheck
-      timeout: 180s
-
 # Deployment configuration
 deployment:
   phases:
@@ -213,12 +170,6 @@ deployment:
       parallel: false
       services:
         - nextcloud
-      wait_for_healthy: true
-
-    - phase: 3
-      parallel: false
-      services:
-        - collabora
       wait_for_healthy: true
 
 # Post-deployment validation
@@ -239,11 +190,6 @@ validation:
       url: "http://nextcloud:80/status.php"
       expected_status: 200
 
-    - name: "Collabora discovery"
-      type: http_get
-      url: "http://collabora:9980/hosting/discovery"
-      expected_status: 200
-
     - name: "External access via Traefik"
       type: http_get
       url: "https://nextcloud.patriark.org"
@@ -258,13 +204,12 @@ documentation:
     - "Ensure storage base exists and has correct permissions"
     - "Verify networks exist: systemd-reverse_proxy, systemd-nextcloud, systemd-monitoring"
     - "Estimated deployment time: 6-8 minutes"
-    - "Estimated memory usage: 4.3GB"
+    - "Estimated memory usage: 2.3GB"
 
   post_deployment:
     - "Access Nextcloud at: https://nextcloud.patriark.org"
     - "Admin credentials: admin / ${NEXTCLOUD_ADMIN_PASSWORD}"
     - "Install Calendar and Contacts apps via Web UI"
-    - "Configure Collabora integration: Settings → Office → Use your own server → https://collabora.patriark.org"
     - "Configure external storage: Settings → External Storage → Local → Mount Points"
     - "Set up user quotas and groups"
     - "Test CalDAV: https://nextcloud.patriark.org/remote.php/dav/"
@@ -276,7 +221,6 @@ documentation:
     - "If database connection fails: Check MariaDB logs and NOCOW attribute"
     - "If Redis connection fails: Verify password and network connectivity"
     - "If .well-known redirects fail: Check Traefik middleware labels"
-    - "If Collabora won't connect: Verify aliasgroup1 domain matches Nextcloud"
     - "If external storage not visible: Check volume mount permissions and :Z labels"
     - "If CalDAV/CardDAV fails on devices: Verify .well-known redirects work"
 
@@ -289,7 +233,7 @@ rollback:
     - ${storage_base}/nextcloud/data (Nextcloud files)
     - ${storage_base}/nextcloud-redis/data (Redis cache - can be recreated)
   steps:
-    - "Stop services: collabora, nextcloud, nextcloud-redis, nextcloud-db"
+    - "Stop services: nextcloud, nextcloud-redis, nextcloud-db"
     - "Remove quadlet files from ~/.config/containers/systemd/"
     - "Reload systemd: systemctl --user daemon-reload"
     - "Data remains intact for future re-deployment"

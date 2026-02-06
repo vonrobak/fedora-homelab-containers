@@ -116,21 +116,6 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Collabora Online - Browser needs direct access to load editor iframe
-    # Server-to-server WOPI calls go via internal network (http://collabora:9980)
-    # But browser must load cool.html from Collabora directly
-    collabora-secure:
-      rule: "Host(`collabora.patriark.org`)"
-      service: "collabora"
-      entryPoints:
-        - websecure
-      middlewares:
-        - crowdsec-bouncer@file
-        - rate-limit@file
-        - hsts-only@file                # Collabora sets own CSP/frame-ancestors - just add HSTS
-      tls:
-        certResolver: letsencrypt
-
     # Grafana Monitoring Dashboard
     grafana-secure:
       rule: "Host(`grafana.patriark.org`)"
@@ -251,11 +236,6 @@ http:
       loadBalancer:
         servers:
           - url: "http://nextcloud:80"
-
-    collabora:
-      loadBalancer:
-        servers:
-          - url: "http://collabora:9980"
 
     gathio:
       loadBalancer:

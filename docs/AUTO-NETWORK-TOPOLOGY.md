@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-02-05 23:04:01 UTC
+**Generated:** 2026-02-06 08:52:30 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.
@@ -30,7 +30,6 @@ graph TB
 
     %% Services with native authentication (bypass Authelia)
     CrowdSec -->|Rate Limit| alertmanager[alertmanager]
-    CrowdSec -->|Rate Limit| collabora[collabora]
     CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
     CrowdSec -->|Rate Limit| nextcloud[nextcloud]
@@ -103,7 +102,6 @@ graph TB
 
     subgraph nextcloud["nextcloud<br/>10.89.10.0/24"]
         direction LR
-        nextcloud_collabora[collabora]
         nextcloud_nextcloud[nextcloud]
         nextcloud_nextcloud_db[nextcloud-db]
         nextcloud_nextcloud_redis[nextcloud-redis]
@@ -121,7 +119,6 @@ graph TB
         direction LR
         reverse_proxy_alertmanager[alertmanager]
         reverse_proxy_authelia[authelia]
-        reverse_proxy_collabora[collabora]
         reverse_proxy_crowdsec[crowdsec]
         reverse_proxy_gathio[gathio]
         reverse_proxy_grafana[grafana]
@@ -323,10 +320,9 @@ sequenceDiagram
 
 - **Full Name:** `systemd-nextcloud`
 - **Subnet:** 10.89.10.0/24
-- **Services:** 4
+- **Services:** 3
 
 **Members:**
-- collabora
 - nextcloud
 - nextcloud-db
 - nextcloud-redis
@@ -349,12 +345,11 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 15
+- **Services:** 14
 
 **Members:**
 - alertmanager
 - authelia
-- collabora
 - crowdsec
 - gathio
 - grafana

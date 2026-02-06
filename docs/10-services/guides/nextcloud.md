@@ -1,7 +1,7 @@
 # Nextcloud Service Guide
 
 **Service:** Nextcloud File Sync and Collaboration
-**Version:** Nextcloud 32.0.5 (Hub 11) + MariaDB 11 + Redis 7 + Collabora Online
+**Version:** Nextcloud 32.0.5 (Hub 11) + MariaDB 11 + Redis 7
 **Deployment:** Systemd Quadlets (Rootless Podman)
 **Status:** ✅ Production
 **Last Updated:** 2026-02-05
@@ -15,12 +15,10 @@
 - **CalDAV:** https://nextcloud.patriark.org/remote.php/dav/calendars/USERNAME/
 - **CardDAV:** https://nextcloud.patriark.org/remote.php/dav/addressbooks/users/USERNAME/
 - **WebDAV:** https://nextcloud.patriark.org/remote.php/dav/files/USERNAME/
-- **Collabora Admin:** Internal only (no public route) - access via `podman exec collabora` or Nextcloud Office settings
-
 **Service Management:**
 ```bash
 # Status
-systemctl --user status nextcloud.service nextcloud-db.service nextcloud-redis.service collabora.service
+systemctl --user status nextcloud.service nextcloud-db.service nextcloud-redis.service
 
 # Start
 systemctl --user start nextcloud.service
@@ -42,7 +40,6 @@ podman logs -f nextcloud
 podman healthcheck run nextcloud-db
 podman healthcheck run nextcloud-redis
 podman healthcheck run nextcloud
-podman healthcheck run collabora
 
 # Web status
 curl -f https://nextcloud.patriark.org/status.php
@@ -87,13 +84,6 @@ curl -f https://nextcloud.patriark.org/status.php
    │  11.8.5  │                  │    7    │
    │ (NOCOW)  │                  │ Session │
    └──────────┘                  └─────────┘
-        │
-        │
-   ┌────▼─────────┐
-   │  Collabora   │
-   │   Online     │
-   │ (LibreOffice)│
-   └──────────────┘
 ```
 
 ### Network Topology
@@ -101,14 +91,12 @@ curl -f https://nextcloud.patriark.org/status.php
 ```
 systemd-reverse_proxy (10.89.2.0/24)
     ├── Nextcloud (10.89.2.X)
-    ├── Collabora (10.89.2.Y)
     └── Traefik (10.89.2.40)
 
 systemd-nextcloud (10.89.10.0/24) - Internal
     ├── Nextcloud
     ├── MariaDB
-    ├── Redis
-    └── Collabora
+    └── Redis
 
 systemd-monitoring (10.89.5.0/24)
     └── Nextcloud (Prometheus scraping)
@@ -163,8 +151,6 @@ nextcloud.service
 1. `nextcloud-db.service` (MariaDB)
 2. `nextcloud-redis.service` (Redis)
 3. `nextcloud.service` (Nextcloud app)
-4. `collabora.service` (Collabora Online - independent)
-
 **Common Operations:**
 
 ```bash
@@ -172,10 +158,8 @@ nextcloud.service
 systemctl --user start nextcloud-db.service
 systemctl --user start nextcloud-redis.service
 systemctl --user start nextcloud.service
-systemctl --user start collabora.service
 
 # Stop all services (reverse order)
-systemctl --user stop collabora.service
 systemctl --user stop nextcloud.service
 systemctl --user stop nextcloud-redis.service
 systemctl --user stop nextcloud-db.service
@@ -184,7 +168,7 @@ systemctl --user stop nextcloud-db.service
 systemctl --user restart nextcloud.service
 
 # Enable on boot
-systemctl --user enable nextcloud.service nextcloud-db.service nextcloud-redis.service collabora.service
+systemctl --user enable nextcloud.service nextcloud-db.service nextcloud-redis.service
 
 # Check status
 systemctl --user status nextcloud.service --no-pager
@@ -194,7 +178,7 @@ systemctl --user status nextcloud.service --no-pager
 
 **List Containers:**
 ```bash
-podman ps | grep -E "nextcloud|collabora"
+podman ps | grep nextcloud
 ```
 
 **Inspect Container:**
@@ -206,13 +190,12 @@ podman inspect nextcloud | jq '.[0].NetworkSettings.Networks'  # Networks
 
 **Resource Usage:**
 ```bash
-podman stats --no-stream nextcloud nextcloud-db nextcloud-redis collabora
+podman stats --no-stream nextcloud nextcloud-db nextcloud-redis
 
 # Expected:
 # nextcloud:       ~1.2GB RAM (idle) / ~1.5GB (active)
 # nextcloud-db:    ~250MB RAM
 # nextcloud-redis: ~12MB RAM
-# collabora:       ~80MB RAM (idle) / ~2GB (editing)
 ```
 
 **Logs:**
@@ -221,7 +204,6 @@ podman stats --no-stream nextcloud nextcloud-db nextcloud-redis collabora
 podman logs -f nextcloud
 podman logs -f nextcloud-db
 podman logs -f nextcloud-redis
-podman logs -f collabora
 
 # Systemd logs
 journalctl --user -u nextcloud.service -f
@@ -566,35 +548,6 @@ lsattr -d /mnt/btrfs-pool/subvol7-containers/nextcloud-db/data
 2. **Optimize tables:** `podman exec nextcloud-db mysql -u root -e "OPTIMIZE TABLE nextcloud.oc_filecache;"`
 3. **Check NOCOW:** If missing 'C' flag, rebuild database with NOCOW
 4. **Increase resources:** Edit nextcloud-db.container `Memory=512M`
-
-### Collabora Documents Won't Open
-
-**Symptoms:** Clicking document shows error or loading forever
-
-**Diagnosis:**
-```bash
-# 1. Check Collabora running
-podman ps | grep collabora
-systemctl --user status collabora.service
-
-# 2. Check Collabora health
-curl -f http://collabora:9980/hosting/discovery
-# Should return XML with <wopi-discovery>
-
-# 3. Check Nextcloud Office app
-podman exec -u www-data nextcloud php occ app:list | grep richdocuments
-# Should be enabled
-
-# 4. Check WOPI URL
-podman exec -u www-data nextcloud php occ config:app:get richdocuments wopi_url
-# Should be: http://collabora:9980 (internal, no public route)
-```
-
-**Common Causes:**
-1. **Collabora not running:** `systemctl --user start collabora.service`
-2. **Wrong WOPI URL:** Use web UI: Settings → Office → Server Settings
-3. **Domain whitelist:** Check `aliasgroup1` in collabora.container
-4. **Network issue:** Verify Collabora on systemd-nextcloud network
 
 ---
 
