@@ -1,6 +1,7 @@
 # Extended Burn Rate Recording Rules
 # Created: 2025-12-19
 # FIXED: 2026-01-22 - Calculate actual short-term failure rates, not 30-day averages
+# FIXED: 2026-02-07 - Include WebSocket code=0 as successful (was counted as failure)
 # Purpose: Add longer time windows for multi-tier burn rate detection
 #
 # Burn Rate Tiers (Google SRE Book methodology):
@@ -22,7 +23,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[1d]))
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"0|2..|3.."}[1d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[1d]))
             )
@@ -33,7 +34,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[2h]))
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"0|2..|3.."}[2h]))
               /
               sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[2h]))
             )
@@ -44,7 +45,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."}[3d]))
+              sum(rate(traefik_service_requests_total{exported_service="jellyfin@file", code=~"0|2..|3.."}[3d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="jellyfin@file"}[3d]))
             )
@@ -58,7 +59,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[1d]))
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[1d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="immich@file"}[1d]))
             )
@@ -68,7 +69,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[2h]))
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[2h]))
               /
               sum(rate(traefik_service_requests_total{exported_service="immich@file"}[2h]))
             )
@@ -78,7 +79,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."}[3d]))
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[3d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="immich@file"}[3d]))
             )
@@ -92,7 +93,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[1d]))
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"0|2..|3.."}[1d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[1d]))
             )
@@ -102,7 +103,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[2h]))
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"0|2..|3.."}[2h]))
               /
               sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[2h]))
             )
@@ -112,7 +113,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."}[3d]))
+              sum(rate(traefik_service_requests_total{exported_service="authelia@file", code=~"0|2..|3.."}[3d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[3d]))
             )
@@ -145,7 +146,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[1d]))
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[1d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1d]))
             )
@@ -155,7 +156,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[2h]))
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[2h]))
               /
               sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[2h]))
             )
@@ -165,7 +166,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"2..|3.."}[3d]))
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[3d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[3d]))
             )

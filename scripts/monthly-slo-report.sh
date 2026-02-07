@@ -151,7 +151,7 @@ read -r -d '' DISCORD_PAYLOAD <<EOF || true
       },
       {
         "name": "📸 Immich Photos",
-        "value": "$(compliance_emoji "$immich_compliant") **Availability:** $(format_pct "$immich_actual")\n**Target:** 99.90%\n**Error Budget:** $(format_pct "$immich_budget") remaining",
+        "value": "$(compliance_emoji "$immich_compliant") **Availability:** $(format_pct "$immich_actual")\n**Target:** 99.50%\n**Error Budget:** $(format_pct "$immich_budget") remaining",
         "inline": true
       },
       {
