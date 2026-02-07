@@ -254,17 +254,14 @@ generate_traefik_routing() {
         exit 1
     fi
 
-    # Substitute variables (including PORT and HEALTH_PATH with defaults)
+    # Substitute variables (including PORT with default)
     local port="${PATTERN_VARS[port]:-8080}"
-    local health_path="${PATTERN_VARS[health_path]:-/}"
 
     cp "$template_file" "$output_file"
     sed -i "s/{{SERVICE_NAME}}/${SERVICE_NAME}/g" "$output_file"
     sed -i "s/{{HOSTNAME}}/${HOSTNAME}/g" "$output_file"
     sed -i "s/{{PORT}}/${port}/g" "$output_file"
-    sed -i "s/{{HEALTH_PATH}}/${health_path}/g" "$output_file"
 
-    # Extract just the router and service definitions (skip the "http:" wrapper and comments)
     local routers_file="${HOME}/containers/config/traefik/dynamic/routers.yml"
 
     if [[ ! -f "$routers_file" ]]; then
@@ -272,7 +269,7 @@ generate_traefik_routing() {
         exit 1
     fi
 
-    # Backup routers.yml
+    # Backup routers.yml before any modification
     cp "$routers_file" "${routers_file}.backup-$(date +%Y%m%d-%H%M%S)"
 
     echo -e "${GREEN}✓${NC} Traefik routing generated: $output_file"
@@ -304,45 +301,167 @@ append_to_routers() {
 
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "${YELLOW}[DRY RUN]${NC} Would append to: $routers_file"
+        echo ""
+        echo "Router entry:"
+        grep -A 20 "SERVICE_NAME\|${SERVICE_NAME}" "$rendered_config" 2>/dev/null | head -25 || true
         return 0
     fi
 
     echo -e "${BLUE}=== Updating Traefik Configuration ===${NC}"
     echo ""
 
-    # Extract router and service definitions from template (strip "http:" wrapper)
-    local temp_routers="/tmp/${SERVICE_NAME}-routers.extract"
-    local temp_services="/tmp/${SERVICE_NAME}-services.extract"
-
-    # Extract routers section (between "routers:" and "services:")
-    sed -n '/^  routers:/,/^  services:/p' "$rendered_config" | \
-        grep -v "^  routers:" | \
-        grep -v "^  services:" > "$temp_routers"
-
-    # Extract services section (from "services:" to end)
-    sed -n '/^  services:/,$p' "$rendered_config" | \
-        grep -v "^  services:" > "$temp_services"
-
-    # Append to routers.yml under appropriate sections
-    # Find the routers section and append
-    echo "" >> "$routers_file"
-    echo "    # ${SERVICE_NAME} (added $(date +%Y-%m-%d))" >> "$routers_file"
-    cat "$temp_routers" >> "$routers_file"
-
-    # Find the services section and append
-    # Note: This assumes routers.yml has http.routers and http.services sections
-    # We need to insert under http.services, not create a new http: block
-    if grep -q "^  services:" "$routers_file"; then
-        # Append to existing services section
-        echo "" >> "$routers_file"
-        echo "    # ${SERVICE_NAME} (added $(date +%Y-%m-%d))" >> "$routers_file"
-        cat "$temp_services" >> "$routers_file"
+    # Duplicate detection
+    if grep -q "^    ${SERVICE_NAME}-secure:" "$routers_file"; then
+        echo -e "${RED}✗${NC} Router '${SERVICE_NAME}-secure' already exists in routers.yml"
+        echo "  Remove the existing entry first or use a different service name"
+        rm -f "$rendered_config"
+        exit 1
     fi
 
-    # Cleanup temp files
-    rm -f "$temp_routers" "$temp_services" "$rendered_config"
+    # Use Python for YAML-aware insertion
+    python3 << PYEOF
+import yaml
+import sys
+import re
 
-    echo -e "${GREEN}✓${NC} Routing added to routers.yml"
+routers_file = "${routers_file}"
+rendered_file = "${rendered_config}"
+service_name = "${SERVICE_NAME}"
+
+# Read the rendered template to extract router and service blocks
+with open(rendered_file) as f:
+    rendered_lines = f.readlines()
+
+# Extract router lines (between first comment and "# Append under http.services:")
+router_lines = []
+service_lines = []
+in_services = False
+
+for line in rendered_lines:
+    stripped = line.rstrip()
+    # Skip template comment lines at the top
+    if stripped.startswith('# Traefik route fragment') or stripped.startswith('# Authenticated') or stripped.startswith('# Public') or stripped.startswith('# Admin') or stripped.startswith('# API') or stripped.startswith('# Native auth') or stripped.startswith('# Use for:'):
+        continue
+    if stripped.startswith('# Append'):
+        continue
+    if '# Append under http.services:' in stripped:
+        in_services = True
+        continue
+    if in_services:
+        service_lines.append(line.rstrip('\n'))
+    else:
+        router_lines.append(line.rstrip('\n'))
+
+# Read existing routers.yml
+with open(routers_file) as f:
+    existing = f.read()
+
+# Validate existing YAML first
+try:
+    yaml.safe_load(existing)
+except yaml.YAMLError as e:
+    print(f"ERROR: Existing routers.yml has invalid YAML: {e}", file=sys.stderr)
+    sys.exit(1)
+
+# Find insertion points using line-based approach
+lines = existing.split('\n')
+
+# Find the services section start
+services_line_idx = None
+for i, line in enumerate(lines):
+    if re.match(r'^  services:', line):
+        services_line_idx = i
+        break
+
+if services_line_idx is None:
+    print("ERROR: Cannot find 'services:' section in routers.yml", file=sys.stderr)
+    sys.exit(1)
+
+# Insert router lines before the services section
+# Insert service lines after the last service entry (end of file or before middlewares)
+# Find middlewares section (if exists)
+middlewares_line_idx = None
+for i, line in enumerate(lines):
+    if re.match(r'^  middlewares:', line):
+        middlewares_line_idx = i
+        break
+
+# Build output
+output_lines = []
+
+# Add everything up to services section, then insert router
+for i, line in enumerate(lines):
+    if i == services_line_idx:
+        # Insert router lines before services section
+        for rl in router_lines:
+            if rl.strip():  # Skip empty lines
+                output_lines.append(rl)
+        output_lines.append('')  # blank line separator
+    output_lines.append(line)
+
+# Append service lines at the appropriate location
+if middlewares_line_idx is not None:
+    # Insert before middlewares section
+    new_output = []
+    output_idx = 0
+    # Find middlewares in our output (index shifted by router insertion)
+    for i, line in enumerate(output_lines):
+        if re.match(r'^  middlewares:', line):
+            # Insert service lines here
+            new_output.append('')
+            for sl in service_lines:
+                if sl.strip():
+                    new_output.append(sl)
+            new_output.append('')
+        new_output.append(line)
+    output_lines = new_output
+else:
+    # Append at end of file
+    output_lines.append('')
+    for sl in service_lines:
+        if sl.strip():
+            output_lines.append(sl)
+
+# Write output
+with open(routers_file, 'w') as f:
+    f.write('\n'.join(output_lines))
+    if not output_lines[-1] == '':
+        f.write('\n')
+
+print("OK")
+PYEOF
+
+    local py_exit=$?
+    rm -f "$rendered_config"
+
+    if [[ $py_exit -ne 0 ]]; then
+        echo -e "${RED}✗${NC} Failed to update routers.yml"
+        echo "  Restoring from backup..."
+        local latest_backup
+        latest_backup=$(ls -t "${routers_file}.backup-"* 2>/dev/null | head -1)
+        if [[ -n "$latest_backup" ]]; then
+            cp "$latest_backup" "$routers_file"
+            echo -e "${GREEN}✓${NC} Restored from: $latest_backup"
+        fi
+        exit 1
+    fi
+
+    # Validate the result
+    if [[ -x "${SCRIPTS_DIR}/validate-traefik-config.sh" ]]; then
+        if ! "${SCRIPTS_DIR}/validate-traefik-config.sh" "$routers_file" > /dev/null 2>&1; then
+            echo -e "${RED}✗${NC} Post-insertion validation failed"
+            echo "  Restoring from backup..."
+            local latest_backup
+            latest_backup=$(ls -t "${routers_file}.backup-"* 2>/dev/null | head -1)
+            if [[ -n "$latest_backup" ]]; then
+                cp "$latest_backup" "$routers_file"
+                echo -e "${GREEN}✓${NC} Restored from: $latest_backup"
+            fi
+            exit 1
+        fi
+    fi
+
+    echo -e "${GREEN}✓${NC} Routing added to routers.yml (YAML-validated)"
     echo ""
 }
 

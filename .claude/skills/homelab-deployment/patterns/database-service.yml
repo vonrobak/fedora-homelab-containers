@@ -37,12 +37,16 @@ service:
   health_timeout: "5s"
   health_retries: 3
 
-  # Environment (database credentials)
+  # Environment (database credentials via Podman secrets)
   environment:
     - "POSTGRES_USER={db_user}"
-    - "POSTGRES_PASSWORD={db_password}"  # Should use secrets
     - "POSTGRES_DB={db_name}"
     - "TZ=Europe/Oslo"
+  secrets:
+    - name: "{service_name}_db_password"
+      type: env
+      target: POSTGRES_PASSWORD
+      # Create with: echo -n 'password' | podman secret create {service_name}_db_password -
 
   # Monitoring (database exporter on separate container)
   prometheus_metrics: false  # Use dedicated exporter instead
@@ -63,8 +67,9 @@ deployment_notes: |
 
   2. Network isolation:
      - NO systemd-reverse_proxy network (security)
-     - Use application-specific network (e.g., systemd-nextcloud_services)
+     - Use application-specific network (e.g., systemd-nextcloud, systemd-photos)
      - Only app containers on same network can access database
+     - Available networks: systemd-nextcloud, systemd-photos, systemd-home_automation, systemd-gathio
 
   3. Credentials management:
      - Use strong passwords (generate with: openssl rand -base64 32)

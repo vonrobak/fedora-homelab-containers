@@ -74,8 +74,15 @@ Service needs external access (web UI/API)?
   YES → Add systemd-reverse_proxy (MUST BE FIRST for internet access)
   NO  → Skip
 
+Service is part of an existing stack?
+  Nextcloud stack → Add systemd-nextcloud
+  Immich stack → Add systemd-photos
+  Home automation → Add systemd-home_automation
+  Gathio/events → Add systemd-gathio
+  New stack → Create new network (systemd-<stack_name>)
+
 Service needs database access?
-  YES → Add service-specific network (e.g., systemd-<service>_db)
+  YES → Add service-specific network (e.g., systemd-nextcloud for Nextcloud DB)
   NO  → Skip
 
 Service provides/consumes metrics?
@@ -93,6 +100,8 @@ Service processes media?
 Service manages photos?
   YES → Add systemd-photos
   NO  → Skip
+
+IMPORTANT: For multi-network containers, assign static IPs (ADR-018)
 ```
 
 **CRITICAL RULE**: First network determines default route!
@@ -498,12 +507,48 @@ You are the **first step** in the deployment workflow - get the design right, an
 
 ## Homelab-Specific Knowledge
 
-### Available Networks (5 total)
-1. **systemd-reverse_proxy** - Traefik routing, internet access
-2. **systemd-monitoring** - Prometheus, Grafana, Loki
-3. **systemd-auth_services** - Authelia, Redis
-4. **systemd-media_services** - Jellyfin, media processing
-5. **systemd-photos** - Immich photo management
+### Available Networks (8 total)
+1. **systemd-reverse_proxy** - Traefik routing, internet access (default route)
+2. **systemd-monitoring** - Prometheus, Grafana, Loki, exporters (cross-network scraping)
+3. **systemd-auth_services** - Authelia + Redis (isolated auth backend)
+4. **systemd-media_services** - Jellyfin (media isolation)
+5. **systemd-photos** - Immich stack (photo processing isolation)
+6. **systemd-nextcloud** - Nextcloud + MariaDB + Redis
+7. **systemd-home_automation** - Home Assistant + Matter Server
+8. **systemd-gathio** - Gathio + MongoDB
+
+### Static IP Assignment (ADR-018)
+
+**All multi-network containers MUST use static IPs** to prevent Podman's aardvark-dns from returning IPs in undefined order, which causes "untrusted proxy" errors.
+
+**Syntax:** `Network=systemd-reverse_proxy:ip=10.89.2.X`
+
+**IP allocation scheme:**
+- `10.89.2.0/24` - reverse_proxy network
+- `10.89.1.0/24` - media_services network
+- `10.89.3.0/24` - photos network
+- `10.89.4.0/24` - monitoring network
+- `10.89.5.0/24` - auth_services network
+- `10.89.6.0/24` - home_automation network
+- `10.89.7.0/24` - nextcloud network
+- `10.89.8.0/24` - gathio network
+
+**Before assigning IPs:** Check existing allocations with `podman network inspect systemd-<network>` to avoid conflicts.
+
+### Authentication Strategy Decision Tree
+
+**When to use native auth (no Authelia):**
+- Service has robust built-in authentication (e.g., Nextcloud, Jellyfin, Immich, Home Assistant, Vaultwarden)
+- Mobile/desktop apps require direct API access that SSO would break
+- Service sets its own security headers (e.g., Nextcloud CSP)
+- Reference: ADR-013 (Nextcloud), ADR-014 (Nextcloud Passwordless)
+
+**When to use Authelia SSO:**
+- Service has weak/no built-in auth (e.g., Grafana, Prometheus, dashboards)
+- Browser-only access (no mobile apps that bypass SSO)
+- Centralized access control desired
+
+**Current native-auth services:** Jellyfin, Immich, Nextcloud, Home Assistant, Vaultwarden (5/13 routed services)
 
 ### Existing Deployment Patterns (9 total)
 Located in `.claude/skills/homelab-deployment/patterns/`:
@@ -518,12 +563,25 @@ Located in `.claude/skills/homelab-deployment/patterns/`:
 - monitoring-exporter.yml
 
 ### Security Middleware (from Traefik dynamic config)
-- crowdsec-bouncer@file
-- rate-limit@file (standard)
-- rate-limit-strict@file (admin)
-- authelia@file
-- security-headers@file
-- security-headers-strict@file
+
+**Standard middleware:**
+- `crowdsec-bouncer@file` - IP reputation (always first)
+- `rate-limit@file` - Standard rate limiting (100/min)
+- `authelia@file` - SSO authentication
+- `security-headers@file` - Standard security headers (HSTS, CSP, X-Frame-Options)
+- `security-headers-strict@file` - Strict headers (admin services)
+
+**Service-specific middleware:**
+- `rate-limit-public@file` - Generous rate limit for public services
+- `rate-limit-vaultwarden@file` - Strict rate limit for password manager
+- `rate-limit-immich@file` - High-capacity for photo browsing
+- `rate-limit-nextcloud@file` - High-capacity for WebDAV sync (600/min, 3000 burst)
+- `security-headers-gathio@file` - Relaxed CSP for CDN resources
+- `security-headers-ha@file` - Home Assistant-specific headers
+- `hsts-only@file` - HSTS without CSP (for services that set own CSP)
+- `circuit-breaker@file` - Prevent cascade failures
+- `retry@file` - Retry transient errors
+- `compression@file` - Response compression
 
 ### Key ADRs to Reference
 - **ADR-001**: Rootless Containers (SELinux :Z labels required)
@@ -532,12 +590,15 @@ Located in `.claude/skills/homelab-deployment/patterns/`:
 - **ADR-009**: Config vs Data Directory Strategy
 - **ADR-010**: Pattern-Based Deployment
 - **ADR-013**: Nextcloud Native Authentication
-- **ADR-016**: Configuration Design Principles (Traefik routing)
+- **ADR-014**: Nextcloud Passwordless Auth
+- **ADR-016**: Configuration Design Principles (Traefik routing in dynamic config, NEVER labels)
+- **ADR-018**: Static IP Multi-Network Services (static IPs + Traefik /etc/hosts override)
 
 ### System Constraints
-- Memory budget: ~12-16GB total available
-- Storage: System SSD for configs, BTRFS pool for data
+- Memory budget: ~31GB available, ~4.2GB used by containers
+- Storage: System SSD (118GB, 64% used) for configs, BTRFS pool (14.5TiB, 73% used) for data
 - Network: Single public IP, ports 80/443 only
 - Authentication: YubiKey WebAuthn preferred
+- 27 containers, 13 service groups, 8 networks currently deployed
 
 Your designs must work within these constraints while maintaining security and performance.

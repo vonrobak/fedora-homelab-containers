@@ -66,11 +66,22 @@ for network in "${EXPECTED_NETWORKS[@]}"; do
   podman inspect <service> | jq -r '.[0].NetworkSettings.Networks | keys[]' | grep -q "$network" || FAIL
 done
 
-# 2. Internal endpoint accessible
+# 2. Static IP verification (ADR-018 - for multi-network containers)
+NETWORK_COUNT=$(grep -c "^Network=" ~/.config/containers/systemd/<service>.container)
+if [[ $NETWORK_COUNT -gt 1 ]]; then
+  # Verify all networks have static IPs assigned
+  grep "^Network=" ~/.config/containers/systemd/<service>.container | while read -r line; do
+    echo "$line" | grep -q ":ip=" || FAIL "Network without static IP: $line (ADR-018 violation)"
+  done
+  # Verify running container has expected IPs
+  podman inspect <service> | jq -r '.[0].NetworkSettings.Networks | to_entries[] | "\(.key): \(.value.IPAddress)"'
+fi
+
+# 3. Internal endpoint accessible
 # Extract internal port from quadlet or container inspect
 curl -f -s -o /dev/null --max-time 5 "http://localhost:<port>/" || FAIL
 
-# 3. DNS resolution from Traefik
+# 4. DNS resolution from Traefik
 podman exec traefik nslookup <service> || FAIL
 ```
 
@@ -83,17 +94,27 @@ podman exec traefik nslookup <service> || FAIL
 ```bash
 HOSTNAME="<service>.patriark.org"
 
-# 1. Traefik route exists
+# 1. Traefik route exists in routers.yml (config-level check)
+grep -q "<service>-secure:" ~/containers/config/traefik/dynamic/routers.yml || FAIL "No route in routers.yml"
+
+# 2. Traefik config valid (no YAML syntax errors after changes)
+python3 -c "import yaml; yaml.safe_load(open('$HOME/containers/config/traefik/dynamic/routers.yml'))" || FAIL "Invalid YAML in routers.yml"
+
+# 3. Service reference matches router (no -service suffix mismatch)
+SERVICE_REF=$(grep -A 5 "<service>-secure:" ~/containers/config/traefik/dynamic/routers.yml | grep "service:" | awk -F'"' '{print $2}')
+grep -q "^    ${SERVICE_REF}:" ~/containers/config/traefik/dynamic/routers.yml || FAIL "Service '$SERVICE_REF' not defined in services section"
+
+# 4. Traefik route exists in API
 curl -sf http://localhost:8080/api/http/routers | jq -r '.[] | select(.rule | contains("'$HOSTNAME'"))' | grep -q "$HOSTNAME" || FAIL
 
-# 2. External URL responds (200, 301, 302, or 401 acceptable)
+# 5. External URL responds (200, 301, 302, or 401 acceptable)
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://$HOSTNAME")
 [[ "$HTTP_CODE" =~ ^(200|301|302|401)$ ]] || FAIL "HTTP $HTTP_CODE"
 
-# 3. TLS certificate valid
+# 6. TLS certificate valid
 echo | openssl s_client -connect "$HOSTNAME:443" -servername "$HOSTNAME" 2>/dev/null | openssl x509 -noout -dates || FAIL
 
-# 4. Security headers present
+# 7. Security headers present
 ~/containers/scripts/verify-security-posture.sh <service> || FAIL
 ```
 

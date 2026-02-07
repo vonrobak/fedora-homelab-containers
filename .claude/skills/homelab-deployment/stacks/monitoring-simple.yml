@@ -50,16 +50,10 @@ services:
         interval: 30s
         timeout: 10s
         retries: 5
-      labels:
-        # Traefik routing
-        - "traefik.enable=true"
-        - "traefik.http.routers.prometheus.rule=Host(`prometheus.patriark.org`)"
-        - "traefik.http.routers.prometheus.entrypoints=websecure"
-        - "traefik.http.routers.prometheus.tls=true"
-        - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
-        - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-        # Middleware (requires Authelia for admin access)
-        - "traefik.http.routers.prometheus.middlewares=crowdsec-bouncer@file,rate-limit@file,authelia@file,security-headers@file"
+      # Traefik routing is configured in config/traefik/dynamic/routers.yml (ADR-016)
+      # NO Traefik labels - routing defined separately
+      # Uses Authelia SSO with crowdsec-bouncer, rate-limit, authelia
+      labels: []
     ready_criteria:
       type: healthcheck
       timeout: 90s
@@ -94,16 +88,10 @@ services:
         interval: 30s
         timeout: 10s
         retries: 5
-      labels:
-        # Traefik routing
-        - "traefik.enable=true"
-        - "traefik.http.routers.grafana.rule=Host(`grafana.patriark.org`)"
-        - "traefik.http.routers.grafana.entrypoints=websecure"
-        - "traefik.http.routers.grafana.tls=true"
-        - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
-        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-        # Middleware (requires Authelia for admin access)
-        - "traefik.http.routers.grafana.middlewares=crowdsec-bouncer@file,rate-limit@file,authelia@file,security-headers@file"
+      # Traefik routing is configured in config/traefik/dynamic/routers.yml (ADR-016)
+      # NO Traefik labels - routing defined separately
+      # Uses Authelia SSO with crowdsec-bouncer, rate-limit, authelia
+      labels: []
     ready_criteria:
       type: healthcheck
       timeout: 90s

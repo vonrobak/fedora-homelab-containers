@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-06 08:52:33 UTC
-**Total Documents:** 379
+**Generated:** 2026-02-07 11:07:05 UTC
+**Total Documents:** 380
 
 ---
 
@@ -198,7 +198,7 @@
 
 ---
 
-### 98-journals/ (158 documents)
+### 98-journals/ (159 documents)
 
 **Chronological project history (append-only log)**
 
@@ -218,7 +218,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 - 2026-02-04: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 - 2026-02-05: [alert-discord-relay.md](10-services/guides/alert-discord-relay.md)
-- 2026-01-30: [apple-ecosystem-quick-reference.md](10-services/guides/apple-ecosystem-quick-reference.md)
 - 2026-02-04: [esp32-plejd-quick-start.md](10-services/guides/esp32-plejd-quick-start.md)
 - 2026-02-01: [home-assistant.md](10-services/guides/home-assistant.md)
 - 2026-01-31: [ios-shortcuts-quick-reference.md](10-services/guides/ios-shortcuts-quick-reference.md)
@@ -227,15 +226,16 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-01-31: [roborock-room-cleaning-setup.md](10-services/guides/roborock-room-cleaning-setup.md)
 - 2026-02-05: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
 - 2026-02-04: [esp32-vlan2-firewall-rule.md](30-security/guides/esp32-vlan2-firewall-rule.md)
-- 2026-02-05: [collabora-guide-archived-20260206.md](90-archive/collabora-guide-archived-20260206.md)
+- 2026-02-06: [collabora-guide-archived-20260206.md](90-archive/collabora-guide-archived-20260206.md)
 - 2026-02-05: [STATE-OF-HOMELAB-2025-12-31-baseline.md](90-archive/STATE-OF-HOMELAB-2025-12-31-baseline.md)
 - 2026-01-31: [2025-12-30-home-automation-hub-exploration.md](98-journals/2025-12-30-home-automation-hub-exploration.md)
-- 2026-01-30: [2026-01-30-phase2-dashboards-and-apple-integration.md](98-journals/2026-01-30-phase2-dashboards-and-apple-integration.md)
 - 2026-01-31: [2026-01-31-learning-journey-completion.md](98-journals/2026-01-31-learning-journey-completion.md)
 - 2026-01-31: [2026-01-31-mill-air-purifier-feature-request.md](98-journals/2026-01-31-mill-air-purifier-feature-request.md)
 - 2026-02-01: [2026-01-31-roborock-automation-optimization.md](98-journals/2026-01-31-roborock-automation-optimization.md)
 - 2026-02-01: [2026-02-01-february-security-posture-evaluation.md](98-journals/2026-02-01-february-security-posture-evaluation.md)
 - 2026-02-02: [2026-02-02-backup-compression-strategy-evaluation.md](98-journals/2026-02-02-backup-compression-strategy-evaluation.md)
+- 2026-02-03: [2026-02-02-catastrophic-network-failure-investigation.md](98-journals/2026-02-02-catastrophic-network-failure-investigation.md)
+- 2026-02-03: [2026-02-02-kernel-rollback-test-procedure.md](98-journals/2026-02-02-kernel-rollback-test-procedure.md)
 
 ---
 

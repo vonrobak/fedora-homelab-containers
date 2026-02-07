@@ -8,8 +8,9 @@
 [Unit]
 Description={{SERVICE_DESCRIPTION}}
 Documentation={{DOCS_URL}}
-After=network-online.target
+After=network-online.target {{NETWORK_SERVICES_AFTER}}
 Wants=network-online.target
+Requires={{NETWORK_SERVICES_REQUIRES}}
 # Require dependencies (e.g., database, message queue)
 {{REQUIRES_SERVICES}}
 
@@ -23,7 +24,8 @@ HostName={{SERVICE_NAME}}
 AutoUpdate=registry
 
 # Networks (no reverse_proxy - internal only)
-Network=systemd-{{PRIMARY_NETWORK}}
+# Static IP for consistent DNS resolution (ADR-018)
+Network=systemd-{{PRIMARY_NETWORK}}:ip={{STATIC_IP_PRIMARY}}
 
 # Volumes
 Volume={{CONFIG_DIR}}:/config:Z
@@ -43,6 +45,8 @@ HealthStartPeriod=120s
 # SERVICE BEHAVIOR
 # ═══════════════════════════════════════════════
 [Service]
+Slice=container.slice
+
 # Resource limits
 MemoryMax={{MEMORY_LIMIT}}
 MemoryHigh={{MEMORY_HIGH}}

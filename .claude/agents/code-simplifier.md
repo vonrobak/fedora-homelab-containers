@@ -344,22 +344,34 @@ Ready for git commit.
 
 Align with templates in `.claude/skills/homelab-deployment/templates/quadlets/`:
 - `web-app.container` - Standard web application
-- `media-server.container` - Media server with GPU
 - `database.container` - Database with NOCOW
+- `monitoring-service.container` - Monitoring exporter
 - `background-worker.container` - Background job processor
 
 **Key elements to maintain:**
 - Systemd variables (%h, %T)
 - SELinux labels (:Z on all volumes)
 - Network ordering (reverse_proxy first if internet needed)
+- Static IPs on all multi-network containers (ADR-018)
+- `Slice=container.slice` in [Service] section
+- `Requires=` and `After=` network service dependencies
 - Health check definition
-- Memory limits (Memory + MemoryHigh at 75%)
+- Memory limits (MemoryMax + MemoryHigh at ~75-90%)
+- Optional: `MemorySwapMax=` for resource-intensive services
+
+### ADR-018 Compliance Check
+
+When simplifying quadlets, verify:
+- Multi-network containers have static IPs: `Network=systemd-reverse_proxy:ip=10.89.2.X`
+- Network services are in Requires= and After= directives
+- Traefik /etc/hosts override file is consistent with static IPs (if applicable)
 
 ### Traefik Patterns
 
 Align with templates in `.claude/skills/homelab-deployment/templates/traefik/`:
 - `public-service.yml` - Public (no auth)
 - `authenticated-service.yml` - Authelia SSO
+- `native-auth-service.yml` - Native auth (no Authelia, service handles own auth)
 - `admin-service.yml` - Admin + IP whitelist
 - `api-service.yml` - API with rate limiting
 
@@ -368,6 +380,8 @@ Align with templates in `.claude/skills/homelab-deployment/templates/traefik/`:
 - Container name for service URL (not IP)
 - TLS with certResolver: letsencrypt
 - Rule using Host() function
+- Service names without `-service` suffix (match production convention)
+- No `passHostHeader` or `healthCheck` in loadBalancer (not used in production)
 
 ## Safety Checks
 

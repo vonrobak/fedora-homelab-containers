@@ -111,17 +111,10 @@ services:
         interval: 30s
         timeout: 10s
         retries: 5
+      # Traefik routing is configured in config/traefik/dynamic/routers.yml (ADR-016)
+      # NO Traefik labels - routing defined separately
+      # Uses native auth (no Authelia) with rate-limit-immich, circuit-breaker, retry, compression, security-headers
       labels:
-        # Traefik routing
-        - "traefik.enable=true"
-        - "traefik.http.routers.immich.rule=Host(`${domain}`)"
-        - "traefik.http.routers.immich.entrypoints=websecure"
-        - "traefik.http.routers.immich.tls=true"
-        - "traefik.http.routers.immich.tls.certresolver=letsencrypt"
-        - "traefik.http.services.immich.loadbalancer.server.port=3001"
-        # Middleware (no Authelia - Immich has native auth)
-        - "traefik.http.routers.immich.middlewares=crowdsec-bouncer@file,rate-limit@file,security-headers@file"
-        # Prometheus
         - "prometheus.scrape=true"
         - "prometheus.port=3001"
         - "prometheus.path=/metrics"
