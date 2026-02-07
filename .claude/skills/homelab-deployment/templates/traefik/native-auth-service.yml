@@ -1,19 +1,18 @@
 # Traefik route fragment for appending to routers.yml
-# API service (with CORS support)
+# Native auth service (NO Authelia - service handles own authentication)
+# Use for: Jellyfin, Immich, Nextcloud, Home Assistant, Vaultwarden
 # Append router under http.routers: and service under http.services:
 
-    # {{SERVICE_NAME}} (API with CORS)
+    # {{SERVICE_NAME}} - Uses native authentication (no Authelia SSO)
     {{SERVICE_NAME}}-secure:
       rule: "Host(`{{HOSTNAME}}`)"
       entryPoints:
         - websecure
       service: "{{SERVICE_NAME}}"
       middlewares:
-        - crowdsec-bouncer@file      # 1. Block bad IPs
-        - rate-limit@file             # 2. Standard rate limiting
-        - api-cors@file               # 3. CORS headers
-        - authelia@file               # 4. API authentication
-        - security-headers@file       # 5. Security headers
+        - crowdsec-bouncer@file        # 1. Block bad IPs
+        - rate-limit@file               # 2. Rate limiting (customize per service)
+        - security-headers@file         # 3. Security headers (customize per service)
       tls:
         certResolver: letsencrypt
 

@@ -180,20 +180,16 @@ User Request → infrastructure-architect (design)
 
 4. **Generate Traefik Route** (if externally accessible)
    ```bash
-   # Select template based on security tier
-   # Public → templates/traefik/public-service.yml
-   # Authenticated → templates/traefik/authenticated-service.yml
+   # Select template based on auth strategy:
+   # Native auth (Jellyfin, Immich, Nextcloud, HA) → templates/traefik/native-auth-service.yml
+   # Authelia SSO (Grafana, Prometheus, dashboards) → templates/traefik/authenticated-service.yml
+   # Public (no auth) → templates/traefik/public-service.yml
    # Admin → templates/traefik/admin-service.yml
    # API → templates/traefik/api-service.yml
 
-   # Customize route
-   cp .claude/skills/homelab-deployment/templates/traefik/authenticated-service.yml \
-      ~/containers/config/traefik/dynamic/jellyfin-router.yml
-
-   # Substitute values
-   sed -i "s/{{SERVICE_NAME}}/jellyfin/g" ~/containers/config/traefik/dynamic/jellyfin-router.yml
-   sed -i "s/{{HOSTNAME}}/jellyfin.patriark.org/g" ~/containers/config/traefik/dynamic/jellyfin-router.yml
-   sed -i "s/{{PORT}}/8096/g" ~/containers/config/traefik/dynamic/jellyfin-router.yml
+   # Routes are APPENDED to the consolidated routers.yml (ADR-016)
+   # The deploy-from-pattern.sh script handles this automatically
+   # Manual: render template fragment and append to ~/containers/config/traefik/dynamic/routers.yml
    ```
 
 5. **Generate Prometheus Scrape Config** (if metrics exposed)
@@ -324,7 +320,7 @@ After successful verification, optionally clean up configurations to maintain pa
 ```bash
 # Add all deployment artifacts
 git add ~/.config/containers/systemd/jellyfin.container
-git add ~/containers/config/traefik/dynamic/jellyfin-router.yml
+git add ~/containers/config/traefik/dynamic/routers.yml  # if routing added
 git add ~/containers/config/prometheus/prometheus.yml  # if modified
 git add docs/10-services/guides/jellyfin.md
 git add docs/10-services/journal/$(date +%Y-%m-%d)-jellyfin-deployment.md
@@ -368,8 +364,8 @@ podman rm jellyfin
 # Remove quadlet
 rm ~/.config/containers/systemd/jellyfin.container
 
-# Remove Traefik route
-rm ~/containers/config/traefik/dynamic/jellyfin-router.yml
+# Remove Traefik route from consolidated routers.yml
+# Edit ~/containers/config/traefik/dynamic/routers.yml to remove the service's router and service entries
 
 # Reload systemd
 systemctl --user daemon-reload
@@ -413,11 +409,18 @@ systemctl --user daemon-reload
 
 ```
 Service needs external access (web UI/API)?
-  YES → Add systemd-reverse_proxy
+  YES → Add systemd-reverse_proxy (MUST BE FIRST for internet access)
   NO  → Skip
 
+Service is part of an existing stack?
+  Nextcloud → systemd-nextcloud
+  Immich → systemd-photos
+  Home automation → systemd-home_automation
+  Gathio/events → systemd-gathio
+  New stack → Create systemd-<stack_name>
+
 Service needs database access?
-  YES → Add systemd-database (if exists) or service-specific network
+  YES → Add service-specific network (e.g., systemd-nextcloud)
   NO  → Skip
 
 Service provides/consumes metrics?
@@ -435,6 +438,10 @@ Service processes media?
 Service manages photos?
   YES → Add systemd-photos
   NO  → Skip
+
+Multi-network container?
+  YES → Assign static IPs on ALL networks (ADR-018)
+  See: infrastructure-architect subagent for IP allocation
 ```
 
 **IMPORTANT: First network determines default route (internet access)!**
@@ -449,7 +456,13 @@ PUBLIC SERVICE (no auth required):
   rate-limit-public@file
   security-headers-public@file
 
-AUTHENTICATED SERVICE (standard):
+NATIVE AUTH SERVICE (service handles own auth - Jellyfin, Immich, Nextcloud, HA, Vaultwarden):
+  crowdsec-bouncer@file
+  rate-limit@file (or service-specific: rate-limit-immich, rate-limit-nextcloud, etc.)
+  security-headers@file (or service-specific: security-headers-ha, hsts-only, etc.)
+  Optional: circuit-breaker@file, retry@file, compression@file
+
+AUTHENTICATED SERVICE (Authelia SSO - Grafana, Prometheus, dashboards):
   crowdsec-bouncer@file
   rate-limit@file
   authelia@file

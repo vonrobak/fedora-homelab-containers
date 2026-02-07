@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-02-06 08:52:30 UTC
+**Generated:** 2026-02-07 11:07:03 UTC
 **System:** fedora-htpc
 
 ---
@@ -12,7 +12,7 @@
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ Up | monitoring |
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
-| traefik | traefik:latest | ✅ Up | reverse_proxy,auth_services,monitoring |
+| traefik | traefik:latest | ✅ Up | monitoring,reverse_proxy,auth_services |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
 | nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
@@ -26,16 +26,16 @@
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | reverse_proxy,monitoring |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | monitoring,reverse_proxy,media_services |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
-| immich-server | immich-app/immich-server:v2.5.2 | ✅ Up | photos,reverse_proxy,monitoring |
+| immich-server | immich-app/immich-server:v2.5.2 | ✅ Up | reverse_proxy,monitoring,photos |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
 | gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
-| nextcloud | nextcloud:latest | ✅ Up | monitoring,nextcloud,reverse_proxy |
+| nextcloud | nextcloud:latest | ✅ Up | nextcloud,reverse_proxy,monitoring |
 
 ---
 
@@ -43,7 +43,7 @@
 
 - **Total Running:** 27
 - **Total Defined:** 27
-- **System Load:**  2,91, 2,94, 2,58
+- **System Load:**  1,25, 1,03, 0,97
 
 ---
 

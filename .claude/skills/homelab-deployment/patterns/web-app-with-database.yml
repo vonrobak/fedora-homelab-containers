@@ -33,7 +33,8 @@ database:
 # Web application service (deploy after database)
 webapp:
   quadlet_template: web-app.container
-  traefik_template: authenticated-service.yml
+  traefik_template: authenticated-service.yml  # Override with native-auth-service.yml if service has own auth
+  auth_strategy: authelia  # Change to 'native' if service has built-in auth
 
   image: "{webapp_image}"
   memory_limit: "2G"

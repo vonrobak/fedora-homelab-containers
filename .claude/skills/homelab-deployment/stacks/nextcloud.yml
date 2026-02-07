@@ -90,7 +90,7 @@ services:
       - nextcloud-db
       - nextcloud-redis
     configuration:
-      image: docker.io/library/nextcloud:30
+      image: docker.io/library/nextcloud:latest
       memory: 1536M
       environment:
         # Database configuration
@@ -134,21 +134,10 @@ services:
         timeout: 10s
         retries: 5
         start_period: 120s  # Initial setup takes time
+      # Traefik routing is configured in config/traefik/dynamic/routers.yml (ADR-016)
+      # NO Traefik labels - routing defined separately
+      # Uses native auth (no Authelia) with rate-limit-nextcloud, circuit-breaker, retry, CalDAV redirects, hsts-only
       labels:
-        # Traefik routing
-        - "traefik.enable=true"
-        - "traefik.http.routers.nextcloud.rule=Host(`${domain}`)"
-        - "traefik.http.routers.nextcloud.entrypoints=websecure"
-        - "traefik.http.routers.nextcloud.tls=true"
-        - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
-        - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
-        # Middleware (NO Authelia - native auth like OCIS)
-        - "traefik.http.routers.nextcloud.middlewares=crowdsec-bouncer@file,rate-limit-ocis@file,circuit-breaker@file,retry@file,nextcloud-caldav"
-        # CalDAV/.well-known redirects (critical for device sync)
-        - "traefik.http.middlewares.nextcloud-caldav.redirectregex.permanent=true"
-        - "traefik.http.middlewares.nextcloud-caldav.redirectregex.regex=^https://(.*)/.well-known/(card|cal)dav"
-        - "traefik.http.middlewares.nextcloud-caldav.redirectregex.replacement=https://$${1}/remote.php/dav/"
-        # Prometheus
         - "prometheus.scrape=true"
         - "prometheus.port=80"
         - "prometheus.path=/ocs/v2.php/apps/serverinfo/api/v1/info"

@@ -8,8 +8,9 @@
 [Unit]
 Description={{SERVICE_DESCRIPTION}}
 Documentation={{DOCS_URL}}
-After=network-online.target
+After=network-online.target {{NETWORK_SERVICES_AFTER}}
 Wants=network-online.target
+Requires={{NETWORK_SERVICES_REQUIRES}}
 
 # ═══════════════════════════════════════════════
 # CONTAINER CONFIGURATION
@@ -21,8 +22,9 @@ HostName={{SERVICE_NAME}}
 AutoUpdate=registry
 
 # Networks (first network provides default route)
-Network=systemd-reverse_proxy
-Network=systemd-monitoring
+# Static IPs required for multi-network containers (ADR-018)
+Network=systemd-reverse_proxy:ip={{STATIC_IP_REVERSE_PROXY}}
+Network=systemd-monitoring:ip={{STATIC_IP_MONITORING}}
 
 # Volumes
 Volume={{CONFIG_DIR}}:/config:Z
@@ -42,9 +44,12 @@ HealthStartPeriod=60s
 # SERVICE BEHAVIOR
 # ═══════════════════════════════════════════════
 [Service]
+Slice=container.slice
+
 # Resource limits
 MemoryMax={{MEMORY_LIMIT}}
 MemoryHigh={{MEMORY_HIGH}}
+# Optional: MemorySwapMax={{MEMORY_SWAP_MAX}} (for resource-intensive services)
 
 # Service behavior
 Restart=on-failure

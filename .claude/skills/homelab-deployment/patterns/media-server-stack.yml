@@ -8,7 +8,8 @@ pattern:
 
 service:
   quadlet_template: web-app.container
-  traefik_template: authenticated-service.yml
+  traefik_template: native-auth-service.yml
+  auth_strategy: native  # Media servers use their own auth for app compatibility
 
   # Service configuration
   image: "docker.io/jellyfin/jellyfin:latest"
@@ -47,12 +48,17 @@ service:
   hostname: "{service_name}.patriark.org"
   port: 8096
 
-  # Middleware
+  # Middleware (native auth - no Authelia)
   middleware:
     - crowdsec-bouncer@file
     - rate-limit-public@file
-    - authelia@file  # Optional: Remove for public access
     - security-headers@file
+
+  # Static IPs (ADR-018 - assign before deployment)
+  static_ips:
+    reverse_proxy: "10.89.2.X"  # Check existing allocations
+    media_services: "10.89.1.X"
+    monitoring: "10.89.4.X"
 
   # Monitoring
   prometheus_metrics: false  # Most media servers don't expose Prometheus metrics

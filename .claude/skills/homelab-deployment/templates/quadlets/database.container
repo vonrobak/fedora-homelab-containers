@@ -8,8 +8,9 @@
 [Unit]
 Description={{SERVICE_DESCRIPTION}}
 Documentation={{DOCS_URL}}
-After=network-online.target
+After=network-online.target {{NETWORK_SERVICES_AFTER}}
 Wants=network-online.target
+Requires={{NETWORK_SERVICES_REQUIRES}}
 
 # ═══════════════════════════════════════════════
 # CONTAINER CONFIGURATION
@@ -21,7 +22,9 @@ HostName={{SERVICE_NAME}}
 AutoUpdate=registry
 
 # Networks (internal only - no reverse proxy access)
-Network=systemd-database
+# Static IPs for multi-network containers (ADR-018)
+Network=systemd-{{APP_NETWORK}}:ip={{STATIC_IP_APP}}
+Network=systemd-monitoring:ip={{STATIC_IP_MONITORING}}
 
 # Volumes
 # IMPORTANT: Database directories should have NOCOW attribute on BTRFS
@@ -45,6 +48,8 @@ HealthStartPeriod=60s
 # SERVICE BEHAVIOR
 # ═══════════════════════════════════════════════
 [Service]
+Slice=container.slice
+
 # Resource limits
 MemoryMax={{MEMORY_LIMIT}}
 MemoryHigh={{MEMORY_HIGH}}
