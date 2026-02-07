@@ -82,7 +82,7 @@ With short window (5m):
 | Service  | SLO Target | Error Budget | Allowed Downtime/Month |
 |----------|-----------|--------------|------------------------|
 | Jellyfin | 99.5%     | 0.5%         | 216 minutes (~3.6 hrs) |
-| Immich   | 99.9%     | 0.1%         | 43 minutes             |
+| Immich   | 99.5%     | 0.5%         | 216 minutes (~3.6 hrs) |
 | Authelia | 99.9%     | 0.1%         | 43 minutes             |
 | Traefik  | 99.95%    | 0.05%        | 21 minutes             |
 | OCIS     | 99.5%     | 0.5%         | 216 minutes            |

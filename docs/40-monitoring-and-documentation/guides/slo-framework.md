@@ -52,10 +52,10 @@ How fast we're consuming error budget:
 ### 2. Immich Photo Management
 
 **SLO-003: API Availability**
-- **Target:** 99.9% availability over 30 days
-- **SLI:** `(traefik_service_requests_total{exported_service="immich@file", code=~"2..|3.."} / traefik_service_requests_total{exported_service="immich@file"}) * 100`
-- **Error Budget:** 43 minutes/month
-- **Rationale:** Photo management is critical - higher availability target
+- **Target:** 99.5% availability over 30 days
+- **SLI:** `(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="immich@file"}) * 100`
+- **Error Budget:** 216 minutes/month (~3.6 hours)
+- **Rationale:** At ~50 req/day, 99.9% allows only 1.5 failures/month (unrealistic). 99.5% allows ~7 failures/month. Note: code=0 (WebSocket) included as successful.
 
 **SLO-004: Upload Success Rate**
 - **Target:** 99.5% of uploads succeed over 7 days

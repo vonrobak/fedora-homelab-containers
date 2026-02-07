@@ -39,7 +39,7 @@ This guide documents the process for collecting and analyzing SLO performance da
 | Service | Current Target | SLO ID | Rationale |
 |---------|----------------|--------|-----------|
 | **Jellyfin** | 99.50% | SLO-001 | Media streaming, maintenance acceptable |
-| **Immich** | 99.90% | SLO-003 | Photo management is critical |
+| **Immich** | 99.50% | SLO-003 | Photo management (lowered from 99.9% - unrealistic at ~50 req/day) |
 | **Authelia** | 99.90% | SLO-008 | Auth failures block all services |
 | **Traefik** | 99.95% | SLO-005 | Gateway affects ALL services |
 | **Nextcloud** | 99.50% | SLO-007 | File storage for daily use |
