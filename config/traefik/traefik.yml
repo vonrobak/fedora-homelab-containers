@@ -55,6 +55,11 @@ entryPoints:
 
   websecure:
     address: ":443"
+    transport:
+      respondingTimeouts:
+        readTimeout: 600s     # 10 minutes - supports large file uploads (videos, photos)
+        writeTimeout: 600s    # 10 minutes - supports large file downloads
+        idleTimeout: 180s     # 3 minutes - default, keep-alive connections
 
 providers:
   docker:
