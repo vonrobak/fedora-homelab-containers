@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-08 (session: 2026-02-07 20:57 → 2026-02-08 02:45)
 **Author:** Claude Opus 4.6
-**Status:** Complete. Configuration improvements applied. Phases 2-6 observations captured.
+**Status:** Complete. All phases resolved. Middleware optimized, cross-device sync confirmed, SLO recovering.
 
 ---
 
@@ -227,29 +227,37 @@ entryPoints:
 - `ghcr.io/immich-app/immich-server:v2.5.2` → `v2.5.5`
 - `ghcr.io/immich-app/immich-machine-learning:v2.5.2` → `v2.5.5`
 
-### Temporary (Reverted): Circuit Breaker Disable
+### Permanent: Circuit Breaker and Retry Removed from Immich Route
 
-Circuit breaker was removed from Immich route during upload and re-enabled after completion. The global circuit breaker thresholds remain unchanged but should be revisited (see Open Items).
+Circuit breaker and retry middleware permanently removed from Immich's middleware chain (2026-02-08). Data-driven rationale:
+- **Circuit breaker:** 6+ false trips during stress test. `NetworkErrorRatio()` counted client ECONNRESET as backend failures, blocking all traffic. Immich is a single-backend localhost service -- no cascade to prevent.
+- **Retry middleware:** Generated double-failure patterns (original + retry at +60s). Can't replay streamed upload bodies. Benefit for small API requests is negligible on localhost.
+
+Final Immich middleware chain: `crowdsec-bouncer → rate-limit-immich → compression → security-headers`
 
 ---
 
 ## Open Items
 
-### Immediate
+### Resolved
 
-1. **Server processing backlog** -- immich-server was at 254% CPU and "unhealthy" (healthcheck timeout) when upload completed. Processing queue (thumbnails, ML, transcoding) will take time to drain. Monitor until health returns to normal.
+1. ~~**Server processing backlog**~~ -- Recovered overnight. All containers healthy, server at 30% CPU / 1.1GB RAM.
 
-2. **Cross-device sync verification** -- Upload was from iPhone only. Need to verify all 10,608 assets are visible on iPad Pro, Gaming PC browser, and Fedora HTPC browser.
+2. ~~**Cross-device sync verification**~~ -- Confirmed 2026-02-08: all 10,608 assets visible on iPhone, iPad Pro, Gaming PC (browser), Fedora HTPC (browser).
 
-### Configuration Improvements to Evaluate
+3. ~~**Circuit breaker for Immich**~~ -- Permanently removed from Immich route. Data showed client ECONNRESET inflated `NetworkErrorRatio()`, causing false trips that blocked all traffic.
 
-3. **Circuit breaker for Immich** -- Current global thresholds (`NetworkErrorRatio() > 0.50`) are inappropriate for upload-heavy services. Consider: (a) removing from Immich route, (b) Immich-specific breaker with `ResponseCodeRatio` only, or (c) higher thresholds.
+4. ~~**Retry middleware for Immich**~~ -- Permanently removed from Immich route. Can't replay streamed upload bodies; generated double-failure patterns on large files.
 
-4. **Retry middleware for Immich** -- The `retry@file` middleware attempts to replay failed uploads, which is impossible for streamed request bodies. Consider removing from Immich route or configuring `retryExpression` to exclude upload-size requests.
+5. ~~**Phase 2 client testing**~~ -- All tests passed across all 4 devices. Upload, browse, search, share, delete/restore, favorites all working.
 
-5. **immich-ml inactivity timeout** -- 300s timeout causes worker recycling during bursty workloads. Evaluate increasing to 600s or disabling. Trade-off: ~1.3GB persistent RAM usage.
+### Remaining
 
-6. **OpenVINO for immich-ml** -- ML currently runs on CPU only (`CPUExecutionProvider`). The AMD Ryzen 5600G's Radeon Vega iGPU could potentially accelerate ML inference via OpenVINO. Requires image variant `immich-machine-learning:v2.5.5-openvino` and `/dev/dri` device access. Note: OpenVINO primarily targets Intel GPUs; AMD ROCm would be the correct path for Radeon, but Vega iGPU support is limited. Research needed.
+6. **immich-ml inactivity timeout** -- 300s timeout causes worker recycling during bursty workloads. Evaluate increasing to 600s or disabling. Trade-off: ~1.3GB persistent RAM usage. Low priority -- self-healing.
+
+7. **SLO error budget recovery** -- Availability at 98.55%, error budget at -1.91. Will self-correct as Feb 2 incident + upload stress data rolls out of 30d window. Check in ~2 weeks.
+
+8. **OpenVINO/ROCm for immich-ml** -- ML runs on CPU only. AMD Radeon Vega iGPU could potentially accelerate inference, but OpenVINO targets Intel; ROCm support for Vega iGPU is limited. Research needed, low priority -- CPU handled 10,608 assets fine.
 
 ### Phases Remaining (from Phase 1 Journal)
 

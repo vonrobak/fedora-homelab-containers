@@ -73,7 +73,7 @@ podman healthcheck run redis-immich
 Mobile App / Web Browser
     ↓
 Traefik (HTTPS + routing)
-  Middleware: crowdsec → rate-limit-immich → circuit-breaker → retry → compression → security-headers
+  Middleware: crowdsec → rate-limit-immich → compression → security-headers
     ↓
 immich-server:2283 (API + web UI + WebSocket)
     ↓
@@ -296,10 +296,13 @@ podman exec -i postgresql-immich psql -U immich immich < immich-backup-YYYYMMDD.
 ## Security
 
 - **Authentication:** Immich-native (not Authelia - allows family sharing)
-- **Traefik middleware:** CrowdSec IP reputation → rate-limit-immich → circuit-breaker → retry → compression → security-headers
-- **Rate limit:** Custom `rate-limit-immich` (higher capacity for photo operations)
+- **Traefik middleware:** CrowdSec IP reputation → rate-limit-immich → compression → security-headers
+- **No circuit-breaker:** Removed after stress test (2026-02-08) -- client ECONNRESET inflated NetworkErrorRatio, blocking all traffic
+- **No retry:** Removed after stress test -- can't replay streamed upload bodies, generates double-failures
+- **Rate limit:** Custom `rate-limit-immich` (500/min avg, 2000 burst for photo browsing)
 - **No Authelia:** Immich handles its own auth; Authelia would break mobile app sync
 - **TLS:** Let's Encrypt via Traefik, HSTS enabled
+- **Upload timeout:** 600s readTimeout on websecure entrypoint (default 60s broke large file uploads)
 
 ---
 

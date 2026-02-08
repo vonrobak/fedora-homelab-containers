@@ -167,7 +167,7 @@ The error budget is still negative because the 16 historical 502 errors from the
 **Version:** v2.5.2 (pinned), v2.5.5 available
 **Restarts since Feb 4:** 0
 **Errors in past 7 days:** 0
-**Traefik middleware chain:** crowdsec-bouncer → rate-limit-immich → circuit-breaker → retry → compression → security-headers
+**Traefik middleware chain:** crowdsec-bouncer → rate-limit-immich → compression → security-headers (circuit-breaker + retry removed after stress test, see 2026-02-08 journal)
 **Traefik /etc/hosts:** immich-server → 10.89.2.12 (verified)
 
 ---
