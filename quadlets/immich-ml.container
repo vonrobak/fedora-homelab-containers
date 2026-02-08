@@ -5,7 +5,7 @@ Wants=network-online.target
 Requires=photos-network.service
 
 [Container]
-Image=ghcr.io/immich-app/immich-machine-learning:v2.5.2
+Image=ghcr.io/immich-app/immich-machine-learning:v2.5.5
 ContainerName=immich-ml
 AutoUpdate=registry
 
