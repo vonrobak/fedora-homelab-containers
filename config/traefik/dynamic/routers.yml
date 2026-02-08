@@ -82,6 +82,10 @@ http:
 
     # Immich - Uses native authentication (no Authelia SSO)
     # Mobile apps and web UI both use Immich's built-in auth
+    # NOTE: No circuit-breaker or retry middleware. Stress test (2026-02-08, 10,608 assets)
+    # proved both are harmful for upload-heavy services:
+    #   - Circuit breaker trips on client ECONNRESET (mobile disconnections ≠ backend failure)
+    #   - Retry middleware can't replay streamed upload bodies (generates double-failures)
     immich-secure:
       rule: "Host(`photos.patriark.org`)"
       service: "immich"
@@ -90,9 +94,7 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit-immich@file       # Custom high-capacity rate limit for photo browsing
-        - circuit-breaker@file         # Prevent cascade failures
-        - retry@file                   # Retry transient connection errors
-        - compression@file
+        - compression@file             # Compresses API responses (JSON); binary media unaffected
         - security-headers@file
       tls:
         certResolver: letsencrypt
