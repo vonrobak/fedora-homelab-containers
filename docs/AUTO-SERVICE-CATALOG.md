@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-02-08 06:01:14 UTC
+**Generated:** 2026-02-10 06:02:56 UTC
 **System:** fedora-htpc
 
 ---
@@ -22,20 +22,20 @@
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ Up | monitoring |
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
-| jellyfin | jellyfin/jellyfin:latest | ✅ Up | reverse_proxy,media_services,monitoring |
+| jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
 | prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | nextcloud | nextcloud:latest | ✅ Up | monitoring,nextcloud,reverse_proxy |
 | immich-ml | immich-app/immich-machine-learning:v2.5. | ✅ Up | photos |
 | promtail | grafana/promtail:latest | ✅ Up | monitoring |
-| home-assistant | home-assistant/home-assistant:stable | ✅ Up | reverse_proxy,home_automation,monitoring |
 | homepage | gethomepage/homepage:latest | ✅ Up | reverse_proxy |
 | loki | grafana/loki:latest | ✅ Up | monitoring,reverse_proxy |
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
-| immich-server | immich-app/immich-server:v2.5.5 | ✅ Up | monitoring,photos,reverse_proxy |
+| immich-server | immich-app/immich-server:v2.5.5 | ✅ Up | photos,reverse_proxy,monitoring |
+| home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
 
 ---
 
@@ -43,7 +43,7 @@
 
 - **Total Running:** 27
 - **Total Defined:** 27
-- **System Load:**  0,31, 0,50, 0,61
+- **System Load:**  0,16, 0,32, 0,42
 
 ---
 
