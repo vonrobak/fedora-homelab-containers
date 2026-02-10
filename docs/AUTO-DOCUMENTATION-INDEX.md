@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-08 06:01:17 UTC
-**Total Documents:** 384
+**Generated:** 2026-02-10 06:02:59 UTC
+**Total Documents:** 386
 
 ---
 
@@ -198,7 +198,7 @@
 
 ---
 
-### 98-journals/ (163 documents)
+### 98-journals/ (165 documents)
 
 **Chronological project history (append-only log)**
 
@@ -219,7 +219,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-02-04: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 - 2026-02-05: [alert-discord-relay.md](10-services/guides/alert-discord-relay.md)
 - 2026-02-04: [esp32-plejd-quick-start.md](10-services/guides/esp32-plejd-quick-start.md)
-- 2026-02-01: [home-assistant.md](10-services/guides/home-assistant.md)
 - 2026-02-08: [immich.md](10-services/guides/immich.md)
 - 2026-02-05: [matter-server.md](10-services/guides/matter-server.md)
 - 2026-02-06: [nextcloud.md](10-services/guides/nextcloud.md)
@@ -230,12 +229,13 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-02-07: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
 - 2026-02-06: [collabora-guide-archived-20260206.md](90-archive/collabora-guide-archived-20260206.md)
 - 2026-02-05: [STATE-OF-HOMELAB-2025-12-31-baseline.md](90-archive/STATE-OF-HOMELAB-2025-12-31-baseline.md)
-- 2026-02-01: [2026-02-01-february-security-posture-evaluation.md](98-journals/2026-02-01-february-security-posture-evaluation.md)
-- 2026-02-02: [2026-02-02-backup-compression-strategy-evaluation.md](98-journals/2026-02-02-backup-compression-strategy-evaluation.md)
-- 2026-02-03: [2026-02-02-catastrophic-network-failure-investigation.md](98-journals/2026-02-02-catastrophic-network-failure-investigation.md)
-- 2026-02-03: [2026-02-02-kernel-rollback-test-procedure.md](98-journals/2026-02-02-kernel-rollback-test-procedure.md)
-- 2026-02-03: [2026-02-02-post-reboot-analysis-symlink-test-failed.md](98-journals/2026-02-02-post-reboot-analysis-symlink-test-failed.md)
-- 2026-02-03: [2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md](98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md)
+- 2026-02-04: [2026-02-04-esp32-bluetooth-proxy-for-plejd-integration.md](98-journals/2026-02-04-esp32-bluetooth-proxy-for-plejd-integration.md)
+- 2026-02-04: [2026-02-04-reboot-verification-success.md](98-journals/2026-02-04-reboot-verification-success.md)
+- 2026-02-05: [2026-02-05-documentation-accuracy-audit-and-strategic-assessment.md](98-journals/2026-02-05-documentation-accuracy-audit-and-strategic-assessment.md)
+- 2026-02-06: [2026-02-05-nextcloud-upgrade-testing-and-collabora-debugging.md](98-journals/2026-02-05-nextcloud-upgrade-testing-and-collabora-debugging.md)
+- 2026-02-06: [2026-02-06-collabora-post-mortem-and-decommission.md](98-journals/2026-02-06-collabora-post-mortem-and-decommission.md)
+- 2026-02-07: [2026-02-07-five-trajectories-for-digital-sovereignty.md](98-journals/2026-02-07-five-trajectories-for-digital-sovereignty.md)
+- 2026-02-08: [2026-02-07-immich-operational-excellence-phase1.md](98-journals/2026-02-07-immich-operational-excellence-phase1.md)
 
 ---
 
