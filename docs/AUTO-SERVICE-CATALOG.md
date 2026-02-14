@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-02-10 06:02:56 UTC
+**Generated:** 2026-02-13 23:00:12 UTC
 **System:** fedora-htpc
 
 ---
@@ -13,7 +13,7 @@
 | redis-authelia | redis:7-alpine | ✅ Up | auth_services |
 | alertmanager | quay.io/prometheus/alertmanager:latest | ✅ Up | monitoring,reverse_proxy |
 | grafana | grafana/grafana:latest | ✅ Up | monitoring,reverse_proxy |
-| nextcloud-db | mariadb:11 | ✅ Up | monitoring,nextcloud |
+| nextcloud-db | mariadb:11 | ✅ Up | nextcloud,monitoring |
 | nextcloud-redis | redis:7-alpine | ✅ Up | monitoring,nextcloud |
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ Up | monitoring |
 | matter-server | home-assistant-libs/python-matter-server | ✅ Up | home_automation |
@@ -23,7 +23,7 @@
 | redis-immich | valkey/valkey:latest | ✅ Up | photos |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ Up | reverse_proxy |
 | jellyfin | jellyfin/jellyfin:latest | ✅ Up | media_services,monitoring,reverse_proxy |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | monitoring,reverse_proxy |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ Up | reverse_proxy,monitoring |
 | authelia | authelia/authelia:latest | ✅ Up | auth_services,reverse_proxy |
 | gathio | lowercasename/gathio:latest | ✅ Up | gathio,monitoring,reverse_proxy |
 | nextcloud | nextcloud:latest | ✅ Up | monitoring,nextcloud,reverse_proxy |
@@ -34,7 +34,7 @@
 | unpoller | unpoller/unpoller:latest | ✅ Up | monitoring |
 | traefik | traefik:latest | ✅ Up | auth_services,monitoring,reverse_proxy |
 | vaultwarden | vaultwarden/server:latest | ✅ Up | reverse_proxy |
-| immich-server | immich-app/immich-server:v2.5.5 | ✅ Up | photos,reverse_proxy,monitoring |
+| immich-server | immich-app/immich-server:v2.5.5 | ✅ Up | monitoring,photos,reverse_proxy |
 | home-assistant | home-assistant/home-assistant:stable | ✅ Up | home_automation,monitoring,reverse_proxy |
 
 ---
@@ -43,7 +43,7 @@
 
 - **Total Running:** 27
 - **Total Defined:** 27
-- **System Load:**  0,16, 0,32, 0,42
+- **System Load:**  0,72, 0,38, 0,45
 
 ---
 

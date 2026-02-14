@@ -96,9 +96,11 @@ collect_current_metrics() {
     local mem_used=$(free -m | awk 'NR==2 {print $3}')
     local mem_pct=$((mem_used * 100 / mem_total))
 
-    # Container metrics
-    local containers_total=$(podman ps -q 2>/dev/null | wc -l || echo "0")
-    local containers_healthy=$(podman ps --filter "health=healthy" -q 2>/dev/null | wc -l || echo "0")
+    # Container metrics (trim whitespace from wc output)
+    local containers_total=$(podman ps -q 2>/dev/null | wc -l | tr -d '[:space:]')
+    local containers_healthy=$(podman ps --filter "health=healthy" -q 2>/dev/null | wc -l | tr -d '[:space:]')
+    containers_total=${containers_total:-0}
+    containers_healthy=${containers_healthy:-0}
 
     # Service uptime (from systemd)
     local services_critical=("traefik" "prometheus" "alertmanager" "grafana")
@@ -185,51 +187,82 @@ collect_current_metrics() {
             jq -r '[.data.result[] | {subvol: .metric.subvolume, ts: .value[1]|tonumber}] | sort_by(.ts) | .[0].subvol' || echo "unknown")
     fi
 
-    # Build JSON report
-    cat > "${CURRENT_REPORT}" <<EOF
-{
-  "timestamp": "$(date -Iseconds)",
-  "week_ending": "${TIMESTAMP}",
-  "health": $(jq -r '.health_score // 80' <<< "$intel_output"),
-  "storage": {
-    "root_percent": ${disk_root_pct},
-    "root_used_gb": ${disk_root_used_gb},
-    "root_avail_gb": ${disk_root_avail_gb},
-    "btrfs_percent": ${disk_btrfs_pct},
-    "btrfs_used_tb": ${disk_btrfs_used_tb}
-  },
-  "resources": {
-    "memory_total_mb": ${mem_total},
-    "memory_used_mb": ${mem_used},
-    "memory_percent": ${mem_pct},
-    "cpu_avg_percent": ${cpu_avg}
-  },
-  "services": {
-    "containers_total": ${containers_total},
-    "containers_healthy": ${containers_healthy},
-    "critical_services_total": ${#services_critical[@]},
-    "critical_services_running": ${services_running}
-  },
-  "security": {
-    "crowdsec_active_bans": ${crowdsec_bans},
-    "crowdsec_alerts_7d": ${crowdsec_alerts},
-    "crowdsec_capi": "${crowdsec_capi}"
-  },
-  "autonomous_ops": {
-    "enabled": ${auto_ops_enabled},
-    "actions_7d": ${auto_ops_actions},
-    "success_rate": ${auto_ops_success_rate},
-    "circuit_breaker": "${auto_ops_circuit}"
-  },
-  "backup_snapshots": {
-    "failures": ${backup_failures},
-    "snapshots_local": ${total_snapshots_local},
-    "snapshots_external": ${total_snapshots_external},
-    "last_backup_days_ago": ${backup_age_days},
-    "oldest_backup_subvolume": "${oldest_backup_subvol}"
-  }
-}
-EOF
+    # Validate intel_output is valid JSON, fall back to default
+    local health_score
+    health_score=$(jq -r '.health_score // 80' <<< "$intel_output" 2>/dev/null) || health_score=80
+
+    # Build JSON report using jq for safe construction (avoids broken JSON from empty variables)
+    jq -n \
+        --arg timestamp "$(date -Iseconds)" \
+        --arg week_ending "${TIMESTAMP}" \
+        --argjson health "${health_score:-80}" \
+        --argjson disk_root_pct "${disk_root_pct:-0}" \
+        --argjson disk_root_used_gb "${disk_root_used_gb:-0}" \
+        --argjson disk_root_avail_gb "${disk_root_avail_gb:-0}" \
+        --argjson disk_btrfs_pct "${disk_btrfs_pct:-0}" \
+        --argjson disk_btrfs_used_tb "${disk_btrfs_used_tb:-0}" \
+        --argjson mem_total "${mem_total:-0}" \
+        --argjson mem_used "${mem_used:-0}" \
+        --argjson mem_pct "${mem_pct:-0}" \
+        --argjson cpu_avg "${cpu_avg:-0}" \
+        --argjson containers_total "${containers_total:-0}" \
+        --argjson containers_healthy "${containers_healthy:-0}" \
+        --argjson critical_total "${#services_critical[@]}" \
+        --argjson critical_running "${services_running:-0}" \
+        --argjson crowdsec_bans "${crowdsec_bans:-0}" \
+        --argjson crowdsec_alerts "${crowdsec_alerts:-0}" \
+        --arg crowdsec_capi "${crowdsec_capi:-unknown}" \
+        --argjson auto_enabled "${auto_ops_enabled:-false}" \
+        --argjson auto_actions "${auto_ops_actions:-0}" \
+        --argjson auto_rate "${auto_ops_success_rate:-1.0}" \
+        --arg auto_circuit "${auto_ops_circuit:-ok}" \
+        --argjson backup_failures "${backup_failures:-0}" \
+        --argjson snap_local "${total_snapshots_local:-0}" \
+        --argjson snap_external "${total_snapshots_external:-0}" \
+        --argjson backup_age "${backup_age_days:-0}" \
+        --arg oldest_subvol "${oldest_backup_subvol:-unknown}" \
+        '{
+            timestamp: $timestamp,
+            week_ending: $week_ending,
+            health: $health,
+            storage: {
+                root_percent: $disk_root_pct,
+                root_used_gb: $disk_root_used_gb,
+                root_avail_gb: $disk_root_avail_gb,
+                btrfs_percent: $disk_btrfs_pct,
+                btrfs_used_tb: $disk_btrfs_used_tb
+            },
+            resources: {
+                memory_total_mb: $mem_total,
+                memory_used_mb: $mem_used,
+                memory_percent: $mem_pct,
+                cpu_avg_percent: $cpu_avg
+            },
+            services: {
+                containers_total: $containers_total,
+                containers_healthy: $containers_healthy,
+                critical_services_total: $critical_total,
+                critical_services_running: $critical_running
+            },
+            security: {
+                crowdsec_active_bans: $crowdsec_bans,
+                crowdsec_alerts_7d: $crowdsec_alerts,
+                crowdsec_capi: $crowdsec_capi
+            },
+            autonomous_ops: {
+                enabled: $auto_enabled,
+                actions_7d: $auto_actions,
+                success_rate: $auto_rate,
+                circuit_breaker: $auto_circuit
+            },
+            backup_snapshots: {
+                failures: $backup_failures,
+                snapshots_local: $snap_local,
+                snapshots_external: $snap_external,
+                last_backup_days_ago: $backup_age,
+                oldest_backup_subvolume: $oldest_subvol
+            }
+        }' > "${CURRENT_REPORT}"
 
     log "${GREEN}✓ Metrics collected${NC}"
 }
