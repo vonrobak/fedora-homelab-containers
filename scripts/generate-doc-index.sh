@@ -1,11 +1,14 @@
 #!/bin/bash
 # Documentation Index Generator
 # Creates comprehensive index of all documentation files
+# Quick Search section dynamically discovers guide files for each service
 
 set -euo pipefail
 
 OUTPUT_FILE="${HOME}/containers/docs/AUTO-DOCUMENTATION-INDEX.md"
 DOCS_DIR="${HOME}/containers/docs"
+GUIDES_DIR="${HOME}/containers/docs/10-services/guides"
+QUADLET_DIR="${HOME}/containers/quadlets"
 
 log() {
     echo "[$(date +'%H:%M:%S')] $*" >&2
@@ -22,10 +25,61 @@ count_files() {
     find "$dir" -name "*.md" -type f 2>/dev/null | wc -l
 }
 
+# Find all documentation related to a service
+find_service_docs() {
+    local service=$1
+
+    # Direct guide match
+    if [[ -f "${GUIDES_DIR}/${service}.md" ]]; then
+        echo "guide:10-services/guides/${service}.md"
+    fi
+
+    # Try base name for multi-part services (immich-server → immich)
+    local base_name="${service%%-*}"
+    if [[ "$base_name" != "$service" && -f "${GUIDES_DIR}/${base_name}.md" ]]; then
+        echo "guide:10-services/guides/${base_name}.md"
+    fi
+
+    # Related guides (e.g., immich-ml-troubleshooting.md for immich)
+    local search_prefix="$service"
+    [[ "$base_name" != "$service" ]] && search_prefix="$base_name"
+    for f in "${GUIDES_DIR}/${search_prefix}-"*.md; do
+        [[ -f "$f" ]] || continue
+        local base
+        base=$(basename "$f")
+        echo "related:10-services/guides/${base}"
+    done
+
+    # ADR references (grep for service name in decision files)
+    for dir in "$DOCS_DIR"/*/decisions; do
+        [[ -d "$dir" ]] || continue
+        for f in "$dir"/*"${service}"*.md; do
+            [[ -f "$f" ]] || continue
+            local relpath
+            relpath=$(realpath --relative-to="$DOCS_DIR" "$f")
+            local adr_num
+            adr_num=$(basename "$f" .md | grep -oP 'ADR-\d+' || echo "")
+            echo "adr:${relpath}:${adr_num}"
+        done
+    done
+
+    # Config directory
+    if [[ -d "${HOME}/containers/config/${service}" ]]; then
+        echo "config:~/containers/config/${service}/"
+    fi
+
+    # Quadlet file
+    if [[ -f "${QUADLET_DIR}/${service}.container" ]]; then
+        echo "quadlet:~/.config/containers/systemd/${service}.container"
+    fi
+}
+
 # Generate index
 generate_index() {
-    local timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-    local total_docs=$(find "$DOCS_DIR" -name "*.md" -type f | wc -l)
+    local timestamp
+    timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+    local total_docs
+    total_docs=$(find "$DOCS_DIR" -name "*.md" -type f | wc -l)
 
     log "Generating documentation index..."
 
@@ -61,10 +115,12 @@ generate_index() {
 **Guides:**
 EOF
 
-    # Add foundation guides
+    # Foundation guides
     find "$DOCS_DIR/00-foundation/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file")
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file")
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -73,12 +129,13 @@ EOF
 **Decisions (ADRs):**
 EOF
 
-    # Add foundation ADRs
     find "$DOCS_DIR/00-foundation/decisions" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file" .md)
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
-        # Extract ADR number if present
-        local adr_num=$(echo "$basename" | grep -oP 'ADR-\d+' || echo "")
+        local basename
+        basename=$(basename "$file" .md)
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local adr_num
+        adr_num=$(echo "$basename" | grep -oP 'ADR-\d+' || echo "")
         echo "- $adr_num: [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -93,10 +150,11 @@ EOF
 **Service Guides:**
 EOF
 
-    # Add service guides
     find "$DOCS_DIR/10-services/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file")
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file")
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -105,11 +163,13 @@ EOF
 **Service Decisions (ADRs):**
 EOF
 
-    # Add service ADRs
     find "$DOCS_DIR/10-services/decisions" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file" .md)
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
-        local adr_num=$(echo "$basename" | grep -oP 'ADR-\d+' || echo "")
+        local basename
+        basename=$(basename "$file" .md)
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local adr_num
+        adr_num=$(echo "$basename" | grep -oP 'ADR-\d+' || echo "")
         echo "- $adr_num: [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -124,10 +184,11 @@ EOF
 **Guides:**
 EOF
 
-    # Add operations guides
     find "$DOCS_DIR/20-operations/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file")
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file")
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -136,10 +197,11 @@ EOF
 **Runbooks:**
 EOF
 
-    # Add runbooks
     find "$DOCS_DIR/20-operations/runbooks" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file" .md)
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file" .md)
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -154,10 +216,11 @@ EOF
 **Guides:**
 EOF
 
-    # Add security guides
     find "$DOCS_DIR/30-security/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file")
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file")
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -166,11 +229,13 @@ EOF
 **Security ADRs:**
 EOF
 
-    # Add security ADRs
     find "$DOCS_DIR/30-security/decisions" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file" .md)
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
-        local adr_num=$(echo "$basename" | grep -oP 'ADR-\d+' || echo "")
+        local basename
+        basename=$(basename "$file" .md)
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local adr_num
+        adr_num=$(echo "$basename" | grep -oP 'ADR-\d+' || echo "")
         echo "- $adr_num: [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -179,10 +244,11 @@ EOF
 **Runbooks:**
 EOF
 
-    # Add security runbooks
     find "$DOCS_DIR/30-security/runbooks" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file" .md)
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file" .md)
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -197,10 +263,11 @@ EOF
 **Guides:**
 EOF
 
-    # Add monitoring guides
     find "$DOCS_DIR/40-monitoring-and-documentation/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file")
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file")
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
@@ -214,8 +281,10 @@ EOF
 EOF
 
     find "$DOCS_DIR/97-plans" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename=$(basename "$file")
-        local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        local basename
+        basename=$(basename "$file")
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
         local status="📋"
         if grep -q "Status.*Complete" "$file" 2>/dev/null; then
             status="✅"
@@ -249,21 +318,91 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 EOF
 
-    # Add recently updated files
-    local recent_files=$(get_recent_files | head -20)
+    local recent_files
+    recent_files=$(get_recent_files | head -20)
     if [[ -n "$recent_files" ]]; then
         echo "$recent_files" | while read -r file; do
-            local basename=$(basename "$file")
-            local relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
-            local mod_date=$(stat -c %y "$file" | cut -d' ' -f1)
+            local basename
+            basename=$(basename "$file")
+            local relpath
+            relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+            local mod_date
+            mod_date=$(stat -c %y "$file" | cut -d' ' -f1)
             echo "- $mod_date: [$basename]($relpath)" >> "$OUTPUT_FILE"
         done
     else
         echo "*No files modified in last 7 days*" >> "$OUTPUT_FILE"
     fi
 
+    # Dynamic Quick Search section
     cat >> "$OUTPUT_FILE" <<'EOF'
 
+---
+
+## Quick Search by Service
+
+EOF
+
+    # Get all running services and generate documentation links
+    local services
+    services=$(podman ps --format '{{.Names}}' 2>/dev/null | sort || true)
+
+    # Group services for display (primary services only, skip backing stores)
+    local primary_services="traefik authelia crowdsec jellyfin immich-server nextcloud vaultwarden home-assistant homepage gathio prometheus grafana loki alertmanager"
+
+    for service in $primary_services; do
+        # Skip if not running
+        echo "$services" | grep -qx "$service" || continue
+
+        local display_name="$service"
+        # Capitalize first letter for display
+        display_name="$(echo "$service" | sed 's/\b./\U&/; s/-/ /g' | sed 's/\b./\U&/g')"
+
+        echo "**${display_name}:**" >> "$OUTPUT_FILE"
+
+        local found_docs=false
+        while IFS=':' read -r type path extra; do
+            case "$type" in
+                guide)
+                    echo "- Guide: [$(basename "$path")](${path})" >> "$OUTPUT_FILE"
+                    found_docs=true
+                    ;;
+                related)
+                    echo "- Related: [$(basename "$path")](${path})" >> "$OUTPUT_FILE"
+                    found_docs=true
+                    ;;
+                adr)
+                    echo "- ADR: [${extra}](${path})" >> "$OUTPUT_FILE"
+                    found_docs=true
+                    ;;
+                config)
+                    echo "- Config: \`${path}\`" >> "$OUTPUT_FILE"
+                    found_docs=true
+                    ;;
+                quadlet)
+                    echo "- Quadlet: \`${path}\`" >> "$OUTPUT_FILE"
+                    found_docs=true
+                    ;;
+            esac
+        done < <(find_service_docs "$service")
+
+        # Monitoring services share a guide
+        case "$service" in
+            prometheus|grafana|loki|alertmanager)
+                echo "- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)" >> "$OUTPUT_FILE"
+                echo "- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)" >> "$OUTPUT_FILE"
+                found_docs=true
+                ;;
+        esac
+
+        if [[ "$found_docs" == "false" ]]; then
+            echo "- *(no dedicated documentation)*" >> "$OUTPUT_FILE"
+        fi
+
+        echo "" >> "$OUTPUT_FILE"
+    done
+
+    cat >> "$OUTPUT_FILE" <<'EOF'
 ---
 
 ## Documentation Practices
@@ -286,32 +425,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full documentation guidelines.
 
 ---
 
-## Quick Search by Service
-
-**Traefik:**
-- Guide: [traefik.md](10-services/guides/traefik.md)
-- Config: `~/containers/config/traefik/`
-- Quadlet: `~/.config/containers/systemd/traefik.container`
-
-**Authelia:**
-- Guide: [authelia.md](10-services/guides/authelia.md)
-- ADR: [ADR-006](30-security/decisions/2025-11-11-ADR-006-authelia-sso-yubikey-deployment.md)
-- Config: `~/containers/config/authelia/`
-
-**Jellyfin:**
-- Guide: [jellyfin.md](10-services/guides/jellyfin.md)
-- Management: `~/containers/scripts/jellyfin-manage.sh`
-
-**Immich:**
-- Guide: [immich.md](10-services/guides/immich.md)
-- ADR: [ADR-004](10-services/decisions/2025-11-08-ADR-004-immich-deployment-architecture.md)
-
-**Prometheus/Grafana:**
-- Guides: [prometheus.md](10-services/guides/prometheus.md), [grafana.md](10-services/guides/grafana.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
----
-
 *Auto-generated by `scripts/generate-doc-index.sh`*
 *Updates daily to reflect documentation changes*
 EOF
@@ -320,7 +433,6 @@ EOF
     log "  Total documents: $total_docs"
 }
 
-# Main
 main() {
     log "Starting documentation index generation..."
 
