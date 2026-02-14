@@ -27,9 +27,12 @@ Exec=-config.file=/etc/promtail/promtail-config.yml
 
 DNS=192.168.1.69
 
-# Health check removed - wget/curl not available in minimal Promtail image
-# Systemd process monitoring is sufficient for single-process containers
-# Loki connectivity verified via homelab-intel.sh (checks Promtail logs for errors)
+# Promtail image (Debian-based) has bash but no curl/wget; use /dev/tcp for health check
+HealthCmd=bash -c 'exec 3<>/dev/tcp/localhost/9080 && echo -e "GET /ready HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3 && timeout 2 cat <&3 | grep -q Ready'
+HealthInterval=30s
+HealthRetries=3
+HealthStartPeriod=15s
+HealthTimeout=5s
 
 [Service]
 Slice=container.slice

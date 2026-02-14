@@ -46,8 +46,8 @@ NC='\033[0m'
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINERS_DIR="$HOME/containers"
-PLAYBOOK_DIR="../playbooks"
-LOG_DIR="../../data/remediation-logs"
+PLAYBOOK_DIR="${SCRIPT_DIR}/../playbooks"
+LOG_DIR="${SCRIPT_DIR}/../../data/remediation-logs"
 DRY_RUN=false
 PLAYBOOK=""
 SERVICE=""

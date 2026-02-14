@@ -21,8 +21,8 @@ Exec=-config.file=/etc/loki/local-config.yaml
 
 DNS=192.168.1.69
 
-# Health check removed - wget not available in minimal Loki image
-# Systemd process monitoring is sufficient for single-process containers
+# No container healthcheck possible - Loki uses a scratch/distroless image with no shell or tools
+# External monitoring via Prometheus up{job="loki"} and homelab-intel.sh (verifies via Promtail logs)
 AutoUpdate=registry
 
 [Service]

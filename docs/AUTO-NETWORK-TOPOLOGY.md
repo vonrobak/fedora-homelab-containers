@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-02-10 06:02:57 UTC
+**Generated:** 2026-02-13 23:00:12 UTC
 **System:** fedora-htpc
 
 This document provides comprehensive visualizations of the homelab network architecture, combining traffic flow analysis with network-centric topology views.

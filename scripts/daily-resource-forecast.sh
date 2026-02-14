@@ -39,11 +39,16 @@ fi
 # Parse disk prediction (correct field name is days_until_90pct, not days_until_critical)
 DISK_DAYS=$(jq -r '.days_until_90pct // "999"' "$PREDICT_OUTPUT" 2>/dev/null || echo "999")
 
+# Validate DISK_DAYS is a positive integer (prediction can return "never", empty, or non-numeric)
+if ! [[ "$DISK_DAYS" =~ ^[0-9]+$ ]]; then
+    DISK_DAYS="999"
+fi
+
 # Determine alert level
 ALERT_LEVEL="none"
 ALERT_COLOR=3066993  # Green
 
-if [[ "$DISK_DAYS" != "null" && "$DISK_DAYS" != "999" ]]; then
+if [[ "$DISK_DAYS" -lt 999 ]]; then
     if [[ "$DISK_DAYS" -le "$CRITICAL_DAYS" ]]; then
         ALERT_LEVEL="critical"
         ALERT_COLOR=15158332  # Red
