@@ -1,6 +1,6 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-14 12:54:02 UTC
+**Generated:** 2026-02-15 06:03:21 UTC
 **Total Documents:** 388
 
 ---
@@ -218,106 +218,16 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 - 2026-02-14: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
 - 2026-02-08: [immich.md](10-services/guides/immich.md)
-- 2026-02-07: [slo-based-alerting.md](40-monitoring-and-documentation/guides/slo-based-alerting.md)
-- 2026-02-07: [slo-calibration-process.md](40-monitoring-and-documentation/guides/slo-calibration-process.md)
-- 2026-02-07: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-- 2026-02-07: [2026-02-07-five-trajectories-for-digital-sovereignty.md](98-journals/2026-02-07-five-trajectories-for-digital-sovereignty.md)
 - 2026-02-08: [2026-02-07-immich-operational-excellence-phase1.md](98-journals/2026-02-07-immich-operational-excellence-phase1.md)
 - 2026-02-08: [2026-02-08-ambilight-hue-research-and-alternatives.md](98-journals/2026-02-08-ambilight-hue-research-and-alternatives.md)
 - 2026-02-08: [2026-02-08-immich-bulk-upload-stress-test.md](98-journals/2026-02-08-immich-bulk-upload-stress-test.md)
 - 2026-02-09: [2026-02-09-ha-presence-detection-fix.md](98-journals/2026-02-09-ha-presence-detection-fix.md)
 - 2026-02-11: [2026-02-10-ansible-silverblue-disaster-recovery-playbook.md](98-journals/2026-02-10-ansible-silverblue-disaster-recovery-playbook.md)
 - 2026-02-11: [2026-02-10-nixos-homelab-architecture-handoff.md](98-journals/2026-02-10-nixos-homelab-architecture-handoff.md)
-- 2026-02-14: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-02-14: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-02-14: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-02-14: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
-
----
-
-## Quick Search by Service
-
-**Traefik:**
-- Guide: [traefik.md](10-services/guides/traefik.md)
-- Config: `~/containers/config/traefik/`
-- Quadlet: `~/.config/containers/systemd/traefik.container`
-
-**Authelia:**
-- Guide: [authelia.md](10-services/guides/authelia.md)
-- ADR: [ADR-005](30-security/decisions/2025-11-10-ADR-005-authelia-sso-mfa-architecture.md)
-- ADR: [ADR-006](30-security/decisions/2025-11-11-ADR-006-authelia-sso-yubikey-deployment.md)
-- Config: `~/containers/config/authelia/`
-- Quadlet: `~/.config/containers/systemd/authelia.container`
-
-**Crowdsec:**
-- Guide: [crowdsec.md](10-services/guides/crowdsec.md)
-- ADR: [ADR-008](30-security/decisions/2025-11-12-ADR-008-crowdsec-security-architecture.md)
-- Quadlet: `~/.config/containers/systemd/crowdsec.container`
-
-**Jellyfin:**
-- Guide: [jellyfin.md](10-services/guides/jellyfin.md)
-- Related: [jellyfin-gpu-acceleration-troubleshooting.md](10-services/guides/jellyfin-gpu-acceleration-troubleshooting.md)
-- Quadlet: `~/.config/containers/systemd/jellyfin.container`
-
-**Immich Server:**
-- Guide: [immich.md](10-services/guides/immich.md)
-- Related: [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
-- Related: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
-- Related: [immich-ml-troubleshooting.md](10-services/guides/immich-ml-troubleshooting.md)
-- Quadlet: `~/.config/containers/systemd/immich-server.container`
-
-**Nextcloud:**
-- Guide: [nextcloud.md](10-services/guides/nextcloud.md)
-- ADR: [ADR-013](10-services/decisions/2025-12-20-ADR-013-nextcloud-native-authentication.md)
-- ADR: [ADR-014](10-services/decisions/2025-12-20-ADR-014-nextcloud-passwordless-authentication.md)
-- Config: `~/containers/config/nextcloud/`
-- Quadlet: `~/.config/containers/systemd/nextcloud.container`
-
-**Vaultwarden:**
-- Related: [vaultwarden-deployment.md](10-services/guides/vaultwarden-deployment.md)
-- ADR: [ADR-007](10-services/decisions/2025-11-12-ADR-007-vaultwarden-architecture.md)
-- Config: `~/containers/config/vaultwarden/`
-- Quadlet: `~/.config/containers/systemd/vaultwarden.container`
-
-**Home Assistant:**
-- Guide: [home-assistant.md](10-services/guides/home-assistant.md)
-- Related: [home-assistant.md](10-services/guides/home-assistant.md)
-- Config: `~/containers/config/home-assistant/`
-- Quadlet: `~/.config/containers/systemd/home-assistant.container`
-
-**Homepage:**
-- Related: [homepage-widget-configuration.md](10-services/guides/homepage-widget-configuration.md)
-- Config: `~/containers/config/homepage/`
-- Quadlet: `~/.config/containers/systemd/homepage.container`
-
-**Gathio:**
-- Related: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
-- Config: `~/containers/config/gathio/`
-- Quadlet: `~/.config/containers/systemd/gathio.container`
-
-**Prometheus:**
-- Config: `~/containers/config/prometheus/`
-- Quadlet: `~/.config/containers/systemd/prometheus.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
-**Grafana:**
-- Config: `~/containers/config/grafana/`
-- Quadlet: `~/.config/containers/systemd/grafana.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
-**Loki:**
-- Config: `~/containers/config/loki/`
-- Quadlet: `~/.config/containers/systemd/loki.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
-**Alertmanager:**
-- Config: `~/containers/config/alertmanager/`
-- Quadlet: `~/.config/containers/systemd/alertmanager.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
+- 2026-02-15: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-02-15: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-02-15: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-02-15: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
@@ -338,6 +248,32 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - **Reports:** `TYPE-YYYYMMDD-HHMMSS.json` or `.md`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full documentation guidelines.
+
+---
+
+## Quick Search by Service
+
+**Traefik:**
+- Guide: [traefik.md](10-services/guides/traefik.md)
+- Config: `~/containers/config/traefik/`
+- Quadlet: `~/.config/containers/systemd/traefik.container`
+
+**Authelia:**
+- Guide: [authelia.md](10-services/guides/authelia.md)
+- ADR: [ADR-006](30-security/decisions/2025-11-11-ADR-006-authelia-sso-yubikey-deployment.md)
+- Config: `~/containers/config/authelia/`
+
+**Jellyfin:**
+- Guide: [jellyfin.md](10-services/guides/jellyfin.md)
+- Management: `~/containers/scripts/jellyfin-manage.sh`
+
+**Immich:**
+- Guide: [immich.md](10-services/guides/immich.md)
+- ADR: [ADR-004](10-services/decisions/2025-11-08-ADR-004-immich-deployment-architecture.md)
+
+**Prometheus/Grafana:**
+- Guides: [prometheus.md](10-services/guides/prometheus.md), [grafana.md](10-services/guides/grafana.md)
+- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
 
 ---
 
