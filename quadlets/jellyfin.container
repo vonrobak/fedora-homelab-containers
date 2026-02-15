@@ -32,7 +32,6 @@ DNSSearch=lokal
 Volume=/mnt/btrfs-pool/subvol7-containers/jellyfin-config:/config:Z
 Volume=/mnt/btrfs-pool/subvol7-containers/jellyfin/data:/data:Z
 Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-cache:/cache:Z
-Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-transcodes:/config/transcodes:Z
 
 # Media Libraries (read-only, shared with Nextcloud)
 Volume=/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia:ro,z
