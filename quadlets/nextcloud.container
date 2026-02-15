@@ -55,8 +55,8 @@ Network=systemd-reverse_proxy:ip=10.89.2.14
 Network=systemd-nextcloud:ip=10.89.10.4
 Network=systemd-monitoring:ip=10.89.4.21
 
-# Health check
-HealthCmd=curl -f http://localhost:80/status.php
+# Health check (verifies both reachability AND no pending DB upgrade)
+HealthCmd=curl -sf http://localhost:80/status.php | grep -q '"needsDbUpgrade":false'
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=5
