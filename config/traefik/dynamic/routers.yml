@@ -76,7 +76,8 @@ http:
       middlewares:
         - crowdsec-bouncer@file
         - rate-limit-public@file
-        - security-headers@file
+        - compression@file
+        - security-headers-jellyfin@file
       tls:
         certResolver: letsencrypt
 
