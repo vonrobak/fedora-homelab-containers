@@ -72,7 +72,7 @@ Label=prometheus.port=80
 Label=prometheus.path=/ocs/v2.php/apps/serverinfo/api/v1/info
 
 [Service]
-Restart=always
+Restart=on-failure
 TimeoutStartSec=300
 
 # Resource limits (systemd memory control)

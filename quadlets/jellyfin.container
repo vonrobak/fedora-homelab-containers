@@ -50,7 +50,7 @@ HealthStartPeriod=60s
 
 [Service]
 Slice=container.slice
-Restart=always
+Restart=on-failure
 TimeoutStartSec=900
 
 # Resource Limits

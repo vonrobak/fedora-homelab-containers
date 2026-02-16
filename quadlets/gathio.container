@@ -46,7 +46,7 @@ HealthStartPeriod=60s
 
 [Service]
 Slice=container.slice
-Restart=always
+Restart=on-failure
 TimeoutStartSec=300
 
 # Resource Limits (Best Practice: MemoryHigh + MemoryMax in [Service] section)

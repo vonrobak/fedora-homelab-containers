@@ -35,7 +35,7 @@ Label=prometheus.scrape=true
 Label=prometheus.port=3306
 
 [Service]
-Restart=always
+Restart=on-failure
 TimeoutStartSec=300
 
 # Resource limits (systemd memory control)

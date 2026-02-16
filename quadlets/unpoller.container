@@ -48,7 +48,7 @@ MemoryHigh=230M
 CPUQuota=50%
 
 # Restart policy
-Restart=always
+Restart=on-failure
 RestartSec=10s
 TimeoutStartSec=60s
 TimeoutStopSec=30s

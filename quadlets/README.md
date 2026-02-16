@@ -54,7 +54,7 @@ Network=systemd-reverse_proxy
 Secret=traefik_crowdsec_api_key,type=env,target=CROWDSEC_API_KEY
 
 [Service]
-Restart=always
+Restart=on-failure
 
 [Install]
 WantedBy=default.target
@@ -142,7 +142,7 @@ HealthCmd=command                  # Container health check
 MemoryMax=1G                       # Memory limit
 
 [Service]
-Restart=always                     # Restart policy
+Restart=on-failure                 # Restart on crash, not clean stop
 TimeoutStartSec=300               # Startup timeout
 
 [Install]
