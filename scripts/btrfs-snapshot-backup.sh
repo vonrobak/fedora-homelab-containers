@@ -32,8 +32,20 @@ set -euo pipefail
 # CONFIGURATION SECTION - ADJUST THESE PARAMETERS AS NEEDED
 ################################################################################
 
-# Backup destination (external drive)
-EXTERNAL_BACKUP_ROOT="/run/media/patriark/WD-18TB/.snapshots"
+# Backup destination (external drive - two mirrored WD 18TB drives, either may be connected)
+EXTERNAL_BACKUP_CANDIDATES=(
+    "/run/media/patriark/WD-18TB"
+    "/run/media/patriark/WD-18TB1"
+)
+EXTERNAL_BACKUP_ROOT=""
+for candidate in "${EXTERNAL_BACKUP_CANDIDATES[@]}"; do
+    if mountpoint -q "$candidate" 2>/dev/null; then
+        EXTERNAL_BACKUP_ROOT="$candidate/.snapshots"
+        break
+    fi
+done
+# Fallback to first candidate (check_external_mounted will catch if not mounted)
+EXTERNAL_BACKUP_ROOT="${EXTERNAL_BACKUP_ROOT:-${EXTERNAL_BACKUP_CANDIDATES[0]}/.snapshots}"
 
 # Local snapshot directories
 LOCAL_HOME_SNAPSHOTS="$HOME/.snapshots"
@@ -223,14 +235,16 @@ run_cmd() {
 
 check_external_mounted() {
     if [[ ! -d "$EXTERNAL_BACKUP_ROOT" ]]; then
-        log ERROR "External backup drive not mounted at $EXTERNAL_BACKUP_ROOT"
+        log ERROR "External backup drive not mounted (checked: ${EXTERNAL_BACKUP_CANDIDATES[*]})"
         return 1
     fi
 
     if ! mountpoint -q "$(dirname "$EXTERNAL_BACKUP_ROOT")"; then
-        log WARNING "External backup location may not be mounted"
+        log WARNING "External backup location may not be a mountpoint: $(dirname "$EXTERNAL_BACKUP_ROOT")"
+        return 1
     fi
 
+    log INFO "Using external backup drive: $(dirname "$EXTERNAL_BACKUP_ROOT")"
     return 0
 }
 
