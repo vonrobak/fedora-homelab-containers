@@ -10,8 +10,7 @@
 Description=Vaultwarden Password Manager
 Documentation=https://github.com/dani-garcia/vaultwarden
 After=network-online.target traefik.service
-Wants=network-online.target
-Requires=traefik.service
+Wants=network-online.target traefik.service
 
 # ═══════════════════════════════════════════════════════════
 # CONTAINER CONFIGURATION
