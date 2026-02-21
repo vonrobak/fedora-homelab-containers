@@ -60,26 +60,3 @@ groups:
             Active password guessing/credential stuffing detected.
             CrowdSec should auto-ban after threshold. Verify it's working.
 
-      # CRITICAL: Service down that should be always running
-      # Only alert on critical services (gateway to everything)
-      - alert: CriticalServiceDown
-        expr: |
-          up{job=~"traefik|authelia|vaultwarden"} == 0
-        for: 2m
-        labels:
-          severity: critical
-          component: infrastructure
-        annotations:
-          summary: "Critical service {{ $labels.job }} is down"
-          description: |
-            {{ $labels.job }} is not responding.
-
-            Impact:
-            - traefik: ALL services inaccessible
-            - authelia: Cannot access admin services
-            - vaultwarden: Password vault unavailable
-
-            Actions:
-            1. Check service: systemctl --user status {{ $labels.job }}.service
-            2. Check logs: journalctl --user -u {{ $labels.job }}.service -n 50
-            3. Restart if needed: systemctl --user restart {{ $labels.job }}.service

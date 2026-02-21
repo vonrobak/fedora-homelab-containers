@@ -74,21 +74,21 @@ route:
     # Discord notification routes (standard behavior, unchanged)
 
     # Critical alerts: Discord for instant notifications
-    - match:
-        severity: critical
+    - matchers:
+        - severity = "critical"
       receiver: 'discord-critical'
       repeat_interval: 1h
 
     # Warnings: Discord during waking hours only (7am-11pm)
-    - match:
-        severity: warning
+    - matchers:
+        - severity = "warning"
       receiver: 'discord-warnings'
       active_time_intervals:
         - waking_hours
 
     # Info alerts: Notify once per week max (architectural facts, not incidents)
-    - match:
-        severity: info
+    - matchers:
+        - severity = "info"
       receiver: 'discord-info'
       repeat_interval: 168h  # 1 week - effectively never repeat for transient info alerts
       group_interval: 5m
@@ -133,33 +133,40 @@ receivers:
 # Inhibition rules (prevent alert spam)
 inhibit_rules:
   # If a host is down, don't alert on services running on that host
-  - source_match:
-      severity: 'critical'
-      alertname: 'HostDown'
-    target_match:
-      severity: 'warning'
+  - source_matchers:
+      - severity = "critical"
+      - alertname = "HostDown"
+    target_matchers:
+      - severity = "warning"
+    equal: ['instance']
+
+  # Specific service-down alerts suppress the generic HostDown safety net
+  - source_matchers:
+      - alertname =~ "TraefikDown|GrafanaDown|LokiDown|NodeExporterDown|CrowdSecDown|AlertmanagerDown|PrometheusDown"
+    target_matchers:
+      - alertname = "HostDown"
     equal: ['instance']
 
   # If disk is critical, suppress disk warning
-  - source_match:
-      severity: 'critical'
-      alertname: 'DiskSpaceCritical'
-    target_match:
-      severity: 'warning'
-      alertname: 'DiskSpaceWarning'
+  - source_matchers:
+      - severity = "critical"
+      - alertname = "DiskSpaceCritical"
+    target_matchers:
+      - severity = "warning"
+      - alertname = "DiskSpaceWarning"
     equal: ['instance', 'mountpoint']
 
   # Global: Critical alerts for a service silence warnings for same service
-  - source_match:
-      severity: 'critical'
-    target_match:
-      severity: 'warning'
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
     equal: ['service', 'instance']
 
   # If Traefik is down, suppress all service availability warnings
   # (nothing is accessible anyway)
-  - source_match:
-      alertname: 'TraefikDown'
-    target_match_re:
-      alertname: '.*(Down|Unhealthy|Unavailable).*'
+  - source_matchers:
+      - alertname = "TraefikDown"
+    target_matchers:
+      - alertname =~ ".*(Down|Unhealthy|Unavailable).*"
     equal: ['instance']
