@@ -1,8 +1,10 @@
 # Permission Optimization for Nextcloud Migration
 
 **Date:** 2025-12-29
-**Status:** Recommendation
+**Status:** Superseded by [ADR-019](../../00-foundation/decisions/2026-02-22-ADR-019-filesystem-permission-model.md)
 **Context:** Migrating from Samba to Nextcloud as primary file distribution method
+
+> **Note:** This guide recommended keeping Samba-era permissions. ADR-019 (2026-02-22) reverses this recommendation based on evidence that the `samba` group ownership causes container write failures via rootless Podman's UID namespace mapping. The correct approach is POSIX ACLs for cross-UID container access. See ADR-019 for the current permission model.
 
 ## Current State
 

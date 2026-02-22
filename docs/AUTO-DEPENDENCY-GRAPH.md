@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-02-21 06:02:54 UTC
+**Generated:** 2026-02-22 06:02:05 UTC
 **System:** fedora-htpc
 
 ---
@@ -58,7 +58,6 @@ graph TB
     gathio --> gathio_db
     immich_server --> postgresql_immich
     immich_server --> redis_immich
-    vaultwarden --> traefik
 
     %% Routing dependencies (services in reverse_proxy depend on Traefik)
     traefik -.-> alertmanager
@@ -72,6 +71,7 @@ graph TB
     traefik -.-> loki
     traefik -.-> nextcloud
     traefik -.-> prometheus
+    traefik -.-> vaultwarden
 
     %% Monitoring (Prometheus scrapes via monitoring network)
     prometheus -.->|scrapes| gathio
@@ -122,7 +122,7 @@ graph TB
 | **immich-server** | postgresql-immich,redis-immich | 🟢 Photo management unavailable |
 | **jellyfin** | — | 🟢 Media streaming unavailable |
 | **nextcloud** | — | 🟢 File sync unavailable |
-| **vaultwarden** | traefik | 🟡 Password vault inaccessible (keep local cache) |
+| **vaultwarden** | — | 🟡 Password vault inaccessible (keep local cache) |
 
 ### Tier 4: Data
 

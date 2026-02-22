@@ -1,6 +1,6 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-21 06:02:55 UTC
+**Generated:** 2026-02-22 06:02:06 UTC
 **Total Documents:** 392
 
 ---
@@ -216,16 +216,15 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-02-14: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
 - 2026-02-15: [2026-02-15-community-tool-sharing-platform-architecture.md](98-journals/2026-02-15-community-tool-sharing-platform-architecture.md)
 - 2026-02-16: [2026-02-16-gnome-freeze-system-update.md](98-journals/2026-02-16-gnome-freeze-system-update.md)
 - 2026-02-16: [2026-02-16-post-reboot-handoff.md](98-journals/2026-02-16-post-reboot-handoff.md)
 - 2026-02-20: [2026-02-18-loose-ends-audit.md](98-journals/2026-02-18-loose-ends-audit.md)
 - 2026-02-16: [remediation-monthly-202601.md](99-reports/remediation-monthly-202601.md)
-- 2026-02-21: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-02-21: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-02-21: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-02-21: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-02-22: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-02-22: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-02-22: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-02-22: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

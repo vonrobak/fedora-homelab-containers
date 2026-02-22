@@ -140,12 +140,10 @@ for port in $LISTENING_PORTS; do
     # - 80, 443: HTTP/HTTPS (Traefik)
     # - 22: SSH (hardened)
     # - 53: DNS (systemd-resolved)
-    # - 139, 445: SMB (internal file sharing)
     # - 631: CUPS (printing service)
     if [ "$port" -lt 1024 ] && \
        [ "$port" != "80" ] && [ "$port" != "443" ] && \
        [ "$port" != "22" ] && [ "$port" != "53" ] && \
-       [ "$port" != "139" ] && [ "$port" != "445" ] && \
        [ "$port" != "631" ]; then
         UNEXPECTED="$UNEXPECTED $port"
     fi
