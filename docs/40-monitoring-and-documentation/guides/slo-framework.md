@@ -79,25 +79,30 @@ How fast we're consuming error budget:
 
 ---
 
-### 4. ownCloud Infinite Scale (OCIS)
+### 4. Home Assistant (Smart Home)
 
-**SLO-007: File Operations Availability**
+**SLO-007: Availability**
 - **Target:** 99.5% availability over 30 days
-- **SLI:** `(traefik_service_requests_total{exported_service="ocis@file", code=~"2..|3.."} / traefik_service_requests_total{exported_service="ocis@file"}) * 100`
-- **Error Budget:** 216 minutes/month
-- **Rationale:** File storage should be reliable for daily use
+- **SLI:** `(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="home-assistant@file"}) * 100`
+- **Error Budget:** 216 minutes/month (~3.6 hours)
+- **Rationale:** Smart home automations and device control should be reliable. Note: code=0 (WebSocket) is critical here -- HA uses heavy WebSocket for real-time updates. Was the service most affected by the WebSocket code=0 bug (15.6% false failure rate before fix).
+
+**SLO-008: Response Time**
+- **Target:** 95% of requests complete within 1000ms over 7 days
+- **SLI:** Histogram quantile from `traefik_service_request_duration_seconds{exported_service="home-assistant@file"}`
+- **Rationale:** HA has heavy WebSocket traffic; 1s is appropriate for a home automation service
 
 ---
 
 ### 5. Authelia Authentication
 
-**SLO-008: Authentication Availability**
+**SLO-009: Authentication Availability**
 - **Target:** 99.9% availability over 30 days
 - **SLI:** `(traefik_service_requests_total{exported_service="authelia@file", code=~"2..|3.."} / traefik_service_requests_total{exported_service="authelia@file"}) * 100`
 - **Error Budget:** 43 minutes/month
 - **Rationale:** Auth failures block access to all protected services
 
-**SLO-009: Authentication Latency**
+**SLO-010: Authentication Latency**
 - **Target:** 95% of auth requests <200ms over 24 hours
 - **SLI:** Histogram quantile from `traefik_service_request_duration_seconds{exported_service="authelia@file"}`
 - **Rationale:** Slow auth creates poor user experience
@@ -257,7 +262,7 @@ Access the SLO dashboard at: `https://grafana.patriark.org/d/slo-dashboard`
 
 ## Implementation Status
 
-- [x] SLO definitions documented (9 SLOs across 5 services)
+- [x] SLO definitions documented (11 SLOs across 6 services)
 - [x] Prometheus recording rules created (79 rules: SLI, error budget, burn rate)
 - [x] Error budget calculations implemented (15 tracking rules)
 - [x] Multi-window burn-rate alerts configured (11 alerts: critical + warning)

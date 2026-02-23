@@ -27,9 +27,6 @@ Exec=--path.rootfs=/host --collector.textfile.directory=/textfile-metrics
 
 DNS=192.168.1.69
 
-# Resource limits (podman runtime)
-Memory=128M
-
 # Health check - use proper GET request (--spider uses HEAD which /metrics doesn't support)
 HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9100/metrics || exit 1
 HealthInterval=30s

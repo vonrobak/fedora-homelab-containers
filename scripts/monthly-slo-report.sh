@@ -59,6 +59,11 @@ nextcloud_actual=$(query_prom 'slo:nextcloud:availability:actual')
 nextcloud_budget=$(query_prom 'error_budget:nextcloud:availability:budget_remaining')
 nextcloud_compliant=$(query_prom 'slo:nextcloud:availability:compliant')
 
+# Home Assistant
+ha_actual=$(query_prom 'slo:home_assistant:availability:actual')
+ha_budget=$(query_prom 'error_budget:home_assistant:availability:budget_remaining')
+ha_compliant=$(query_prom 'slo:home_assistant:availability:compliant')
+
 # ============================================================================
 # FORMAT REPORT
 # ============================================================================
@@ -119,6 +124,7 @@ overall_violations=0
 [ "$authelia_compliant" = "0" ] && ((overall_violations++)) || true
 [ "$traefik_compliant" = "0" ] && ((overall_violations++)) || true
 [ "$nextcloud_compliant" = "0" ] && ((overall_violations++)) || true
+[ "$ha_compliant" = "0" ] && ((overall_violations++)) || true
 
 if [ "$overall_violations" -eq 0 ]; then
     report_color="3066993"  # Green
@@ -170,13 +176,13 @@ read -r -d '' DISCORD_PAYLOAD <<EOF || true
         "inline": true
       },
       {
-        "name": "\u200b",
-        "value": "\u200b",
+        "name": "🏠 Home Assistant",
+        "value": "$(compliance_emoji "$ha_compliant") **Availability:** $(format_pct "$ha_actual")\n**Target:** 99.50%\n**Error Budget:** $(format_pct "$ha_budget") remaining",
         "inline": true
       },
       {
         "name": "📈 Key Insights",
-        "value": "• Services monitored: 5\n• SLOs met: $((5 - overall_violations))/5\n• Reporting period: 30 days",
+        "value": "• Services monitored: 6\n• SLOs met: $((6 - overall_violations))/6\n• Reporting period: 30 days",
         "inline": false
       },
       {

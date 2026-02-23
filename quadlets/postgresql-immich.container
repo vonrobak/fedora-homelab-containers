@@ -21,9 +21,7 @@ Environment=POSTGRES_INITDB_ARGS=--data-checksums
 # Storage (BTRFS pool with NOCOW)
 Volume=/mnt/btrfs-pool/subvol7-containers/postgresql-immich:/var/lib/postgresql/data:Z
 
-# Resources
 PodmanArgs=--shm-size=128m
-Memory=1G
 
 # Health check
 HealthCmd=pg_isready -U immich -d immich

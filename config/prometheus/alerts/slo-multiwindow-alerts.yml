@@ -364,6 +364,133 @@ groups:
           summary: "ℹ️ Authelia error budget trending above baseline"
 
   # ===========================================================================
+  # HOME ASSISTANT - Multi-Window Burn Rate Alerts
+  # WebSocket-heavy service (code=0 counted as success in recording rules)
+  # ===========================================================================
+  - name: slo_multiwindow_home_assistant
+    interval: 1m
+    rules:
+      # TIER 1: CRITICAL - Fast Burn (Page immediately)
+      - alert: SLOBurnRateTier1_HomeAssistant
+        expr: |
+          (
+            burn_rate:home_assistant:availability:1h > 14.4
+            and
+            burn_rate:home_assistant:availability:5m > 14.4
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: home-assistant
+          slo: availability
+          tier: "1"
+          burn_rate: "fast"
+        annotations:
+          summary: "🚨 CRITICAL: Home Assistant error budget burning at 14.4x normal rate"
+          description: |
+            **IMMEDIATE ACTION REQUIRED**
+
+            Home Assistant availability is degrading rapidly. At this burn rate, the monthly error budget
+            will be exhausted in less than 3 hours.
+
+            **Current State:**
+            - Burn Rate (1h): {{ $value | humanize }}x normal
+            - Burn Rate (5m): {{ query "burn_rate:home_assistant:availability:5m" | first | value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:home_assistant:availability:budget_remaining * 100" | first | value | humanize }}%
+            - Days Until Exhaustion: {{ query "error_budget:home_assistant:availability:days_remaining" | first | value | humanize }} days
+
+            **Impact:** Smart home automations and device control failing RIGHT NOW.
+
+            **Action:** Investigate and resolve immediately. Check:
+              systemctl --user status home-assistant.service
+              podman logs home-assistant --tail 100
+              ~/containers/scripts/homelab-intel.sh
+
+      # TIER 2: WARNING - Medium Burn (Create ticket)
+      - alert: SLOBurnRateTier2_HomeAssistant
+        expr: |
+          (
+            burn_rate:home_assistant:availability:6h > 6
+            and
+            burn_rate:home_assistant:availability:30m > 6
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: home-assistant
+          slo: availability
+          tier: "2"
+          burn_rate: "medium"
+        annotations:
+          summary: "⚠️ Home Assistant error budget burning at 6x normal rate"
+          description: |
+            **Action needed within hours**
+
+            Home Assistant availability is degrading. At this burn rate, the monthly error budget
+            will be exhausted in less than 1 day.
+
+            **Current State:**
+            - Burn Rate (6h): {{ $value | humanize }}x normal
+            - Burn Rate (30m): {{ query "burn_rate:home_assistant:availability:30m" | first | value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:home_assistant:availability:budget_remaining * 100" | first | value | humanize }}%
+
+            **Action:** Investigate and plan remediation.
+
+      # TIER 3: WARNING - Slow Burn (Plan remediation)
+      - alert: SLOBurnRateTier3_HomeAssistant
+        expr: |
+          (
+            burn_rate:home_assistant:availability:1d > 3
+            and
+            burn_rate:home_assistant:availability:2h > 3
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 86400)
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: home-assistant
+          slo: availability
+          tier: "3"
+          burn_rate: "slow"
+        annotations:
+          summary: "📊 Home Assistant error budget burning at 3x normal rate"
+          description: |
+            **Trend to monitor**
+
+            Home Assistant availability is slowly degrading. Budget exhausts in <1 week.
+
+            - Burn Rate (1d): {{ $value | humanize }}x normal
+            - Budget Remaining: {{ query "error_budget:home_assistant:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # TIER 4: INFO - Very Slow Burn (FYI only)
+      - alert: SLOBurnRateTier4_HomeAssistant
+        expr: |
+          (
+            burn_rate:home_assistant:availability:3d > 1.5
+            and
+            burn_rate:home_assistant:availability:1d > 1.5
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 259200)
+        for: 6h
+        labels:
+          severity: info
+          component: slo
+          service: home-assistant
+          slo: availability
+          tier: "4"
+        annotations:
+          summary: "ℹ️ Home Assistant error budget trending above baseline"
+
+  # ===========================================================================
   # NEXTCLOUD - Multi-Window Burn Rate Alerts
   # ===========================================================================
   - name: slo_multiwindow_nextcloud
