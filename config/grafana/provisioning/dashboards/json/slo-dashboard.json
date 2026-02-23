@@ -132,6 +132,15 @@
           "expr": "error_budget:nextcloud:availability:budget_remaining * 100",
           "legendFormat": "Nextcloud",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "error_budget:home_assistant:availability:budget_remaining * 100",
+          "legendFormat": "Home Assistant",
+          "refId": "F"
         }
       ],
       "title": "Error Budget Remaining (30-day window)",
@@ -241,6 +250,15 @@
           "expr": "sli:nextcloud:availability:ratio * 100",
           "legendFormat": "Nextcloud",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "sli:home_assistant:availability:ratio * 100",
+          "legendFormat": "Home Assistant",
+          "refId": "F"
         }
       ],
       "title": "Current Availability (5m window)",
@@ -352,6 +370,15 @@
           "expr": "burn_rate:nextcloud:availability:1h",
           "legendFormat": "Nextcloud (1h)",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "burn_rate:home_assistant:availability:1h",
+          "legendFormat": "Home Assistant (1h)",
+          "refId": "F"
         }
       ],
       "title": "Current Burn Rate (1-hour window)",
@@ -461,7 +488,7 @@
             "uid": "${ds_prometheus}"
           },
           "expr": "sli:immich:availability:ratio * 100",
-          "legendFormat": "Immich (Target: 99.9%)",
+          "legendFormat": "Immich (Target: 99.5%)",
           "refId": "B"
         },
         {
@@ -490,6 +517,15 @@
           "expr": "sli:nextcloud:availability:ratio * 100",
           "legendFormat": "Nextcloud (Target: 99.5%)",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "sli:home_assistant:availability:ratio * 100",
+          "legendFormat": "Home Assistant (Target: 99.5%)",
+          "refId": "F"
         }
       ],
       "title": "Service Availability Trend",
@@ -603,6 +639,15 @@
           "expr": "sli:traefik:latency:p99",
           "legendFormat": "Traefik p99",
           "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "sli:home_assistant:latency:p95",
+          "legendFormat": "Home Assistant p95",
+          "refId": "D"
         }
       ],
       "title": "Response Time Latency",
@@ -736,6 +781,15 @@
           "expr": "error_budget:nextcloud:availability:budget_remaining * 100",
           "legendFormat": "Nextcloud",
           "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "error_budget:home_assistant:availability:budget_remaining * 100",
+          "legendFormat": "Home Assistant",
+          "refId": "F"
         }
       ],
       "title": "Error Budget Consumption (7-day trend)",

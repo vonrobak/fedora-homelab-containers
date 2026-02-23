@@ -70,6 +70,21 @@ groups:
       - record: sli:nextcloud:availability:ratio
         expr: slo:nextcloud:availability:actual
 
+      # Home Assistant - Total requests
+      - record: sli:home_assistant:requests:total
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[5m]))
+
+      # Home Assistant - Successful requests (2xx/3xx + WebSocket code=0)
+      # HA uses heavy WebSocket for real-time updates - code=0 is critical here
+      - record: sli:home_assistant:requests:success
+        expr: |
+          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[5m]))
+
+      # Home Assistant - Availability (use 30d SLO for current display)
+      - record: sli:home_assistant:availability:ratio
+        expr: slo:home_assistant:availability:actual
+
       # Traefik Gateway - Uptime
       - record: sli:traefik:availability:ratio
         expr: |
@@ -122,6 +137,20 @@ groups:
           sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="nextcloud@file", le="1.0"}[5m]))
           /
           sum(rate(traefik_service_request_duration_seconds_count{exported_service="nextcloud@file"}[5m]))
+
+      # Home Assistant - p95 latency
+      - record: sli:home_assistant:latency:p95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="home-assistant@file"}[5m])) by (le)
+          )
+
+      # Home Assistant - Requests under 1000ms target (WebSocket-heavy, allow more latency)
+      - record: sli:home_assistant:latency:fast_ratio
+        expr: |
+          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="home-assistant@file", le="1.0"}[5m]))
+          /
+          sum(rate(traefik_service_request_duration_seconds_count{exported_service="home-assistant@file"}[5m]))
 
       # Traefik - p99 entrypoint latency (all traffic)
       - record: sli:traefik:latency:p99
@@ -238,6 +267,23 @@ groups:
         expr: |
           slo:nextcloud:availability:actual >= bool slo:nextcloud:availability:target
 
+      # Home Assistant - 99.5% availability target over 30 days
+      # WebSocket-heavy service with native auth (no Authelia)
+      - record: slo:home_assistant:availability:target
+        expr: 0.995
+
+      - record: slo:home_assistant:availability:actual
+        expr: |
+          (
+            sum(increase(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[30d]))
+            /
+            sum(increase(traefik_service_requests_total{exported_service="home-assistant@file"}[30d]))
+          )
+
+      - record: slo:home_assistant:availability:compliant
+        expr: |
+          slo:home_assistant:availability:actual >= bool slo:home_assistant:availability:target
+
       # Traefik - 99.95% availability target over 30 days
       - record: slo:traefik:availability:target
         expr: 0.9995
@@ -315,6 +361,21 @@ groups:
       - record: error_budget:nextcloud:availability:budget_remaining
         expr: |
           clamp_max(1 - error_budget:nextcloud:availability:budget_consumed, 1)
+
+      # Home Assistant - Error budget (0.5% allowed failure = 216 min/month)
+      - record: error_budget:home_assistant:availability:budget_total
+        expr: 0.005
+
+      - record: error_budget:home_assistant:availability:budget_consumed
+        expr: |
+          clamp_min(
+            (1 - slo:home_assistant:availability:actual) / (1 - slo:home_assistant:availability:target),
+            0
+          )
+
+      - record: error_budget:home_assistant:availability:budget_remaining
+        expr: |
+          clamp_max(1 - error_budget:home_assistant:availability:budget_consumed, 1)
 
       # Traefik - Error budget (0.05% = 21 min/month)
       - record: error_budget:traefik:availability:budget_total
@@ -422,6 +483,47 @@ groups:
               sum(rate(traefik_service_requests_total{exported_service="immich@file"}[30m]))
             )
           ) / error_budget:immich:availability:budget_total
+
+      # Home Assistant - Burn rates (WebSocket-heavy, code=0 included)
+      - record: burn_rate:home_assistant:availability:1h
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[1h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[1h]))
+            )
+          ) / error_budget:home_assistant:availability:budget_total
+
+      - record: burn_rate:home_assistant:availability:5m
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[5m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[5m]))
+            )
+          ) / error_budget:home_assistant:availability:budget_total
+
+      - record: burn_rate:home_assistant:availability:6h
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[6h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[6h]))
+            )
+          ) / error_budget:home_assistant:availability:budget_total
+
+      - record: burn_rate:home_assistant:availability:30m
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[30m]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m]))
+            )
+          ) / error_budget:home_assistant:availability:budget_total
 
       # Authelia - Burn rates
       - record: burn_rate:authelia:availability:1h

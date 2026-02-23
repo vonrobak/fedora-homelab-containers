@@ -31,9 +31,6 @@ Exec=--config.file=/etc/prometheus/prometheus.yml \
 
 DNS=192.168.1.69
 
-# Resource limits (podman runtime)
-Memory=1G
-
 # Health check
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1
 HealthInterval=30s
