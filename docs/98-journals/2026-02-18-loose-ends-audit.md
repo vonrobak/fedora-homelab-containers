@@ -15,7 +15,7 @@ The homelab is in excellent operational shape -- 27/27 containers running, 26/27
 
 ## Tier 1: Significant Unfinished Work
 
-### 1.1 Disaster Recovery Plan: Fully Planned, Never Executed | User has verified this, and it should be documented in one of the DR runbooks located here: /home/patriark/containers/docs/20-operations/runbooks
+### 1.1 Disaster Recovery Plan: Fully Planned, Never Executed
 
 **Source:** `docs/97-plans/PROJECT-A-DISASTER-RECOVERY-PLAN.md`
 **Planned:** November 2025 (8-10 hours across 3 sessions)
@@ -45,11 +45,11 @@ Phase 1 (deployment + security hardening) completed December 20. The remaining p
 
 Nextcloud has been stable at v32.0.6 since mid-February, syncing across all five devices. The risk here is unknown-unknowns -- edge cases in conflict handling or sharing that only surface under testing.
 
-### 1.3 Immich Operational Excellence: Plan Ready, Phases 2-6 Not documented but user believes they were done. Put low priority on 1.3
+### 1.3 Immich Operational Excellence: Plan Ready, Phases 2-6 Not Executed
 
 **Source:** `.claude/plans/immich-operational-excellence.md`
 **Planned:** February 7, 2026
-**Current status:** Phase 1 (server verification + monitoring fix) completed. User comment: Phases 2-6 completed but not documented. The user has some uncertainty about phase 5-6 being completed or not, but Immich is confirmed working very well across all devices.
+**Current status:** Phase 1 (server verification + monitoring fix) completed. Phases 2-6 never started.
 
 The remaining phases cover:
 - **Phase 2:** Multi-device client testing (iOS, iPad, browser, gaming PC)
@@ -58,19 +58,17 @@ The remaining phases cover:
 - **Phase 5:** SLO and alert remediation (502 root cause, SLO target evaluation)
 - **Phase 6:** Documentation and service guide update
 
+The plan also includes a **photo library segmentation strategy** for importing ~30GB of mixed media (personal photos, screenshots, downloads, receipts) into organized Immich libraries.
 
 **Key findings from Phase 1 that remain unaddressed:**
 - No direct Prometheus scrape of Immich application metrics
 - Immich SLO was 96.8% (target 99.9%) due to residual Feb 2 incident 502s -- these should have rolled out of the 30d window by now, worth re-checking
-- Both the above should be investigated as the user believes the first is solved and for the second, SLO levels are confirmed to be at a much higher rate currently. 
 
-
-
-### 1.4 Remediation Dashboard: 56 Days Overdue (low priority from user)
+### 1.4 Remediation Dashboard: 56 Days Overdue
 
 **Source:** Journal `2025-12-26`
 **Scheduled:** Late January 2026 (after 30 days of baseline data)
-**Current status:** Never created | user comment: it does seem to be created? https://grafana.patriark.org/d/remediation-effectiveness/
+**Current status:** Never created
 
 The remediation system has been running since December 24 with metrics exported to Prometheus. A Grafana dashboard was planned to visualize remediation effectiveness, trends, and ROI. The 30-day data prerequisite was met in late January.
 
@@ -92,7 +90,7 @@ The quadlet has no `HealthCmd` directive. The Loki container uses a scratch/dist
 - Switch to Grafana's Loki Alpine image (has shell)
 - Accept the gap with external monitoring via Prometheus `up{job="loki"}`
 
-### 2.2 Memory Limits: Only 5 of 27 Containers | user comment: (this assessment seems to be flawed, as the current architecture relies on MemoryHigh and MemoryMax arguments - this should not be give much priority)
+### 2.2 Memory Limits: Only 5 of 27 Containers
 
 **Source:** Journal `2025-12-26`
 **Current state verified:** Only 5 containers have `Memory=` in their quadlets:
@@ -109,21 +107,21 @@ Missing from all other 22 containers, including high-memory services: immich-ser
 
 The December 26 journal identified this as in-progress work but only the first batch was completed.
 
-### 2.3 Home Assistant Has No SLO (this is high priority)
+### 2.3 Home Assistant Has No SLO
 
 **Source:** Cross-reference of `slo-recording-rules.yml` against services
 **Current state verified:** No Home Assistant recording rules exist in the SLO framework.
 
 This is notable because HA was the service *most affected* by the WebSocket `code=0` bug (15.6% false failure rate, 437 miscounted connections over 30 days, documented February 7). SLO rules were added for Jellyfin, Immich, Authelia, and Nextcloud, but not for Home Assistant despite it being a critical service with active WebSocket usage.
 
-### 2.4 WebSocket `code=0` Fix Not in Deployment Templates (nice to have)
+### 2.4 WebSocket `code=0` Fix Not in Deployment Templates
 
 **Source:** Journal `2026-02-07` (explicit note: "should be added to deployment pattern templates")
 **Current state verified:** No `code=~"0|..."` patterns exist in `.claude/skills/homelab-deployment/`
 
 The fix was applied to all production SLO rules (recording rules + burn rate rules) but the journal explicitly flagged that deployment templates need updating. Any future service added to SLO monitoring via the deployment skill would inherit the old bug.
 
-### 2.5 System SSD at 70% (Was 64%) - this should be investigated against the auto-remediation framework - the likely culprit is high number of btrfs snapshots which the user can manually delete when space gets tight
+### 2.5 System SSD at 70% (Was 64%)
 
 **Source:** `df -h /` shows `/dev/nvme0n1p3 118G 82G 36G 70%`
 **MEMORY.md claims:** "System SSD: 64% (118GB)"
@@ -206,17 +204,17 @@ If tackling these, here's a suggested sequence based on risk vs. effort:
 
 | Priority | Item | Effort | Risk if Ignored |
 |----------|------|--------|-----------------|
-| 1 | Fix MEMORY.md inaccuracies (4.1) | 5 min | Low, but accumulates confusion | User comment: seems important. MEMORY.md should be accurate.
-| 2 | Memory limits on remaining containers (2.2) | 1 hour | Runaway container could OOM the host | User comment: see above. This is solved through Memory High and MemoryMax configs. Memory syntax configs should deprecate
-| 3 | SSD usage investigation (2.5) | 30 min | Approaching 75% threshold | User comment: the user has good assessment of this situation. BTRFS snapshots primary driver of space utilization.
-| 4 | Nextcloud testing phases 2-4 (1.2) | 2-4 hours | Unknown edge cases in production | User comment: nice to have, but not need to have
-| 5 | Loki healthcheck (2.1) | 30 min | Blind spot in container health | User comment: this has been tried fixed before. I seem to remember it being hard to fix because the image is so minimal
-| 6 | Home Assistant SLO rules (2.3) | 30 min | WebSocket-heavy service unmonitored | User: seems important and would be a nice addition. Should also be included in the already existing SLO Grafana dashboard.
-| 7 | WebSocket fix in deployment templates (2.4) | 15 min | Future deployments inherit bug | User comment: could you explain this more fully before commiting to this?
-| 8 | Immich operational excellence phases 2-6 (1.3) | 2 hours | Untested client behavior | User: low importance, most of this testing was done by user, but not adequately documented/journaled.
-| 9 | Disaster recovery validation (1.1) | 8-10 hours | Untested backups | User comment: this has been thoroughly tested and verified. Should be information in some of the DR runbooks about this.
-| 10 | Remediation dashboard (1.4) | 2 hours | No visibility into automation ROI | User comment: already exists? https://grafana.patriark.org/d/remediation-effectiveness/
-| 11 | PR review suggestions (Tier 3) | 3-4 hours | Technical debt accumulation | User comment: nice to have.
+| 1 | Fix MEMORY.md inaccuracies (4.1) | 5 min | Low, but accumulates confusion |
+| 2 | Memory limits on remaining containers (2.2) | 1 hour | Runaway container could OOM the host |
+| 3 | SSD usage investigation (2.5) | 30 min | Approaching 75% threshold |
+| 4 | Nextcloud testing phases 2-4 (1.2) | 2-4 hours | Unknown edge cases in production |
+| 5 | Loki healthcheck (2.1) | 30 min | Blind spot in container health |
+| 6 | Home Assistant SLO rules (2.3) | 30 min | WebSocket-heavy service unmonitored |
+| 7 | WebSocket fix in deployment templates (2.4) | 15 min | Future deployments inherit bug |
+| 8 | Immich operational excellence phases 2-6 (1.3) | 2 hours | Untested client behavior |
+| 9 | Disaster recovery validation (1.1) | 8-10 hours | Untested backups |
+| 10 | Remediation dashboard (1.4) | 2 hours | No visibility into automation ROI |
+| 11 | PR review suggestions (Tier 3) | 3-4 hours | Technical debt accumulation |
 
 ---
 

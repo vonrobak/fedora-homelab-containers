@@ -487,6 +487,7 @@ groups:
           service: home-assistant
           slo: availability
           tier: "4"
+          burn_rate: "minimal"
         annotations:
           summary: "ℹ️ Home Assistant error budget trending above baseline"
 

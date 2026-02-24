@@ -263,7 +263,7 @@ Access the SLO dashboard at: `https://grafana.patriark.org/d/slo-dashboard`
 ## Implementation Status
 
 - [x] SLO definitions documented (11 SLOs across 6 services)
-- [x] Prometheus recording rules created (79 rules: SLI, error budget, burn rate)
+- [x] Prometheus recording rules created (113 rules: SLI, error budget, burn rate)
 - [x] Error budget calculations implemented (15 tracking rules)
 - [x] Multi-window burn-rate alerts configured (11 alerts: critical + warning)
 - [x] Grafana dashboards created (SLO dashboard + fixed 6 existing dashboards)
