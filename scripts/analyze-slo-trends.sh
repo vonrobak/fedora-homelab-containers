@@ -51,10 +51,10 @@ log_section "Data Collection Summary"
 log "  Snapshot file: $SNAPSHOT_FILE"
 log "  Total data points: $total_snapshots"
 log "  Unique days: $unique_days"
-log "  Services tracked: 5 (jellyfin, immich, authelia, traefik, nextcloud)"
+log "  Services tracked: 6 (jellyfin, immich, authelia, traefik, nextcloud, home_assistant)"
 
 # Analyze each service
-for service in jellyfin immich authelia traefik nextcloud; do
+for service in jellyfin immich authelia traefik nextcloud home_assistant; do
     log_section "Analysis: $service"
 
     # Extract service data

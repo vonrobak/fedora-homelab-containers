@@ -19,7 +19,7 @@ mkdir -p "$SNAPSHOT_DIR"
 
 # Query Prometheus from inside the prometheus container
 query_prom() {
-    podman exec prometheus wget -q -O- "http://localhost:9090/api/v1/query?query=$1" 2>&1 | \
+    podman exec prometheus wget -q -O- "http://localhost:9090/api/v1/query?query=$1" 2>/dev/null | \
         jq -r '.data.result[0].value[1]' 2>/dev/null || echo "null"
 }
 
@@ -33,10 +33,11 @@ fi
 # Collect metrics for each service
 declare -A SERVICES=(
     ["jellyfin"]="0.995"
-    ["immich"]="0.999"
+    ["immich"]="0.995"
     ["authelia"]="0.999"
     ["traefik"]="0.9995"
     ["nextcloud"]="0.995"
+    ["home_assistant"]="0.995"
 )
 
 for service in "${!SERVICES[@]}"; do
