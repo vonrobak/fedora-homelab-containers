@@ -36,37 +36,34 @@ fi
 DRIFT_COUNT=$(grep -c "✗ DRIFT" "$DRIFT_OUTPUT" 2>/dev/null || echo "0")
 WARNING_COUNT=$(grep -c "⚠ WARNING" "$DRIFT_OUTPUT" 2>/dev/null || echo "0")
 
-# Only alert if actual drift detected (not warnings)
+# Write status to daily digest directory (consolidated Discord notification)
+DIGEST_DIR="/tmp/daily-digest"
+mkdir -p "$DIGEST_DIR"
+
 if [[ "$DRIFT_COUNT" -gt 0 ]]; then
     echo "[$(date)] Drift detected in $DRIFT_COUNT service(s)"
+    DRIFT_SERVICES=$(grep "✗ DRIFT" "$DRIFT_OUTPUT" | head -5 || echo "Unknown")
 
-    # Get Discord webhook from alert-discord-relay
-    DISCORD_WEBHOOK=$(podman exec alert-discord-relay env 2>/dev/null | grep DISCORD_WEBHOOK_URL | cut -d= -f2 || echo "")
-
-    if [[ -n "$DISCORD_WEBHOOK" ]]; then
-        # Build drift summary
-        DRIFT_SERVICES=$(grep "✗ DRIFT" "$DRIFT_OUTPUT" | head -5 || echo "Unknown")
-
-        # Send Discord alert
-        curl -s -H "Content-Type: application/json" \
-            -d "{
-                \"embeds\": [{
-                    \"title\": \"⚠️ Configuration Drift Detected\",
-                    \"description\": \"$DRIFT_COUNT service(s) have drifted from their quadlet definitions.\",
-                    \"color\": 16744256,
-                    \"fields\": [
-                        {\"name\": \"Services with Drift\", \"value\": \"\`\`\`$DRIFT_SERVICES\`\`\`\", \"inline\": false},
-                        {\"name\": \"Action Required\", \"value\": \"Run \`systemctl --user restart <service>\` to reconcile\", \"inline\": false}
-                    ],
-                    \"footer\": {\"text\": \"Daily Drift Check • $(date '+%Y-%m-%d %H:%M')\"}
-                }]
-            }" \
-            "$DISCORD_WEBHOOK" > /dev/null 2>&1 || echo "Warning: Discord notification failed"
-    fi
+    cat > "$DIGEST_DIR/drift-check.json" <<EOF
+{
+  "status": "drift_detected",
+  "drift_count": $DRIFT_COUNT,
+  "warning_count": $WARNING_COUNT,
+  "services": $(echo "$DRIFT_SERVICES" | jq -Rs '.')
+}
+EOF
 
     # Save report
     cp "$DRIFT_OUTPUT" "$REPORT_DIR/drift-check-$TIMESTAMP.txt"
     echo "Report saved to: $REPORT_DIR/drift-check-$TIMESTAMP.txt"
+else
+    cat > "$DIGEST_DIR/drift-check.json" <<EOF
+{
+  "status": "ok",
+  "drift_count": 0,
+  "warning_count": $WARNING_COUNT
+}
+EOF
 fi
 
 # Cleanup

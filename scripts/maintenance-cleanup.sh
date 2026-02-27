@@ -131,7 +131,34 @@ if [ -d "${HOME}/containers/data/backup-logs" ]; then
 fi
 
 # ============================================================================
-# SECTION 5: Post-cleanup summary
+# SECTION 5: Remediation log rotation
+# ============================================================================
+log_section "Rotating Remediation Logs"
+
+REMEDIATION_LOG_DIR="${HOME}/containers/.claude/data/remediation-logs"
+if [ -d "${REMEDIATION_LOG_DIR}" ]; then
+    # Delete logs older than 90 days
+    OLD_REMEDIATION=$(find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +90 -type f 2>/dev/null | wc -l)
+    if [ "${OLD_REMEDIATION}" -gt 0 ]; then
+        find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +90 -type f -delete
+        log "${GREEN}✓ Deleted ${OLD_REMEDIATION} remediation logs older than 90 days${NC}"
+    fi
+
+    # Compress logs older than 30 days (skip already-compressed)
+    COMPRESS_REMEDIATION=$(find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +30 -type f 2>/dev/null | wc -l)
+    if [ "${COMPRESS_REMEDIATION}" -gt 0 ]; then
+        find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +30 -type f -exec gzip {} \;
+        log "${GREEN}✓ Compressed ${COMPRESS_REMEDIATION} remediation logs older than 30 days${NC}"
+    fi
+
+    REMAINING=$(find "${REMEDIATION_LOG_DIR}" -type f 2>/dev/null | wc -l)
+    log "Remediation logs remaining: ${REMAINING}"
+else
+    log "No remediation log directory found"
+fi
+
+# ============================================================================
+# SECTION 6: Post-cleanup summary
 # ============================================================================
 log_section "Post-Cleanup System State"
 
@@ -148,7 +175,7 @@ else
 fi
 
 # ============================================================================
-# SECTION 6: Discord Notification
+# SECTION 7: Discord Notification
 # ============================================================================
 log_section "Sending Discord Notification"
 

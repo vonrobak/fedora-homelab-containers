@@ -58,45 +58,24 @@ if [[ "$DISK_DAYS" -lt 999 ]]; then
     fi
 fi
 
-# Only alert if warning or critical
+# Write status to daily digest directory (consolidated Discord notification)
+DIGEST_DIR="/tmp/daily-digest"
+mkdir -p "$DIGEST_DIR"
+
+DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}')
+DISK_AVAIL=$(df -h / | awk 'NR==2 {print $4}')
+
+cat > "$DIGEST_DIR/resource-forecast.json" <<EOF
+{
+  "status": "$ALERT_LEVEL",
+  "days_until_exhaustion": $DISK_DAYS,
+  "disk_usage": "$DISK_USAGE",
+  "disk_available": "$DISK_AVAIL"
+}
+EOF
+
 if [[ "$ALERT_LEVEL" != "none" ]]; then
     echo "[$(date)] Resource exhaustion predicted within $DISK_DAYS days"
-
-    # Get Discord webhook
-    DISCORD_WEBHOOK=$(podman exec alert-discord-relay env 2>/dev/null | grep DISCORD_WEBHOOK_URL | cut -d= -f2 || echo "")
-
-    if [[ -n "$DISCORD_WEBHOOK" ]]; then
-        # Get current disk usage
-        DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}')
-        DISK_AVAIL=$(df -h / | awk 'NR==2 {print $4}')
-
-        # Determine emoji and title based on level
-        if [[ "$ALERT_LEVEL" == "critical" ]]; then
-            EMOJI="🚨"
-            TITLE="Critical: Disk Exhaustion in $DISK_DAYS Days"
-        else
-            EMOJI="⚠️"
-            TITLE="Warning: Disk Exhaustion in $DISK_DAYS Days"
-        fi
-
-        # Send Discord alert
-        curl -s -H "Content-Type: application/json" \
-            -d "{
-                \"embeds\": [{
-                    \"title\": \"$EMOJI $TITLE\",
-                    \"description\": \"Based on current growth trends, the system disk will reach critical capacity.\",
-                    \"color\": $ALERT_COLOR,
-                    \"fields\": [
-                        {\"name\": \"Current Usage\", \"value\": \"$DISK_USAGE used\", \"inline\": true},
-                        {\"name\": \"Available\", \"value\": \"$DISK_AVAIL\", \"inline\": true},
-                        {\"name\": \"Days Until Critical\", \"value\": \"$DISK_DAYS\", \"inline\": true},
-                        {\"name\": \"Recommended Action\", \"value\": \"Run \`./scripts/maintenance-cleanup.sh\` or review large files\", \"inline\": false}
-                    ],
-                    \"footer\": {\"text\": \"Daily Resource Forecast • $(date '+%Y-%m-%d %H:%M')\"}
-                }]
-            }" \
-            "$DISCORD_WEBHOOK" > /dev/null 2>&1 || echo "Warning: Discord notification failed"
-    fi
 
     # Save report
     cp "$PREDICT_OUTPUT" "$REPORT_DIR/resource-forecast-$TIMESTAMP.json"
