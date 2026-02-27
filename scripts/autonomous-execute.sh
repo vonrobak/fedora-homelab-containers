@@ -842,9 +842,9 @@ signals_all_clear() {
         return 1
     fi
 
-    # Check 2: Did daily-drift-check detect drift?
+    # Check 2: Did daily-drift-check detect drift? (scoped to last 2h to avoid stale data)
     local drift_status
-    drift_status=$(journalctl --user -u daily-drift-check.service -n 10 --no-pager 2>/dev/null \
+    drift_status=$(journalctl --user -u daily-drift-check.service --since "2 hours ago" --no-pager 2>/dev/null \
         | grep -c "Drift detected\|✗ DRIFT" || echo "0")
 
     if [[ "$drift_status" -gt 0 ]]; then

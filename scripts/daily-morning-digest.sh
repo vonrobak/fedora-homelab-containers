@@ -5,10 +5,13 @@
 # and error digest into a single Discord message.
 #
 # Timer: daily-morning-digest.timer
-# Schedule: Daily at 07:15 (after all morning scripts complete)
+# Schedule: Daily at 07:30 (after all morning scripts + RandomizedDelaySec margin)
 # Status: ACTIVE
 # Created: 2026-02-27
 
+# No set -e: notification script should log errors and continue, not abort on
+# transient failures (missing files, webhook timeouts). Differs from other
+# scripts intentionally.
 set -uo pipefail
 
 DIGEST_DIR="/tmp/daily-digest"
@@ -50,19 +53,8 @@ ISSUE_COUNT=0
 [[ "$AUTONOMOUS_STATUS" == "failures" || "$AUTONOMOUS_STATUS" == "executed" ]] && ((ISSUE_COUNT++)) || true
 [[ "$ERROR_STATUS" == "critical" || "$ERROR_STATUS" == "warning" ]] && ((ISSUE_COUNT++)) || true
 
-# Build status lines
-build_line() {
-    local component=$1 status=$2
-    case "$status" in
-        ok|none|no_data) echo "  $component: OK" ;;
-        *) echo "  $component: needs attention" ;;
-    esac
-}
-
 # Determine embed color and title
 if [[ "$ISSUE_COUNT" -eq 0 ]]; then
-    EMBED_COLOR=3066993   # Green
-    TITLE="Daily Morning Digest — All Clear"
     # On fully quiet days, skip Discord entirely to avoid noise
     echo "[$(date)] All systems healthy, no digest needed"
     rm -rf "$DIGEST_DIR"
@@ -77,43 +69,41 @@ else
     fi
 fi
 
-# Build Discord fields
-FIELDS="["
+# Build Discord fields using jq to safely handle special characters
+FIELDS="[]"
 
-# Drift check field
 if [[ "$DRIFT_STATUS" == "drift_detected" ]]; then
     DRIFT_COUNT=$(echo "$DRIFT" | jq -r '.drift_count // 0')
-    FIELDS+="{\"name\": \"Config Drift\", \"value\": \"$DRIFT_COUNT service(s) drifted. Run check-drift.sh for details.\", \"inline\": false},"
+    FIELDS=$(echo "$FIELDS" | jq --arg v "$DRIFT_COUNT service(s) drifted. Run check-drift.sh for details." \
+        '. + [{"name": "Config Drift", "value": $v, "inline": false}]')
 fi
 
-# Resource forecast field
 if [[ "$FORECAST_STATUS" == "critical" || "$FORECAST_STATUS" == "warning" ]]; then
     DISK_DAYS=$(echo "$FORECAST" | jq -r '.days_until_exhaustion // "?"')
     DISK_USAGE=$(echo "$FORECAST" | jq -r '.disk_usage // "?"')
     DISK_AVAIL=$(echo "$FORECAST" | jq -r '.disk_available // "?"')
-    LEVEL_EMOJI=$([[ "$FORECAST_STATUS" == "critical" ]] && echo "CRITICAL" || echo "Warning")
-    FIELDS+="{\"name\": \"Resource Forecast ($LEVEL_EMOJI)\", \"value\": \"Disk exhaustion in ~$DISK_DAYS days. Currently $DISK_USAGE used, $DISK_AVAIL available.\", \"inline\": false},"
+    LEVEL=$([[ "$FORECAST_STATUS" == "critical" ]] && echo "CRITICAL" || echo "Warning")
+    FIELDS=$(echo "$FIELDS" | jq --arg v "Disk exhaustion in ~$DISK_DAYS days. Currently $DISK_USAGE used, $DISK_AVAIL available." \
+        --arg n "Resource Forecast ($LEVEL)" \
+        '. + [{"name": $n, "value": $v, "inline": false}]')
 fi
 
-# Autonomous ops field
 if [[ "$AUTONOMOUS_STATUS" == "executed" || "$AUTONOMOUS_STATUS" == "failures" ]]; then
     AUTO_ACTIONS=$(echo "$AUTONOMOUS" | jq -r '.actions_taken // 0')
     AUTO_SUCCESS=$(echo "$AUTONOMOUS" | jq -r '.success // 0')
     AUTO_FAIL=$(echo "$AUTONOMOUS" | jq -r '.failures // 0')
-    FIELDS+="{\"name\": \"Autonomous Operations\", \"value\": \"$AUTO_ACTIONS action(s): $AUTO_SUCCESS success, $AUTO_FAIL failed.\", \"inline\": false},"
+    FIELDS=$(echo "$FIELDS" | jq --arg v "$AUTO_ACTIONS action(s): $AUTO_SUCCESS success, $AUTO_FAIL failed." \
+        '. + [{"name": "Autonomous Operations", "value": $v, "inline": false}]')
 fi
 
-# Error digest field
 if [[ "$ERROR_STATUS" == "critical" || "$ERROR_STATUS" == "warning" ]]; then
     TOTAL_ERRORS=$(echo "$ERRORS" | jq -r '.total_errors // 0')
     ERROR_SUMMARY=$(echo "$ERRORS" | jq -r '.summary // "unknown"')
-    FIELDS+="{\"name\": \"Error Digest (24h)\", \"value\": \"$TOTAL_ERRORS total errors. Breakdown: $ERROR_SUMMARY\", \"inline\": false},"
+    FIELDS=$(echo "$FIELDS" | jq --arg v "$TOTAL_ERRORS total errors. Breakdown: $ERROR_SUMMARY" \
+        '. + [{"name": "Error Digest (24h)", "value": $v, "inline": false}]')
 fi
 
-# Remove trailing comma and close
-FIELDS="${FIELDS%,}]"
-
-# Build payload
+# Build payload (use --arg for free-text fields to auto-escape special characters)
 PAYLOAD=$(jq -n \
     --arg title "$TITLE" \
     --argjson color "$EMBED_COLOR" \
@@ -129,6 +119,12 @@ PAYLOAD=$(jq -n \
         timestamp: $ts
       }]
     }')
+
+if [[ -z "$PAYLOAD" || "$PAYLOAD" == "null" ]]; then
+    echo "[$(date)] ERROR: Failed to build Discord payload (jq error), skipping"
+    rm -rf "$DIGEST_DIR"
+    exit 1
+fi
 
 # Send to Discord
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \

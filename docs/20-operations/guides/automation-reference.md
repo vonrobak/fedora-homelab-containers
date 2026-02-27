@@ -100,7 +100,7 @@ systemctl --user start <name>.service                 # Trigger manually
 | `auto-doc-update` | 07:00 | `auto-doc-orchestrator.sh` | Regenerate AUTO-*.md docs |
 | `daily-error-digest` | ~07:00 | `daily-error-digest.sh` | Loki error aggregation → digest |
 | `query-cache-refresh` | ~07:05 | `precompute-queries.sh` | Pre-compute query cache |
-| `daily-morning-digest` | ~07:15 | `daily-morning-digest.sh` | Consolidated morning Discord notification |
+| `daily-morning-digest` | ~07:30 | `daily-morning-digest.sh` | Consolidated morning Discord notification |
 
 ### Weekly
 
@@ -138,7 +138,7 @@ The daily automation follows a deliberate sequence:
 07:00  auto-doc-update          (regenerate docs with fresh data)
 07:00  daily-error-digest       (last 24h error summary → write digest status)
 07:05  query-cache-refresh      (pre-compute query cache with fresh data)
-07:15  daily-morning-digest     (consolidated Discord notification)
+07:30  daily-morning-digest     (consolidated Discord notification)
 ```
 
 ---

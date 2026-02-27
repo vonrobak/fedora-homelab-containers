@@ -43,7 +43,7 @@ Comprehensive infrastructure state capture tool. Was useful during initial devel
 **Reason:** Audit of scripts/ directory — one-off fixes, applied migrations, completed tests, and superseded tools.
 
 **One-off fixes (applied, permanent):**
-- `fix-podman-secrets.sh` — Converted file secrets to Podman secrets (initial setup)
+- `fix-podman-secrets.sh` — Converted file secrets to Podman secrets (on disk only, never git-tracked due to secrets content)
 - `fix-immich-ml-healthcheck.sh` — Replaced curl healthcheck with wget (superseded by v2)
 - `fix-immich-ml-healthcheck-v2.sh` — Python3 healthcheck fix (applied, now in quadlet)
 - `migrate-to-container-slice.sh` — Added Slice=container.slice to all quadlets
