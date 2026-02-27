@@ -832,14 +832,18 @@ log_issue_to_context() {
 
 signals_all_clear() {
     # Check 1: Did predictive-maintenance find anything critical?
+    # Match the healthy message positively — the log contains "No critical predictions"
+    # on healthy days, so grepping for "critical" would false-match every time.
     local pred_log
     pred_log=$(find "$CONTAINERS_DIR/.claude/data/remediation-logs/" \
         -name "predictive-maintenance-*.log" -printf '%T@ %p\n' 2>/dev/null \
         | sort -rn | head -1 | cut -d' ' -f2-)
 
-    if [[ -n "$pred_log" ]] && grep -q "critical\|CRITICAL\|action_required" "$pred_log" 2>/dev/null; then
-        log INFO "Pre-check: predictive maintenance flagged issues"
-        return 1
+    if [[ -n "$pred_log" ]]; then
+        if ! grep -q "No critical predictions\|System healthy\|no_action_required" "$pred_log" 2>/dev/null; then
+            log INFO "Pre-check: predictive maintenance flagged issues"
+            return 1
+        fi
     fi
 
     # Check 2: Did daily-drift-check detect drift?

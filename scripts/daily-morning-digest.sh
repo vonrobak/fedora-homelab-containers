@@ -17,6 +17,9 @@ set -uo pipefail
 DIGEST_DIR="/tmp/daily-digest"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Clean up digest directory on any exit (missing webhook, early exit, errors)
+trap 'rm -rf "$DIGEST_DIR"' EXIT
+
 # Get Discord webhook
 DISCORD_WEBHOOK=$(podman exec alert-discord-relay env 2>/dev/null | grep DISCORD_WEBHOOK_URL | cut -d= -f2 || echo "")
 
@@ -50,6 +53,7 @@ ERROR_STATUS=$(echo "$ERRORS" | jq -r '.status // "no_data"')
 ISSUE_COUNT=0
 [[ "$DRIFT_STATUS" == "drift_detected" ]] && ((ISSUE_COUNT++)) || true
 [[ "$FORECAST_STATUS" == "critical" || "$FORECAST_STATUS" == "warning" ]] && ((ISSUE_COUNT++)) || true
+# "executed" is noteworthy (system self-healed), not just failures
 [[ "$AUTONOMOUS_STATUS" == "failures" || "$AUTONOMOUS_STATUS" == "executed" ]] && ((ISSUE_COUNT++)) || true
 [[ "$ERROR_STATUS" == "critical" || "$ERROR_STATUS" == "warning" ]] && ((ISSUE_COUNT++)) || true
 
@@ -57,7 +61,6 @@ ISSUE_COUNT=0
 if [[ "$ISSUE_COUNT" -eq 0 ]]; then
     # On fully quiet days, skip Discord entirely to avoid noise
     echo "[$(date)] All systems healthy, no digest needed"
-    rm -rf "$DIGEST_DIR"
     exit 0
 else
     if [[ "$FORECAST_STATUS" == "critical" || "$ERROR_STATUS" == "critical" || "$AUTONOMOUS_STATUS" == "failures" ]]; then
@@ -122,7 +125,6 @@ PAYLOAD=$(jq -n \
 
 if [[ -z "$PAYLOAD" || "$PAYLOAD" == "null" ]]; then
     echo "[$(date)] ERROR: Failed to build Discord payload (jq error), skipping"
-    rm -rf "$DIGEST_DIR"
     exit 1
 fi
 
@@ -138,7 +140,6 @@ else
     echo "[$(date)] Failed to send digest to Discord (HTTP $HTTP_CODE)"
 fi
 
-# Cleanup digest directory
-rm -rf "$DIGEST_DIR"
+# Digest directory cleaned up by EXIT trap
 
 exit 0

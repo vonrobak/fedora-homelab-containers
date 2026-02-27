@@ -135,12 +135,12 @@ In practice, most mornings produce 0-1 notifications (the system is healthy). Bu
 
 Implementation approach:
 - Each script writes a status summary to a shared `/tmp/daily-digest/` directory
-- A new `daily-morning-digest.sh` runs at 07:15 (after all components finish), reads the summaries, and sends one consolidated Discord message
+- A new `daily-morning-digest.sh` runs at 07:30 (after all components finish + RandomizedDelaySec margin), reads the summaries, and sends one consolidated Discord message
 - Individual scripts lose their `--notify` / Discord webhook calls
 
 **Savings:** Reduces Discord noise from potentially 5 messages to 1. More actionable — single message with full context vs. scattered alerts.
 
-**Risk:** Medium. Delays notification of drift/forecast from 06:00 to 07:15. Acceptable since these are informational, not incident alerts. Actual incidents still route through Alertmanager → PagerDuty/Discord in real-time.
+**Risk:** Medium. Delays notification of drift/forecast from 06:00 to 07:30. Acceptable since these are informational, not incident alerts. Actual incidents still route through Alertmanager → PagerDuty/Discord in real-time.
 
 ---
 
@@ -201,7 +201,7 @@ All 5 proposals implemented in a single session:
 - Runs weekly with existing maintenance-cleanup timer
 
 ### Proposal 4: Consolidated morning Discord digest
-- Created `scripts/daily-morning-digest.sh` with timer/service at 07:15
+- Created `scripts/daily-morning-digest.sh` with timer/service at 07:30
 - Modified 4 scripts to write JSON status to `/tmp/daily-digest/`:
   - `daily-drift-check.sh` → `drift-check.json`
   - `daily-resource-forecast.sh` → `resource-forecast.json`

@@ -177,7 +177,7 @@ The daily automation follows a deliberate sequence:
 | `daily-resource-forecast.sh` | Predict resource exhaustion → digest | Timer: daily 06:05 |
 | `weekly-intelligence-report.sh` | Weekly health summary → Discord | Timer: Friday 07:30 |
 | `daily-error-digest.sh` | Loki error aggregation → digest | Timer: daily 07:00 |
-| `daily-morning-digest.sh` | Consolidated morning Discord notification | Timer: daily 07:15 |
+| `daily-morning-digest.sh` | Consolidated morning Discord notification | Timer: daily 07:30 |
 | `catch-flapping-alert.sh` | Identify flapping alerts in Alertmanager | On-demand diagnostic |
 
 ### Update Workflow
