@@ -827,6 +827,73 @@ log_issue_to_context() {
 }
 
 ##############################################################################
+# Pre-Check Gate (skip expensive assessment when system is healthy)
+##############################################################################
+
+signals_all_clear() {
+    # Check 1: Did predictive-maintenance find anything critical?
+    # Match the healthy message positively — the log contains "No critical predictions"
+    # on healthy days, so grepping for "critical" would false-match every time.
+    local pred_log
+    pred_log=$(find "$CONTAINERS_DIR/.claude/data/remediation-logs/" \
+        -name "predictive-maintenance-*.log" -printf '%T@ %p\n' 2>/dev/null \
+        | sort -rn | head -1 | cut -d' ' -f2-)
+
+    # No log at all = no data to trust, fall through to drift/alert checks
+    if [[ -n "$pred_log" ]]; then
+        # Reject stale logs (>36h) — if the timer failed to run, don't trust old data
+        local log_age_ok
+        log_age_ok=$(find "$pred_log" -mmin -2160 -print -quit 2>/dev/null)
+        if [[ -z "$log_age_ok" ]]; then
+            log INFO "Pre-check: predictive maintenance log is stale (>36h), running full assessment"
+            return 1
+        fi
+        if ! grep -q "No critical predictions\|System healthy\|no_action_required" "$pred_log" 2>/dev/null; then
+            log INFO "Pre-check: predictive maintenance flagged issues"
+            return 1
+        fi
+    fi
+
+    # Check 2: Did daily-drift-check detect drift?
+    # Read the digest JSON if available (written by daily-drift-check.sh),
+    # fall back to journalctl if the file doesn't exist yet
+    local drift_status="0"
+    if [[ -f /tmp/daily-digest/drift-check.json ]]; then
+        local drift_json_status
+        drift_json_status=$(jq -r '.status // "ok"' /tmp/daily-digest/drift-check.json 2>/dev/null || echo "ok")
+        if [[ "$drift_json_status" == "drift_detected" ]]; then
+            drift_status="1"
+        fi
+    else
+        drift_status=$(journalctl --user -u daily-drift-check.service --since "2 hours ago" --no-pager 2>/dev/null \
+            | grep -c "Drift detected\|✗ DRIFT" || echo "0")
+    fi
+
+    if [[ "$drift_status" -gt 0 ]]; then
+        log INFO "Pre-check: drift detected in recent drift check"
+        return 1
+    fi
+
+    # Check 3: Are any alerts currently firing in Alertmanager?
+    local firing
+    firing=$(curl -sf http://localhost:9093/api/v2/alerts 2>/dev/null \
+        | python3 -c "import sys,json; alerts=json.load(sys.stdin); print(sum(1 for a in alerts if a.get('status',{}).get('state')=='active'))" 2>/dev/null \
+        || echo "unknown")
+
+    if [[ "$firing" == "unknown" ]]; then
+        log INFO "Pre-check: Alertmanager unreachable, running full assessment to be safe"
+        return 1
+    fi
+    if [[ "$firing" != "0" ]]; then
+        log INFO "Pre-check: $firing alert(s) currently firing"
+        return 1
+    fi
+
+    # All signals clear
+    return 0
+}
+
+##############################################################################
 # Main
 ##############################################################################
 
@@ -848,6 +915,17 @@ main() {
     local actions='[]'
 
     if $FROM_CHECK; then
+        # Pre-check gate: skip expensive assessment when all signals are clear
+        if ! $FORCE && signals_all_clear; then
+            log INFO "All signals clear (no predictions, no drift, no alerts) — skipping full assessment"
+            DIGEST_DIR="/tmp/daily-digest"
+            mkdir -p "$DIGEST_DIR"
+            cat > "$DIGEST_DIR/autonomous-ops.json" <<EOF
+{"status": "ok", "actions_taken": 0, "skipped_reason": "all_signals_clear"}
+EOF
+            exit 0
+        fi
+
         log INFO "Running autonomous check first..."
         local check_output
         check_output=$("$AUTONOMOUS_CHECK" --json 2>/dev/null || echo '{"recommended_actions": []}')
@@ -874,8 +952,15 @@ main() {
     local action_count
     action_count=$(echo "$actions" | jq 'length')
 
+    # Write status to daily digest directory (consolidated Discord notification)
+    DIGEST_DIR="/tmp/daily-digest"
+    mkdir -p "$DIGEST_DIR"
+
     if (( action_count == 0 )); then
         log INFO "No actions to execute"
+        cat > "$DIGEST_DIR/autonomous-ops.json" <<EOF
+{"status": "ok", "actions_taken": 0}
+EOF
         exit 0
     fi
 
@@ -912,6 +997,11 @@ main() {
     log INFO "  Success:  $success_count"
     log INFO "  Failures: $failure_count"
     log INFO "=========================================="
+
+    # Write digest status
+    cat > "$DIGEST_DIR/autonomous-ops.json" <<EOF
+{"status": "$([ "$failure_count" -gt 0 ] && echo "failures" || echo "executed")", "actions_taken": $action_count, "success": $success_count, "failures": $failure_count}
+EOF
 
     if (( failure_count > 0 )); then
         exit 1

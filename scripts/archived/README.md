@@ -37,6 +37,41 @@ Comprehensive infrastructure state capture tool. Was useful during initial devel
 
 **Note:** If detailed snapshots are needed again, this script still works - just not maintained.
 
+### Batch archive: 2026-02-27
+
+**Archived:** 2026-02-27
+**Reason:** Audit of scripts/ directory — one-off fixes, applied migrations, completed tests, and superseded tools.
+
+**One-off fixes (applied, permanent):**
+- `fix-podman-secrets.sh` — Converted file secrets to Podman secrets (on disk only, never git-tracked due to secrets content)
+- `fix-immich-ml-healthcheck.sh` — Replaced curl healthcheck with wget (superseded by v2)
+- `fix-immich-ml-healthcheck-v2.sh` — Python3 healthcheck fix (applied, now in quadlet)
+- `migrate-to-container-slice.sh` — Added Slice=container.slice to all quadlets
+- `apply-resource-limits.sh` — Applied MemoryHigh/MemoryMax to services
+- `optimize-permissions.sh` — Standardized subvol permissions + POSIX ACLs (ADR-019)
+- `cleanup-samba-and-ocis.sh` — Decommissioned Samba (ADR-019)
+- `verify-dns-fix-post-reboot.sh` — Verified static IP DNS fix post-reboot (ADR-018)
+
+**Diagnostics (issue resolved):**
+- `diagnose-redis-immich.sh` — Redis health validation debugging
+- `investigate-memory-leak.sh` — Memory leak investigation
+
+**Test/prototype scripts (real automation in place):**
+- `test-yubikey-ssh.sh` — YubiKey SSH auth testing
+- `monitor-ssh-tests.sh` — SSH test monitoring from remote host
+- `test-predictive-trigger.sh` — Predictive maintenance integration test
+- `test-slo-webhook-integration.sh` — SLO webhook→remediation flow test
+- `test-webhook-remediation.sh` — Alertmanager→webhook end-to-end test
+- `verify-autonomous-outcome.sh` — Phase 4 verification prototype (not yet integrated)
+
+**Superseded tools:**
+- `compare-quadlets.sh` — Replaced by `daily-drift-check.sh` + `check-drift.sh`
+- `deploy-immich-gpu-acceleration.sh` — Failed ROCm attempt (iGPU incompatible)
+- `detect-gpu-capabilities.sh` — Companion to failed GPU acceleration
+- `generate-service-catalog.sh` — Superseded by `generate-service-catalog-simple.sh`
+- `organize-docs.sh` — One-time documentation reorganization
+- `homepage-add-api-key.sh` — One-time Homepage widget configuration
+
 ---
 
 ## Restoring Archived Scripts

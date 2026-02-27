@@ -1,15 +1,15 @@
 # Automation Reference Guide
 
-**Last Updated:** 2025-12-23
+**Last Updated:** 2026-02-27
 **Maintainer:** patriark
 
-This guide catalogs all automation scripts in the homelab, their purposes, schedules, and integration with Claude Code skills. Use this as the authoritative reference for understanding and extending the automation ecosystem.
+Authoritative reference for all automation scripts, scheduled timers, and skill integrations in the homelab. **56 active scripts**, **26 scheduled timers**, **9 deployment scripts**, **7 remediation playbooks**.
 
 ---
 
 ## Quick Reference
 
-### Decision Tree: Which Script Do I Use?
+### Which Script Do I Use?
 
 ```
 What do you need to do?
@@ -20,11 +20,11 @@ What do you need to do?
 ├─ Diagnose a problem?
 │   ├─ General diagnostics → ./scripts/homelab-diagnose.sh
 │   ├─ Storage issues → ./scripts/collect-storage-info.sh
-│   └─ Memory issues → ./scripts/investigate-memory-leak.sh
+│   └─ Flapping alerts → ./scripts/catch-flapping-alert.sh
 │
 ├─ Deploy a service?
 │   ├─ New service → .claude/skills/homelab-deployment/scripts/deploy-from-pattern.sh
-│   ├─ Validate before deploy → .claude/skills/homelab-deployment/scripts/check-prerequisites.sh
+│   ├─ Validate quadlet → .claude/skills/homelab-deployment/scripts/validate-quadlet.sh
 │   └─ Check for drift → .claude/skills/homelab-deployment/scripts/check-drift.sh
 │
 ├─ Query the system?
@@ -33,342 +33,355 @@ What do you need to do?
 │
 ├─ Check SLO compliance?
 │   ├─ Quick status → ./scripts/slo-status.sh
-│   └─ Full report → ./scripts/monthly-slo-report.sh
+│   ├─ Full report → ./scripts/monthly-slo-report.sh
+│   └─ Trend analysis → ./scripts/analyze-slo-trends.sh
 │
 ├─ Perform maintenance?
 │   ├─ Cleanup resources → ./scripts/maintenance-cleanup.sh
 │   ├─ Clear swap → ./scripts/clear-swap-memory.sh
 │   └─ Rotate logs → ./scripts/rotate-journal-export.sh
 │
+├─ Update containers / prepare for reboot?
+│   └─ ./scripts/update-before-reboot.sh
+│       (orchestrates: snapshot → health gate → graceful shutdown → pull → prune)
+│
 ├─ Manage backups?
-│   └─ ./scripts/btrfs-snapshot-backup.sh
+│   ├─ Daily/weekly snapshots → ./scripts/btrfs-snapshot-backup.sh
+│   ├─ Monitor transfer → ./scripts/monitor-btrfs-transfer.sh
+│   └─ Test restore → ./scripts/test-backup-restore.sh
 │
 ├─ Regenerate documentation?
-│   ├─ All docs → ./scripts/auto-doc-orchestrator.sh (2s, runs all generators)
-│   ├─ Service catalog → ./scripts/generate-service-catalog-simple.sh
-│   ├─ Network diagrams → ./scripts/generate-network-topology.sh
-│   ├─ Dependencies → ./scripts/generate-dependency-graph.sh
-│   └─ Doc index → ./scripts/generate-doc-index.sh
+│   └─ ./scripts/auto-doc-orchestrator.sh (runs all 4 generators in ~2s)
 │
-└─ Security audit?
-    └─ ./scripts/security-audit.sh
+├─ Security audit?
+│   ├─ Full audit → ./scripts/security-audit.sh
+│   ├─ Vulnerability scan → ./scripts/scan-vulnerabilities.sh
+│   ├─ Config compliance → ./scripts/audit-configuration.sh
+│   └─ Permission drift → ./scripts/verify-permissions.sh
+│
+└─ Autonomous operations?
+    ├─ Assessment only → ./scripts/autonomous-check.sh --verbose
+    └─ Execute actions → ./scripts/autonomous-execute.sh --status
 ```
 
 ---
 
-## Automation Tiers
+## Scheduled Timers (26 active)
 
-Scripts are organized into tiers based on their purpose and automation level.
+All custom timers are in `~/.config/systemd/user/`. Timer management:
 
-### Tier 1: Scheduled Automations
-
-These scripts run automatically via systemd timers. **Do not run manually unless testing.**
-
-| Script | Timer | Schedule | Purpose |
-|--------|-------|----------|---------|
-| `cloudflare-ddns.sh` | `cloudflare-ddns.timer` | Every 30 min | Update DNS when public IP changes |
-| `btrfs-snapshot-backup.sh` | `btrfs-backup-daily.timer` | Daily 02:00 | Create local BTRFS snapshots |
-| `btrfs-snapshot-backup.sh` | `btrfs-backup-weekly.timer` | Weekly Sat 04:00 | Sync to external drive |
-| `maintenance-cleanup.sh` | `maintenance-cleanup.timer` | Weekly Sun 03:00 | Prune containers, rotate logs |
-| `daily-drift-check.sh` | `daily-drift-check.timer` | Daily 06:00 | Detect config drift → Discord alert |
-| `daily-resource-forecast.sh` | `daily-resource-forecast.timer` | Daily 06:05 | Predict exhaustion → Discord alert |
-| `weekly-intelligence-report.sh` | `weekly-intelligence.timer` | Friday 07:30 | End-of-week health summary → Discord |
-| `monthly-slo-report.sh` | `monthly-slo-report.timer` | 1st of month 10:00 | SLO compliance report → Discord |
-| `rotate-journal-export.sh` | `journal-logrotate.timer` | Hourly | Keep journal logs under control |
-| `precompute-queries.sh` | `query-cache-refresh.timer` | Every 6 hours (00, 06, 12, 18:00) | Pre-compute query cache for autonomous ops |
-| `auto-doc-orchestrator.sh` | `auto-doc-update.timer` | Daily 07:00 | Regenerate all auto-documentation (service catalog, network topology, dependencies, doc index) |
-
-**Timer management commands:**
 ```bash
-# List all active timers
-systemctl --user list-timers
-
-# Check specific timer
-systemctl --user status weekly-intelligence.timer
-
-# View last execution
-journalctl --user -u weekly-intelligence.service -n 20
-
-# Trigger manually (for testing)
-systemctl --user start weekly-intelligence.service
+systemctl --user list-timers                          # List all
+systemctl --user status <name>.timer                  # Check specific
+journalctl --user -u <name>.service -n 20             # Last execution
+systemctl --user start <name>.service                 # Trigger manually
 ```
 
-### Tier 2: On-Demand Intelligence
+### High-Frequency (minutes)
 
-Run these scripts interactively to assess system state.
+| Timer | Schedule | Script | Purpose |
+|-------|----------|--------|---------|
+| `nextcloud-cron` | Every 5 min | `podman exec nextcloud php cron.php` | Nextcloud background jobs |
+| `dependency-metrics-export` | Every 15 min | `export-dependency-metrics.sh` | Dependency graph → Prometheus |
+| `cloudflare-ddns` | Every 30 min | `cloudflare-ddns.sh` | Update DNS on IP change |
+| `journal-logrotate` | Hourly | `rotate-journal-export.sh` | Keep journal logs under control |
 
-| Script | Purpose | Output |
-|--------|---------|--------|
-| `homelab-intel.sh` | System health scoring (0-100) | Terminal + JSON report |
-| `homelab-diagnose.sh` | Comprehensive diagnostics | Terminal + timestamped report |
-| `homelab-snapshot.sh` | Full infrastructure state capture | JSON snapshot for analysis |
-| `query-homelab.sh` | Natural language queries (cached) | Formatted terminal output |
-| `recommend-skill.sh` | Intelligent skill recommendation | Terminal or JSON |
-| `autonomous-check.sh` | OODA loop assessment (observe, orient, decide) | JSON with skill recommendations |
-| `slo-status.sh` | Quick SLO compliance check | Terminal |
-| `survey.sh` | System inventory (BTRFS, firewall, versions) | Terminal |
-| `show-pod-status.sh` | Container status with network/port info | Terminal |
-| `auto-doc-orchestrator.sh` | Regenerate all auto-documentation (~2s) | 4 markdown files (AUTO-*.md) |
-| `generate-service-catalog-simple.sh` | Service inventory from podman/quadlets | AUTO-SERVICE-CATALOG.md |
-| `generate-network-topology.sh` | Network architecture Mermaid diagrams | AUTO-NETWORK-TOPOLOGY.md |
-| `generate-dependency-graph.sh` | 4-tier dependency analysis | AUTO-DEPENDENCY-GRAPH.md |
-| `generate-doc-index.sh` | Complete documentation catalog | AUTO-DOCUMENTATION-INDEX.md |
+### Daily
 
-**Examples:**
-```bash
-# Quick health check
-./scripts/homelab-intel.sh
+| Timer | Schedule | Script | Purpose |
+|-------|----------|--------|---------|
+| `daily-slo-snapshot` | 23:50 | `daily-slo-snapshot.sh` | Capture SLO metrics for trend analysis |
+| `btrfs-backup-daily` | 02:00 | `btrfs-snapshot-backup.sh --local-only` | Local BTRFS snapshots |
+| `predictive-maintenance-check` | 06:00 | Remediation: `predictive-maintenance` | Forecast resource exhaustion 7-14 days ahead |
+| `daily-drift-check` | ~06:00 | `daily-drift-check.sh` | Config drift detection → digest |
+| `dependency-discovery` | ~06:00 | `discover-dependencies.sh` | Map service dependencies from quadlets + networks |
+| `daily-resource-forecast` | ~06:05 | `daily-resource-forecast.sh` | Predict disk/memory exhaustion → digest |
+| `autonomous-operations` | 06:30 | `autonomous-execute.sh --from-check` | OODA loop ACT phase (with pre-check gate) |
+| `auto-doc-update` | 07:00 | `auto-doc-orchestrator.sh` | Regenerate AUTO-*.md docs |
+| `daily-error-digest` | ~07:00 | `daily-error-digest.sh` | Loki error aggregation → digest |
+| `query-cache-refresh` | ~07:05 | `precompute-queries.sh` | Pre-compute query cache |
+| `daily-morning-digest` | ~07:30 | `daily-morning-digest.sh` | Consolidated morning Discord notification |
 
-# Natural language query
-./scripts/query-homelab.sh "What services use the most memory?"
+### Weekly
 
-# Generate snapshot for documentation
-./scripts/homelab-snapshot.sh
+| Timer | Schedule | Script | Purpose |
+|-------|----------|--------|---------|
+| `btrfs-backup-weekly` | Sat 04:00 | `btrfs-snapshot-backup.sh` | Sync snapshots to external drive |
+| `podman-auto-update-weekly` | Sun 03:00 | `podman auto-update` (with pre/post health checks) | Container image updates |
+| `database-maintenance` | Sun ~03:00 | Remediation: `database-maintenance` | PostgreSQL VACUUM, Redis analysis |
+| `maintenance-cleanup` | Sun ~03:00 | `maintenance-cleanup.sh` | Prune containers, rotate logs |
+| `vulnerability-scan` | Sun ~06:00 | `scan-vulnerabilities.sh --all --notify --quiet` | Trivy CVE scanning → Discord |
+| `weekly-intelligence` | Fri 07:30 | `weekly-intelligence-report.sh` | End-of-week health summary → Discord |
+| `check-image-updates` | Sun 10:00 | `check-image-updates.sh` | Check for available image updates |
 
-# Regenerate all architecture documentation
-./scripts/auto-doc-orchestrator.sh  # Completes in ~2 seconds
+### Monthly
+
+| Timer | Schedule | Script | Purpose |
+|-------|----------|--------|---------|
+| `remediation-monthly-report` | 1st ~08:00 | `analytics/generate-monthly-report.sh` | Remediation effectiveness report |
+| `monthly-slo-report` | 1st 10:00 | `monthly-slo-report.sh` | SLO compliance report → Discord |
+| `monthly-skill-report` | 1st 10:30 | `analyze-skill-usage.sh --monthly-report` | Skill usage analytics |
+| `backup-restore-test` | Last Sun 11:00 | `test-backup-restore.sh --verbose` | Backup integrity verification |
+
+### Daily Execution Order
+
+The daily automation follows a deliberate sequence:
+
+```
+23:50  daily-slo-snapshot       (capture yesterday's SLO data)
+02:00  btrfs-backup-daily       (local snapshots while system quiet)
+06:00  predictive-maintenance   (forecast before OODA loop)
+06:00  daily-drift-check        (detect drift → write digest status)
+06:00  dependency-discovery     (refresh dependency graph)
+06:05  daily-resource-forecast  (resource predictions → write digest status)
+06:30  autonomous-operations    (OODA ACT phase — pre-check gate, write digest status)
+07:00  auto-doc-update          (regenerate docs with fresh data)
+07:00  daily-error-digest       (last 24h error summary → write digest status)
+07:05  query-cache-refresh      (pre-compute query cache with fresh data)
+07:30  daily-morning-digest     (consolidated Discord notification)
 ```
 
-**Known Issues Framework** (Added 2025-12-11)
+---
 
-The system now supports documenting expected/acceptable warnings to prevent alert fatigue:
+## Scripts by Category
 
-| Component | Purpose | Location |
-|-----------|---------|----------|
-| `known-issues.yml` | Document expected warnings (W004, etc.) | `~/.claude/context/known-issues.yml` |
-| Known-issues integration | Tags warnings with 🔕 [KNOWN ISSUE] | `homelab-intel.sh` |
-| Persistent warning detection | Escalates warnings lasting 7+ days | `weekly-intelligence-report.sh` |
+### System Health & Intelligence
 
-**Features:**
-- Warnings in `known-issues.yml` are tagged in daily reports
-- Weekly report checks for warnings persisting 7+ days
-- Unknown persistent warnings escalate to Discord
-- Known issues don't reduce health score impact
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `homelab-intel.sh` | Health scoring (0-100) + recommendations | JSON report, known-issues integration |
+| `homelab-diagnose.sh` | Comprehensive diagnostics report | Timestamped output |
+| `query-homelab.sh` | Natural language queries (cached) | Pre-computed by `precompute-queries.sh` |
+| `recommend-skill.sh` | Intelligent skill recommendation | Terminal or JSON output |
+| `survey.sh` | System inventory (BTRFS, firewall, versions) | |
+| `show-pod-status.sh` | Container status with network/port info | |
+| `collect-storage-info.sh` | Storage survey and diagnostics | |
 
-**Example Usage:**
-```bash
-# View known issues
-cat ~/.claude/context/known-issues.yml
+### SLO Monitoring
 
-# Check if warning is tagged
-./scripts/homelab-intel.sh | grep "KNOWN ISSUE"
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `slo-status.sh` | Quick SLO compliance check | Terminal output |
+| `monthly-slo-report.sh` | Full SLO compliance report | Timer: monthly, Discord |
+| `daily-slo-snapshot.sh` | Capture daily SLO metrics to CSV | Timer: daily 23:50 |
+| `analyze-slo-trends.sh` | Trend analysis and target calibration | Manual, uses snapshot CSV data |
 
-# Weekly report includes persistent warning analysis
-./scripts/weekly-intelligence-report.sh
+### Autonomous Operations
+
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `autonomous-check.sh` | OODA Observe+Orient+Decide (assessment only) | JSON with recommendations |
+| `autonomous-execute.sh` | OODA Act phase (execute approved actions) | Timer: daily 06:30, safety controls |
+| `analyze-impact.sh` | Blast radius / restart impact analysis | Used by autonomous-check.sh |
+| `daily-drift-check.sh` | Config drift detection → digest | Timer: daily 06:00 |
+| `daily-resource-forecast.sh` | Predict resource exhaustion → digest | Timer: daily 06:05 |
+| `weekly-intelligence-report.sh` | Weekly health summary → Discord | Timer: Friday 07:30 |
+| `daily-error-digest.sh` | Loki error aggregation → digest | Timer: daily 07:00 |
+| `daily-morning-digest.sh` | Consolidated morning Discord notification | Timer: daily 07:30 |
+| `catch-flapping-alert.sh` | Identify flapping alerts in Alertmanager | On-demand diagnostic |
+
+### Update Workflow
+
+Container updates follow a 6-step orchestrated workflow:
+
+```
+update-before-reboot.sh (orchestrator)
+  ├─ 1. pre-update-snapshot.sh      → Capture system state to JSON
+  ├─ 2. pre-update-health-check.sh  → Gate: disk, services, DB, memory
+  ├─ 3. graceful-shutdown.sh        → 6-phase dependency-aware shutdown
+  ├─ 4. podman pull / prune         → Update images, clean old layers
+  └─ (after reboot)
+      └─ post-reboot-verify.sh      → Compare against pre-update snapshot
+          └─ post-update-health-check.sh → Verify services + NC DB upgrade
+
+podman-auto-update-weekly.timer (Sunday 03:00)
+  ├─ pre-update-health-check.sh (ExecStartPre)
+  ├─ podman auto-update
+  └─ post-update-health-check.sh (ExecStartPost)
 ```
 
-**Enhancements (2025-12-26):**
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `update-before-reboot.sh` | Orchestrator: snapshot → health → shutdown → pull | `--skip-pull`, `--dry-run` |
+| `pre-update-snapshot.sh` | Capture containers/images state to JSON | Output: `data/update-snapshots/` |
+| `pre-update-health-check.sh` | Pre-flight health gate (exit 1 = abort) | Checks disk, services, DB, memory |
+| `graceful-shutdown.sh` | 6-phase dependency-aware container shutdown | `--dry-run` supported |
+| `post-reboot-verify.sh` | Compare post-reboot state against snapshot | `--snapshot PATH` |
+| `post-update-health-check.sh` | Post-update service verification + NC DB fix | Sends Discord notification |
 
-**Phase 1 Bug Fixes:**
-- ✅ Fixed health score extraction (was always empty due to incorrect jq syntax)
-- ✅ Fixed autonomous ops count (was always 0 due to wrong file path and JSONL parsing)
-- ✅ Fixed persistent warning check (array access error with `set -euo pipefail`)
-- ✅ Added backup/snapshot health section with Prometheus metrics
-- ✅ Improved Discord notification formatting
+### Backup & Storage
 
-**Phase 2 Log Integration:**
-- ✅ Decision logs ingested into Loki (`{job="remediation-decisions"}`)
-- ✅ Traefik access logs ingested into Loki (`{job="traefik-access"}`)
-- ✅ Powerful LogQL queries available in Grafana Explore
-- ✅ Full query guide: `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `btrfs-snapshot-backup.sh` | Create snapshots, sync to external drive | Timer: daily + weekly |
+| `test-backup-restore.sh` | Validate backup integrity via restore test | Timer: monthly last Sunday |
+| `collect-storage-info.sh` | Storage diagnostics | On-demand |
+| `monitor-btrfs-transfer.sh` | Monitor btrfs send/receive progress | On-demand helper |
+| `backup-pihole.sh` | Backup Pi-hole config to external drive | Manual |
 
-**Available Metrics:**
-- Health score (0-100)
-- Autonomous operations count (7-day window)
-- Backup/snapshot status (local + external counts, last backup age)
-- Storage trends (week-over-week delta)
-- Service health (containers running, critical services)
-- Security posture (CrowdSec bans, alerts, CAPI status)
+### Security & Compliance
 
-### Tier 3: Deployment & Validation
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `security-audit.sh` | Comprehensive security audit (40+ checks) | On-demand |
+| `scan-vulnerabilities.sh` | Trivy CVE scanning | Timer: weekly Sunday |
+| `audit-configuration.sh` | ADR-016 compliance validation | On-demand |
+| `verify-permissions.sh` | ADR-019 permission drift detection | Referenced by security-audit.sh |
+| `verify-monitoring.sh` | Verify Prometheus targets + dashboards | Used by deployment verification |
+| `verify-security-posture.sh` | Verify CrowdSec, TLS, headers, auth | Used by deployment verification |
+| `sanitize-for-public.sh` | Prepare repo for public release | On-demand |
+| `security/sync-ssh-keys.sh` | Sync authorized_keys to remote hosts | Manual, idempotent |
 
-Scripts for deploying and validating services. Located in both `/scripts/` and `.claude/skills/`.
+### Maintenance
 
-| Script | Location | Purpose |
-|--------|----------|---------|
-| `deploy-from-pattern.sh` | skills/homelab-deployment | Deploy using battle-tested patterns |
-| `check-prerequisites.sh` | skills/homelab-deployment | Validate before deployment |
-| `check-drift.sh` | skills/homelab-deployment | Compare running vs declared state |
-| `check-system-health.sh` | skills/homelab-deployment | Pre-deployment health gate |
-| `validate-quadlet.sh` | skills/homelab-deployment | Quadlet syntax validation |
-| `deploy-service.sh` | skills/homelab-deployment | Systemd operations orchestrator |
-| `deploy-stack.sh` | skills/homelab-deployment | Multi-service stack deployment |
-| `test-deployment.sh` | skills/homelab-deployment | Post-deployment verification |
-| `generate-docs.sh` | skills/homelab-deployment | Auto-generate documentation |
-| `resolve-dependencies.sh` | skills/homelab-deployment | Topological sort for stacks |
-| `validate-traefik-config.sh` | scripts/ | Validate Traefik YAML before apply |
-| `deploy-jellyfin-with-traefik.sh` | scripts/ | Legacy: Jellyfin-specific deploy |
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `maintenance-cleanup.sh` | Prune containers, rotate logs, remediation log rotation | Timer: weekly Sunday |
+| `clear-swap-memory.sh` | Clear swap under pressure | On-demand |
+| `rotate-journal-export.sh` | Journal log rotation | Timer: hourly |
+| `cloudflare-ddns.sh` | Update DNS when public IP changes | Timer: every 30 min |
 
-**Deployment workflow:**
-```bash
-# Pattern-based deployment (recommended)
-cd .claude/skills/homelab-deployment
-./scripts/deploy-from-pattern.sh \
-  --pattern media-server-stack \
-  --service-name jellyfin \
-  --hostname jellyfin.patriark.org
+### Documentation Generation
 
-# Check for configuration drift
-./scripts/check-drift.sh            # All services
-./scripts/check-drift.sh jellyfin   # Specific service
-```
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `auto-doc-orchestrator.sh` | Run all 4 generators (~2s) | Timer: daily 07:00 |
+| `generate-service-catalog-simple.sh` | → AUTO-SERVICE-CATALOG.md | Called by orchestrator |
+| `generate-network-topology.sh` | → AUTO-NETWORK-TOPOLOGY.md | Called by orchestrator |
+| `generate-dependency-graph.sh` | → AUTO-DEPENDENCY-GRAPH.md | Called by orchestrator |
+| `generate-doc-index.sh` | → AUTO-DOCUMENTATION-INDEX.md | Called by orchestrator |
 
-### Tier 4: Maintenance & Fixes
+### Dependency Mapping
 
-Scripts for maintenance tasks and specific fixes.
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `discover-dependencies.sh` | Map dependencies from quadlets + networks | Timer: daily 06:00 |
+| `export-dependency-metrics.sh` | Export dependency graph → Prometheus | Timer: every 15 min |
 
-| Script | Purpose | When to Use |
-|--------|---------|-------------|
-| `maintenance-cleanup.sh` | Prune containers, rotate logs | Automated; manual if urgent |
-| `clear-swap-memory.sh` | Clear swap when under pressure | High swap usage |
-| `apply-resource-limits.sh` | Apply memory limits to services | After quadlet changes |
-| `migrate-to-container-slice.sh` | Add container.slice to quadlets | One-time migration |
+### Service-Specific
 
-### Tier 4.5: Remediation Framework (Autonomous Operations)
+| Script | Purpose |
+|--------|---------|
+| `jellyfin-manage.sh` | Jellyfin start/stop/restart/status/logs |
+| `jellyfin-status.sh` | Quick Jellyfin status check |
+| `traefik-entrypoint.sh` | Traefik container wrapper for secrets |
+| `validate-traefik-config.sh` | Validate Traefik YAML syntax |
+| `check-image-updates.sh` | Check for available container image updates |
 
-Intelligent remediation playbooks executed by autonomous operations or manually. Located in `.claude/remediation/`.
+### Analytics & Reporting
 
-| Playbook | Risk | Purpose | Typical Trigger |
-|----------|------|---------|-----------------|
+| Script | Purpose | Notes |
+|--------|---------|-------|
+| `analyze-skill-usage.sh` | Skill usage patterns and effectiveness | Timer: monthly 1st |
+| `analytics/generate-monthly-report.sh` | Monthly remediation report | Timer: monthly 1st |
+| `analytics/remediation-effectiveness.sh` | Playbook effectiveness scoring | Called by monthly report |
+| `analytics/remediation-recommendations.sh` | Improvement recommendations | Called by monthly report |
+| `analytics/remediation-roi.sh` | ROI calculations | Called by monthly report |
+| `analytics/remediation-trends.sh` | Trend analysis over time | Called by monthly report |
+| `write-remediation-metrics.sh` | Write remediation metrics → Prometheus | Called by apply-remediation.sh |
+
+### Predictive Analytics
+
+| Script | Purpose |
+|--------|---------|
+| `predictive-analytics/predict-resource-exhaustion.sh` | Forecast disk/memory exhaustion dates |
+| `predictive-analytics/analyze-trends.sh` | Analyze historical resource trends |
+| `predictive-analytics/generate-predictions-cache.sh` | Pre-compute predictions for caching |
+
+---
+
+## Deployment & Validation (Skill Scripts)
+
+Located in `.claude/skills/homelab-deployment/scripts/`:
+
+| Script | Purpose |
+|--------|---------|
+| `deploy-from-pattern.sh` | Deploy using 9 battle-tested patterns |
+| `check-prerequisites.sh` | Validate environment before deployment |
+| `check-drift.sh` | Compare running vs declared state |
+| `check-system-health.sh` | Pre-deployment health gate |
+| `validate-quadlet.sh` | Quadlet syntax validation |
+| `validate-traefik-config.sh` | Traefik config validation |
+| `deploy-service.sh` | Systemd operations orchestrator |
+| `deploy-stack.sh` | Multi-service stack deployment |
+| `test-deployment.sh` | Post-deployment verification |
+| `verify-deployment.sh` | Full 7-level verification framework |
+| `generate-docs.sh` | Auto-generate service documentation |
+| `resolve-dependencies.sh` | Topological sort for stack ordering |
+
+---
+
+## Remediation Framework
+
+Playbooks in `.claude/remediation/`, executed via `apply-remediation.sh`:
+
+| Playbook | Risk | Purpose | Trigger |
+|----------|------|---------|---------|
 | `disk-cleanup` | Low | Prune containers, rotate logs, clean caches | Disk >75% |
 | `service-restart` | Low | Restart failed/unhealthy services | Service down |
+| `self-healing-restart` | Low | Smart restart with root cause detection | Service restart loop |
+| `predictive-maintenance` | Low | Proactive cleanup based on forecasts | Timer: daily 06:00 |
 | `drift-reconciliation` | Medium | Reconcile config drift, restart service | Drift detected |
 | `resource-pressure` | Medium | Clear caches, mitigate memory/swap pressure | Swap >6GB |
-| `predictive-maintenance` | Low | Proactive cleanup based on forecasts | Forecast critical |
-| `self-healing-restart` | Low | Smart restart with root cause detection | Service restart loop |
-| `database-maintenance` | Medium | PostgreSQL VACUUM, Redis analysis | Weekly/manual |
+| `database-maintenance` | Medium | PostgreSQL VACUUM, Redis analysis | Timer: weekly Sunday |
 
-**Execution:**
 ```bash
 cd .claude/remediation/scripts
-
-# List available playbooks
-./apply-remediation.sh --list-playbooks
-
-# Dry run (always test first)
-./apply-remediation.sh --playbook disk-cleanup --dry-run
-
-# Execute
-./apply-remediation.sh --playbook disk-cleanup
-
-# Service-specific (requires --service parameter)
-./apply-remediation.sh --playbook self-healing-restart --service prometheus
+./apply-remediation.sh --list-playbooks           # List available
+./apply-remediation.sh --playbook disk-cleanup --dry-run  # Test first
+./apply-remediation.sh --playbook disk-cleanup     # Execute
 ```
-
-**Features:**
-- All playbooks support `--dry-run` mode
-- Detailed logging to `../../data/remediation-logs/`
-- Pre/post checks with metrics capture
-- Integration with autonomous operations via `--log-to` parameter
-
-**See:**
-- Framework documentation: `.claude/remediation/README.md`
-- Autonomous operations guide: `docs/20-operations/guides/autonomous-operations.md`
-
-### Tier 5: Predictive Analytics
-
-Located in `/scripts/predictive-analytics/`. Forecast resource exhaustion before it happens.
-
-| Script | Purpose |
-|--------|---------|
-| `predict-resource-exhaustion.sh` | Forecast disk/memory exhaustion dates |
-| `analyze-trends.sh` | Analyze historical trends |
-| `generate-predictions-cache.sh` | Pre-compute predictions for caching |
-
-**Example:**
-```bash
-./scripts/predictive-analytics/predict-resource-exhaustion.sh
-# Output: "Disk will hit 90% in ~14 days based on current trend"
-```
-
-### Tier 6: Storage & Backup
-
-| Script | Purpose |
-|--------|---------|
-| `btrfs-snapshot-backup.sh` | Create snapshots, sync to external |
-| `collect-storage-info.sh` | Storage survey and diagnostics |
-| `relocate-btrfs-snapshots.sh` | Organize snapshots in .snapshots/ |
-
-### Tier 7: Security
-
-| Script | Purpose |
-|--------|---------|
-| `security-audit.sh` | Check for exposed secrets, auth issues |
-| `sanitize-for-public.sh` | Prepare repo for public release |
-
-### Tier 8: Service-Specific
-
-Scripts for managing individual services.
-
-| Script | Service | Purpose |
-|--------|---------|---------|
-| `jellyfin-manage.sh` | Jellyfin | Start/stop/restart/status |
-| `jellyfin-status.sh` | Jellyfin | Quick status check |
-| `backup-pihole.sh` | Pi-hole | Backup to external drive |
-| `homepage-add-api-key.sh` | Homepage | Configure widget API keys |
-
-### Tier 9: One-Off / Legacy
-
-Scripts created for specific fixes. Consider archiving or removing if obsolete.
-
-| Script | Purpose | Status |
-|--------|---------|--------|
-| `fix-podman-secrets.sh` | Convert file secrets to Podman secrets | May be obsolete |
-| `fix-immich-ml-healthcheck.sh` | Fix ML container health check | Applied |
-| `fix-immich-ml-healthcheck-v2.sh` | Simplified ML health check fix | Applied |
-| `diagnose-redis-immich.sh` | Debug Redis health validation | Diagnostic |
-| `deploy-immich-gpu-acceleration.sh` | Enable ROCm for Immich ML | Feature |
-| `detect-gpu-capabilities.sh` | Check AMD GPU prerequisites | Helper |
-| `complete-day3-deployment.sh` | Day 3 deployment completion | Historical |
-| `compare-quadlets.sh` | Compare deployed vs tracked quadlets | May replace with drift check |
-| `organize-docs.sh` | Reorganize documentation structure | One-time |
-| `test-yubikey-ssh.sh` | Test YubiKey SSH auth | Testing |
-| `monitor-ssh-tests.sh` | Monitor SSH tests from another host | Testing |
-| `traefik-entrypoint.sh` | Traefik wrapper for secrets | Container entrypoint |
-| `precompute-queries.sh` | Pre-populate query cache | ✅ Scheduled via query-cache-refresh.timer (every 6h) |
-| `investigate-memory-leak.sh` | Identify memory leak sources | Diagnostic |
-
-### Tier 10: Archived Scripts
-
-Scripts moved to `scripts/archived/` - superseded or no longer maintained.
-
-| Script | Archived | Reason |
-|--------|----------|--------|
-| `intelligence-2025-11/` | 2025-11-28 | Superseded by `homelab-intel.sh` + `predictive-analytics/` |
-| `homelab-snapshot.sh` | 2025-11-28 | Not scheduled, overlaps with `homelab-intel.sh` |
-
-See `scripts/archived/README.md` for restoration instructions if needed.
 
 ---
 
-## Scheduled Automation Details
+## Known Issues Framework
 
-### Timer Configurations
+Expected warnings documented in `~/.claude/context/known-issues.yml` to prevent alert fatigue:
+- Warnings tagged with `[KNOWN ISSUE]` in `homelab-intel.sh`
+- Weekly report escalates warnings persisting 7+ days
+- Known issues don't reduce health score
 
-All timers are in `~/.config/systemd/user/`:
+---
 
+## Skill Integration
+
+| Skill | Scripts Used |
+|-------|--------------|
+| **homelab-intelligence** | `homelab-intel.sh`, `homelab-diagnose.sh`, `query-homelab.sh`, `predictive-analytics/` |
+| **homelab-deployment** | All scripts in `.claude/skills/homelab-deployment/scripts/` |
+| **systematic-debugging** | Uses diagnostic scripts indirectly via methodology |
+| **autonomous-operations** | `autonomous-check.sh`, `autonomous-execute.sh`, `analyze-impact.sh` |
+| **git-advanced-workflows** | No direct script integration |
+
+---
+
+## Archived Scripts
+
+Scripts that have served their purpose are in `scripts/archived/`. See `scripts/archived/README.md` for the full inventory and restoration instructions.
+
+**Latest archive (2026-02-27):** 22 scripts archived — one-off fixes, applied migrations, completed tests, and superseded tools.
+
+---
+
+## Adding New Automation
+
+### New Script
+
+Include this header:
+```bash
+#!/bin/bash
+# script-name.sh — One-line description
+# Usage: ./script-name.sh [options]
+# Timer: timer-name.timer (if scheduled)
+# Status: ACTIVE | DEPRECATED | ONE-TIME
 ```
-cloudflare-ddns.timer         → Every 30 min, 5 min after boot
-btrfs-backup-daily.timer      → Daily at 02:00
-btrfs-backup-weekly.timer     → Sunday at 03:00 (external sync)
-maintenance-cleanup.timer     → Sunday at 03:00 (±30 min random)
-daily-drift-check.timer       → Daily at 06:00 (±10 min random)
-daily-resource-forecast.timer → Daily at 06:05 (±10 min random)
-weekly-intelligence.timer     → Friday at 07:30 (end-of-week summary)
-monthly-slo-report.timer      → 1st of month at 10:00 (SLO compliance)
-journal-logrotate.timer       → Hourly
-```
 
-### Adding New Scheduled Automation
-
-1. Create the script in `/scripts/`
-2. Create timer and service units:
+### New Scheduled Timer
 
 ```bash
 # ~/.config/systemd/user/my-task.timer
 [Unit]
 Description=My Scheduled Task Timer
-Documentation=file:///home/patriark/containers/scripts/my-task.sh
 
 [Timer]
 OnCalendar=daily
@@ -389,7 +402,6 @@ Type=oneshot
 ExecStart=/home/patriark/containers/scripts/my-task.sh
 ```
 
-3. Enable and start:
 ```bash
 systemctl --user daemon-reload
 systemctl --user enable --now my-task.timer
@@ -397,138 +409,11 @@ systemctl --user enable --now my-task.timer
 
 ---
 
-## Skill Integration
-
-### Skill → Script Mapping
-
-| Skill | Scripts Used |
-|-------|--------------|
-| **homelab-intelligence** | `homelab-intel.sh`, `homelab-diagnose.sh`, `query-homelab.sh`, `predictive-analytics/` |
-| **homelab-deployment** | All scripts in `.claude/skills/homelab-deployment/scripts/` |
-| **systematic-debugging** | Uses diagnostic scripts indirectly via methodology |
-| **git-advanced-workflows** | No direct script integration |
-| **claude-code-analyzer** | Own scripts in `.claude/skills/claude-code-analyzer/scripts/` |
-
-### Future Consolidation (Trajectory 3)
-
-Intelligence-related scripts could potentially be consolidated under the homelab-intelligence skill:
-
-```
-.claude/skills/homelab-intelligence/
-├── SKILL.md
-└── scripts/
-    ├── homelab-intel.sh          ← Move from /scripts/
-    ├── homelab-diagnose.sh       ← Move from /scripts/
-    ├── query-homelab.sh          ← Move from /scripts/
-    ├── slo-status.sh             ← Move from /scripts/
-    └── predictive-analytics/     ← Move from /scripts/
-```
-
-**Note:** This would require updating:
-- CLAUDE.md command references
-- Systemd timer ExecStart paths
-- Any scripts that call these scripts
-
-**Current status:** Not prioritized. Scripts work fine in `/scripts/` and are well-documented here.
-
----
-
-## Automation Candidates (Trajectory 2)
-
-**Implemented (2025-11-28):**
-- ~~`check-drift.sh`~~ → `daily-drift-check.timer` (Daily 06:00)
-- ~~`predict-resource-exhaustion.sh`~~ → `daily-resource-forecast.timer` (Daily 06:05)
-
-**Remaining candidates:**
-
-| Script | Suggested Schedule | Rationale | Blocker |
-|--------|-------------------|-----------|---------|
-| `security-audit.sh` | Weekly | Regular security posture check | Uses `sudo firewall-cmd` |
-| `precompute-queries.sh` | Every 6 hours | Keep query cache fresh | ✅ IMPLEMENTED (2025-12-11) |
-
----
-
-## Script Documentation Standards
-
-When adding new scripts, include this header:
-
-```bash
-#!/bin/bash
-# script-name.sh
-# Purpose: One-line description
-#
-# Usage:
-#   ./script-name.sh [options]
-#
-# Options:
-#   --option1    Description
-#   --help       Show this help
-#
-# Dependencies:
-#   - tool1
-#   - tool2
-#
-# Automation:
-#   Timer: timer-name.timer (if scheduled)
-#   Schedule: description of schedule
-#
-# Integration:
-#   Skill: skill-name (if part of a skill)
-#   Called by: other-script.sh (if invoked by another script)
-#
-# Status: ACTIVE | DEPRECATED | ONE-TIME
-# Created: YYYY-MM-DD
-```
-
----
-
-## Troubleshooting
-
-### Timer Not Running
-
-```bash
-# Check timer status
-systemctl --user status my-task.timer
-
-# Check for errors
-journalctl --user -u my-task.timer -n 20
-journalctl --user -u my-task.service -n 20
-
-# Verify timer is enabled
-systemctl --user is-enabled my-task.timer
-```
-
-### Script Fails in Timer but Works Manually
-
-Common causes:
-1. **PATH issues** - Use absolute paths in scripts
-2. **Environment variables** - Timers don't inherit shell environment
-3. **Working directory** - Use `cd` or absolute paths
-
-Solution: Add to service unit:
-```ini
-[Service]
-Environment=PATH=/usr/bin:/bin
-WorkingDirectory=/home/patriark/containers
-```
-
-### Finding Which Script Does X
-
-```bash
-# Search script headers
-grep -l "Purpose.*backup" scripts/*.sh
-
-# Search script content
-grep -r "podman stats" scripts/
-
-# Check this guide's decision tree above
-```
-
----
-
 ## See Also
 
-- `docs/20-operations/guides/backup-strategy.md` - Backup automation details
-- `docs/40-monitoring-and-documentation/guides/slo-framework.md` - SLO monitoring
-- `.claude/skills/homelab-deployment/SKILL.md` - Deployment skill documentation
-- `.claude/skills/README.md` - Skills overview
+- `docs/20-operations/guides/backup-strategy.md` — Backup automation details
+- `docs/20-operations/guides/autonomous-operations.md` — OODA loop framework
+- `docs/40-monitoring-and-documentation/guides/slo-framework.md` — SLO monitoring
+- `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md` — LogQL queries
+- `.claude/skills/homelab-deployment/SKILL.md` — Deployment skill documentation
+- `.claude/remediation/README.md` — Remediation framework documentation
