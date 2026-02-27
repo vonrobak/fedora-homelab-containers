@@ -842,10 +842,20 @@ signals_all_clear() {
         return 1
     fi
 
-    # Check 2: Did daily-drift-check detect drift? (scoped to last 2h to avoid stale data)
-    local drift_status
-    drift_status=$(journalctl --user -u daily-drift-check.service --since "2 hours ago" --no-pager 2>/dev/null \
-        | grep -c "Drift detected\|✗ DRIFT" || echo "0")
+    # Check 2: Did daily-drift-check detect drift?
+    # Read the digest JSON if available (written by daily-drift-check.sh),
+    # fall back to journalctl if the file doesn't exist yet
+    local drift_status="0"
+    if [[ -f /tmp/daily-digest/drift-check.json ]]; then
+        local drift_json_status
+        drift_json_status=$(jq -r '.status // "ok"' /tmp/daily-digest/drift-check.json 2>/dev/null || echo "ok")
+        if [[ "$drift_json_status" == "drift_detected" ]]; then
+            drift_status="1"
+        fi
+    else
+        drift_status=$(journalctl --user -u daily-drift-check.service --since "2 hours ago" --no-pager 2>/dev/null \
+            | grep -c "Drift detected\|✗ DRIFT" || echo "0")
+    fi
 
     if [[ "$drift_status" -gt 0 ]]; then
         log INFO "Pre-check: drift detected in recent drift check"
@@ -858,7 +868,11 @@ signals_all_clear() {
         | python3 -c "import sys,json; alerts=json.load(sys.stdin); print(sum(1 for a in alerts if a.get('status',{}).get('state')=='active'))" 2>/dev/null \
         || echo "unknown")
 
-    if [[ "$firing" != "0" && "$firing" != "unknown" ]]; then
+    if [[ "$firing" == "unknown" ]]; then
+        log INFO "Pre-check: Alertmanager unreachable, running full assessment to be safe"
+        return 1
+    fi
+    if [[ "$firing" != "0" ]]; then
         log INFO "Pre-check: $firing alert(s) currently firing"
         return 1
     fi

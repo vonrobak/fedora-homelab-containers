@@ -137,10 +137,10 @@ log_section "Rotating Remediation Logs"
 
 REMEDIATION_LOG_DIR="${HOME}/containers/.claude/data/remediation-logs"
 if [ -d "${REMEDIATION_LOG_DIR}" ]; then
-    # Delete logs older than 90 days
-    OLD_REMEDIATION=$(find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +90 -type f 2>/dev/null | wc -l)
+    # Delete logs older than 90 days (both uncompressed and compressed)
+    OLD_REMEDIATION=$(find "${REMEDIATION_LOG_DIR}" \( -name "*.log" -o -name "*.log.gz" \) -mtime +90 -type f 2>/dev/null | wc -l)
     if [ "${OLD_REMEDIATION}" -gt 0 ]; then
-        find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +90 -type f -delete
+        find "${REMEDIATION_LOG_DIR}" \( -name "*.log" -o -name "*.log.gz" \) -mtime +90 -type f -delete
         log "${GREEN}✓ Deleted ${OLD_REMEDIATION} remediation logs older than 90 days${NC}"
     fi
 
