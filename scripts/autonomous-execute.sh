@@ -840,6 +840,11 @@ signals_all_clear() {
         | sort -rn | head -1 | cut -d' ' -f2-)
 
     if [[ -n "$pred_log" ]]; then
+        # Only trust the log if it's from the last 36 hours (stale = run full assessment)
+        if [[ -z $(find "$pred_log" -mmin -2160 2>/dev/null) ]]; then
+            log INFO "Pre-check: predictive maintenance log is stale (>36h), running full assessment"
+            return 1
+        fi
         if ! grep -q "No critical predictions\|System healthy\|no_action_required" "$pred_log" 2>/dev/null; then
             log INFO "Pre-check: predictive maintenance flagged issues"
             return 1

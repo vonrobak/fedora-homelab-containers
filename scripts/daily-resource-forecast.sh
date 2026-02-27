@@ -46,15 +46,12 @@ fi
 
 # Determine alert level
 ALERT_LEVEL="none"
-ALERT_COLOR=3066993  # Green
 
 if [[ "$DISK_DAYS" -lt 999 ]]; then
     if [[ "$DISK_DAYS" -le "$CRITICAL_DAYS" ]]; then
         ALERT_LEVEL="critical"
-        ALERT_COLOR=15158332  # Red
     elif [[ "$DISK_DAYS" -le "$WARNING_DAYS" ]]; then
         ALERT_LEVEL="warning"
-        ALERT_COLOR=16744256  # Orange
     fi
 fi
 

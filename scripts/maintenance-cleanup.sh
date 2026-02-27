@@ -144,11 +144,12 @@ if [ -d "${REMEDIATION_LOG_DIR}" ]; then
         log "${GREEN}✓ Deleted ${OLD_REMEDIATION} remediation logs older than 90 days${NC}"
     fi
 
-    # Compress logs older than 30 days (skip already-compressed)
-    COMPRESS_REMEDIATION=$(find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +30 -type f 2>/dev/null | wc -l)
+    # Compress logs older than 60 days (skip already-compressed)
+    # 60 days keeps uncompressed logs available well outside the monthly analytics window
+    COMPRESS_REMEDIATION=$(find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +60 -type f 2>/dev/null | wc -l)
     if [ "${COMPRESS_REMEDIATION}" -gt 0 ]; then
-        find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +30 -type f -exec gzip {} \;
-        log "${GREEN}✓ Compressed ${COMPRESS_REMEDIATION} remediation logs older than 30 days${NC}"
+        find "${REMEDIATION_LOG_DIR}" -name "*.log" -mtime +60 -type f -exec gzip {} \;
+        log "${GREEN}✓ Compressed ${COMPRESS_REMEDIATION} remediation logs older than 60 days${NC}"
     fi
 
     REMAINING=$(find "${REMEDIATION_LOG_DIR}" -type f 2>/dev/null | wc -l)
