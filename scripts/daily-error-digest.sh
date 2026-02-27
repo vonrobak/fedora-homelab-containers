@@ -1,7 +1,9 @@
 #!/bin/bash
 # Daily Error Digest from Loki
 # Created: 2026-01-11
-# Purpose: Query Loki for last 24h errors, aggregate by service/type, send to Discord
+# Purpose: Query Loki for last 24h errors, aggregate by service/type, write to daily digest
+# Exit: Always 0 (digest is best-effort; Loki/query failures should not mark the
+#       service as failed in systemd since the morning digest handles missing data gracefully)
 
 set -uo pipefail  # Remove -e to handle errors gracefully
 

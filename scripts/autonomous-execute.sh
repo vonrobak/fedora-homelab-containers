@@ -839,9 +839,12 @@ signals_all_clear() {
         -name "predictive-maintenance-*.log" -printf '%T@ %p\n' 2>/dev/null \
         | sort -rn | head -1 | cut -d' ' -f2-)
 
+    # No log at all = no data to trust, fall through to drift/alert checks
     if [[ -n "$pred_log" ]]; then
-        # Only trust the log if it's from the last 36 hours (stale = run full assessment)
-        if [[ -z $(find "$pred_log" -mmin -2160 2>/dev/null) ]]; then
+        # Reject stale logs (>36h) — if the timer failed to run, don't trust old data
+        local log_age_ok
+        log_age_ok=$(find "$pred_log" -mmin -2160 -print -quit 2>/dev/null)
+        if [[ -z "$log_age_ok" ]]; then
             log INFO "Pre-check: predictive maintenance log is stale (>36h), running full assessment"
             return 1
         fi

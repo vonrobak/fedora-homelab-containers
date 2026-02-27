@@ -17,8 +17,18 @@ set -uo pipefail
 DIGEST_DIR="/tmp/daily-digest"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Clean up digest directory on any exit (missing webhook, early exit, errors)
-trap 'rm -rf "$DIGEST_DIR"' EXIT
+# Clean up digest directory on any exit. On failure, log contents first for diagnosis.
+cleanup() {
+    local exit_code=$?
+    if [[ $exit_code -ne 0 ]] && [[ -d "$DIGEST_DIR" ]]; then
+        echo "[$(date)] Digest failed (exit $exit_code). Status files:"
+        for f in "$DIGEST_DIR"/*.json; do
+            [[ -f "$f" ]] && echo "  $(basename "$f"): $(cat "$f")"
+        done
+    fi
+    rm -rf "$DIGEST_DIR"
+}
+trap cleanup EXIT
 
 # Get Discord webhook
 DISCORD_WEBHOOK=$(podman exec alert-discord-relay env 2>/dev/null | grep DISCORD_WEBHOOK_URL | cut -d= -f2 || echo "")
