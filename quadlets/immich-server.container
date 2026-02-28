@@ -42,8 +42,8 @@ Environment=UPLOAD_LOCATION=/usr/src/app/upload
 # Storage - Photo library on BTRFS pool
 Volume=/mnt/btrfs-pool/subvol3-opptak/immich:/usr/src/app/upload:Z
 
-# NEW: Mount library folder to a DIFFERENT container path (outside /usr/src/app/upload)
-Volume=/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media:ro,Z
+# External library - read-write so Immich can manage (delete/move) assets directly
+Volume=/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media:Z
 
 # Hardware Acceleration - GPU access for VAAPI transcoding
 AddDevice=/dev/dri:/dev/dri
