@@ -1,0 +1,65 @@
+# ~/.config/containers/systemd/navidrome.container
+# Navidrome - Self-hosted Music Streaming Server
+# Created: 2026-02-28
+# Documentation: https://www.navidrome.org/docs
+
+# ═══════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════
+[Unit]
+Description=Navidrome Music Streaming Server
+Documentation=https://github.com/navidrome/navidrome
+After=network-online.target traefik.service
+Wants=network-online.target traefik.service
+
+# ═══════════════════════════════════════════════════════════
+# CONTAINER CONFIGURATION
+# ═══════════════════════════════════════════════════════════
+[Container]
+Image=docker.io/deluan/navidrome:latest
+ContainerName=navidrome
+AutoUpdate=registry
+
+# Networks (reverse_proxy FIRST for internet access, monitoring for Prometheus scraping)
+Network=systemd-reverse_proxy:ip=10.89.2.75
+Network=systemd-monitoring:ip=10.89.4.75
+
+# Environment
+Environment=TZ=Europe/Oslo
+Environment=ND_MUSICFOLDER=/music
+Environment=ND_DATAFOLDER=/data
+Environment=ND_SCANSCHEDULE=1h
+Environment=ND_PROMETHEUS_ENABLED=true
+Environment=ND_LOGLEVEL=info
+
+# Data directory (exclusive - NOCOW for SQLite)
+Volume=/mnt/btrfs-pool/subvol7-containers/navidrome:/data:Z
+
+# Music library (shared read-only)
+Volume=/mnt/btrfs-pool/subvol5-music:/music:ro,z
+
+# Health check
+HealthCmd=wget --no-verbose --tries=1 --spider http://127.0.0.1:4533/ || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+
+# ═══════════════════════════════════════════════════════════
+# SERVICE BEHAVIOR
+# ═══════════════════════════════════════════════════════════
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=300
+RestartSec=10s
+
+# Resource Limits
+MemoryMax=1G
+MemoryHigh=800M
+
+# ═══════════════════════════════════════════════════════════
+# INSTALLATION
+# ═══════════════════════════════════════════════════════════
+[Install]
+WantedBy=default.target

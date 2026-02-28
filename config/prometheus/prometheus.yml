@@ -105,6 +105,14 @@ scrape_configs:
   # Nextcloud monitoring removed - ServerInfo endpoint requires auth
   # Nextcloud availability monitored via Traefik metrics (SLO recording rules)
 
+  # Navidrome - Music Streaming Server (native Prometheus metrics)
+  - job_name: 'navidrome'
+    static_configs:
+      - targets: ['navidrome:4533']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'navidrome'
+
   # Home Assistant - Home Automation Hub
   - job_name: 'home-assistant'
     static_configs:

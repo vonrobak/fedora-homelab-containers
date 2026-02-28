@@ -21,6 +21,8 @@
 # Media & Collaboration
 10.89.2.13  jellyfin
 10.89.2.14  nextcloud
+10.89.2.74  audiobookshelf
+10.89.2.75  navidrome
 
 # Photos & Events
 10.89.2.12  immich-server

@@ -192,6 +192,36 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # Audiobookshelf - Uses native authentication (no Authelia SSO)
+    # iOS app (abs) and web UI use Audiobookshelf's built-in auth
+    audiobookshelf-secure:
+      rule: "Host(`audiobookshelf.patriark.org`)"
+      service: "audiobookshelf"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-public@file
+        - compression@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
+    # Navidrome - Uses native authentication (no Authelia SSO)
+    # Subsonic-compatible clients and web UI use Navidrome's built-in auth
+    navidrome-secure:
+      rule: "Host(`musikk.patriark.org`)"
+      service: "navidrome"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-public@file
+        - compression@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
   services:
     homepage:
       loadBalancer:
@@ -249,6 +279,16 @@ http:
       loadBalancer:
         servers:
           - url: "http://home-assistant:8123"
+
+    audiobookshelf:
+      loadBalancer:
+        servers:
+          - url: "http://audiobookshelf:80"
+
+    navidrome:
+      loadBalancer:
+        servers:
+          - url: "http://navidrome:4533"
 
   middlewares:
     # CalDAV/.well-known redirects for Nextcloud
