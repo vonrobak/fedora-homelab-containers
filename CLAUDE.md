@@ -6,9 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A learning-focused homelab project building production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets. Platform: Fedora Workstation 43.
 
-**Current Services (27 containers, 13 service groups):**
+**Current Services (29 containers, 15 service groups):**
 - **Core Infrastructure:** Traefik (reverse proxy), CrowdSec (threat intel), Authelia + Redis (SSO + YubiKey MFA)
 - **Applications:** Nextcloud + MariaDB + Redis (file sync), Vaultwarden (passwords), Jellyfin (media), Immich + PostgreSQL + Redis + ML (photos), Gathio + MongoDB (events), Homepage (dashboard)
+- **Audio:** Audiobookshelf (audiobooks/podcasts), Navidrome (music streaming)
 - **Home Automation:** Home Assistant + Matter Server (smart home, Plejd integration planned)
 - **Monitoring:** Prometheus, Grafana, Loki, Alertmanager, Promtail, cAdvisor, Node Exporter, UnPoller, Alert Discord Relay
 
@@ -336,11 +337,11 @@ systemctl --user is-active alertmanager.service  # Alert routing
 systemctl --user is-active grafana.service       # Monitoring dashboard
 ```
 
-**Expected Resource Usage (27 containers, measured February 2026):**
-- **Memory:** Total ~4-5GB | Jellyfin: ~200MB idle / 500MB-1GB transcoding | Prometheus: ~300MB | Loki: ~200MB | Grafana: ~200MB | Traefik: ~80MB | Immich-server: ~350MB | Nextcloud: ~200MB
+**Expected Resource Usage (29 containers, measured February 2026):**
+- **Memory:** Total ~4-5GB | Jellyfin: ~200MB idle / 500MB-1GB transcoding | Prometheus: ~300MB | Loki: ~200MB | Grafana: ~200MB | Traefik: ~80MB | Immich-server: ~350MB | Nextcloud: ~200MB | Audiobookshelf: ~200MB | Navidrome: ~200MB
 - **CPU:** Idle: >90% | Normal: 2-5% | Transcoding: 50-80% (normal spike)
 - **Disk:** System SSD: <70% normal (⚠️ >75%, 🚨 >85%) | BTRFS pool: ~73% used (4TB free of 14.5TB)
-- **Swap:** ~1GB typical (normal for long-running services with 27 containers)
+- **Swap:** ~1GB typical (normal for long-running services with 29 containers)
 
 **Health Checks:**
 ```bash

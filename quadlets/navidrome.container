@@ -34,6 +34,7 @@ Environment=ND_PROMETHEUS_ENABLED=true
 Environment=ND_LOGLEVEL=info
 
 # Last.fm scrobbling (podman secrets, type=env)
+# Note: secrets must exist before starting (podman secret create navidrome_lastfm_apikey -)
 Secret=navidrome_lastfm_apikey,type=env,target=ND_LASTFM_APIKEY
 Secret=navidrome_lastfm_secret,type=env,target=ND_LASTFM_SECRET
 
