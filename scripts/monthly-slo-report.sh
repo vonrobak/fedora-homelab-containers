@@ -64,6 +64,16 @@ ha_actual=$(query_prom 'slo:home_assistant:availability:actual')
 ha_budget=$(query_prom 'error_budget:home_assistant:availability:budget_remaining')
 ha_compliant=$(query_prom 'slo:home_assistant:availability:compliant')
 
+# Navidrome
+navidrome_actual=$(query_prom 'slo:navidrome:availability:actual')
+navidrome_budget=$(query_prom 'error_budget:navidrome:availability:budget_remaining')
+navidrome_compliant=$(query_prom 'slo:navidrome:availability:compliant')
+
+# Audiobookshelf
+audiobookshelf_actual=$(query_prom 'slo:audiobookshelf:availability:actual')
+audiobookshelf_budget=$(query_prom 'error_budget:audiobookshelf:availability:budget_remaining')
+audiobookshelf_compliant=$(query_prom 'slo:audiobookshelf:availability:compliant')
+
 # ============================================================================
 # FORMAT REPORT
 # ============================================================================
@@ -125,6 +135,8 @@ overall_violations=0
 [ "$traefik_compliant" = "0" ] && ((overall_violations++)) || true
 [ "$nextcloud_compliant" = "0" ] && ((overall_violations++)) || true
 [ "$ha_compliant" = "0" ] && ((overall_violations++)) || true
+[ "$navidrome_compliant" = "0" ] && ((overall_violations++)) || true
+[ "$audiobookshelf_compliant" = "0" ] && ((overall_violations++)) || true
 
 if [ "$overall_violations" -eq 0 ]; then
     report_color="3066993"  # Green
@@ -181,8 +193,18 @@ read -r -d '' DISCORD_PAYLOAD <<EOF || true
         "inline": true
       },
       {
+        "name": "🎵 Navidrome Music",
+        "value": "$(compliance_emoji "$navidrome_compliant") **Availability:** $(format_pct "$navidrome_actual")\n**Target:** 99.50%\n**Error Budget:** $(format_pct "$navidrome_budget") remaining",
+        "inline": true
+      },
+      {
+        "name": "🎧 Audiobookshelf",
+        "value": "$(compliance_emoji "$audiobookshelf_compliant") **Availability:** $(format_pct "$audiobookshelf_actual")\n**Target:** 99.50%\n**Error Budget:** $(format_pct "$audiobookshelf_budget") remaining",
+        "inline": true
+      },
+      {
         "name": "📈 Key Insights",
-        "value": "• Services monitored: 6\n• SLOs met: $((6 - overall_violations))/6\n• Reporting period: 30 days",
+        "value": "• Services monitored: 8\n• SLOs met: $((8 - overall_violations))/8\n• Reporting period: 30 days",
         "inline": false
       },
       {

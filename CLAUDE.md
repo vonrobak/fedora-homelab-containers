@@ -313,7 +313,7 @@ systemctl --user restart authelia.service
 
 ### SLO Monitoring
 
-**9 SLOs across 5 services.** Full targets, queries, and dashboard: `docs/40-monitoring-and-documentation/guides/slo-framework.md`
+**13 SLOs across 8 services.** Full targets, queries, and dashboard: `docs/40-monitoring-and-documentation/guides/slo-framework.md`
 
 ```bash
 # Dashboard: https://grafana.patriark.org/d/slo-dashboard
@@ -566,7 +566,7 @@ due to [reason for change].
 - Dependency management: `docs/20-operations/guides/dependency-management.md`
 
 **Monitoring & Security:**
-- SLO framework: `docs/40-monitoring-and-documentation/guides/slo-framework.md` (9 SLOs)
+- SLO framework: `docs/40-monitoring-and-documentation/guides/slo-framework.md` (13 SLOs)
 - Monitoring stack: `docs/40-monitoring-and-documentation/guides/monitoring-stack.md`
 - Loki queries: `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
 - Security guides: `docs/30-security/guides/` (7 guides + 5 runbooks)

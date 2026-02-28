@@ -25,6 +25,8 @@ SERVICE_NAME=""
 IMAGE=""
 HOSTNAME=""
 MEMORY="1G"
+PORT=""
+HEALTH_CMD=""
 SKIP_HEALTH_CHECK=false
 DRY_RUN=false
 VERBOSE=false
@@ -50,6 +52,8 @@ Optional Arguments:
   --image IMAGE           Container image (overrides pattern default)
   --hostname FQDN         Hostname for Traefik routing
   --memory SIZE           Memory limit (e.g., 1G, 512M)
+  --port PORT             Service port (overrides pattern default)
+  --health-cmd CMD        Healthcheck command (overrides pattern default)
   --var KEY=VALUE         Override pattern variable
   --skip-health-check     Skip system health check
   --dry-run               Show what would be deployed without deploying
@@ -133,6 +137,23 @@ load_pattern() {
     PATTERN_VARS[quadlet_template]=$(grep "^  quadlet_template:" "$pattern_file" | head -1 | awk '{print $2}')
     PATTERN_VARS[traefik_template]=$(grep "^  traefik_template:" "$pattern_file" | head -1 | awk '{print $2}')
 
+    # Extract port (used for Traefik service URL and healthcheck)
+    PATTERN_VARS[port]=$(grep "^  port:" "$pattern_file" | head -1 | awk '{print $2}' | tr -d '"')
+    # Extract health_cmd (for container healthcheck)
+    PATTERN_VARS[health_cmd]=$(grep "^  health_cmd:" "$pattern_file" | head -1 | cut -d'"' -f2)
+    # Extract memory_high (systemd MemoryHigh, if specified)
+    PATTERN_VARS[memory_high]=$(grep "^  memory_high:" "$pattern_file" | head -1 | cut -d'"' -f2)
+    # Extract config_dir and data_dir (storage paths)
+    PATTERN_VARS[config_dir]=$(grep "^  config_dir:" "$pattern_file" | head -1 | cut -d'"' -f2)
+    PATTERN_VARS[data_dir]=$(grep "^  data_dir:" "$pattern_file" | head -1 | cut -d'"' -f2)
+
+    # Resolve {service_name} in extracted values
+    for key in config_dir data_dir; do
+        if [[ -n "${PATTERN_VARS[$key]:-}" ]]; then
+            PATTERN_VARS[$key]="${PATTERN_VARS[$key]//\{service_name\}/$SERVICE_NAME}"
+        fi
+    done
+
     # Extract networks (comma-separated)
     PATTERN_VARS[networks]=$(grep -A 10 "^  networks:" "$pattern_file" | grep "^    -" | awk '{print $2}' | tr '\n' ',' | sed 's/,$//')
 
@@ -152,18 +173,46 @@ substitute_variables() {
     # Copy template
     cp "$template_file" "$output_file"
 
-    # Substitute variables
+    # Substitute core variables (uppercase, matching template {{PLACEHOLDERS}})
     sed -i "s/{{SERVICE_NAME}}/${SERVICE_NAME}/g" "$output_file"
     sed -i "s|{{IMAGE}}|${IMAGE}|g" "$output_file"
     sed -i "s/{{HOSTNAME}}/${HOSTNAME}/g" "$output_file"
     sed -i "s/{{MEMORY}}/${MEMORY}/g" "$output_file"
 
-    # Substitute pattern-specific variables
+    # Substitute PORT and HEALTH_CMD from pattern or CLI override
+    local port="${PATTERN_VARS[port]:-8080}"
+    local health_cmd="${PATTERN_VARS[health_cmd]:-}"
+    sed -i "s/{{PORT}}/${port}/g" "$output_file"
+    if [[ -n "$health_cmd" ]]; then
+        # Use awk for health_cmd since it may contain sed-hostile characters (|, /, etc.)
+        awk -v val="$health_cmd" '{gsub(/\{\{HEALTH_CMD\}\}/, val)}1' "$output_file" > "${output_file}.tmp" && mv "${output_file}.tmp" "$output_file"
+    fi
+
+    # Substitute pattern-specific variables (lowercase keys from YAML and --var overrides)
     for key in "${!PATTERN_VARS[@]}"; do
         if [[ -n "${PATTERN_VARS[$key]}" ]]; then
-            sed -i "s|{{${key}}}|${PATTERN_VARS[$key]}|g" "$output_file"
+            local val="${PATTERN_VARS[$key]}"
+            # Use awk for values that may contain sed-hostile characters
+            awk -v k="{{${key}}}" -v val="$val" '{gsub(k, val)}1' "$output_file" > "${output_file}.tmp" && mv "${output_file}.tmp" "$output_file"
+            local upper_key="${key^^}"
+            awk -v k="{{${upper_key}}}" -v val="$val" '{gsub(k, val)}1' "$output_file" > "${output_file}.tmp" && mv "${output_file}.tmp" "$output_file"
         fi
     done
+
+    # Validate: fail if any unresolved {{variables}} remain
+    local unresolved
+    unresolved=$(grep -oP '\{\{[A-Z_]+\}\}' "$output_file" 2>/dev/null | sort -u || true)
+    if [[ -n "$unresolved" ]]; then
+        echo -e "${RED}✗${NC} Unresolved template variables in output:"
+        echo "$unresolved" | sed 's/^/    /'
+        echo ""
+        echo "  Fix: Supply missing values via --var KEY=VALUE or update the pattern"
+        if [[ "$DRY_RUN" != "true" ]]; then
+            exit 1
+        else
+            echo -e "${YELLOW}  (dry-run: continuing despite unresolved variables)${NC}"
+        fi
+    fi
 
     [[ "$VERBOSE" == "true" ]] && echo -e "${GREEN}✓${NC} Variables substituted"
 }
@@ -544,14 +593,18 @@ validate_quadlet() {
 
 deploy_service() {
     local quadlet_file="/tmp/${SERVICE_NAME}.container"
-    local target_quadlet="${HOME}/.config/containers/systemd/${SERVICE_NAME}.container"
+    local quadlet_dir="${HOME}/containers/quadlets"
+    local quadlet_dest="${quadlet_dir}/${SERVICE_NAME}.container"
+    local systemd_dir="${HOME}/.config/containers/systemd"
+    local symlink_dest="${systemd_dir}/${SERVICE_NAME}.container"
 
     echo -e "${BLUE}=== Deploying Service ===${NC}"
     echo ""
 
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "${YELLOW}[DRY RUN]${NC} Would deploy: $SERVICE_NAME"
-        echo "  Quadlet: $target_quadlet"
+        echo "  Quadlet: $quadlet_dest"
+        echo "  Symlink: $symlink_dest -> $quadlet_dest"
         echo "  Pattern: $PATTERN"
         echo "  Image: $IMAGE"
         echo "  Hostname: $HOSTNAME"
@@ -560,10 +613,12 @@ deploy_service() {
         return 0
     fi
 
-    # Copy quadlet to systemd directory
-    mkdir -p "$(dirname "$target_quadlet")"
-    cp "$quadlet_file" "$target_quadlet"
-    echo -e "${GREEN}✓${NC} Quadlet installed: $target_quadlet"
+    # Install quadlet in ~/containers/quadlets/ and symlink to systemd dir
+    mkdir -p "$quadlet_dir" "$systemd_dir"
+    cp "$quadlet_file" "$quadlet_dest"
+    ln -sf "$quadlet_dest" "$symlink_dest"
+    echo -e "${GREEN}✓${NC} Quadlet installed: $quadlet_dest"
+    echo -e "${GREEN}✓${NC} Symlinked: $symlink_dest"
 
     # Deploy using deploy-service.sh if available
     if [[ -x "${SCRIPTS_DIR}/deploy-service.sh" ]]; then
@@ -705,6 +760,14 @@ parse_arguments() {
                 MEMORY="$2"
                 shift 2
                 ;;
+            --port)
+                PORT="$2"
+                shift 2
+                ;;
+            --health-cmd)
+                HEALTH_CMD="$2"
+                shift 2
+                ;;
             --var)
                 # Parse KEY=VALUE
                 local key="${2%%=*}"
@@ -766,9 +829,11 @@ main() {
     # Load pattern
     load_pattern
 
-    # Set defaults from pattern if not overridden
+    # Set defaults from pattern if not overridden by CLI flags
     [[ -z "$IMAGE" ]] && IMAGE="${PATTERN_VARS[image]}"
     [[ -z "$HOSTNAME" ]] && HOSTNAME="${SERVICE_NAME}.patriark.org"
+    [[ -n "$PORT" ]] && PATTERN_VARS[port]="$PORT"
+    [[ -n "$HEALTH_CMD" ]] && PATTERN_VARS[health_cmd]="$HEALTH_CMD"
 
     # Workflow
     run_health_check

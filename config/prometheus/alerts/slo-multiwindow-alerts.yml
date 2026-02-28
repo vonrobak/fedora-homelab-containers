@@ -632,3 +632,209 @@ groups:
           tier: "4"
         annotations:
           summary: "ℹ️ Nextcloud error budget trending above baseline"
+
+  # ===========================================================================
+  # NAVIDROME - Multi-Window Burn Rate Alerts
+  # Music streaming service with native auth
+  # ===========================================================================
+  - name: slo_multiwindow_navidrome
+    interval: 1m
+    rules:
+      # TIER 1: CRITICAL - Fast Burn (Page immediately)
+      - alert: SLOBurnRateTier1_Navidrome
+        expr: |
+          (
+            burn_rate:navidrome:availability:1h > 14.4
+            and
+            burn_rate:navidrome:availability:5m > 14.4
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: navidrome
+          slo: availability
+          tier: "1"
+          burn_rate: "fast"
+        annotations:
+          summary: "🚨 CRITICAL: Navidrome error budget burning at 14.4x normal rate"
+          description: |
+            **IMMEDIATE ACTION REQUIRED**
+
+            Navidrome music streaming is degrading rapidly. Error budget exhausts in <3 hours.
+
+            - Burn Rate (1h): {{ $value | humanize }}x
+            - Budget Remaining: {{ query "error_budget:navidrome:availability:budget_remaining * 100" | first | value | humanize }}%
+
+            Action: systemctl --user status navidrome.service && podman logs navidrome --tail 100
+
+      # TIER 2: WARNING
+      - alert: SLOBurnRateTier2_Navidrome
+        expr: |
+          (
+            burn_rate:navidrome:availability:6h > 6
+            and
+            burn_rate:navidrome:availability:30m > 6
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: navidrome
+          slo: availability
+          tier: "2"
+          burn_rate: "medium"
+        annotations:
+          summary: "⚠️ Navidrome error budget burning at 6x normal rate"
+          description: "Budget exhausts in <1 day. Burn: {{ $value | humanize }}x, Remaining: {{ query \"error_budget:navidrome:availability:budget_remaining * 100\" | first | value | humanize }}%"
+
+      # TIER 3: WARNING
+      - alert: SLOBurnRateTier3_Navidrome
+        expr: |
+          (
+            burn_rate:navidrome:availability:1d > 3
+            and
+            burn_rate:navidrome:availability:2h > 3
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 86400)
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: navidrome
+          slo: availability
+          tier: "3"
+          burn_rate: "slow"
+        annotations:
+          summary: "📊 Navidrome error budget burning at 3x normal rate"
+          description: "Budget exhausts in <1 week. Trend monitoring needed."
+
+      # TIER 4: INFO
+      - alert: SLOBurnRateTier4_Navidrome
+        expr: |
+          (
+            burn_rate:navidrome:availability:3d > 1.5
+            and
+            burn_rate:navidrome:availability:1d > 1.5
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 259200)
+        for: 6h
+        labels:
+          severity: info
+          component: slo
+          service: navidrome
+          slo: availability
+          tier: "4"
+          burn_rate: "minimal"
+        annotations:
+          summary: "ℹ️ Navidrome error budget trending above baseline"
+          description: "Long-term trend - review in monthly report."
+
+  # ===========================================================================
+  # AUDIOBOOKSHELF - Multi-Window Burn Rate Alerts
+  # Audiobook/podcast service with native auth
+  # ===========================================================================
+  - name: slo_multiwindow_audiobookshelf
+    interval: 1m
+    rules:
+      # TIER 1: CRITICAL - Fast Burn (Page immediately)
+      - alert: SLOBurnRateTier1_Audiobookshelf
+        expr: |
+          (
+            burn_rate:audiobookshelf:availability:1h > 14.4
+            and
+            burn_rate:audiobookshelf:availability:5m > 14.4
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: audiobookshelf
+          slo: availability
+          tier: "1"
+          burn_rate: "fast"
+        annotations:
+          summary: "🚨 CRITICAL: Audiobookshelf error budget burning at 14.4x normal rate"
+          description: |
+            **IMMEDIATE ACTION REQUIRED**
+
+            Audiobookshelf is degrading rapidly. Error budget exhausts in <3 hours.
+
+            - Burn Rate (1h): {{ $value | humanize }}x
+            - Budget Remaining: {{ query "error_budget:audiobookshelf:availability:budget_remaining * 100" | first | value | humanize }}%
+
+            Action: systemctl --user status audiobookshelf.service && podman logs audiobookshelf --tail 100
+
+      # TIER 2: WARNING
+      - alert: SLOBurnRateTier2_Audiobookshelf
+        expr: |
+          (
+            burn_rate:audiobookshelf:availability:6h > 6
+            and
+            burn_rate:audiobookshelf:availability:30m > 6
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: audiobookshelf
+          slo: availability
+          tier: "2"
+          burn_rate: "medium"
+        annotations:
+          summary: "⚠️ Audiobookshelf error budget burning at 6x normal rate"
+          description: "Budget exhausts in <1 day. Burn: {{ $value | humanize }}x, Remaining: {{ query \"error_budget:audiobookshelf:availability:budget_remaining * 100\" | first | value | humanize }}%"
+
+      # TIER 3: WARNING
+      - alert: SLOBurnRateTier3_Audiobookshelf
+        expr: |
+          (
+            burn_rate:audiobookshelf:availability:1d > 3
+            and
+            burn_rate:audiobookshelf:availability:2h > 3
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 86400)
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: audiobookshelf
+          slo: availability
+          tier: "3"
+          burn_rate: "slow"
+        annotations:
+          summary: "📊 Audiobookshelf error budget burning at 3x normal rate"
+          description: "Budget exhausts in <1 week. Trend monitoring needed."
+
+      # TIER 4: INFO
+      - alert: SLOBurnRateTier4_Audiobookshelf
+        expr: |
+          (
+            burn_rate:audiobookshelf:availability:3d > 1.5
+            and
+            burn_rate:audiobookshelf:availability:1d > 1.5
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 259200)
+        for: 6h
+        labels:
+          severity: info
+          component: slo
+          service: audiobookshelf
+          slo: availability
+          tier: "4"
+          burn_rate: "minimal"
+        annotations:
+          summary: "ℹ️ Audiobookshelf error budget trending above baseline"
+          description: "Long-term trend - review in monthly report."
