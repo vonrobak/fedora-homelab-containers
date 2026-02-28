@@ -18,6 +18,7 @@ Wants=network-online.target traefik.service
 [Container]
 Image=ghcr.io/advplyr/audiobookshelf:latest
 ContainerName=audiobookshelf
+HostName=audiobookshelf
 AutoUpdate=registry
 
 # Network (single network - standalone service, no inter-service communication)
@@ -57,6 +58,7 @@ RestartSec=10s
 # Resource Limits
 MemoryMax=2G
 MemoryHigh=1600M
+MemorySwapMax=1G
 
 # ═══════════════════════════════════════════════════════════
 # INSTALLATION

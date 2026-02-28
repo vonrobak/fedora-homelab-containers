@@ -18,6 +18,7 @@ Wants=network-online.target traefik.service
 [Container]
 Image=docker.io/deluan/navidrome:latest
 ContainerName=navidrome
+HostName=navidrome
 AutoUpdate=registry
 
 # Networks (reverse_proxy FIRST for internet access, monitoring for Prometheus scraping)
