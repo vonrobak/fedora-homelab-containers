@@ -26,6 +26,7 @@ Network=systemd-reverse_proxy:ip=10.89.2.74
 
 # Environment
 Environment=TZ=Europe/Oslo
+Environment=PORT=80
 
 # Config & metadata (exclusive - NOCOW for SQLite)
 Volume=/mnt/btrfs-pool/subvol7-containers/audiobookshelf/config:/config:Z

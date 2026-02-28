@@ -209,8 +209,9 @@ http:
 
     # Navidrome - Uses native authentication (no Authelia SSO)
     # Subsonic-compatible clients and web UI use Navidrome's built-in auth
+    # Block /metrics from public access (Prometheus scrapes direct via monitoring network)
     navidrome-secure:
-      rule: "Host(`musikk.patriark.org`)"
+      rule: "Host(`musikk.patriark.org`) && !PathPrefix(`/metrics`)"
       service: "navidrome"
       entryPoints:
         - websecure

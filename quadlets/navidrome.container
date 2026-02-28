@@ -63,6 +63,7 @@ RestartSec=10s
 # Resource Limits
 MemoryMax=1G
 MemoryHigh=800M
+MemorySwapMax=512M
 
 # ═══════════════════════════════════════════════════════════
 # INSTALLATION
