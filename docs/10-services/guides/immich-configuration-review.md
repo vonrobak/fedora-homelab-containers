@@ -355,7 +355,7 @@ Traefik ❌ → postgresql-immich (blocked by network segmentation)
 
 | Data Type | Location | Correct? | Notes |
 |-----------|----------|----------|-------|
-| Photo library (read-only) | `/mnt/btrfs-pool/subvol3-opptak/immich/library` → `/mnt/media:ro` | ✅ Yes | External library, read-only |
+| Photo library (read-write) | `/mnt/btrfs-pool/subvol3-opptak/immich/library` → `/mnt/media` | ✅ Yes | External library, read-write (enables asset management) |
 | Upload/processing | `/mnt/btrfs-pool/subvol3-opptak/immich` → `/usr/src/app/upload` | ✅ Yes | Working directory, read-write |
 | PostgreSQL data | `/mnt/btrfs-pool/subvol7-containers/postgresql-immich` | 🟡 Verify NOCOW | Database on BTRFS |
 | Redis data | `/mnt/btrfs-pool/subvol7-containers/redis-immich` | ✅ Yes (NOCOW) | Cache, NOCOW enabled |
@@ -485,7 +485,7 @@ User=1000:1000
 ### Principle 3: Fail-Safe Defaults 🟡 PARTIAL
 
 **Good:**
-- External library mounted read-only ✅
+- External library mounted read-write (BTRFS snapshots provide safety net) ✅
 - Network segmentation prevents direct database access ✅
 - Health checks configured ✅
 
@@ -758,7 +758,7 @@ podman exec redis-immich valkey-cli CONFIG SET appendonly no  # Disable AOF
 
 **Tier 3: Photo Files (Important but Recoverable)**
 - Files are on BTRFS pool
-- External library is read-only (original files safe)
+- External library is read-write (Immich can manage assets; BTRFS snapshots protect against accidental deletion)
 - Uploaded photos in `/usr/src/app/upload` backed up via BTRFS snapshots
 
 **Tier 4: Off-Site (Future)**
@@ -1020,8 +1020,8 @@ Environment=UPLOAD_LOCATION=/usr/src/app/upload
 # Upload/processing directory (read-write)
 Volume=/mnt/btrfs-pool/subvol3-opptak/immich:/usr/src/app/upload:Z
 
-# External library (read-only to prevent accidental modification)
-Volume=/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media:ro,Z
+# External library (read-write - enables asset management via Immich UI)
+Volume=/mnt/btrfs-pool/subvol3-opptak/immich/library:/mnt/media:Z
 
 # ═══════════════════════════════════════════════
 # PORTS: Use Traefik exclusively (no PublishPort)

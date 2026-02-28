@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-02-22 06:02:00 UTC
+**Generated:** 2026-02-28 06:01:30 UTC
 **System:** fedora-htpc | **Services:** 27/27 running | **Health:** 25/25 healthy (2 without healthcheck)
 
 ---
@@ -12,13 +12,13 @@
 | authelia | authelia/authelia:latest | ✅ healthy | 5d | [sso.patriark.org](https://sso.patriark.org) | [guide](10-services/guides/authelia.md) |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ healthy | 5d | — | [guide](10-services/guides/crowdsec.md) |
 | redis-authelia | redis:7-alpine | ✅ healthy | 5d | — | — |
-| traefik | traefik:latest | ✅ healthy | 13h | [traefik.patriark.org](https://traefik.patriark.org) | [guide](10-services/guides/traefik.md) |
+| traefik | traefik:latest | ✅ healthy | 5d | [traefik.patriark.org](https://traefik.patriark.org) | [guide](10-services/guides/traefik.md) |
 
 ## Nextcloud (3)
 
 | Service | Image | Health | Uptime | URL | Docs |
 |---------|-------|--------|--------|-----|------|
-| nextcloud-db | mariadb:11 | ✅ healthy | 4h | — | [guide](10-services/guides/nextcloud.md) |
+| nextcloud-db | mariadb:11 | ✅ healthy | 5d | — | [guide](10-services/guides/nextcloud.md) |
 | nextcloud | nextcloud:latest | ✅ healthy | 5d | [nextcloud.patriark.org](https://nextcloud.patriark.org) | [guide](10-services/guides/nextcloud.md) |
 | nextcloud-redis | redis:7-alpine | ✅ healthy | 5d | — | [guide](10-services/guides/nextcloud.md) |
 
@@ -41,21 +41,21 @@
 
 | Service | Image | Health | Uptime | URL | Docs |
 |---------|-------|--------|--------|-----|------|
-| vaultwarden | vaultwarden/server:latest | ✅ healthy | 13h | [vault.patriark.org](https://vault.patriark.org) | — |
+| vaultwarden | vaultwarden/server:latest | ✅ healthy | 5d | [vault.patriark.org](https://vault.patriark.org) | — |
 
 ## Home Automation (2)
 
 | Service | Image | Health | Uptime | URL | Docs |
 |---------|-------|--------|--------|-----|------|
-| home-assistant | home-assistant/home-assistant:stable | ✅ healthy | 4h | [ha.patriark.org](https://ha.patriark.org) | [guide](10-services/guides/home-assistant.md) |
+| home-assistant | home-assistant/home-assistant:stable | ✅ healthy | 5d | [ha.patriark.org](https://ha.patriark.org) | [guide](10-services/guides/home-assistant.md) |
 | matter-server | home-assistant-libs/python-matter-server:stab | ✅ healthy | 5d | — | [guide](10-services/guides/matter-server.md) |
 
 ## Gathio (2)
 
 | Service | Image | Health | Uptime | URL | Docs |
 |---------|-------|--------|--------|-----|------|
-| gathio-db | mongo:7 | ✅ healthy | 4h | — | — |
-| gathio | lowercasename/gathio:latest | ✅ healthy | 4h | [events.patriark.org](https://events.patriark.org) | — |
+| gathio-db | mongo:7 | ✅ healthy | 5d | — | — |
+| gathio | lowercasename/gathio:latest | ✅ healthy | 5d | [events.patriark.org](https://events.patriark.org) | — |
 
 ## Homepage (1)
 
@@ -68,14 +68,14 @@
 | Service | Image | Health | Uptime | URL | Docs |
 |---------|-------|--------|--------|-----|------|
 | alert-discord-relay | localhost/alert-discord-relay:latest | ✅ healthy | 5d | — | [guide](10-services/guides/alert-discord-relay.md) |
-| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ healthy | 13h | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
+| alertmanager | quay.io/prometheus/alertmanager:latest | ✅ healthy | 5d | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
 | cadvisor | gcr.io/cadvisor/cadvisor:latest | ✅ healthy | 5d | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
-| grafana | grafana/grafana:latest | ✅ healthy | 5d | [grafana.patriark.org](https://grafana.patriark.org) | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
-| loki | grafana/loki:latest | — no check | 4h | [loki.patriark.org](https://loki.patriark.org) | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
+| grafana | grafana/grafana:latest | ✅ healthy | 4d | [grafana.patriark.org](https://grafana.patriark.org) | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
+| loki | grafana/loki:latest | — no check | 5d | [loki.patriark.org](https://loki.patriark.org) | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
 | node_exporter | quay.io/prometheus/node-exporter:latest | ✅ healthy | 5d | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
-| prometheus | quay.io/prometheus/prometheus:latest | ✅ healthy | 13h | [prometheus.patriark.org](https://prometheus.patriark.org) | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
-| promtail | grafana/promtail:latest | ✅ healthy | 4h | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
-| unpoller | unpoller/unpoller:latest | — no check | 4h | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
+| prometheus | quay.io/prometheus/prometheus:latest | ✅ healthy | 5d | [prometheus.patriark.org](https://prometheus.patriark.org) | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
+| promtail | grafana/promtail:latest | ✅ healthy | 5d | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
+| unpoller | unpoller/unpoller:latest | — no check | 5d | — | [guide](40-monitoring-and-documentation/guides/monitoring-stack.md) |
 
 ---
 
@@ -83,7 +83,7 @@
 
 - **Total Running:** 27
 - **Total Defined:** 27
-- **System Load:** 0,65, 0,43, 0,41
+- **System Load:** 0,86, 0,69, 0,62
 
 ---
 

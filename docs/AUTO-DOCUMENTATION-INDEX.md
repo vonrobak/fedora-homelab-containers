@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-22 06:02:06 UTC
-**Total Documents:** 392
+**Generated:** 2026-02-28 06:01:34 UTC
+**Total Documents:** 397
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (12 documents)
+### 00-foundation/ (13 documents)
 
 **Fundamentals and core concepts**
 
@@ -41,6 +41,7 @@
 - ADR-016: [2025-12-31-ADR-016-configuration-design-principles](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
 - ADR-017: [2026-01-05-ADR-017-slash-commands-and-subagents](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
 - ADR-018: [2026-02-04-ADR-018-static-ip-multi-network-services](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
+- ADR-019: [2026-02-22-ADR-019-filesystem-permission-model](00-foundation/decisions/2026-02-22-ADR-019-filesystem-permission-model.md)
 
 ---
 
@@ -198,7 +199,7 @@
 
 ---
 
-### 98-journals/ (171 documents)
+### 98-journals/ (175 documents)
 
 **Chronological project history (append-only log)**
 
@@ -216,15 +217,20 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-02-15: [2026-02-15-community-tool-sharing-platform-architecture.md](98-journals/2026-02-15-community-tool-sharing-platform-architecture.md)
-- 2026-02-16: [2026-02-16-gnome-freeze-system-update.md](98-journals/2026-02-16-gnome-freeze-system-update.md)
-- 2026-02-16: [2026-02-16-post-reboot-handoff.md](98-journals/2026-02-16-post-reboot-handoff.md)
-- 2026-02-20: [2026-02-18-loose-ends-audit.md](98-journals/2026-02-18-loose-ends-audit.md)
-- 2026-02-16: [remediation-monthly-202601.md](99-reports/remediation-monthly-202601.md)
-- 2026-02-22: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-02-22: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-02-22: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-02-22: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-02-22: [2026-02-22-ADR-019-filesystem-permission-model.md](00-foundation/decisions/2026-02-22-ADR-019-filesystem-permission-model.md)
+- 2026-02-27: [automation-reference.md](20-operations/guides/automation-reference.md)
+- 2026-02-22: [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
+- 2026-02-24: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
+- 2026-02-24: [2026-02-18-loose-ends-audit.md](98-journals/2026-02-18-loose-ends-audit.md)
+- 2026-02-22: [2026-02-22-filesystem-permission-optimization.md](98-journals/2026-02-22-filesystem-permission-optimization.md)
+- 2026-02-24: [2026-02-23-loose-ends-audit-review.md](98-journals/2026-02-23-loose-ends-audit-review.md)
+- 2026-02-26: [2026-02-26-slo-system-diagnostic-fixes.md](98-journals/2026-02-26-slo-system-diagnostic-fixes.md)
+- 2026-02-27: [2026-02-27-automation-audit-and-improvements.md](98-journals/2026-02-27-automation-audit-and-improvements.md)
+- 2026-02-22: [remediation-monthly-202601.md](99-reports/remediation-monthly-202601.md)
+- 2026-02-28: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-02-28: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-02-28: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-02-28: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
