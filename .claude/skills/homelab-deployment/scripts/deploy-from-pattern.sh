@@ -132,20 +132,21 @@ load_pattern() {
     # Parse YAML (basic parsing - extract key values)
     # This is a simplified parser; for production, consider using yq or python
 
-    PATTERN_VARS[image]=$(grep "^  image:" "$pattern_file" | head -1 | cut -d'"' -f2)
-    PATTERN_VARS[memory_limit]=$(grep "^  memory_limit:" "$pattern_file" | head -1 | cut -d'"' -f2)
-    PATTERN_VARS[quadlet_template]=$(grep "^  quadlet_template:" "$pattern_file" | head -1 | awk '{print $2}')
-    PATTERN_VARS[traefik_template]=$(grep "^  traefik_template:" "$pattern_file" | head -1 | awk '{print $2}')
+    # Helper: extract a YAML value, handling both quoted and unquoted forms
+    # "value" -> value, value -> value, empty -> ""
+    _yaml_val() {
+        grep "^  ${1}:" "$pattern_file" | head -1 | sed 's/^[^:]*: *//' | sed 's/^"\(.*\)"$/\1/'
+    }
 
-    # Extract port (used for Traefik service URL and healthcheck)
-    PATTERN_VARS[port]=$(grep "^  port:" "$pattern_file" | head -1 | awk '{print $2}' | tr -d '"')
-    # Extract health_cmd (for container healthcheck)
-    PATTERN_VARS[health_cmd]=$(grep "^  health_cmd:" "$pattern_file" | head -1 | cut -d'"' -f2)
-    # Extract memory_high (systemd MemoryHigh, if specified)
-    PATTERN_VARS[memory_high]=$(grep "^  memory_high:" "$pattern_file" | head -1 | cut -d'"' -f2)
-    # Extract config_dir and data_dir (storage paths)
-    PATTERN_VARS[config_dir]=$(grep "^  config_dir:" "$pattern_file" | head -1 | cut -d'"' -f2)
-    PATTERN_VARS[data_dir]=$(grep "^  data_dir:" "$pattern_file" | head -1 | cut -d'"' -f2)
+    PATTERN_VARS[image]=$(_yaml_val image)
+    PATTERN_VARS[memory_limit]=$(_yaml_val memory_limit)
+    PATTERN_VARS[quadlet_template]=$(_yaml_val quadlet_template)
+    PATTERN_VARS[traefik_template]=$(_yaml_val traefik_template)
+    PATTERN_VARS[port]=$(_yaml_val port)
+    PATTERN_VARS[health_cmd]=$(_yaml_val health_cmd)
+    PATTERN_VARS[memory_high]=$(_yaml_val memory_high)
+    PATTERN_VARS[config_dir]=$(_yaml_val config_dir)
+    PATTERN_VARS[data_dir]=$(_yaml_val data_dir)
 
     # Resolve {service_name} in extracted values
     for key in config_dir data_dir; do
@@ -157,7 +158,7 @@ load_pattern() {
     # Extract networks (comma-separated)
     PATTERN_VARS[networks]=$(grep -A 10 "^  networks:" "$pattern_file" | grep "^    -" | awk '{print $2}' | tr '\n' ',' | sed 's/,$//')
 
-    [[ "$VERBOSE" == "true" ]] && echo -e "${GREEN}✓${NC} Pattern loaded successfully"
+    [[ "$VERBOSE" == "true" ]] && echo -e "${GREEN}✓${NC} Pattern loaded successfully" || true
 }
 
 ##############################################################################
@@ -173,29 +174,37 @@ substitute_variables() {
     # Copy template
     cp "$template_file" "$output_file"
 
+    # Ensure tmp file is cleaned up on failure
+    trap 'rm -f "${output_file}.tmp"' RETURN
+
+    # Helper: awk-based replacement that handles &, |, / and other special chars in values.
+    # gsub treats & in the replacement as "matched text", so we must escape it.
+    # In awk -v context, \\\\& becomes the literal string \\& which gsub treats as literal &.
+    _awk_replace() {
+        local pattern="$1" replacement="$2" file="$3"
+        awk -v k="$pattern" -v val="$replacement" \
+            'BEGIN{gsub(/&/, "\\\\&", val)} {gsub(k, val)}1' \
+            "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+    }
+
     # Substitute core variables (uppercase, matching template {{PLACEHOLDERS}})
     sed -i "s/{{SERVICE_NAME}}/${SERVICE_NAME}/g" "$output_file"
     sed -i "s|{{IMAGE}}|${IMAGE}|g" "$output_file"
     sed -i "s/{{HOSTNAME}}/${HOSTNAME}/g" "$output_file"
     sed -i "s/{{MEMORY}}/${MEMORY}/g" "$output_file"
 
-    # Substitute PORT and HEALTH_CMD from pattern or CLI override
+    # Substitute PORT with default fallback
     local port="${PATTERN_VARS[port]:-8080}"
-    local health_cmd="${PATTERN_VARS[health_cmd]:-}"
     sed -i "s/{{PORT}}/${port}/g" "$output_file"
-    if [[ -n "$health_cmd" ]]; then
-        # Use awk for health_cmd since it may contain sed-hostile characters (|, /, etc.)
-        awk -v val="$health_cmd" '{gsub(/\{\{HEALTH_CMD\}\}/, val)}1' "$output_file" > "${output_file}.tmp" && mv "${output_file}.tmp" "$output_file"
-    fi
 
     # Substitute pattern-specific variables (lowercase keys from YAML and --var overrides)
+    # Handles both {{key}} and {{KEY}} forms for each pattern variable
     for key in "${!PATTERN_VARS[@]}"; do
         if [[ -n "${PATTERN_VARS[$key]}" ]]; then
             local val="${PATTERN_VARS[$key]}"
-            # Use awk for values that may contain sed-hostile characters
-            awk -v k="{{${key}}}" -v val="$val" '{gsub(k, val)}1' "$output_file" > "${output_file}.tmp" && mv "${output_file}.tmp" "$output_file"
+            _awk_replace "{{${key}}}" "$val" "$output_file"
             local upper_key="${key^^}"
-            awk -v k="{{${upper_key}}}" -v val="$val" '{gsub(k, val)}1' "$output_file" > "${output_file}.tmp" && mv "${output_file}.tmp" "$output_file"
+            _awk_replace "{{${upper_key}}}" "$val" "$output_file"
         fi
     done
 
@@ -214,7 +223,7 @@ substitute_variables() {
         fi
     fi
 
-    [[ "$VERBOSE" == "true" ]] && echo -e "${GREEN}✓${NC} Variables substituted"
+    [[ "$VERBOSE" == "true" ]] && echo -e "${GREEN}✓${NC} Variables substituted" || true
 }
 
 ##############################################################################
