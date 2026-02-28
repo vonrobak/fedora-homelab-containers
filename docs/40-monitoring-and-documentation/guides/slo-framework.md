@@ -109,6 +109,26 @@ How fast we're consuming error budget:
 
 ---
 
+### 6. Navidrome (Music Streaming)
+
+**SLO-011: Availability**
+- **Target:** 99.5% availability over 30 days
+- **SLI:** `(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="navidrome@file"}) * 100`
+- **Error Budget:** 216 minutes/month
+- **Rationale:** Music streaming with Subsonic API. Native auth (no Authelia) for mobile client compatibility.
+
+---
+
+### 7. Audiobookshelf (Audiobooks & Podcasts)
+
+**SLO-012: Availability**
+- **Target:** 99.5% availability over 30 days
+- **SLI:** `(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="audiobookshelf@file"}) * 100`
+- **Error Budget:** 216 minutes/month
+- **Rationale:** Audiobook/podcast service with iOS app. Native auth for mobile client compatibility.
+
+---
+
 ## Multi-Window Burn-Rate Alerting
 
 We use Google's recommended multi-window, multi-burn-rate alerting to balance sensitivity and precision:
@@ -262,10 +282,10 @@ Access the SLO dashboard at: `https://grafana.patriark.org/d/slo-dashboard`
 
 ## Implementation Status
 
-- [x] SLO definitions documented (11 SLOs across 6 services)
-- [x] Prometheus recording rules created (113 rules: SLI, error budget, burn rate)
-- [x] Error budget calculations implemented (15 tracking rules)
-- [x] Multi-window burn-rate alerts configured (11 alerts: critical + warning)
+- [x] SLO definitions documented (13 SLOs across 8 services)
+- [x] Prometheus recording rules created (143 rules: SLI, error budget, burn rate)
+- [x] Error budget calculations implemented (21 tracking rules)
+- [x] Multi-window burn-rate alerts configured (19 alerts: critical + warning per service)
 - [x] Grafana dashboards created (SLO dashboard + fixed 6 existing dashboards)
 - [x] Monthly reporting automated (systemd timer + Discord webhook integration)
 

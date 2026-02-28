@@ -154,6 +154,74 @@ groups:
           ) / error_budget:authelia:availability:budget_total
 
       # ===========================================================================
+      # NAVIDROME - Extended burn rate windows
+      # ===========================================================================
+
+      - record: burn_rate:navidrome:availability:1d
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."}[1d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[1d]))
+            )
+          ) / error_budget:navidrome:availability:budget_total
+
+      - record: burn_rate:navidrome:availability:2h
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."}[2h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[2h]))
+            )
+          ) / error_budget:navidrome:availability:budget_total
+
+      - record: burn_rate:navidrome:availability:3d
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."}[3d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[3d]))
+            )
+          ) / error_budget:navidrome:availability:budget_total
+
+      # ===========================================================================
+      # AUDIOBOOKSHELF - Extended burn rate windows
+      # ===========================================================================
+
+      - record: burn_rate:audiobookshelf:availability:1d
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."}[1d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[1d]))
+            )
+          ) / error_budget:audiobookshelf:availability:budget_total
+
+      - record: burn_rate:audiobookshelf:availability:2h
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."}[2h]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[2h]))
+            )
+          ) / error_budget:audiobookshelf:availability:budget_total
+
+      - record: burn_rate:audiobookshelf:availability:3d
+        expr: |
+          (
+            1 - (
+              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."}[3d]))
+              /
+              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[3d]))
+            )
+          ) / error_budget:audiobookshelf:availability:budget_total
+
+      # ===========================================================================
       # TRAEFIK - Extended burn rate windows (using up metric)
       # ===========================================================================
 
@@ -253,6 +321,24 @@ groups:
             error_budget:home_assistant:availability:budget_remaining
             /
             clamp_min(burn_rate:home_assistant:availability:3d, 0.001)
+          ) * 30
+
+      # Navidrome - Days until budget exhaustion
+      - record: error_budget:navidrome:availability:days_remaining
+        expr: |
+          (
+            error_budget:navidrome:availability:budget_remaining
+            /
+            clamp_min(burn_rate:navidrome:availability:3d, 0.001)
+          ) * 30
+
+      # Audiobookshelf - Days until budget exhaustion
+      - record: error_budget:audiobookshelf:availability:days_remaining
+        expr: |
+          (
+            error_budget:audiobookshelf:availability:budget_remaining
+            /
+            clamp_min(burn_rate:audiobookshelf:availability:3d, 0.001)
           ) * 30
 
       # Nextcloud - Days until budget exhaustion

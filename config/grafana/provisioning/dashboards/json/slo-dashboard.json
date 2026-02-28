@@ -141,6 +141,24 @@
           "expr": "error_budget:home_assistant:availability:budget_remaining * 100",
           "legendFormat": "Home Assistant",
           "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "error_budget:navidrome:availability:budget_remaining * 100",
+          "legendFormat": "Navidrome",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "error_budget:audiobookshelf:availability:budget_remaining * 100",
+          "legendFormat": "Audiobookshelf",
+          "refId": "H"
         }
       ],
       "title": "Error Budget Remaining (30-day window)",
@@ -183,7 +201,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 12,
         "x": 0,
         "y": 8
@@ -259,6 +277,24 @@
           "expr": "sli:home_assistant:availability:ratio * 100",
           "legendFormat": "Home Assistant",
           "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "sli:navidrome:availability:ratio * 100",
+          "legendFormat": "Navidrome",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "sli:audiobookshelf:availability:ratio * 100",
+          "legendFormat": "Audiobookshelf",
+          "refId": "H"
         }
       ],
       "title": "Current Availability (5m window)",
@@ -303,7 +339,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 12,
         "x": 12,
         "y": 8
@@ -379,6 +415,24 @@
           "expr": "burn_rate:home_assistant:availability:1h",
           "legendFormat": "Home Assistant (1h)",
           "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "burn_rate:navidrome:availability:1h",
+          "legendFormat": "Navidrome (1h)",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "burn_rate:audiobookshelf:availability:1h",
+          "legendFormat": "Audiobookshelf (1h)",
+          "refId": "H"
         }
       ],
       "title": "Current Burn Rate (1-hour window)",
@@ -453,7 +507,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "id": 4,
       "options": {
@@ -526,6 +580,24 @@
           "expr": "sli:home_assistant:availability:ratio * 100",
           "legendFormat": "Home Assistant (Target: 99.5%)",
           "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "sli:navidrome:availability:ratio * 100",
+          "legendFormat": "Navidrome (Target: 99.5%)",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "sli:audiobookshelf:availability:ratio * 100",
+          "legendFormat": "Audiobookshelf (Target: 99.5%)",
+          "refId": "H"
         }
       ],
       "title": "Service Availability Trend",
@@ -593,7 +665,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 23
       },
       "id": 5,
       "options": {
@@ -717,7 +789,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 23
       },
       "id": 6,
       "options": {
@@ -790,6 +862,24 @@
           "expr": "error_budget:home_assistant:availability:budget_remaining * 100",
           "legendFormat": "Home Assistant",
           "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "error_budget:navidrome:availability:budget_remaining * 100",
+          "legendFormat": "Navidrome",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds_prometheus}"
+          },
+          "expr": "error_budget:audiobookshelf:availability:budget_remaining * 100",
+          "legendFormat": "Audiobookshelf",
+          "refId": "H"
         }
       ],
       "title": "Error Budget Consumption (7-day trend)",
