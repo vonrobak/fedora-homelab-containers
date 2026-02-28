@@ -1,7 +1,7 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-02-28 06:01:30 UTC
-**System:** fedora-htpc | **Networks:** 8 | **Containers:** 27
+**Generated:** 2026-02-28 23:00:41 UTC
+**System:** fedora-htpc | **Networks:** 8 | **Containers:** 29
 
 ---
 
@@ -28,8 +28,10 @@ graph TB
 
     %% Services with native authentication (bypass Authelia)
     CrowdSec -->|Rate Limit| alertmanager[alertmanager]
+    CrowdSec -->|Rate Limit| audiobookshelf[audiobookshelf]
     CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
+    CrowdSec -->|Rate Limit| navidrome[navidrome]
     CrowdSec -->|Rate Limit| nextcloud[nextcloud]
     CrowdSec -->|Rate Limit| vaultwarden[vaultwarden]
 
@@ -88,6 +90,7 @@ graph TB
         monitoring_immich_server[immich-server]
         monitoring_jellyfin[jellyfin]
         monitoring_loki[loki]
+        monitoring_navidrome[navidrome]
         monitoring_nextcloud[nextcloud]
         monitoring_nextcloud_db[nextcloud-db]
         monitoring_nextcloud_redis[nextcloud-redis]
@@ -116,6 +119,7 @@ graph TB
     subgraph reverse_proxy["reverse_proxy<br/>10.89.2.0/24"]
         direction LR
         reverse_proxy_alertmanager[alertmanager]
+        reverse_proxy_audiobookshelf[audiobookshelf]
         reverse_proxy_authelia[authelia]
         reverse_proxy_crowdsec[crowdsec]
         reverse_proxy_gathio[gathio]
@@ -125,6 +129,7 @@ graph TB
         reverse_proxy_immich_server[immich-server]
         reverse_proxy_jellyfin[jellyfin]
         reverse_proxy_loki[loki]
+        reverse_proxy_navidrome[navidrome]
         reverse_proxy_nextcloud[nextcloud]
         reverse_proxy_prometheus[prometheus]
         reverse_proxy_traefik[traefik]
@@ -155,11 +160,13 @@ Shows which services belong to which networks. Dynamically generated from runnin
 | redis-authelia | ✅ | - | - | - | - | - | - | - |
 | traefik | ✅ | - | - | - | ✅ | - | - | ✅ |
 | **Public Services** |
+| audiobookshelf | - | - | - | - | - | - | - | ✅ |
 | gathio | - | ✅ | - | - | ✅ | - | - | ✅ |
 | home-assistant | - | - | ✅ | - | ✅ | - | - | ✅ |
 | homepage | - | - | - | - | - | - | - | ✅ |
 | immich-server | - | - | - | - | ✅ | - | ✅ | ✅ |
 | jellyfin | - | - | - | ✅ | ✅ | - | - | ✅ |
+| navidrome | - | - | - | - | ✅ | - | - | ✅ |
 | nextcloud | - | - | - | - | ✅ | ✅ | - | ✅ |
 | vaultwarden | - | - | - | - | - | - | - | ✅ |
 | **Monitoring** |
@@ -280,7 +287,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 17
+- **Services:** 18
 
 **Members:**
 - alert-discord-relay
@@ -292,6 +299,7 @@ sequenceDiagram
 - immich-server
 - jellyfin
 - loki
+- navidrome
 - nextcloud
 - nextcloud-db
 - nextcloud-redis
@@ -331,10 +339,11 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 14
+- **Services:** 16
 
 **Members:**
 - alertmanager
+- audiobookshelf
 - authelia
 - crowdsec
 - gathio
@@ -344,6 +353,7 @@ sequenceDiagram
 - immich-server
 - jellyfin
 - loki
+- navidrome
 - nextcloud
 - prometheus
 - traefik

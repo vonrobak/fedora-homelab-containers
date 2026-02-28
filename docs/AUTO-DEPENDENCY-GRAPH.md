@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-02-28 06:01:34 UTC
+**Generated:** 2026-02-28 23:00:45 UTC
 **System:** fedora-htpc
 
 ---
@@ -45,9 +45,11 @@ graph TB
 
     subgraph Supporting[Supporting — Tier 5]
         alert_discord_relay[alert-discord-relay]
+        audiobookshelf[audiobookshelf]
         cadvisor[cadvisor]
         immich_ml[immich-ml]
         matter_server[matter-server]
+        navidrome[navidrome]
         node_exporter[node_exporter]
         promtail[promtail]
         unpoller[unpoller]
@@ -61,6 +63,7 @@ graph TB
 
     %% Routing dependencies (services in reverse_proxy depend on Traefik)
     traefik -.-> alertmanager
+    traefik -.-> audiobookshelf
     traefik -.-> authelia
     traefik -.-> gathio
     traefik -.-> grafana
@@ -69,6 +72,7 @@ graph TB
     traefik -.-> immich_server
     traefik -.-> jellyfin
     traefik -.-> loki
+    traefik -.-> navidrome
     traefik -.-> nextcloud
     traefik -.-> prometheus
     traefik -.-> vaultwarden
@@ -78,6 +82,7 @@ graph TB
     prometheus -.->|scrapes| home_assistant
     prometheus -.->|scrapes| immich_server
     prometheus -.->|scrapes| jellyfin
+    prometheus -.->|scrapes| navidrome
     prometheus -.->|scrapes| nextcloud
     prometheus -.->|scrapes| nextcloud_db
     prometheus -.->|scrapes| nextcloud_redis
@@ -139,9 +144,11 @@ graph TB
 | Service | Hard Dependencies | Impact if Down |
 |---------|-------------------|----------------|
 | **alert-discord-relay** | — | 🟢 Service-specific impact |
+| **audiobookshelf** | — | 🟢 Service-specific impact |
 | **cadvisor** | — | 🟢 Service-specific impact |
 | **immich-ml** | — | 🟢 Service-specific impact |
 | **matter-server** | — | 🟢 Service-specific impact |
+| **navidrome** | — | 🟢 Service-specific impact |
 | **node_exporter** | — | 🟢 Service-specific impact |
 | **promtail** | — | 🟢 Service-specific impact |
 | **unpoller** | — | 🟢 Service-specific impact |
@@ -156,6 +163,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 |---------|-------------|
 | alert-discord-relay | (no ordering constraints) |
 | alertmanager | (no ordering constraints) |
+| audiobookshelf | traefik |
 | authelia | redis-authelia |
 | cadvisor | (no ordering constraints) |
 | crowdsec | (no ordering constraints) |
@@ -169,6 +177,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | jellyfin | (no ordering constraints) |
 | loki | (no ordering constraints) |
 | matter-server | (no ordering constraints) |
+| navidrome | traefik |
 | nextcloud | nextcloud-db,nextcloud-redis |
 | nextcloud-db | (no ordering constraints) |
 | nextcloud-redis | (no ordering constraints) |
@@ -196,13 +205,13 @@ Services on the same network can communicate:
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,immich-server,jellyfin,loki,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
 
 **nextcloud:** nextcloud,nextcloud-db,nextcloud-redis
 
 **photos:** immich-ml,immich-server,postgresql-immich,redis-immich
 
-**reverse_proxy:** alertmanager,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,nextcloud,prometheus,traefik,vaultwarden
+**reverse_proxy:** alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,traefik,vaultwarden
 
 ---
 
