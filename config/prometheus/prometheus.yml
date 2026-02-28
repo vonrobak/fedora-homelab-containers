@@ -105,6 +105,16 @@ scrape_configs:
   # Nextcloud monitoring removed - ServerInfo endpoint requires auth
   # Nextcloud availability monitored via Traefik metrics (SLO recording rules)
 
+  # Navidrome - Music Streaming Server (native Prometheus metrics)
+  # Static IP: Navidrome is multi-network (reverse_proxy + monitoring).
+  # Hostname resolution via aardvark-dns may return the wrong IP (ADR-018).
+  - job_name: 'navidrome'
+    static_configs:
+      - targets: ['10.89.4.75:4533']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'navidrome'
+
   # Home Assistant - Home Automation Hub
   - job_name: 'home-assistant'
     static_configs:

@@ -1,0 +1,68 @@
+# ~/.config/containers/systemd/audiobookshelf.container
+# Audiobookshelf - Self-hosted Audiobook & Podcast Server
+# Created: 2026-02-28
+# Documentation: https://www.audiobookshelf.org/docs
+
+# ═══════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════
+[Unit]
+Description=Audiobookshelf Audiobook & Podcast Server
+Documentation=https://github.com/advplyr/audiobookshelf
+After=network-online.target traefik.service
+Wants=network-online.target traefik.service
+
+# ═══════════════════════════════════════════════════════════
+# CONTAINER CONFIGURATION
+# ═══════════════════════════════════════════════════════════
+[Container]
+Image=ghcr.io/advplyr/audiobookshelf:latest
+ContainerName=audiobookshelf
+HostName=audiobookshelf
+AutoUpdate=registry
+
+# Network (single network - standalone service, no inter-service communication)
+Network=systemd-reverse_proxy:ip=10.89.2.74
+
+# Environment
+Environment=TZ=Europe/Oslo
+Environment=PORT=80
+
+# Config & metadata (exclusive - NOCOW for SQLite)
+Volume=/mnt/btrfs-pool/subvol7-containers/audiobookshelf/config:/config:Z
+Volume=/mnt/btrfs-pool/subvol7-containers/audiobookshelf/metadata:/metadata:Z
+
+# Media libraries (shared read-only)
+Volume=/mnt/btrfs-pool/subvol4-multimedia/Lydbøker:/audiobooks:ro,z
+Volume=/mnt/btrfs-pool/subvol4-multimedia/Bøker:/ebooks:ro,z
+Volume=/mnt/btrfs-pool/subvol4-multimedia/Podder:/podcasts-archive:ro,z
+
+# Podcast downloads (writable, shared context under multimedia)
+Volume=/mnt/btrfs-pool/subvol4-multimedia/audiobookshelf:/podcasts:z
+
+# Health check (no curl in official image, use wget)
+HealthCmd=wget --no-verbose --tries=1 --spider http://127.0.0.1:80/healthcheck || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=30s
+
+# ═══════════════════════════════════════════════════════════
+# SERVICE BEHAVIOR
+# ═══════════════════════════════════════════════════════════
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=300
+RestartSec=10s
+
+# Resource Limits
+MemoryMax=2G
+MemoryHigh=1600M
+MemorySwapMax=1G
+
+# ═══════════════════════════════════════════════════════════
+# INSTALLATION
+# ═══════════════════════════════════════════════════════════
+[Install]
+WantedBy=default.target
