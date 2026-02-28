@@ -32,6 +32,10 @@ Environment=ND_SCANSCHEDULE=1h
 Environment=ND_PROMETHEUS_ENABLED=true
 Environment=ND_LOGLEVEL=info
 
+# Last.fm scrobbling (podman secrets, type=env)
+Secret=navidrome_lastfm_apikey,type=env,target=ND_LASTFM_APIKEY
+Secret=navidrome_lastfm_secret,type=env,target=ND_LASTFM_SECRET
+
 # Data directory (exclusive - NOCOW for SQLite)
 Volume=/mnt/btrfs-pool/subvol7-containers/navidrome:/data:Z
 
