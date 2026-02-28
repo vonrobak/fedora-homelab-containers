@@ -29,6 +29,7 @@ Volume=/mnt/btrfs-pool/subvol7-containers/traefik-logs:/var/log/traefik:z
 Volume=%h/containers/config/traefik/hosts:/etc/hosts:ro,Z
 
 Secret=crowdsec_api_key
+Secret=cloudflare_dns_token,type=env,target=CF_DNS_API_TOKEN
 Entrypoint=/traefik-entrypoint.sh
 Exec=traefik
 SecurityLabelDisable=true
