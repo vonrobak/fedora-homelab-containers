@@ -79,8 +79,11 @@ Each service uses a **consistent last octet across all networks** for easy ident
 | .82 | nextcloud | reverse_proxy, nextcloud, monitoring |
 | .83 | loki | reverse_proxy, monitoring |
 | .84 | gathio | reverse_proxy, gathio, monitoring |
+| .85 | qbittorrent | reverse_proxy |
+| .86 | alert-discord-relay | reverse_proxy, monitoring |
+| .87 | unpoller | reverse_proxy, monitoring |
 
-**Next available:** `.85`
+**Next available:** `.88`
 
 **Why .69+?** The dynamic IPAM range starts at `.2` and allocates sequentially. With a hard
 boundary at `.68`, even 67 dynamic containers per network cannot collide with static assignments.

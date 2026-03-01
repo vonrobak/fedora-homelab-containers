@@ -223,6 +223,23 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # qBittorrent - WebUI for torrent management
+    # Access restricted by: Authelia SSO + DNS (Pi-hole LAN/VPN only) + no UDM Pro port forward
+    # Note: admin-whitelist middleware not used — rootless Podman NATs all client IPs
+    # to container network IPs, making IP-based filtering ineffective
+    qbittorrent-secure:
+      rule: "Host(`torrent.patriark.org`)"
+      service: "qbittorrent"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit@file
+        - authelia@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
   services:
     homepage:
       loadBalancer:
@@ -290,6 +307,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://navidrome:4533"
+
+    qbittorrent:
+      loadBalancer:
+        servers:
+          - url: "http://qbittorrent:8085"
 
   middlewares:
     # CalDAV/.well-known redirects for Nextcloud

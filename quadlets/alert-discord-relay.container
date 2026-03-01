@@ -1,13 +1,15 @@
 [Unit]
 Description=Alert Discord Relay - Alertmanager to Discord Webhook Bridge
-After=network-online.target monitoring-network.service
+After=network-online.target reverse_proxy-network.service monitoring-network.service
 Wants=network-online.target
-Requires=monitoring-network.service
+Requires=reverse_proxy-network.service monitoring-network.service
 
 [Container]
 Image=localhost/alert-discord-relay:latest
 ContainerName=alert-discord-relay
 HostName=alert-discord-relay
+# reverse_proxy first for default route (Discord API access)
+Network=systemd-reverse_proxy:ip=10.89.2.86
 Network=systemd-monitoring
 
 # Discord webhook URL

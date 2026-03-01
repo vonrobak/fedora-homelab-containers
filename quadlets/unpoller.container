@@ -1,8 +1,9 @@
 [Unit]
 Description=Unpoller - UniFi Metrics Exporter for Prometheus
 Documentation=https://unpoller.com/docs/
-After=network-online.target prometheus.service
+After=network-online.target reverse_proxy-network.service prometheus.service
 Wants=network-online.target
+Requires=reverse_proxy-network.service
 
 [Container]
 Image=ghcr.io/unpoller/unpoller:latest
@@ -23,6 +24,8 @@ Secret=unpoller_pass,type=env,target=UP_UNIFI_DEFAULT_PASS
 Environment=TZ=Europe/Oslo
 
 # Network configuration
+# reverse_proxy first for default route (UDM Pro polling at 192.168.1.1)
+Network=systemd-reverse_proxy:ip=10.89.2.87
 Network=systemd-monitoring
 
 # Prometheus metrics exposed on systemd-monitoring network (port 9130)

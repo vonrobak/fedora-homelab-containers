@@ -37,6 +37,9 @@
 10.89.2.73  homepage
 10.89.2.71  vaultwarden
 
+# Downloads & Torrents
+10.89.2.85  qbittorrent
+
 # Note: These IPs are statically assigned in each service's quadlet file
 # using the Network=systemd-reverse_proxy:ip=X.X.X.X syntax, ensuring they
 # remain stable across container restarts.
