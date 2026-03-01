@@ -9,8 +9,8 @@ Image=quay.io/prometheus/prometheus:latest
 ContainerName=prometheus
 HostName=prometheus
 # Static IPs assigned to ensure consistent DNS resolution
-Network=systemd-reverse_proxy:ip=10.89.2.11
-Network=systemd-monitoring:ip=10.89.4.13
+Network=systemd-reverse_proxy:ip=10.89.2.79
+Network=systemd-monitoring:ip=10.89.4.79
 
 # Prometheus configuration and data
 Volume=%h/containers/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
