@@ -3,6 +3,7 @@
 # FIXED: 2026-01-22 - Calculate actual short-term failure rates, not 30-day averages
 # FIXED: 2026-02-07 - Include WebSocket code=0 as successful (was counted as failure)
 # FIXED: 2026-03-01 - Navidrome/Audiobookshelf: count only 5xx as errors
+# FIXED: 2026-03-01 - Home Assistant: switch to denylist (code!~"5.."), Nextcloud/Immich: add 499
 # Purpose: Add longer time windows for multi-tier burn rate detection
 #
 # Burn Rate Tiers (Google SRE Book methodology):
@@ -60,7 +61,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[1d]))
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[1d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="immich@file"}[1d]))
             )
@@ -70,7 +71,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[2h]))
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[2h]))
               /
               sum(rate(traefik_service_requests_total{exported_service="immich@file"}[2h]))
             )
@@ -80,21 +81,22 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[3d]))
+              sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[3d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="immich@file"}[3d]))
             )
           ) / error_budget:immich:availability:budget_total
 
       # ===========================================================================
-      # HOME ASSISTANT - Extended burn rate windows
+      # HOME ASSISTANT - Extended burn rate windows (denylist: only 5xx = errors)
+      # 404s at ~37 req/day via Traefik caused 4x budget overrun with allowlist criteria
       # ===========================================================================
 
       - record: burn_rate:home_assistant:availability:1d
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[1d]))
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[1d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[1d]))
             )
@@ -104,7 +106,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[2h]))
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[2h]))
               /
               sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[2h]))
             )
@@ -114,7 +116,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[3d]))
+              sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[3d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[3d]))
             )
@@ -241,7 +243,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[1d]))
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[1d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1d]))
             )
@@ -251,7 +253,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[2h]))
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[2h]))
               /
               sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[2h]))
             )
@@ -261,7 +263,7 @@ groups:
         expr: |
           (
             1 - (
-              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[3d]))
+              sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[3d]))
               /
               sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[3d]))
             )

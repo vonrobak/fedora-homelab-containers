@@ -18,16 +18,18 @@ The actual measured metric. Examples:
 
 **Success Criteria Policy:**
 
-Two approaches are used depending on service characteristics:
+Three approaches are used depending on service characteristics:
 
 | Criteria | Pattern | When to Use |
 |----------|---------|-------------|
 | `code=~"0\|2..\|3.."` | Allowlist (2xx/3xx + WebSocket) | Services behind Authelia where 4xx from the service itself is unexpected |
-| `code!~"5.."` | Denylist (only 5xx = error) | Services with native auth where 4xx is expected behavior (auth rejections, resource lookups) |
+| `code=~"0\|2..\|3..\|499"` | Allowlist + 499 | Same as allowlist, but excludes client disconnects (499) which are not server errors |
+| `code!~"5.."` | Denylist (only 5xx = error) | Services with native auth where 4xx is expected behavior (auth rejections, resource lookups), or low-traffic services where 4xx would have outsized SLO impact |
 
 **Current assignments:**
-- **Allowlist:** Jellyfin, Immich, Authelia, Nextcloud, Home Assistant
-- **Denylist:** Navidrome, Audiobookshelf
+- **Allowlist:** Jellyfin, Authelia
+- **Allowlist + 499:** Nextcloud, Immich (client disconnects during sync/upload are not server errors)
+- **Denylist:** Navidrome, Audiobookshelf, Home Assistant
 
 **Trade-off:** Denylist services exclude 4xx from burn rate alerts. Compensating 4xx alerts (`NavidromeHigh4xxRate`, `AudiobookshelfHigh4xxRate`) fire when the 4xx rate exceeds 10% for 10 minutes, catching 403/429 spikes that could indicate misconfiguration or attack.
 
@@ -53,7 +55,7 @@ How fast we're consuming error budget:
 
 **SLO-001: Availability**
 - **Target:** 99.5% availability over 30 days
-- **SLI:** `(traefik_service_requests_total{exported_service="jellyfin@file", code=~"2..|3.."} / traefik_service_requests_total{exported_service="jellyfin@file"}) * 100`
+- **SLI:** `(traefik_service_requests_total{exported_service="jellyfin@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="jellyfin@file"}) * 100`
 - **Error Budget:** 216 minutes/month
 - **Rationale:** Media streaming should be highly available but occasional maintenance is acceptable
 
@@ -68,9 +70,9 @@ How fast we're consuming error budget:
 
 **SLO-003: API Availability**
 - **Target:** 99.5% availability over 30 days
-- **SLI:** `(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="immich@file"}) * 100`
+- **SLI:** `(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"} / traefik_service_requests_total{exported_service="immich@file"}) * 100`
 - **Error Budget:** 216 minutes/month (~3.6 hours)
-- **Rationale:** At ~50 req/day, 99.9% allows only 1.5 failures/month (unrealistic). 99.5% allows ~7 failures/month. Note: code=0 (WebSocket) included as successful.
+- **Rationale:** At ~50 req/day, 99.9% allows only 1.5 failures/month (unrealistic). 99.5% allows ~7 failures/month. Note: code=0 (WebSocket) and 499 (client disconnect) included as successful — these are not server errors.
 
 **SLO-004: Upload Success Rate**
 - **Target:** 99.5% of uploads succeed over 7 days
@@ -98,9 +100,9 @@ How fast we're consuming error budget:
 
 **SLO-007: Availability**
 - **Target:** 99.5% availability over 30 days
-- **SLI:** `(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="home-assistant@file"}) * 100`
+- **SLI:** `(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."} / traefik_service_requests_total{exported_service="home-assistant@file"}) * 100`
 - **Error Budget:** 216 minutes/month (~3.6 hours)
-- **Rationale:** Smart home automations and device control should be reliable. Note: code=0 (WebSocket) is critical here -- HA uses heavy WebSocket for real-time updates. Was the service most affected by the WebSocket code=0 bug (15.6% false failure rate before fix).
+- **Rationale:** Smart home automations and device control should be reliable. Uses denylist criteria because HA has native auth (not behind Authelia) and very low Traefik traffic (~37 req/day). With allowlist criteria, each 404 (asset lookups, API probes) cost 0.09% of availability, causing 4x budget overrun from just 22 normal 404s. Compensating `HomeAssistantHigh4xxRate` alert catches 4xx spikes. Note: code=0 (WebSocket) was previously the main concern; now correctly handled by denylist.
 
 **SLO-008: Response Time**
 - **Target:** 95% of requests complete within 1000ms over 7 days

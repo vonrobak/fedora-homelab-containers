@@ -365,7 +365,8 @@ groups:
 
   # ===========================================================================
   # HOME ASSISTANT - Multi-Window Burn Rate Alerts
-  # WebSocket-heavy service (code=0 counted as success in recording rules)
+  # Denylist criteria (code!~"5..") - only 5xx counts as error
+  # Native auth, WebSocket-heavy, very low Traefik traffic (~37 req/day)
   # ===========================================================================
   - name: slo_multiwindow_home_assistant
     interval: 1m
@@ -840,8 +841,8 @@ groups:
           description: "Long-term trend - review in monthly report."
 
   # ===========================================================================
-  # COMPENSATING 4xx ALERTS for native-auth services
-  # Navidrome and Audiobookshelf use code!~"5.." for SLO (only 5xx = errors).
+  # COMPENSATING 4xx ALERTS for denylist services
+  # Home Assistant, Navidrome, and Audiobookshelf use code!~"5.." for SLO.
   # These alerts catch 4xx spikes that bypass burn rate detection:
   #   - 429: rate limiting firing (possible attack or misconfigured client)
   #   - 403: middleware misconfiguration
@@ -850,6 +851,30 @@ groups:
   - name: audio_services_4xx_compensating
     interval: 1m
     rules:
+      - alert: HomeAssistantHigh4xxRate
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"4.."}[5m]))
+            / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[5m])), 1e-10)
+          ) > 0.10
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+          service: home-assistant
+        annotations:
+          summary: "Home Assistant 4xx rate above 10% for 10 minutes"
+          description: |
+            Current 4xx rate: {{ $value | humanizePercentage }}
+
+            This alert compensates for the SLO denylist criteria (code!~"5..") which
+            excludes 4xx from burn rate detection. A sustained 4xx spike may indicate:
+            - 403: Middleware or auth misconfiguration
+            - 404: Broken integration or asset path change
+            - 429: Rate limiting (attack or automation loop)
+
+            Check: podman logs home-assistant --tail 100
+
       - alert: NavidromeHigh4xxRate
         expr: |
           (
