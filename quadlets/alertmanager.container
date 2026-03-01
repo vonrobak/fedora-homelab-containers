@@ -19,8 +19,9 @@ Volume=%h/containers/data/alertmanager:/alertmanager:Z
 # SMTP password for email notifications
 Secret=smtp_password
 
-# Alertmanager ports
-PublishPort=9093:9093
+# Port 9093 NOT published to host - only accessible via:
+#   - Monitoring network: 10.89.4.72:9093 (Prometheus, Grafana)
+#   - Reverse proxy network: 10.89.2.72:9093 (internal only, no Traefik route)
 
 # Command arguments
 Exec=--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=info --web.external-url=https://alertmanager.patriark.org

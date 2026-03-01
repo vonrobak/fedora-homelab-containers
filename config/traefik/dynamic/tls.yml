@@ -1,5 +1,10 @@
 # TLS Configuration (Dynamic)
-# Certificates managed by Let's Encrypt
+# Certificates managed by Let's Encrypt via DNS-01 (Cloudflare)
+#
+# TLS 1.3 is supported automatically by Traefik when minVersion is TLS 1.2.
+# TLS 1.3 cipher suites are fixed by the protocol specification and not
+# configurable per-server (TLS_AES_128_GCM_SHA256, TLS_AES_256_GCM_SHA384,
+# TLS_CHACHA20_POLY1305_SHA256). The suites below apply to TLS 1.2 only.
 
 tls:
   options:

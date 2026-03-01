@@ -1,0 +1,47 @@
+[Unit]
+Description=qBittorrent - BitTorrent Client (Headless)
+After=network-online.target reverse_proxy-network.service
+Wants=network-online.target
+Requires=reverse_proxy-network.service
+
+[Container]
+Image=docker.io/linuxserver/qbittorrent:latest
+ContainerName=qbittorrent
+HostName=qbittorrent
+AutoUpdate=registry
+Network=systemd-reverse_proxy:ip=10.89.2.85
+# No PublishPort - WebUI accessible only via Traefik reverse proxy
+# No BT port published - outbound connections still work for downloading/seeding
+
+# linuxserver.io PUID/PGID
+Environment=PUID=1000
+Environment=PGID=1000
+Environment=TZ=Europe/Oslo
+Environment=WEBUI_PORT=8085
+
+# Config
+Volume=%h/containers/config/qbittorrent:/config:Z
+
+# Media directories - mounted at same paths as host to match fastresume save paths
+Volume=/mnt/btrfs-pool/subvol4-multimedia:/mnt/btrfs-pool/subvol4-multimedia:z
+Volume=/mnt/btrfs-pool/subvol6-tmp/Downloads:/mnt/btrfs-pool/subvol6-tmp/Downloads:z
+
+DNS=192.168.1.69
+
+# Health check
+HealthCmd=curl -f http://localhost:8085 || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=120
+
+# Resource Limits
+MemoryMax=1G
+MemoryHigh=900M
+
+[Install]
+WantedBy=default.target

@@ -78,6 +78,7 @@ access_control:
         - 'home.patriark.org'
         - 'patriark.org'
         - 'ha.patriark.org'
+        - 'torrent.patriark.org'
       policy: two_factor
       subject:
         - 'group:admins'
