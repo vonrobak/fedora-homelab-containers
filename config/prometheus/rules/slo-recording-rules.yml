@@ -2,6 +2,8 @@
 # Created: 2025-11-27
 # Updated: 2026-02-07 - Fix WebSocket code=0 counted as failure, upload NaN, Immich SLO target
 # Updated: 2026-03-01 - Navidrome/Audiobookshelf: count only 5xx as errors (404/499 are valid responses)
+# Updated: 2026-03-01 - Home Assistant: switch to denylist (code!~"5..") - 404s at low traffic amplified error budget
+# Updated: 2026-03-01 - Nextcloud/Immich: add 499 (client disconnect) to success criteria
 # Purpose: Pre-calculate Service Level Indicators for efficient querying
 #
 # Note: Traefik reports WebSocket connections as code="0" (not HTTP status).
@@ -34,10 +36,10 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="immich@file"}[5m]))
 
-      # Immich - Successful requests (2xx/3xx + WebSocket code=0)
+      # Immich - Successful requests (2xx/3xx + WebSocket code=0 + client disconnect 499)
       - record: sli:immich:requests:success
         expr: |
-          sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[5m]))
+          sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[5m]))
 
       # Immich - Availability (use 30d SLO for current display)
       - record: sli:immich:availability:ratio
@@ -62,10 +64,10 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m]))
 
-      # Nextcloud - Successful requests (2xx/3xx + WebSocket code=0)
+      # Nextcloud - Successful requests (2xx/3xx + WebSocket code=0 + client disconnect 499)
       - record: sli:nextcloud:requests:success
         expr: |
-          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[5m]))
+          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[5m]))
 
       # Nextcloud - Availability (use 30d SLO for current display)
       - record: sli:nextcloud:availability:ratio
@@ -76,11 +78,12 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[5m]))
 
-      # Home Assistant - Successful requests (2xx/3xx + WebSocket code=0)
-      # HA uses heavy WebSocket for real-time updates - code=0 is critical here
+      # Home Assistant - Successful requests (everything except 5xx)
+      # Native auth + WebSocket-heavy: 404 (asset lookups) and 4xx are expected, not server errors
+      # Uses denylist criteria (code!~"5..") same as Navidrome/Audiobookshelf
       - record: sli:home_assistant:requests:success
         expr: |
-          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[5m]))
+          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[5m]))
 
       # Home Assistant - Availability (use 30d SLO for current display)
       - record: sli:home_assistant:availability:ratio
@@ -257,7 +260,7 @@ groups:
       - record: slo:immich:availability:actual
         expr: |
           (
-            sum(increase(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[30d]))
+            sum(increase(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[30d]))
             /
             sum(increase(traefik_service_requests_total{exported_service="immich@file"}[30d]))
           )
@@ -289,7 +292,7 @@ groups:
       - record: slo:nextcloud:availability:actual
         expr: |
           (
-            sum(increase(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[30d]))
+            sum(increase(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[30d]))
             /
             sum(increase(traefik_service_requests_total{exported_service="nextcloud@file"}[30d]))
           )
@@ -299,14 +302,15 @@ groups:
           slo:nextcloud:availability:actual >= bool slo:nextcloud:availability:target
 
       # Home Assistant - 99.5% availability target over 30 days
-      # WebSocket-heavy service with native auth (no Authelia)
+      # WebSocket-heavy, native auth, very low Traefik traffic (~37 req/day)
+      # Uses denylist criteria: only 5xx counts as error (404 is normal at this volume)
       - record: slo:home_assistant:availability:target
         expr: 0.995
 
       - record: slo:home_assistant:availability:actual
         expr: |
           (
-            sum(increase(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[30d]))
+            sum(increase(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[30d]))
             /
             sum(increase(traefik_service_requests_total{exported_service="home-assistant@file"}[30d]))
           )
@@ -547,7 +551,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="immich@file"}[1h]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[1h]))
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[1h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file"}[1h])), 1e-10)
           / error_budget:immich:availability:budget_total
@@ -557,7 +561,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="immich@file"}[5m]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[5m]))
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[5m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file"}[5m])), 1e-10)
           / error_budget:immich:availability:budget_total
@@ -567,7 +571,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="immich@file"}[6h]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[6h]))
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[6h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file"}[6h])), 1e-10)
           / error_budget:immich:availability:budget_total
@@ -577,18 +581,21 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="immich@file"}[30m]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3.."}[30m]))
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", code=~"0|2..|3..|499"}[30m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file"}[30m])), 1e-10)
           / error_budget:immich:availability:budget_total
 
-      # Home Assistant - Burn rates (WebSocket-heavy, code=0 included)
+      # Home Assistant - Burn rates (denylist: only 5xx = errors)
+      # 4xx intentionally excluded: 404 (asset lookups, API probes) are expected.
+      # Low traffic (~37 req/day) means each 4xx would have outsized SLO impact.
+      # Compensating control: HomeAssistantHigh4xxRate alert in slo-multiwindow-alerts.yml.
       - record: burn_rate:home_assistant:availability:1h
         expr: |
           (
             sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[1h]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[1h]))
+            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[1h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[1h])), 1e-10)
           / error_budget:home_assistant:availability:budget_total
@@ -598,7 +605,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[5m]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[5m]))
+            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[5m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[5m])), 1e-10)
           / error_budget:home_assistant:availability:budget_total
@@ -608,7 +615,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[6h]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[6h]))
+            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[6h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[6h])), 1e-10)
           / error_budget:home_assistant:availability:budget_total
@@ -618,7 +625,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"0|2..|3.."}[30m]))
+            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code!~"5.."}[30m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])), 1e-10)
           / error_budget:home_assistant:availability:budget_total
@@ -670,7 +677,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1h]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[1h]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[1h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1h])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
@@ -680,7 +687,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[5m]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[5m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
@@ -690,7 +697,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[6h]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[6h]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[6h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[6h])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
@@ -700,7 +707,7 @@ groups:
           (
             sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[30m]))
             -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3.."}[30m]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[30m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[30m])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
