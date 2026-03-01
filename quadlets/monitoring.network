@@ -4,4 +4,5 @@ Description=Monitoring Stack Network
 [Network]
 Subnet=10.89.4.0/24
 Gateway=10.89.4.1
+IPRange=10.89.4.2-10.89.4.68
 DNS=192.168.1.69

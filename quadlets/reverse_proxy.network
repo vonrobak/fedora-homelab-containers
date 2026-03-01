@@ -4,4 +4,5 @@ Description=Reverse Proxy Network
 [Network]
 Subnet=10.89.2.0/24
 Gateway=10.89.2.1
+IPRange=10.89.2.2-10.89.2.68
 DNS=192.168.1.69

@@ -20,20 +20,29 @@ Podman's aardvark-dns returns container IP addresses in undefined order when con
 
 ### Implementation
 
-**1. Static IPs in quadlets:**
+**1. Static IPs in quadlets (.69+ range, consistent last octet):**
 ```ini
 # Example: home-assistant.container
-Network=systemd-reverse_proxy.network:ip=10.89.2.8
-Network=systemd-home_automation.network:ip=10.89.6.3
-Network=systemd-monitoring.network:ip=10.89.4.11
+Network=systemd-reverse_proxy:ip=10.89.2.76
+Network=systemd-home_automation:ip=10.89.6.76
+Network=systemd-monitoring:ip=10.89.4.76
 ```
 
-**2. Traefik hosts file override:**
+**2. IPAM lease range in network quadlets (.2-.68 for dynamic allocation):**
+```ini
+# Example: reverse_proxy.network
+[Network]
+Subnet=10.89.2.0/24
+Gateway=10.89.2.1
+IPRange=10.89.2.2-10.89.2.68
+```
+
+**3. Traefik hosts file override:**
 ```yaml
 # config/traefik/hosts (mounted as /etc/hosts in Traefik)
-10.89.2.8   home-assistant
-10.89.2.10  authelia
-10.89.2.9   grafana
+10.89.2.76  home-assistant
+10.89.2.78  authelia
+10.89.2.77  grafana
 # ... all backend services
 ```
 
@@ -42,20 +51,41 @@ Network=systemd-monitoring.network:ip=10.89.4.11
 Volume=%h/containers/config/traefik/hosts:/etc/hosts:ro,Z
 ```
 
-### IP Allocation
+### IP Allocation Convention
 
-**Reverse Proxy Network (10.89.2.0/24):**
-- `.8` - home-assistant
-- `.9` - grafana
-- `.10` - authelia
-- `.11` - prometheus
-- `.12` - immich-server
-- `.13` - jellyfin
-- `.14` - nextcloud
-- `.15` - loki
-- `.16` - gathio
+**Dynamic range:** `.2-.68` — reserved for Podman's IPAM auto-allocation (containers without static IPs).
+Enforced via `IPRange=` / `lease_range` on all 8 networks.
 
-**Rationale:** Reserved `.2-.7` for infrastructure (Traefik, CrowdSec), `.8+` for backend services.
+**Static range:** `.69-.254` — assigned explicitly in quadlet files for multi-network containers.
+Each service uses a **consistent last octet across all networks** for easy identification.
+
+**Allocation table (reverse_proxy network shown, same last octet on all networks):**
+
+| IP | Service | Networks |
+|---|---|---|
+| .69 | traefik | reverse_proxy, auth_services, monitoring |
+| .70 | crowdsec | reverse_proxy |
+| .71 | vaultwarden | reverse_proxy |
+| .72 | alertmanager | reverse_proxy, monitoring |
+| .73 | homepage | reverse_proxy |
+| .74 | audiobookshelf | reverse_proxy |
+| .75 | navidrome | reverse_proxy, monitoring |
+| .76 | home-assistant | reverse_proxy, home_automation, monitoring |
+| .77 | grafana | reverse_proxy, monitoring |
+| .78 | authelia | reverse_proxy, auth_services |
+| .79 | prometheus | reverse_proxy, monitoring |
+| .80 | immich-server | reverse_proxy, photos, monitoring |
+| .81 | jellyfin | reverse_proxy, media_services, monitoring |
+| .82 | nextcloud | reverse_proxy, nextcloud, monitoring |
+| .83 | loki | reverse_proxy, monitoring |
+| .84 | gathio | reverse_proxy, gathio, monitoring |
+
+**Next available:** `.85`
+
+**Why .69+?** The dynamic IPAM range starts at `.2` and allocates sequentially. With a hard
+boundary at `.68`, even 67 dynamic containers per network cannot collide with static assignments.
+This prevents the IPAM collision failure observed on 2026-03-01 where a dynamically assigned IP
+blocked a static IP container from starting (7h outage).
 
 ## Consequences
 
@@ -99,11 +129,27 @@ Volume=%h/containers/config/traefik/hosts:/etc/hosts:ro,Z
 **Result:** Zero "untrusted proxy" errors for 12+ minutes post-reboot (previously ~50 errors/minute).
 **Status:** Production-ready, fully persistent.
 
+## Amendments
+
+### 2026-03-01: .69+ Convention and IPAM Lease Range
+
+**Problem:** During overnight update, `redis-immich` (no static IP) was dynamically assigned
+`10.89.5.5`—the same IP statically assigned to `immich-server`. This caused a 7h outage because
+the static IPs (.8-.16) were in the dynamic IPAM allocation range.
+
+**Changes:**
+1. All static IPs migrated to `.69+` with consistent last octet per service
+2. `IPRange=` added to all 8 network quadlets restricting dynamic allocation to `.2-.68`
+3. Runtime network configs updated with `lease_range` (takes effect without network recreation)
+
+**PR:** #109
+
 ## References
 
 - Investigation: `docs/98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md`
 - Verification: `docs/98-journals/2026-02-04-reboot-verification-success.md`
 - PR #77: Resolve Podman DNS resolution ordering
 - PR #78: Complete network IP configuration audit
+- PR #109: Static IP .69+ convention and IPAM lease range enforcement
 - Podman issue #14262: DNS nameserver order is random (WONT_FIX)
 - Podman issue #12850: Network attachment order undefined
