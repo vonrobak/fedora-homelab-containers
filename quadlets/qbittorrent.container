@@ -11,7 +11,7 @@ HostName=qbittorrent
 AutoUpdate=registry
 Network=systemd-reverse_proxy:ip=10.89.2.85
 # No PublishPort - WebUI accessible only via Traefik reverse proxy
-# No BT port published - outbound connections still work for downloading/seeding
+# No BT port published - operates in passive/NAT mode (outbound connections only)
 
 # linuxserver.io PUID/PGID
 Environment=PUID=1000
@@ -33,6 +33,7 @@ HealthCmd=curl -f http://localhost:8085 || exit 1
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=3
+HealthStartPeriod=60s
 
 [Service]
 Slice=container.slice

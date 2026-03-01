@@ -5,6 +5,8 @@ Description=Monitoring Stack Network
 Subnet=10.89.4.0/24
 Gateway=10.89.4.1
 IPRange=10.89.4.2-10.89.4.68
+# DNS applies only when container also has a non-internal network with a default route
+# Containers exclusively on this network cannot reach Pi-hole (192.168.1.69)
 DNS=192.168.1.69
 # Internal network - no outbound internet access
 # Services needing internet (unpoller, alert-discord-relay) route via reverse_proxy
