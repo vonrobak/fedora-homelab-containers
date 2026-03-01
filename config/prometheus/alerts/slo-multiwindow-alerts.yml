@@ -848,15 +848,21 @@ groups:
   #   - 403: middleware misconfiguration
   #   - sustained high 404: broken integration or misconfigured client
   # ===========================================================================
-  - name: audio_services_4xx_compensating
+  - name: denylist_services_4xx_compensating
     interval: 1m
     rules:
       - alert: HomeAssistantHigh4xxRate
+        # Uses 30m rate window (not 5m like audio services) because HA has very low
+        # Traefik traffic (~37 req/day). With a 5m window, a single 404 would show as
+        # 100% error rate and trigger the alert. The 30m window + minimum traffic guard
+        # smooths low-traffic variance while still catching sustained 4xx spikes.
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"4.."}[5m]))
-            / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[5m])), 1e-10)
+            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"4.."}[30m]))
+            / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])), 1e-10)
           ) > 0.10
+          and
+          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])) > 0.01
         for: 10m
         labels:
           severity: warning
