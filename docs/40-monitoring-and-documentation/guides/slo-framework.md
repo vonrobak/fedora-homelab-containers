@@ -31,7 +31,7 @@ Three approaches are used depending on service characteristics:
 - **Allowlist + 499:** Nextcloud, Immich (client disconnects during sync/upload are not server errors)
 - **Denylist:** Navidrome, Audiobookshelf, Home Assistant
 
-**Trade-off:** Denylist services exclude 4xx from burn rate alerts. Compensating 4xx alerts (`NavidromeHigh4xxRate`, `AudiobookshelfHigh4xxRate`) fire when the 4xx rate exceeds 10% for 10 minutes, catching 403/429 spikes that could indicate misconfiguration or attack.
+**Trade-off:** Denylist services exclude 4xx from burn rate alerts. Compensating 4xx alerts (`HomeAssistantHigh4xxRate`, `NavidromeHigh4xxRate`, `AudiobookshelfHigh4xxRate`) fire when the 4xx rate exceeds 10% for 10 minutes, catching 403/429 spikes that could indicate misconfiguration or attack. Note: The HA alert uses a 30m rate window (vs 5m for audio services) and a lower minimum traffic guard (0.001 req/s) to account for HA's very low Traefik traffic (~37 req/day).
 
 ### SLO (Service Level Objective)
 The target reliability level. Examples:

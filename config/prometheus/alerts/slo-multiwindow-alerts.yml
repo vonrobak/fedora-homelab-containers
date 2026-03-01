@@ -862,7 +862,7 @@ groups:
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])), 1e-10)
           ) > 0.10
           and
-          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])) > 0.01
+          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])) > 0.001
         for: 10m
         labels:
           severity: warning
