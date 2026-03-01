@@ -1,6 +1,6 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-02-28 23:00:46 UTC
+**Generated:** 2026-03-01 06:02:55 UTC
 **Total Documents:** 399
 
 ---
@@ -221,7 +221,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-02-28: [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
 - 2026-02-27: [automation-reference.md](20-operations/guides/automation-reference.md)
 - 2026-02-22: [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
-- 2026-02-28: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
+- 2026-03-01: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
 - 2026-02-24: [2026-02-18-loose-ends-audit.md](98-journals/2026-02-18-loose-ends-audit.md)
 - 2026-02-22: [2026-02-22-filesystem-permission-optimization.md](98-journals/2026-02-22-filesystem-permission-optimization.md)
 - 2026-02-24: [2026-02-23-loose-ends-audit-review.md](98-journals/2026-02-23-loose-ends-audit-review.md)
@@ -260,13 +260,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - Guide: [jellyfin.md](10-services/guides/jellyfin.md)
 - Related: [jellyfin-gpu-acceleration-troubleshooting.md](10-services/guides/jellyfin-gpu-acceleration-troubleshooting.md)
 - Quadlet: `~/.config/containers/systemd/jellyfin.container`
-
-**Immich Server:**
-- Guide: [immich.md](10-services/guides/immich.md)
-- Related: [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
-- Related: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
-- Related: [immich-ml-troubleshooting.md](10-services/guides/immich-ml-troubleshooting.md)
-- Quadlet: `~/.config/containers/systemd/immich-server.container`
 
 **Nextcloud:**
 - Guide: [nextcloud.md](10-services/guides/nextcloud.md)

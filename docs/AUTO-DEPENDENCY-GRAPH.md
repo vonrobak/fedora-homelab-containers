@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-02-28 23:00:45 UTC
+**Generated:** 2026-03-01 06:02:54 UTC
 **System:** fedora-htpc
 
 ---
@@ -29,7 +29,6 @@ graph TB
         gathio[Gathio<br/>Events]
         home_assistant[Home Assistant<br/>Automation]
         homepage[Homepage<br/>Dashboard]
-        immich_server[Immich<br/>Photos]
         jellyfin[Jellyfin<br/>Media]
         nextcloud[Nextcloud<br/>Files]
         vaultwarden[Vaultwarden<br/>Passwords]
@@ -58,8 +57,6 @@ graph TB
     %% Hard dependencies (from Requires= directives)
     authelia --> redis_authelia
     gathio --> gathio_db
-    immich_server --> postgresql_immich
-    immich_server --> redis_immich
 
     %% Routing dependencies (services in reverse_proxy depend on Traefik)
     traefik -.-> alertmanager
@@ -69,7 +66,6 @@ graph TB
     traefik -.-> grafana
     traefik -.-> home_assistant
     traefik -.-> homepage
-    traefik -.-> immich_server
     traefik -.-> jellyfin
     traefik -.-> loki
     traefik -.-> navidrome
@@ -80,7 +76,6 @@ graph TB
     %% Monitoring (Prometheus scrapes via monitoring network)
     prometheus -.->|scrapes| gathio
     prometheus -.->|scrapes| home_assistant
-    prometheus -.->|scrapes| immich_server
     prometheus -.->|scrapes| jellyfin
     prometheus -.->|scrapes| navidrome
     prometheus -.->|scrapes| nextcloud
@@ -124,7 +119,6 @@ graph TB
 | **gathio** | gathio-db | 🟢 Event management unavailable |
 | **home-assistant** | — | 🟡 Automations stop, smart home degraded |
 | **homepage** | — | 🟢 Dashboard unavailable |
-| **immich-server** | postgresql-immich,redis-immich | 🟢 Photo management unavailable |
 | **jellyfin** | — | 🟢 Media streaming unavailable |
 | **nextcloud** | — | 🟢 File sync unavailable |
 | **vaultwarden** | — | 🟡 Password vault inaccessible (keep local cache) |
@@ -173,7 +167,6 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | home-assistant | (no ordering constraints) |
 | homepage | (no ordering constraints) |
 | immich-ml | (no ordering constraints) |
-| immich-server | postgresql-immich,redis-immich |
 | jellyfin | (no ordering constraints) |
 | loki | (no ordering constraints) |
 | matter-server | (no ordering constraints) |
@@ -205,13 +198,13 @@ Services on the same network can communicate:
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,jellyfin,loki,navidrome,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
 
 **nextcloud:** nextcloud,nextcloud-db,nextcloud-redis
 
-**photos:** immich-ml,immich-server,postgresql-immich,redis-immich
+**photos:** immich-ml,postgresql-immich,redis-immich
 
-**reverse_proxy:** alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,traefik,vaultwarden
+**reverse_proxy:** alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,jellyfin,loki,navidrome,nextcloud,prometheus,traefik,vaultwarden
 
 ---
 

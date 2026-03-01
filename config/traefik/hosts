@@ -8,33 +8,35 @@
 # Solution: Override DNS resolution with static /etc/hosts entries pointing
 # to reverse_proxy network IPs, ensuring correct routing.
 #
+# Convention: Static IPs use .69+ to avoid collision with dynamic IPAM range
+#
 # See: docs/98-journals/2026-02-02-ROOT-CAUSE-CONFIRMED-dns-resolution-order.md
-# Date: 2026-02-02
+# Date: 2026-03-01
 # Status: PRODUCTION
 
 # Core Services
-10.89.2.8   home-assistant
-10.89.2.10  authelia
-10.89.2.9   grafana
-10.89.2.11  prometheus
+10.89.2.76  home-assistant
+10.89.2.78  authelia
+10.89.2.77  grafana
+10.89.2.79  prometheus
 
 # Media & Collaboration
-10.89.2.13  jellyfin
-10.89.2.14  nextcloud
+10.89.2.81  jellyfin
+10.89.2.82  nextcloud
 10.89.2.74  audiobookshelf
 10.89.2.75  navidrome
 
 # Photos & Events
-10.89.2.12  immich-server
-10.89.2.16  gathio
+10.89.2.80  immich-server
+10.89.2.84  gathio
 
 # Monitoring & Logging
-10.89.2.15  loki
+10.89.2.83  loki
 
 # Dashboard & Security
 10.89.2.73  homepage
 10.89.2.71  vaultwarden
 
-# Note: These IPs are now statically assigned in each service's quadlet file
+# Note: These IPs are statically assigned in each service's quadlet file
 # using the Network=systemd-reverse_proxy:ip=X.X.X.X syntax, ensuring they
 # remain stable across container restarts.

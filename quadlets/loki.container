@@ -9,8 +9,8 @@ Image=docker.io/grafana/loki:latest
 ContainerName=loki
 HostName=loki
 # Static IPs assigned to ensure consistent DNS resolution
-Network=systemd-reverse_proxy:ip=10.89.2.15
-Network=systemd-monitoring:ip=10.89.4.23
+Network=systemd-reverse_proxy:ip=10.89.2.83
+Network=systemd-monitoring:ip=10.89.4.83
 
 # Loki configuration and data
 Volume=%h/containers/config/loki/loki-config.yml:/etc/loki/local-config.yaml:ro,Z

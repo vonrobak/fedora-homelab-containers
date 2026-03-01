@@ -12,9 +12,9 @@ AutoUpdate=registry
 
 # Networks (reverse_proxy FIRST for internet access)
 # Static IPs assigned to ensure consistent routing (see ADR-018)
-Network=systemd-reverse_proxy:ip=10.89.2.8
-Network=systemd-home_automation:ip=10.89.6.3
-Network=systemd-monitoring:ip=10.89.4.11
+Network=systemd-reverse_proxy:ip=10.89.2.76
+Network=systemd-home_automation:ip=10.89.6.76
+Network=systemd-monitoring:ip=10.89.4.76
 
 # Environment
 Environment=TZ=Europe/Oslo
