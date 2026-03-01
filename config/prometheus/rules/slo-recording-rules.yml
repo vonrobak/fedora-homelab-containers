@@ -709,8 +709,9 @@ groups:
       # 4xx intentionally excluded from error calculation:
       #   404: expected (artist image lookups from Deezer, media not found)
       #   499: expected (client disconnect on cover art streaming)
-      # TRADE-OFF: A spike in 4xx (e.g. 403/429) will NOT trigger burn rate alerts.
-      # Monitor 4xx separately via Traefik access logs in Loki if needed.
+      # TRADE-OFF: 4xx spikes won't trigger burn rate alerts.
+      # Compensating control: NavidromeHigh4xxRate alert (>10% for 10m) in
+      # slo-multiwindow-alerts.yml catches 403/429 spikes separately.
       - record: burn_rate:navidrome:availability:1h
         expr: |
           (
@@ -747,7 +748,8 @@ groups:
       # 4xx intentionally excluded (same rationale as Navidrome):
       #   401: valid auth rejection from native auth
       #   404: valid "not found" responses
-      # TRADE-OFF: A spike in 4xx (e.g. 403/429) will NOT trigger burn rate alerts.
+      # TRADE-OFF: 4xx spikes won't trigger burn rate alerts.
+      # Compensating control: AudiobookshelfHigh4xxRate alert in slo-multiwindow-alerts.yml.
       - record: burn_rate:audiobookshelf:availability:1h
         expr: |
           (

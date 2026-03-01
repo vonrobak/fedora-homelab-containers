@@ -838,3 +838,60 @@ groups:
         annotations:
           summary: "ℹ️ Audiobookshelf error budget trending above baseline"
           description: "Long-term trend - review in monthly report."
+
+  # ===========================================================================
+  # COMPENSATING 4xx ALERTS for native-auth services
+  # Navidrome and Audiobookshelf use code!~"5.." for SLO (only 5xx = errors).
+  # These alerts catch 4xx spikes that bypass burn rate detection:
+  #   - 429: rate limiting firing (possible attack or misconfigured client)
+  #   - 403: middleware misconfiguration
+  #   - sustained high 404: broken integration or misconfigured client
+  # ===========================================================================
+  - name: audio_services_4xx_compensating
+    interval: 1m
+    rules:
+      - alert: NavidromeHigh4xxRate
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"4.."}[5m]))
+            / clamp_min(sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[5m])), 1e-10)
+          ) > 0.10
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+          service: navidrome
+        annotations:
+          summary: "Navidrome 4xx rate above 10% for 10 minutes"
+          description: |
+            Current 4xx rate: {{ $value | humanizePercentage }}
+
+            This alert compensates for the SLO denylist criteria (code!~"5..") which
+            excludes 4xx from burn rate detection. A sustained 4xx spike may indicate:
+            - 429: Rate limiting firing (attack or misconfigured client)
+            - 403: Middleware misconfiguration
+            - Elevated 404: Broken integration
+
+            Check Traefik access logs in Loki for code breakdown:
+              {container_name="traefik"} |= "navidrome" | json | status >= 400 | status < 500
+
+      - alert: AudiobookshelfHigh4xxRate
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"4.."}[5m]))
+            / clamp_min(sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[5m])), 1e-10)
+          ) > 0.10
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+          service: audiobookshelf
+        annotations:
+          summary: "Audiobookshelf 4xx rate above 10% for 10 minutes"
+          description: |
+            Current 4xx rate: {{ $value | humanizePercentage }}
+
+            This alert compensates for the SLO denylist criteria (code!~"5..") which
+            excludes 4xx from burn rate detection.
+
+            Check: podman logs audiobookshelf --tail 100

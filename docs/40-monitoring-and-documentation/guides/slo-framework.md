@@ -29,7 +29,7 @@ Two approaches are used depending on service characteristics:
 - **Allowlist:** Jellyfin, Immich, Authelia, Nextcloud, Home Assistant
 - **Denylist:** Navidrome, Audiobookshelf
 
-**Trade-off:** Denylist services will NOT alert on 4xx spikes (e.g., 403 from misconfigured middleware, 429 from rate limiting). Monitor 4xx trends via Traefik access logs in Loki for these services.
+**Trade-off:** Denylist services exclude 4xx from burn rate alerts. Compensating 4xx alerts (`NavidromeHigh4xxRate`, `AudiobookshelfHigh4xxRate`) fire when the 4xx rate exceeds 10% for 10 minutes, catching 403/429 spikes that could indicate misconfiguration or attack.
 
 ### SLO (Service Level Objective)
 The target reliability level. Examples:
