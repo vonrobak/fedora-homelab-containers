@@ -2,6 +2,7 @@
 # Created: 2025-12-19
 # FIXED: 2026-01-22 - Calculate actual short-term failure rates, not 30-day averages
 # FIXED: 2026-02-07 - Include WebSocket code=0 as successful (was counted as failure)
+# FIXED: 2026-03-01 - Navidrome/Audiobookshelf: count only 5xx as errors
 # Purpose: Add longer time windows for multi-tier burn rate detection
 #
 # Burn Rate Tiers (Google SRE Book methodology):
@@ -154,71 +155,63 @@ groups:
           ) / error_budget:authelia:availability:budget_total
 
       # ===========================================================================
-      # NAVIDROME - Extended burn rate windows
+      # NAVIDROME - Extended burn rate windows (only 5xx = server errors)
+      # 4xx excluded: 404 (Deezer artist lookups), 499 (client disconnect)
+      # See slo-recording-rules.yml Navidrome burn rate section for full rationale
       # ===========================================================================
 
       - record: burn_rate:navidrome:availability:1d
         expr: |
           (
-            1 - (
-              sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."}[1d]))
-              /
-              sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[1d]))
-            )
+            sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"5.."}[1d]))
+            /
+            clamp_min(sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[1d])), 1e-10)
           ) / error_budget:navidrome:availability:budget_total
 
       - record: burn_rate:navidrome:availability:2h
         expr: |
           (
-            1 - (
-              sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."}[2h]))
-              /
-              sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[2h]))
-            )
+            sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"5.."}[2h]))
+            /
+            clamp_min(sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[2h])), 1e-10)
           ) / error_budget:navidrome:availability:budget_total
 
       - record: burn_rate:navidrome:availability:3d
         expr: |
           (
-            1 - (
-              sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."}[3d]))
-              /
-              sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[3d]))
-            )
+            sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"5.."}[3d]))
+            /
+            clamp_min(sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[3d])), 1e-10)
           ) / error_budget:navidrome:availability:budget_total
 
       # ===========================================================================
-      # AUDIOBOOKSHELF - Extended burn rate windows
+      # AUDIOBOOKSHELF - Extended burn rate windows (only 5xx = server errors)
+      # 4xx excluded: 401 (native auth rejection), 404 (not found)
+      # See slo-recording-rules.yml Audiobookshelf burn rate section for full rationale
       # ===========================================================================
 
       - record: burn_rate:audiobookshelf:availability:1d
         expr: |
           (
-            1 - (
-              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."}[1d]))
-              /
-              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[1d]))
-            )
+            sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"5.."}[1d]))
+            /
+            clamp_min(sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[1d])), 1e-10)
           ) / error_budget:audiobookshelf:availability:budget_total
 
       - record: burn_rate:audiobookshelf:availability:2h
         expr: |
           (
-            1 - (
-              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."}[2h]))
-              /
-              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[2h]))
-            )
+            sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"5.."}[2h]))
+            /
+            clamp_min(sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[2h])), 1e-10)
           ) / error_budget:audiobookshelf:availability:budget_total
 
       - record: burn_rate:audiobookshelf:availability:3d
         expr: |
           (
-            1 - (
-              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."}[3d]))
-              /
-              sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[3d]))
-            )
+            sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"5.."}[3d]))
+            /
+            clamp_min(sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[3d])), 1e-10)
           ) / error_budget:audiobookshelf:availability:budget_total
 
       # ===========================================================================

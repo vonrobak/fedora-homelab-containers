@@ -12,9 +12,24 @@ This framework implements Google SRE-style SLOs with multi-window burn-rate aler
 
 ### SLI (Service Level Indicator)
 The actual measured metric. Examples:
-- % of HTTP requests that return 2xx/3xx status codes
+- % of HTTP requests that are not server errors (5xx)
 - % of requests that complete within 500ms
 - % of time the service is available
+
+**Success Criteria Policy:**
+
+Two approaches are used depending on service characteristics:
+
+| Criteria | Pattern | When to Use |
+|----------|---------|-------------|
+| `code=~"0\|2..\|3.."` | Allowlist (2xx/3xx + WebSocket) | Services behind Authelia where 4xx from the service itself is unexpected |
+| `code!~"5.."` | Denylist (only 5xx = error) | Services with native auth where 4xx is expected behavior (auth rejections, resource lookups) |
+
+**Current assignments:**
+- **Allowlist:** Jellyfin, Immich, Authelia, Nextcloud, Home Assistant
+- **Denylist:** Navidrome, Audiobookshelf
+
+**Trade-off:** Denylist services exclude 4xx from burn rate alerts. Compensating 4xx alerts (`NavidromeHigh4xxRate`, `AudiobookshelfHigh4xxRate`) fire when the 4xx rate exceeds 10% for 10 minutes, catching 403/429 spikes that could indicate misconfiguration or attack.
 
 ### SLO (Service Level Objective)
 The target reliability level. Examples:
@@ -113,9 +128,9 @@ How fast we're consuming error budget:
 
 **SLO-011: Availability**
 - **Target:** 99.5% availability over 30 days
-- **SLI:** `(traefik_service_requests_total{exported_service="navidrome@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="navidrome@file"}) * 100`
+- **SLI:** `(traefik_service_requests_total{exported_service="navidrome@file", code!~"5.."} / traefik_service_requests_total{exported_service="navidrome@file"}) * 100`
 - **Error Budget:** 216 minutes/month
-- **Rationale:** Music streaming with Subsonic API. Native auth (no Authelia) for mobile client compatibility.
+- **Rationale:** Music streaming with Subsonic API. Native auth (no Authelia) for mobile client compatibility. Uses denylist criteria (`code!~"5.."`) because 404 (Deezer artist image lookups) and 499 (client disconnects during cover art streaming) are expected normal behavior, not service failures.
 
 ---
 
@@ -123,9 +138,9 @@ How fast we're consuming error budget:
 
 **SLO-012: Availability**
 - **Target:** 99.5% availability over 30 days
-- **SLI:** `(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"0|2..|3.."} / traefik_service_requests_total{exported_service="audiobookshelf@file"}) * 100`
+- **SLI:** `(traefik_service_requests_total{exported_service="audiobookshelf@file", code!~"5.."} / traefik_service_requests_total{exported_service="audiobookshelf@file"}) * 100`
 - **Error Budget:** 216 minutes/month
-- **Rationale:** Audiobook/podcast service with iOS app. Native auth for mobile client compatibility.
+- **Rationale:** Audiobook/podcast service with iOS app. Native auth for mobile client compatibility. Uses denylist criteria (`code!~"5.."`) because 401 (auth rejections) and 404 are valid responses from a service with native authentication.
 
 ---
 
