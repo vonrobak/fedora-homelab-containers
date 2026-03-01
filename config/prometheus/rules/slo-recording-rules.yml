@@ -705,7 +705,12 @@ groups:
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[30m])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
 
-      # Navidrome - Burn rates (only 5xx = errors)
+      # Navidrome - Burn rates (only 5xx = server errors)
+      # 4xx intentionally excluded from error calculation:
+      #   404: expected (artist image lookups from Deezer, media not found)
+      #   499: expected (client disconnect on cover art streaming)
+      # TRADE-OFF: A spike in 4xx (e.g. 403/429) will NOT trigger burn rate alerts.
+      # Monitor 4xx separately via Traefik access logs in Loki if needed.
       - record: burn_rate:navidrome:availability:1h
         expr: |
           (
@@ -738,7 +743,11 @@ groups:
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[30m])), 1e-10)
           / error_budget:navidrome:availability:budget_total
 
-      # Audiobookshelf - Burn rates (only 5xx = errors)
+      # Audiobookshelf - Burn rates (only 5xx = server errors)
+      # 4xx intentionally excluded (same rationale as Navidrome):
+      #   401: valid auth rejection from native auth
+      #   404: valid "not found" responses
+      # TRADE-OFF: A spike in 4xx (e.g. 403/429) will NOT trigger burn rate alerts.
       - record: burn_rate:audiobookshelf:availability:1h
         expr: |
           (

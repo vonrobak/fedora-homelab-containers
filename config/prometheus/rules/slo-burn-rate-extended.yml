@@ -155,7 +155,9 @@ groups:
           ) / error_budget:authelia:availability:budget_total
 
       # ===========================================================================
-      # NAVIDROME - Extended burn rate windows (only 5xx = errors)
+      # NAVIDROME - Extended burn rate windows (only 5xx = server errors)
+      # 4xx excluded: 404 (Deezer artist lookups), 499 (client disconnect)
+      # See slo-recording-rules.yml Navidrome burn rate section for full rationale
       # ===========================================================================
 
       - record: burn_rate:navidrome:availability:1d
@@ -183,7 +185,9 @@ groups:
           ) / error_budget:navidrome:availability:budget_total
 
       # ===========================================================================
-      # AUDIOBOOKSHELF - Extended burn rate windows (only 5xx = errors)
+      # AUDIOBOOKSHELF - Extended burn rate windows (only 5xx = server errors)
+      # 4xx excluded: 401 (native auth rejection), 404 (not found)
+      # See slo-recording-rules.yml Audiobookshelf burn rate section for full rationale
       # ===========================================================================
 
       - record: burn_rate:audiobookshelf:availability:1d
