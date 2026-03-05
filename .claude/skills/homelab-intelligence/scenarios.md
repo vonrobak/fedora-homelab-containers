@@ -106,9 +106,3 @@ Score thresholds for response tone:
 - **75-89:** "Good health" — note warnings, suggest preventive actions
 - **50-74:** "Degraded" — prioritize fixes, explain escalation risks
 - **<50:** "Critical" — immediate action required, step-by-step remediation
-
-## Version History
-
-- **v2.0:** JSON output, monitoring health via `podman exec`, backup detection (3 locations), smarter swap threshold
-- **v2.1 (2025-11-28):** Context Framework and Auto-Remediation integration
-- **v3.0 (2026-03):** YAML frontmatter, streamlined SKILL.md, scenarios split to separate file
