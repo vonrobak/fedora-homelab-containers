@@ -1,329 +1,117 @@
-# Homelab Intelligence Skill
-
-**Purpose:** Gather comprehensive system intelligence, analyze health, and provide actionable recommendations for the homelab infrastructure.
-
-**When to use:** When you need to understand current system state, diagnose issues, or provide recommendations for maintenance/improvements.
-
-**Triggers:**
-- User asks "how is the system?"
-- User requests health check or diagnostics
-- User mentions issues or performance concerns
-- User asks specific questions about services, resources, or configuration
-- Before making significant changes to the infrastructure
-- Periodically for proactive monitoring
-
+---
+name: homelab-intelligence
+description: Comprehensive system health analysis with scoring and recommendations. Use when checking system state, diagnosing issues, monitoring resources, or before/after infrastructure changes.
 ---
 
-## Quick Query System (NEW: 2025-11-22)
+# Homelab Intelligence
 
-**For specific questions, use the natural language query system first:**
+## Overview
+
+Two-tier system intelligence: quick queries for specific questions, full assessment for comprehensive health analysis.
+
+## Quick Query (Fast Path)
+
+For specific questions, use the natural language query system:
 
 ```bash
 ~/containers/scripts/query-homelab.sh "Your question here"
 ```
 
-**Supported query types:**
-- **Resource usage**: "What services are using the most memory?", "Show me disk usage"
-- **Service status**: "Is jellyfin running?", "Show me recent restarts"
-- **Network topology**: "What's on the reverse_proxy network?"
-- **Configuration**: "What's jellyfin's configuration?"
+Supports: resource usage, service status, network topology, configuration lookups. Cached responses in <1s.
 
-**Benefits:**
-- ✅ Instant responses (<1s) from cache
-- ✅ No need to run full intel script for simple questions
-- ✅ Production-ready and safety-tested
+**Use quick query when:** user asks a specific, narrow question about current state.
+**Use full intel when:** user wants overall health, comprehensive diagnostics, or pre/post-change assessment.
 
-**When to use query system vs full intel:**
-- **Query system**: Specific, quick questions about current state
-- **Full intel**: Comprehensive health assessment, troubleshooting, recommendations
+## Full Intelligence Workflow
 
----
-
-## Instructions
-
-When this skill is invoked, follow this workflow:
-
-### Step 1: Run Intelligence Gathering
-
-Execute the homelab intelligence script to collect current system state:
+### Step 1: Gather
 
 ```bash
-cd ~/containers
-./scripts/homelab-intel.sh
+cd ~/containers && ./scripts/homelab-intel.sh
 ```
 
-**Note:** Script always generates JSON report in `docs/99-reports/intel-<timestamp>.json`
+Checks: services, disk, memory, backups, certificates, monitoring health, network. Outputs JSON report to `docs/99-reports/intel-<timestamp>.json`.
 
-This will:
-- Check system basics (uptime, SELinux, kernel updates)
-- Analyze disk usage (system SSD and BTRFS pool)
-- Verify all critical services are running
-- Measure resource usage (memory, swap, load average)
-- Check backup status (local logs, external drive, BTRFS snapshots)
-- Verify SSL certificate validity (Let's Encrypt)
-- Test monitoring stack health (Prometheus, Grafana, Loki via container exec)
-- Assess network connectivity (internet reachability)
+### Step 2: Analyze
 
-### Step 2: Analyze the Output
+Parse the JSON output. Categorize findings:
 
-Read and parse the JSON output from the script. Pay special attention to:
+| Priority | Threshold | Examples |
+|----------|-----------|---------|
+| Critical | Immediate action | Services down, disk >80%, SELinux disabled |
+| Warning | Address soon | Disk >70%, backup overdue, high memory |
+| Info | Healthy state | All services running, certs valid |
 
-**Critical Issues (Priority 1):**
-- These require immediate action
-- May indicate system instability or security concerns
-- Examples: Services down, disk >80%, SELinux disabled, no internet
+**Health Score:** 90-100 excellent, 75-89 good, 50-74 degraded, <50 critical.
+Algorithm: Start at 100, -20 per critical, -5 per warning. Exit codes: 0=healthy, 1=warning, 2=critical.
 
-**Warnings (Priority 2):**
-- Should be addressed soon
-- May become critical if ignored
-- Examples: Disk >70%, no recent backup, high memory usage
+### Step 3: Respond
 
-**Info Items:**
-- Informational status updates
-- Positive confirmations of healthy state
-- Examples: All services running, monitoring healthy
+Provide context-aware recommendations:
 
-**Health Score:**
-- 90-100: Excellent health
-- 75-89: Good health, minor issues
-- 50-74: Degraded, needs attention
-- 0-49: Critical state, immediate action required
+- **Critical:** Explain impact, step-by-step resolution, reference docs/ADRs
+- **Warning:** Explain escalation risk, suggest preventive actions
+- **Healthy:** Acknowledge, highlight trends, suggest proactive improvements
 
-### Step 3: Provide Context-Aware Recommendations
-
-Based on the analysis, provide specific, actionable recommendations:
-
-**For Critical Issues:**
-1. Explain the impact of the issue
-2. Provide step-by-step resolution
-3. Reference relevant documentation in `docs/` if applicable
-4. Mention related ADRs if architectural decisions are involved
-
-**For Warnings:**
-1. Explain when this might become critical
-2. Suggest preventive actions
-3. Provide commands to investigate further
-
-**For General Health:**
-1. Summarize overall system state
-2. Highlight any trends (improving/degrading)
-3. Suggest proactive improvements
-
-### Step 4: Check for Patterns
-
-Look for common patterns that might indicate deeper issues:
-
-**Disk Space Issues:**
-- Check if journal logs are growing (suggest rotation)
-- Look for container layer accumulation (suggest pruning)
-- Review backup log retention
-
-**Service Issues:**
-- Check if services failed after recent changes (review git log)
-- Verify quadlet syntax if services won't start
-- Check network connectivity for monitoring stack
-
-**Resource Pressure:**
-- High memory + swap = need to review container limits
-- High CPU + Jellyfin = likely transcoding (normal)
-- High disk I/O = check if backup is running
-
-### Step 5: Reference Documentation
-
-When providing recommendations, link to relevant documentation:
-
-**Troubleshooting:**
-- Service issues: Reference `CLAUDE.md` Troubleshooting Workflow section
-- Disk issues: Reference `docs/20-operations/guides/storage-layout.md`
-- Backup issues: Reference `docs/20-operations/guides/backup-strategy.md`
-
-**Architecture Decisions:**
-- If suggesting changes, check ADRs in `docs/*/decisions/`
-- Reference `CLAUDE.md` ADR section for key decisions
-
-**Service-Specific Issues:**
-- Traefik: `docs/10-services/guides/traefik.md`
-- Jellyfin: `docs/10-services/guides/jellyfin.md`
-- Monitoring: `docs/40-monitoring-and-documentation/guides/monitoring-stack.md`
-
-### Step 6: Suggest Follow-Up Actions
-
-Based on findings, suggest next steps:
-
-**If Health Score < 75:**
-1. Run detailed diagnostics: `./scripts/homelab-diagnose.sh`
-2. Review service logs: `journalctl --user -u <service>.service -n 100`
-3. Check recent changes: `git log --oneline -10`
-
-**If Backup Overdue:**
-1. Check external drive: `df -h | grep WD-18TB`
-2. Run manual backup: `./scripts/btrfs-snapshot-backup.sh`
-3. Review backup logs
-
-**If Disk Usage High:**
-1. Identify large files: `du -sh ~/containers/data/* | sort -h`
-2. Check journal size: `journalctl --user --disk-usage`
-3. Review cleanup options from CLAUDE.md
-
----
-
-## Example Workflow
-
-**User:** "How is my homelab doing?"
-
-**Claude Response:**
-
-1. *(Runs intelligence script)*
-2. *(Reads JSON output)*
-3. *(Analyzes results)*
-
-"I've run a comprehensive health check of your homelab. Here's the summary:
-
-**Overall Health: 87/100** ✅ Healthy
-
-**Good News:**
-- All 12 services running normally
-- SSL certificates valid (62 days until renewal)
-- Monitoring stack (Prometheus, Grafana, Loki) fully operational
-- Memory usage normal at 24%
-
-**Warnings Found (2):**
-
-1. **System SSD at 58% capacity** (W001)
-   - Current: 75GB / 128GB used
-   - Trend: +2% since last week
-   - Recommendation: Review `journalctl --user --disk-usage` and consider rotating old logs
-   - Reference: See CLAUDE.md "High Disk Usage" troubleshooting
-
-2. **Backup slightly overdue** (I002)
-   - Last backup: 9 days ago
-   - Expected: Weekly (Sunday)
-   - Recommendation: Verify external drive mounted and run `./scripts/btrfs-snapshot-backup.sh`
-   - Reference: docs/20-operations/guides/backup-strategy.md
-
-**Recommended Actions:**
-1. [MEDIUM] Review disk usage and clean up old logs
-2. [LOW] Run weekly backup when external drive is available
-
-Would you like me to help with any of these items?"
-
----
-
-## Common Scenarios
-
-### Scenario 1: Critical Service Down
-
-If intelligence script shows critical services failed:
-
-1. Identify which service(s) failed
-2. Check recent systemd journal: `journalctl --user -u <service>.service -n 50`
-3. Look for error patterns (common: network, permissions, port conflicts)
-4. Reference CLAUDE.md "Container Won't Start" troubleshooting
-5. Suggest specific fix based on error
-
-### Scenario 2: High Disk Usage
-
-If system SSD >70%:
-
-1. Run `du -sh ~/containers/data/* | sort -h` to identify culprits
-2. Check journal size: `journalctl --user --disk-usage`
-3. Suggest cleanup commands from CLAUDE.md "High Disk Usage"
-4. Explain consequences if ignored (system may freeze at 100%)
-
-### Scenario 3: Monitoring Stack Issues
-
-If Prometheus/Grafana/Loki health checks fail:
-
-1. Check each service individually: `systemctl --user status <service>.service`
-2. Verify network connectivity (services must be on monitoring network)
-3. Check datasource UIDs in Grafana provisioning
-4. Reference docs/40-monitoring-and-documentation/guides/monitoring-stack.md
-
-### Scenario 4: Everything Healthy
-
-If health score >90 and no issues:
-
-1. Acknowledge healthy state
-2. Highlight any positive trends (e.g., disk usage stable, uptime high)
-3. Suggest proactive actions (review Grafana dashboards, test backup restore)
-4. Ask if user wants to work on planned improvements from docs/40-monitoring-and-documentation/journal/
-
----
-
-## Context Framework Integration
-
-When troubleshooting, leverage the Context Framework for historical awareness:
-
-### Query Past Issues
-```bash
-cd ~/containers/.claude/context/scripts
-
-# Check if this problem has occurred before
-./query-issues.sh --category disk-space      # Disk issues
-./query-issues.sh --category deployment      # Deployment issues
-./query-issues.sh --status resolved          # See what worked before
-```
-
-### Query Deployment History
-```bash
-# How was a service originally deployed?
-./query-deployments.sh --service jellyfin
-./query-deployments.sh --pattern monitoring-stack
-```
-
-### Auto-Remediation
-For common issues, use the remediation playbooks:
-
-```bash
-cd ~/containers/.claude/remediation/scripts
-
-# Disk cleanup (safe, no confirmation needed)
-./apply-remediation.sh --playbook disk-cleanup --dry-run  # Preview first
-./apply-remediation.sh --playbook disk-cleanup            # Execute
-
-# Service restart (with logging)
-./apply-remediation.sh --playbook service-restart --service prometheus
-```
-
-**Available playbooks:** disk-cleanup, service-restart, drift-reconciliation, resource-pressure
-
-See `~/.claude/QUICK-REFERENCE.md` for full command reference.
-
----
-
-## Integration with Other Skills
-
-This skill works well with:
-
-- **Context Framework**: Query issue history and deployment patterns
-- **Auto-Remediation**: Execute playbooks for common fixes
-- **homelab-deployment**: Verify system health before/after deployments
-- **systematic-debugging**: Use when issues require deeper investigation
-
----
+For deeper investigation, reference the `systematic-debugging` skill.
 
 ## Output Format
 
-Always structure your response as:
+Structure every response as:
 
-1. **Health Score & Status** (with emoji for visual clarity)
-2. **Critical Issues** (if any - these are urgent)
-3. **Warnings** (if any - these need attention)
-4. **Positive Findings** (what's working well)
-5. **Key Metrics** (uptime, resource usage, service count)
-6. **Recommended Actions** (prioritized list)
-7. **Offer to Help** (ask if user wants assistance with any item)
+```
+**Overall Health: XX/100** [status emoji]
 
-Keep responses concise but actionable. Always provide specific commands or file references.
+**Critical Issues** (if any)
+- Issue with impact and resolution steps
 
----
+**Warnings** (if any)
+- Warning with timeline and prevention
 
-## Notes
+**Healthy Systems**
+- Positive findings summary
 
-- **v2.0 improvements:** Always generates JSON output, improved monitoring health checks via `podman exec`, better backup detection (3 locations), smarter swap threshold
-- **v2.1 (2025-11-28):** Added Context Framework and Auto-Remediation integration
-- JSON reports automatically saved to `~/containers/docs/99-reports/intel-<timestamp>.json`
-- Script is safe to run frequently (no side effects, read-only operations)
-- Health scoring algorithm: Start at 100, -20 for critical issues, -5 for warnings
-- Exit codes: 0=healthy, 1=warning, 2=critical (useful for automation)
-- Full script reference: `docs/20-operations/guides/automation-reference.md`
+**Key Metrics**
+- Uptime, resource usage, container count
+
+**Recommended Actions** (prioritized)
+1. [HIGH/MEDIUM/LOW] Specific action with command
+
+Would you like help with any of these items?
+```
+
+## Context Framework Integration
+
+For historical awareness during troubleshooting:
+
+```bash
+# Check if problem has occurred before
+~/containers/.claude/context/scripts/query-issues.sh --category disk-space
+~/containers/.claude/context/scripts/query-issues.sh --status resolved
+
+# Deployment history
+~/containers/.claude/context/scripts/query-deployments.sh --service <name>
+```
+
+## Auto-Remediation
+
+For common issues, use remediation playbooks:
+
+```bash
+~/containers/.claude/remediation/scripts/apply-remediation.sh --playbook disk-cleanup --dry-run
+~/containers/.claude/remediation/scripts/apply-remediation.sh --playbook service-restart --service <name>
+```
+
+Available playbooks: `disk-cleanup`, `service-restart`, `drift-reconciliation`, `resource-pressure`
+
+## Related Skills
+
+- **systematic-debugging** — when issues require deeper root cause investigation
+- **homelab-deployment** — verify health before/after deployments
+- **autonomous-operations** — OODA loop for automated assessment
+
+## Reference
+
+- Detailed scenarios and examples: [scenarios.md](scenarios.md)
+- Script catalog: `docs/20-operations/guides/automation-reference.md`
+- SLO dashboard: `docs/40-monitoring-and-documentation/guides/slo-framework.md`

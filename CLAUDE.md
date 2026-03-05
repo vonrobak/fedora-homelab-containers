@@ -6,10 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A learning-focused homelab project building production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets. Platform: Fedora Workstation 43.
 
-**Current Services (29 containers, 15 service groups):**
+**Current Services (30 containers, 16 service groups):**
 - **Core Infrastructure:** Traefik (reverse proxy), CrowdSec (threat intel), Authelia + Redis (SSO + YubiKey MFA)
 - **Applications:** Nextcloud + MariaDB + Redis (file sync), Vaultwarden (passwords), Jellyfin (media), Immich + PostgreSQL + Redis + ML (photos), Gathio + MongoDB (events), Homepage (dashboard)
 - **Audio:** Audiobookshelf (audiobooks/podcasts), Navidrome (music streaming)
+- **Downloads:** qBittorrent (torrent client)
 - **Home Automation:** Home Assistant + Matter Server (smart home, Plejd integration planned)
 - **Monitoring:** Prometheus, Grafana, Loki, Alertmanager, Promtail, cAdvisor, Node Exporter, UnPoller, Alert Discord Relay
 
