@@ -108,7 +108,7 @@ ALL_SERVICES=(
     prometheus grafana loki alertmanager promtail cadvisor node_exporter alert-discord-relay unpoller
     nextcloud nextcloud-db nextcloud-redis
     immich-server immich-ml postgresql-immich redis-immich
-    jellyfin vaultwarden homepage
+    jellyfin vaultwarden homepage audiobookshelf navidrome qbittorrent
     home-assistant matter-server
     gathio gathio-db
 )
@@ -143,7 +143,7 @@ echo -e "${CYAN}Container Health Checks:${NC}"
 echo ""
 
 HEALTH_CONTAINERS=(traefik authelia nextcloud immich-server jellyfin home-assistant crowdsec
-    nextcloud-db nextcloud-redis gathio gathio-db matter-server)
+    nextcloud-db nextcloud-redis gathio gathio-db matter-server audiobookshelf navidrome)
 HEALTH_OK=0
 HEALTH_FAIL=0
 
