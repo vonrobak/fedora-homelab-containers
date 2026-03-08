@@ -63,11 +63,12 @@ Complete catalog of all 53 checks in `security-audit.sh`. Organized by category 
 - **Investigation:** Check which quadlet publishes the port. Remove `PublishPort=` directive.
 
 ### SA-AUTH-07 | L3 | Auth failure count (24h)
-- **Checks:** `journalctl --user -u authelia.service --since "24 hours ago"` grep for unsuccessful/failed/denied. WARN if > 50. Detail includes failure type counts (e.g., "unsuccessful:12, denied:3") without usernames or IPs to avoid PII in JSON output.
+- **Checks:** `journalctl --user -u authelia.service --since "24 hours ago"` grep for unsuccessful/failed/denied. WARN if > 50.
+- **Detail field:** Failure type counts without PII (e.g., `Samples: unsuccessful authentication:12, access denied:3`). No usernames or IPs — safe for JSON output.
 - **Why:** High failure count may indicate brute force attempts, credential stuffing, or misconfigured clients. Informational — context determines severity.
 - **WARN penalty:** -1 (if > 50)
 - **False positives:** Legitimate typos, expired sessions causing re-auth, mobile app reconnections. Bot scanners typically produce consistent patterns.
-- **Investigation:** See [playbooks.md — AUTH category](investigation-playbooks.md#auth--authentication--access-control). Cross-reference with CrowdSec alerts (SA-NET-09) and Traefik access logs.
+- **Remediation:** Informational check — no direct remediation. Investigate with [playbooks.md — AUTH category](investigation-playbooks.md#auth--authentication--access-control) if values are unexpected. Cross-reference with CrowdSec alerts (SA-NET-09) and Traefik access logs.
 
 ---
 
@@ -132,10 +133,12 @@ Complete catalog of all 53 checks in `security-audit.sh`. Organized by category 
 
 ### SA-NET-09 | L3 | CrowdSec alerts (24h)
 - **Checks:** `cscli alerts list --since 24h -o json | jq 'length'`. WARN if > 100.
+- **Detail field:** Top 3 alert scenario types with counts (e.g., `Top types: crowdsecurity/http-probing:45, crowdsecurity/ssh-bf:12, crowdsecurity/http-crawl-non_statics:8`). Included on both PASS and WARN for trend analysis.
 - **Why:** High alert volume may indicate active attack, misconfigured scenario, or noisy log source.
 - **WARN penalty:** -1 (if > 100)
+- **Normal baseline:** 10-50 alerts/day from automated scanners is typical. 50-100 during scanning campaigns. > 100 warrants investigation.
 - **False positives:** Automated scanners generate steady alert volume. Spikes correlated with SA-AUTH-07 may indicate targeted attack.
-- **Investigation:** See [playbooks.md — NETWORK category](investigation-playbooks.md#network--crowdsec--network-security). Check alert type breakdown.
+- **Remediation:** Informational check — no direct remediation. Investigate with [playbooks.md — NETWORK category](investigation-playbooks.md#network--crowdsec--network-security) if volume is unexpected.
 
 ---
 
@@ -185,11 +188,12 @@ Complete catalog of all 53 checks in `security-audit.sh`. Organized by category 
 - **Investigation:** Move routing from container labels to `config/traefik/dynamic/routers.yml`.
 
 ### SA-TRF-07 | L2 | Security headers on all routers
-- **Checks:** Websecure routers have `security-headers` or `hsts-only` middleware. Allows up to 2 exceptions (SSO portal sets own headers, plus one).
+- **Checks:** Websecure routers have `security-headers` or `hsts-only` middleware. Allows up to 2 exceptions: (1) SSO portal `authelia-portal` — Authelia sets its own headers, (2) Authelia-protected routers where forwardAuth handles headers.
+- **Detail field:** When WARN, lists specific routers missing security headers (e.g., `Missing: root-redirect, homepage-dashboard, traefik-dashboard`). Useful for Phase 3 investigation — immediately shows which routers to audit.
 - **Why:** Security headers (CSP, HSTS, X-Frame-Options, etc.) mitigate XSS, clickjacking, and MIME sniffing attacks.
 - **WARN penalty:** -3
-- **Known acceptable exceptions:** SSO portal (Authelia sets own headers). Streaming services and native-auth services use service-specific header variants (security-headers-jellyfin, security-headers-ha, security-headers-gathio).
-- **Investigation:** See [playbooks.md — TRAEFIK category](investigation-playbooks.md#traefik--reverse-proxy--tls). Check which routers lack headers.
+- **Known acceptable exceptions:** SSO portal (Authelia sets own headers). Authelia-protected routers (forwardAuth middleware handles security context). Services with custom header variants: `security-headers-jellyfin`, `security-headers-ha`, `security-headers-gathio`. These custom variants are properly detected by the check's regex pattern.
+- **Investigation:** See [playbooks.md — TRAEFIK category](investigation-playbooks.md#traefik--reverse-proxy--tls). The detail field identifies the specific routers to review.
 
 ### SA-TRF-08 | L2 | Dashboard not on host port 8080
 - **Checks:** `ss -tlnp | grep ":8080"`
@@ -238,10 +242,12 @@ Complete catalog of all 53 checks in `security-audit.sh`. Organized by category 
 - **Investigation:** Add `:Z` (private) or `:z` (shared) to the Volume= directive.
 
 ### SA-CTR-05 | L2 | No OOM kills (24h)
-- **Checks:** `journalctl --user --since "24 hours ago"` for specific OOM patterns: `oom_kill`, `oom-kill`, `memory.max`, `invoked oom`. Excludes generic `killed process` (too broad, matches non-OOM kernel messages). Detail includes affected unit/cgroup names.
+- **Checks:** `journalctl --user --since "24 hours ago"` for specific OOM patterns: `oom_kill`, `oom-kill`, `memory.max`, `invoked oom`. Excludes generic `killed process` (too broad, matches non-OOM kernel messages).
+- **Detail field:** Affected unit/cgroup names extracted from journal entries (e.g., `Affected: authelia.service, jellyfin.service`). Shows `Affected: unknown` if journal log format doesn't match the extraction pattern — this means OOM events exist but the affected service couldn't be identified from the log format; investigate manually.
 - **Why:** OOM kills indicate memory limits are too low or memory leaks. Repeated OOM kills degrade service availability.
 - **WARN penalty:** -3
 - **False positives:** cAdvisor monitoring logs may contain informational OOM mentions that aren't actual kills. Check the specific journal entries.
+- **Limitation:** Only checks user journal (`journalctl --user`). Kernel-level OOM kills from the system OOM killer appear in the system journal — check `sudo journalctl -k | grep -i oom` for kernel OOM events that may affect rootless containers.
 - **Investigation:** See [playbooks.md — CONTAINERS category](investigation-playbooks.md#containers--container-security). Identify which container was killed.
 
 ### SA-CTR-06 | L2 | Network ordering correct

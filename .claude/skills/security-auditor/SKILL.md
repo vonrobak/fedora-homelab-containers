@@ -70,7 +70,7 @@ Classify every non-PASS finding. Reference [threat-model.md](references/threat-m
 For each FAIL or WARN finding:
 
 1. **Is this part of an attack chain?** Check [threat-model.md — Attack Chains](references/threat-model.md#attack-chains) for combinations:
-   - SA-NET-01 FAIL + SA-AUTH-07 WARN → Chain 1 (defense layer bypass) — elevated urgency
+   - SA-NET-01 FAIL + SA-AUTH-07 WARN → Chain 1 (defense layer bypass) — elevated urgency. Example: CrowdSec is down and auth failures are spiking = known-bad IPs are reaching services and actively probing credentials.
    - SA-AUTH-01 FAIL + SA-AUTH-03 FAIL → Chain 2 (auth cascade) — critical
    - SA-CTR-01 FAIL + SA-CTR-04 WARN → Chain 3 (container escape path) — critical
    - SA-MON-01 FAIL + SA-MON-02 FAIL → Chain 5 (monitoring blindness) — investigate first

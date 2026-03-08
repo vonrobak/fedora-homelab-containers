@@ -100,7 +100,7 @@ Security score dropped > 5 points from previous audit. Requires deep investigati
 
 ### Phase 3: Deep Investigation
 - **Infrastructure issue** (services down): Check `journalctl --user` for crash reasons. Was there a reboot? Did `systemctl --user` daemon restart?
-- **Configuration drift** (middleware, labels): Check `git log --oneline -10` and `git diff`. Was a change made without full audit?
+- **Configuration drift** (middleware, labels): Check `git log --oneline --since="<previous audit date>"` and `git diff` to identify config changes since the last clean score. Use the previous audit date from `ls -lt ~/containers/data/security-audit/` to scope the range.
 - **External factor** (CrowdSec, certs): Check connectivity, API keys, Let's Encrypt logs.
 - Run investigation playbook commands for each affected category.
 - Cross-correlate: Are the failures related? (e.g., system reboot → multiple services down → score drops from multiple L1 checks)

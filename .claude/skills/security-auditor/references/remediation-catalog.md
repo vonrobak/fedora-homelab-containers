@@ -99,6 +99,9 @@ systemctl --user restart redis-authelia.service
 **Verify:** `ss -tlnp | grep ":6379"` — should return nothing.
 **Prevent:** Never publish Redis ports. Container network access is sufficient.
 
+### SA-AUTH-07: Auth failure count (informational)
+**No remediation action.** This is an informational L3 check for trend analysis. Investigate with the [AUTH playbook](investigation-playbooks.md#auth--authentication--access-control) if count exceeds 50/24h or correlates with SA-NET-09 alert spikes.
+
 ---
 
 ## NETWORK Remediations
@@ -140,6 +143,9 @@ systemctl --user restart traefik.service
 **Effort:** Medium (requires updating Traefik config with new API key)
 **Verify:** `podman exec crowdsec cscli bouncers list` — should show 1+ bouncers
 **Prevent:** Never delete bouncers by partial name. Always use exact full name.
+
+### SA-NET-08 / SA-NET-09: CrowdSec decisions and alerts (informational)
+**No remediation action.** These are informational L3 checks for trend analysis. Investigate with the [NETWORK playbook](investigation-playbooks.md#network--crowdsec--network-security) if values are unexpected (SA-NET-09 > 100 alerts/24h, or SA-NET-08 consistently 0).
 
 ### SA-NET-04: Low CrowdSec scenario count
 **Root cause:** Hub not updated, incomplete installation.
@@ -361,7 +367,7 @@ systemctl --user restart <service>.service
 ```
 **Effort:** Medium (need to choose IPs, update multiple places)
 **Verify:** `podman inspect <service> | jq '.[0].NetworkSettings.Networks | to_entries[] | "\(.key): \(.value.IPAddress)"'`
-**Prevent:** Always assign static IPs for multi-network services on reverse_proxy. Next available: .88.
+**Prevent:** Always assign static IPs for multi-network services on reverse_proxy. Find next available IP: `grep -h 'ip=10.89.2\.' ~/containers/quadlets/*.container | grep -oP '\.(\d+)$' | sort -t. -k1 -n | tail -1`
 
 ---
 

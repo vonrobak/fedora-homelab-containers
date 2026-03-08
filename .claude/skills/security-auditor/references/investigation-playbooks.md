@@ -122,10 +122,11 @@ podman exec crowdsec cscli alerts list --since 24h -o json | jq '[.[].source.ip]
 podman exec crowdsec cscli decisions list -o json | jq '[.[].type] | group_by(.) | map({type: .[0], count: length})'
 ```
 
-**True vs false positive:**
-- Normal: 10-50 alerts/day from automated scanners (HTTP probes, SSH brute force)
-- High but expected: 50-100 during active scanning campaigns (holidays, vulnerability disclosures)
-- Abnormal: > 100 from concentrated source or targeting specific service → investigate
+**Normal baselines (for comparison):**
+- **Typical:** 10-50 alerts/day from automated scanners (HTTP probes, SSH brute force)
+- **Elevated but expected:** 50-100 during active scanning campaigns (holidays, vulnerability disclosures)
+- **Abnormal:** > 100 from concentrated source or targeting specific service → investigate
+- **Zero after 7+ days:** CrowdSec may not be processing logs — check `cscli metrics` for acquisition stats
 
 ### Unexpected Ports (SA-NET-05)
 
@@ -221,8 +222,11 @@ done
 
 **Additional data to collect:**
 ```bash
-# Find which container was OOM killed
-journalctl --user --since "24 hours ago" | grep -i "oom_kill\|oom-kill\|killed process\|memory\.max\|invoked oom" | head -10
+# Find which container was OOM killed (user journal — systemd cgroup OOM)
+journalctl --user --since "24 hours ago" | grep -i "oom_kill\|oom-kill\|memory\.max\|invoked oom" | head -10
+
+# Also check system journal — kernel OOM killer can kill rootless container processes
+sudo journalctl -k --since "24 hours ago" | grep -i "oom" | head -10
 
 # Current memory usage vs limits
 podman stats --no-stream --format "table {{.Name}}\t{{.MemUsage}}\t{{.MemLimit}}\t{{.MemPerc}}"
