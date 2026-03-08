@@ -308,7 +308,7 @@ systemctl --user restart authelia.service
 ./scripts/query-homelab.sh "<natural language>" # Query system state (cached)
 ./scripts/autonomous-check.sh --verbose        # OODA loop assessment
 ./scripts/check-drift.sh [service]             # Config drift detection
-./scripts/security-audit.sh                    # Security baseline check
+./scripts/security-audit.sh                    # Security audit (53 checks, --level 1/2/3, --json)
 ./scripts/auto-doc-orchestrator.sh             # Regenerate all docs (~2s)
 ```
 
@@ -379,6 +379,7 @@ curl -f http://localhost:3100/ready            # Loki
 **Available Skills:**
 - `homelab-deployment` - Service deployment with validation
 - `homelab-intelligence` - System health and diagnostics
+- `security-auditor` - Comprehensive security auditing (53 checks, scoring, trends)
 - `systematic-debugging` - Root cause investigation framework
 - `autonomous-operations` - OODA loop operations
 - `git-advanced-workflows` - Advanced Git operations
@@ -440,7 +441,7 @@ Specialized agents for specific tasks, invoked automatically or on-demand:
 
 **Security operations:**
 ```bash
-~/containers/scripts/security-audit.sh               # Comprehensive audit (40+ checks)
+~/containers/scripts/security-audit.sh               # Comprehensive audit (53 checks, 7 categories, scoring)
 ~/containers/scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
 ```
 

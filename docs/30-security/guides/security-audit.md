@@ -1,8 +1,8 @@
 # Security Audit Guide
 
 **Purpose:** Comprehensive security checklist for homelab infrastructure
-**Frequency:** Monthly manual audit + automated checks (security-audit.sh script)
-**Last Updated:** 2026-01-08
+**Frequency:** Biweekly automated (1st/15th) + on-demand deep audits via Claude Code skill
+**Last Updated:** 2026-03-08
 
 ---
 
@@ -10,10 +10,26 @@
 
 This guide provides a structured approach to auditing the security posture of your homelab infrastructure. It covers multiple layers of defense including authentication, network security, application hardening, monitoring, and operational security.
 
+**Automated Audit:** `scripts/security-audit.sh` implements 53 checks across 7 categories with scoring (SA-XXX IDs). Run biweekly via `security-comprehensive-audit.timer` and daily L1 checks via `autonomous-check.sh`.
+
+**Claude Code Skill:** Use the `security-auditor` skill for interactive audits with correlation analysis, trend comparison, and remediation guidance.
+
+```bash
+# Quick usage
+./scripts/security-audit.sh                      # Level 2 (28 checks)
+./scripts/security-audit.sh --level 3 --json     # All 53 checks, JSON output
+./scripts/security-audit.sh --category auth       # Single category
+./scripts/security-audit.sh --report --compare    # Report + trend
+```
+
 **Audit Levels:**
-- **Level 1 (Critical)**: Must pass - security gaps pose immediate risk
-- **Level 2 (Important)**: Should pass - gaps increase risk surface
-- **Level 3 (Best Practice)**: Nice to have - defense-in-depth improvements
+- **Level 1 (Critical)**: Must pass - security gaps pose immediate risk (15 checks)
+- **Level 2 (Important)**: Should pass - gaps increase risk surface (28 checks)
+- **Level 3 (Best Practice)**: Nice to have - defense-in-depth improvements (53 checks)
+
+**Scoring:** Start at 100. L1 fail: -15, L2 fail: -5, L3 fail: -2. Warnings: half penalty.
+
+**History:** `data/security-audit/audit-YYYY-MM-DD.json` | **Reports:** `docs/99-reports/security-audit-YYYY-MM-DD.md`
 
 ---
 

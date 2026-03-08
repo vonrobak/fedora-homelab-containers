@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-03-01 06:02:54 UTC
+**Generated:** 2026-03-08 06:01:14 UTC
 **System:** fedora-htpc
 
 ---
@@ -29,6 +29,7 @@ graph TB
         gathio[Gathio<br/>Events]
         home_assistant[Home Assistant<br/>Automation]
         homepage[Homepage<br/>Dashboard]
+        immich_server[Immich<br/>Photos]
         jellyfin[Jellyfin<br/>Media]
         nextcloud[Nextcloud<br/>Files]
         vaultwarden[Vaultwarden<br/>Passwords]
@@ -51,14 +52,18 @@ graph TB
         navidrome[navidrome]
         node_exporter[node_exporter]
         promtail[promtail]
+        qbittorrent[qbittorrent]
         unpoller[unpoller]
     end
 
     %% Hard dependencies (from Requires= directives)
     authelia --> redis_authelia
     gathio --> gathio_db
+    immich_server --> postgresql_immich
+    immich_server --> redis_immich
 
     %% Routing dependencies (services in reverse_proxy depend on Traefik)
+    traefik -.-> alert_discord_relay
     traefik -.-> alertmanager
     traefik -.-> audiobookshelf
     traefik -.-> authelia
@@ -66,16 +71,20 @@ graph TB
     traefik -.-> grafana
     traefik -.-> home_assistant
     traefik -.-> homepage
+    traefik -.-> immich_server
     traefik -.-> jellyfin
     traefik -.-> loki
     traefik -.-> navidrome
     traefik -.-> nextcloud
     traefik -.-> prometheus
+    traefik -.-> qbittorrent
+    traefik -.-> unpoller
     traefik -.-> vaultwarden
 
     %% Monitoring (Prometheus scrapes via monitoring network)
     prometheus -.->|scrapes| gathio
     prometheus -.->|scrapes| home_assistant
+    prometheus -.->|scrapes| immich_server
     prometheus -.->|scrapes| jellyfin
     prometheus -.->|scrapes| navidrome
     prometheus -.->|scrapes| nextcloud
@@ -119,6 +128,7 @@ graph TB
 | **gathio** | gathio-db | 🟢 Event management unavailable |
 | **home-assistant** | — | 🟡 Automations stop, smart home degraded |
 | **homepage** | — | 🟢 Dashboard unavailable |
+| **immich-server** | postgresql-immich,redis-immich | 🟢 Photo management unavailable |
 | **jellyfin** | — | 🟢 Media streaming unavailable |
 | **nextcloud** | — | 🟢 File sync unavailable |
 | **vaultwarden** | — | 🟡 Password vault inaccessible (keep local cache) |
@@ -145,6 +155,7 @@ graph TB
 | **navidrome** | — | 🟢 Service-specific impact |
 | **node_exporter** | — | 🟢 Service-specific impact |
 | **promtail** | — | 🟢 Service-specific impact |
+| **qbittorrent** | — | 🟢 Service-specific impact |
 | **unpoller** | — | 🟢 Service-specific impact |
 
 ---
@@ -167,6 +178,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | home-assistant | (no ordering constraints) |
 | homepage | (no ordering constraints) |
 | immich-ml | (no ordering constraints) |
+| immich-server | postgresql-immich,redis-immich |
 | jellyfin | (no ordering constraints) |
 | loki | (no ordering constraints) |
 | matter-server | (no ordering constraints) |
@@ -178,6 +190,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | postgresql-immich | (no ordering constraints) |
 | prometheus | node_exporter |
 | promtail | loki |
+| qbittorrent | (no ordering constraints) |
 | redis-authelia | (no ordering constraints) |
 | redis-immich | (no ordering constraints) |
 | traefik | (no ordering constraints) |
@@ -198,13 +211,13 @@ Services on the same network can communicate:
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,jellyfin,loki,navidrome,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
 
 **nextcloud:** nextcloud,nextcloud-db,nextcloud-redis
 
-**photos:** immich-ml,postgresql-immich,redis-immich
+**photos:** immich-ml,immich-server,postgresql-immich,redis-immich
 
-**reverse_proxy:** alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,jellyfin,loki,navidrome,nextcloud,prometheus,traefik,vaultwarden
+**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,qbittorrent,traefik,unpoller,vaultwarden
 
 ---
 
