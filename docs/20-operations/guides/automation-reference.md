@@ -111,6 +111,7 @@ systemctl --user start <name>.service                 # Trigger manually
 | `database-maintenance` | Sun ~03:00 | Remediation: `database-maintenance` | PostgreSQL VACUUM, Redis analysis |
 | `maintenance-cleanup` | Sun ~03:00 | `maintenance-cleanup.sh` | Prune containers, rotate logs |
 | `vulnerability-scan` | Sun ~06:00 | `scan-vulnerabilities.sh --all --notify --quiet` | Trivy CVE scanning → Discord |
+| `security-comprehensive-audit` | 1st/15th 06:45 | `security-audit.sh --level 3 --json --report` | Full security audit → report |
 | `weekly-intelligence` | Fri 07:30 | `weekly-intelligence-report.sh` | End-of-week health summary → Discord |
 | `check-image-updates` | Sun 10:00 | `check-image-updates.sh` | Check for available image updates |
 
@@ -223,7 +224,7 @@ podman-auto-update-weekly.timer (Sunday 03:00)
 
 | Script | Purpose | Notes |
 |--------|---------|-------|
-| `security-audit.sh` | Comprehensive security audit (40+ checks) | On-demand |
+| `security-audit.sh` | Comprehensive security audit (53 checks, 7 categories, scoring) | Timer: biweekly 1st/15th + on-demand |
 | `scan-vulnerabilities.sh` | Trivy CVE scanning | Timer: weekly Sunday |
 | `audit-configuration.sh` | ADR-016 compliance validation | On-demand |
 | `verify-permissions.sh` | ADR-019 permission drift detection | Referenced by security-audit.sh |

@@ -709,13 +709,21 @@ EOF
     log INFO "=== OBSERVE Phase ==="
 
     # Collect observations
-    local health_obs predictions_obs drift_obs services_obs disk_obs dependencies_obs
+    local health_obs predictions_obs drift_obs services_obs disk_obs dependencies_obs security_obs
     health_obs=$(observe_health)
     predictions_obs=$(observe_predictions)
     drift_obs=$(observe_drift)
     services_obs=$(observe_services)
     disk_obs=$(observe_disk)
     dependencies_obs=$(observe_dependencies)
+
+    # Security baseline check (L1 critical only)
+    if [[ -x "$SECURITY_AUDIT" ]] && ! $DRY_RUN; then
+        log DEBUG "Running security baseline (L1 checks)..."
+        security_obs=$("$SECURITY_AUDIT" --level 1 --json --quiet 2>/dev/null || echo '{"security_score": 0, "summary": {"fail": 0}}')
+    else
+        security_obs='{"security_score": 100, "summary": {"fail": 0}}'
+    fi
 
     local health_score
     health_score=$(echo "$health_obs" | jq '.health_score // 100')
@@ -727,6 +735,7 @@ EOF
     log DEBUG "Services: $services_obs"
     log DEBUG "Disk: $disk_obs"
     log DEBUG "Dependencies: $dependencies_obs"
+    log DEBUG "Security: $security_obs"
 
     log INFO "=== ORIENT Phase ==="
 
@@ -942,7 +951,8 @@ EOF
     "predictions": $predictions_obs,
     "drift": $drift_obs,
     "services": $services_obs,
-    "disk": $disk_obs
+    "disk": $disk_obs,
+    "security": $security_obs
   },
   "preferences": $preferences,
   "recommended_actions": $actions_json,
