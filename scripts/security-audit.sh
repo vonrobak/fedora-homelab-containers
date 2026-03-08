@@ -23,6 +23,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINERS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Quadlet source dir (symlinked to ~/.config/containers/systemd/)
 QUADLETS_DIR="$HOME/containers/quadlets"
 TRAEFIK_DYNAMIC="$CONTAINERS_DIR/config/traefik/dynamic"
 AUTHELIA_CONFIG="$CONTAINERS_DIR/config/authelia/configuration.yml"
@@ -46,7 +47,6 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
@@ -66,6 +66,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --category)
             CATEGORY="$2"
+            case "$CATEGORY" in
+                auth|network|traefik|containers|monitoring|secrets|compliance) ;;
+                *) echo "Error: --category must be one of: auth, network, traefik, containers, monitoring, secrets, compliance" >&2; exit 2 ;;
+            esac
             shift 2
             ;;
         --json)
@@ -111,7 +115,7 @@ done
 
 # Suppress colors for JSON/quiet
 if $JSON_OUTPUT || $QUIET; then
-    RED="" GREEN="" YELLOW="" BLUE="" CYAN="" BOLD="" NC=""
+    RED="" GREEN="" YELLOW="" BLUE="" BOLD="" NC=""
 fi
 
 ##############################################################################
@@ -218,12 +222,13 @@ run_auth_checks() {
     # SA-AUTH-05 (L2): All routed domains have access_control rules
     if should_run 2 auth; then
         local routed_domains missing_domains=""
-        routed_domains=$(grep -oP 'Host\(`([^`]+)`\)' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null | grep -oP '`[^`]+`' | tr -d '`' | sort -u)
+        routed_domains=$(yq '.http.routers[].rule' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null | grep -oP '`[^`]+`' | tr -d '`' | sort -u)
+        # Extract all domains from Authelia access_control (handles both single and list formats)
         local authelia_domains
-        authelia_domains=$(grep -oP "domain:\s*['\"]?([a-z0-9.-]+)" "$AUTHELIA_CONFIG" 2>/dev/null | awk '{print $2}' | tr -d "'" | tr -d '"' | sort -u)
-        # Add wildcard match - if *.patriark.org is in access_control, all subdomains covered
+        authelia_domains=$(yq '.. | select(key == "domain") | (. | select(type == "!!str")) // (. | .[])' "$AUTHELIA_CONFIG" 2>/dev/null | tr -d "'" | sort -u)
+        # Check if wildcard *.patriark.org covers all subdomains
         local has_wildcard=false
-        if grep -qP "domain:\s*['\"]?\*\.patriark\.org" "$AUTHELIA_CONFIG" 2>/dev/null; then
+        if echo "$authelia_domains" | grep -qF '*.patriark.org' 2>/dev/null; then
             has_wildcard=true
         fi
 
@@ -447,29 +452,14 @@ run_traefik_checks() {
 
     # SA-TRF-05 (L2): Middleware ordering correct (crowdsec first)
     if should_run 2 traefik; then
-        # Check each middleware list: first entry after "middlewares:" should be crowdsec
-        local first_mw_count=0 cs_first=0
-        local in_list=false
-        while IFS= read -r line; do
-            if [[ "$line" =~ middlewares: ]]; then
-                in_list=true
-                continue
-            fi
-            if $in_list && [[ "$line" =~ ^[[:space:]]*- ]]; then
-                ((first_mw_count++)) || true
-                if [[ "$line" =~ crowdsec-bouncer ]]; then
-                    ((cs_first++)) || true
-                fi
-                in_list=false
-            elif $in_list; then
-                in_list=false
-            fi
-        done < "$TRAEFIK_DYNAMIC/routers.yml"
+        local total_with_mw cs_first
+        total_with_mw=$(yq '[.http.routers[] | select(.middlewares | length > 0)] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        cs_first=$(yq '[.http.routers[] | select(.middlewares[0] == "crowdsec-bouncer@file")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
-        if (( first_mw_count > 0 && cs_first == first_mw_count )); then
-            record_check "SA-TRF-05" 2 traefik "PASS" "CrowdSec is first middleware in all chains"
+        if (( total_with_mw > 0 && cs_first == total_with_mw )); then
+            record_check "SA-TRF-05" 2 traefik "PASS" "CrowdSec is first middleware in all $total_with_mw chains"
         elif (( cs_first > 0 )); then
-            record_check "SA-TRF-05" 2 traefik "WARN" "CrowdSec first in $cs_first/$first_mw_count middleware chains"
+            record_check "SA-TRF-05" 2 traefik "WARN" "CrowdSec first in $cs_first/$total_with_mw middleware chains"
         else
             record_check "SA-TRF-05" 2 traefik "FAIL" "CrowdSec is NOT first middleware"
         fi
@@ -726,19 +716,14 @@ run_container_checks() {
         local old_images=""
         local now_epoch
         now_epoch=$(date +%s)
-        while IFS= read -r line; do
-            local img_name created_at
-            img_name=$(echo "$line" | awk '{print $1}')
-            created_at=$(echo "$line" | awk '{print $2}')
-            if [[ -n "$created_at" && "$created_at" != "<none>" ]]; then
-                local img_epoch
-                img_epoch=$(date -d "$created_at" +%s 2>/dev/null || echo "0")
-                local age_days=$(( (now_epoch - img_epoch) / 86400 ))
-                if (( age_days > 30 )); then
-                    old_images="$old_images ${img_name##*/}:${age_days}d"
-                fi
+        # Use JSON output for reliable epoch timestamps (CreatedAt has spaces)
+        while IFS=$'\t' read -r img_name img_epoch; do
+            [[ -z "$img_epoch" || "$img_epoch" == "0" ]] && continue
+            local age_days=$(( (now_epoch - img_epoch) / 86400 ))
+            if (( age_days > 30 )); then
+                old_images="$old_images ${img_name##*/}:${age_days}d"
             fi
-        done < <(podman images --format '{{.Repository}} {{.CreatedAt}}' 2>/dev/null | head -30)
+        done < <(podman images --format json 2>/dev/null | jq -r '.[] | "\(.Names[0] // .Id)\t\(.Created)"' 2>/dev/null | head -30)
         if [[ -z "$old_images" ]]; then
             record_check "SA-CTR-10" 3 containers "PASS" "All container images <30 days old"
         else
@@ -1078,18 +1063,51 @@ CHECKEOF
         local prev_file
         prev_file=$(ls -t "$HISTORY_DIR"/audit-*.json 2>/dev/null | head -1 || echo "")
         if [[ -f "$prev_file" ]]; then
-            local prev_score prev_date prev_failures new_failures resolved
+            local prev_score prev_date
             prev_score=$(jq '.security_score' "$prev_file" 2>/dev/null || echo "0")
             prev_date=$(jq -r '.timestamp' "$prev_file" 2>/dev/null || echo "unknown")
             local score_change=$(( SCORE - prev_score ))
 
-            # Find new failures (in current but not previous)
-            new_failures=$(jq -r '[.checks[] | select(.status == "FAIL") | .id]' "$prev_file" 2>/dev/null || echo "[]")
-            resolved="[]"
+            # Build current failure IDs
+            local current_fails=""
+            for result in "${RESULTS[@]}"; do
+                IFS='|' read -r id _ _ status _ _ <<< "$result"
+                if [[ "$status" == "FAIL" ]]; then
+                    current_fails="$current_fails $id"
+                fi
+            done
 
-            trend_json="{\"previous_date\": \"$prev_date\", \"previous_score\": $prev_score, \"score_change\": $score_change}"
+            # Get previous failure IDs
+            local prev_fails
+            prev_fails=$(jq -r '[.checks[] | select(.status == "FAIL") | .id] | .[]' "$prev_file" 2>/dev/null || echo "")
+
+            # New failures: in current but not in previous
+            local new_failures="["
+            local nf_first=true
+            for id in $current_fails; do
+                if ! echo "$prev_fails" | grep -qw "$id" 2>/dev/null; then
+                    $nf_first || new_failures+=","
+                    nf_first=false
+                    new_failures+="\"$id\""
+                fi
+            done
+            new_failures+="]"
+
+            # Resolved: in previous but not in current
+            local resolved="["
+            local r_first=true
+            for id in $prev_fails; do
+                if ! echo "$current_fails" | grep -qw "$id" 2>/dev/null; then
+                    $r_first || resolved+=","
+                    r_first=false
+                    resolved+="\"$id\""
+                fi
+            done
+            resolved+="]"
+
+            trend_json="{\"previous_date\": \"$prev_date\", \"previous_score\": $prev_score, \"score_change\": $score_change, \"new_failures\": $new_failures, \"resolved\": $resolved}"
         else
-            trend_json="{\"previous_date\": null, \"score_change\": 0, \"note\": \"No previous audit found\"}"
+            trend_json="{\"previous_date\": null, \"score_change\": 0, \"new_failures\": [], \"resolved\": [], \"note\": \"No previous audit found\"}"
         fi
     fi
 
@@ -1248,8 +1266,16 @@ print_summary() {
 ##############################################################################
 
 main() {
-    # Ensure history directory exists
+    # Ensure history directory exists (always saves audit JSON for trend tracking)
     mkdir -p "$HISTORY_DIR"
+
+    # Check yq availability (required for robust YAML parsing in SA-TRF-03/04/05/07, SA-AUTH-05)
+    if ! command -v yq &>/dev/null; then
+        if ! $JSON_OUTPUT; then
+            echo -e "${YELLOW}WARN: yq not installed — Traefik router checks will be skipped${NC}" >&2
+        fi
+        record_check "SA-DEP-01" 2 compliance "WARN" "yq not installed — some checks skipped"
+    fi
 
     # Header
     if ! $JSON_OUTPUT && ! $QUIET; then
