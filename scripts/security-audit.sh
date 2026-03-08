@@ -677,7 +677,9 @@ run_container_checks() {
             name=$(basename "$quadlet" .container)
             if systemctl --user is-active "${name}.service" &>/dev/null; then
                 if ! grep -q "^HealthCmd=" "$quadlet" 2>/dev/null; then
-                    # Check if container has a shell (distroless detection)
+                    # Distroless detection: try executing a shell to distinguish
+                    # "no shell available" (loki, unpoller) from "healthcheck not configured".
+                    # Limitation: exec-blocked containers would also appear distroless.
                     if podman exec "$name" sh -c 'exit 0' &>/dev/null; then
                         no_health="$no_health $name"
                     else
@@ -966,9 +968,11 @@ run_compliance_checks() {
         local unverifiable_nocow=""
         for db_dir in /mnt/btrfs-pool/subvol7-containers/prometheus /mnt/btrfs-pool/subvol7-containers/loki /mnt/btrfs-pool/subvol7-containers/postgresql-immich; do
             if [[ -d "$db_dir" ]]; then
-                local attrs lsattr_rc
-                attrs=$(lsattr -d "$db_dir" 2>/dev/null | awk '{print $1}') && lsattr_rc=0 || lsattr_rc=$?
-                if [[ $lsattr_rc -ne 0 ]] || [[ -z "$attrs" ]]; then
+                local attrs
+                # lsattr may fail with permission denied on dirs owned by container UIDs
+                # (e.g. postgresql-immich UID 100998 mode 700). Empty output = unverifiable.
+                attrs=$(lsattr -d "$db_dir" 2>/dev/null | awk '{print $1}' || true)
+                if [[ -z "$attrs" ]]; then
                     # Permission denied or unreadable — don't report as missing
                     unverifiable_nocow="$unverifiable_nocow $(basename "$db_dir")"
                 elif ! echo "$attrs" | grep -q "C" 2>/dev/null; then
