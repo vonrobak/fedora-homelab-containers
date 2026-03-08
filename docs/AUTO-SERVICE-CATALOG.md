@@ -1,6 +1,6 @@
 # Service Catalog (Auto-Generated)
 
-**Generated:** 2026-03-07 23:01:09 UTC
+**Generated:** 2026-03-08 06:01:09 UTC
 **System:** fedora-htpc | **Services:** 30/30 running | **Health:** 28/28 healthy (2 without healthcheck)
 
 ---
@@ -11,7 +11,7 @@
 |---------|-------|--------|--------|-----|------|
 | audiobookshelf | advplyr/audiobookshelf:latest | ✅ healthy | 7d | [audiobookshelf.patriark.org](https://audiobookshelf.patriark.org) | — |
 | navidrome | deluan/navidrome:latest | ✅ healthy | 6d | [musikk.patriark.org](https://musikk.patriark.org) | — |
-| qbittorrent | linuxserver/qbittorrent:latest | ✅ healthy | 14h | [torrent.patriark.org](https://torrent.patriark.org) | — |
+| qbittorrent | linuxserver/qbittorrent:latest | ✅ healthy | 21h | [torrent.patriark.org](https://torrent.patriark.org) | — |
 
 ## Core Infrastructure (4)
 
@@ -19,8 +19,8 @@
 |---------|-------|--------|--------|-----|------|
 | authelia | authelia/authelia:latest | ✅ healthy | 6d | [sso.patriark.org](https://sso.patriark.org) | [guide](10-services/guides/authelia.md) |
 | crowdsec | crowdsecurity/crowdsec:latest | ✅ healthy | 13d | — | [guide](10-services/guides/crowdsec.md) |
-| redis-authelia | redis:7-alpine | ✅ healthy | 6d | — | — |
-| traefik | traefik:latest | ✅ healthy | 6d | [traefik.patriark.org](https://traefik.patriark.org) | [guide](10-services/guides/traefik.md) |
+| redis-authelia | redis:7-alpine | ✅ healthy | 7d | — | — |
+| traefik | traefik:latest | ✅ healthy | 4h | [traefik.patriark.org](https://traefik.patriark.org) | [guide](10-services/guides/traefik.md) |
 
 ## Nextcloud (3)
 
@@ -55,7 +55,7 @@
 
 | Service | Image | Health | Uptime | URL | Docs |
 |---------|-------|--------|--------|-----|------|
-| home-assistant | home-assistant/home-assistant:stable | ✅ healthy | 6d | [ha.patriark.org](https://ha.patriark.org) | [guide](10-services/guides/home-assistant.md) |
+| home-assistant | home-assistant/home-assistant:stable | ✅ healthy | 4h | [ha.patriark.org](https://ha.patriark.org) | [guide](10-services/guides/home-assistant.md) |
 | matter-server | home-assistant-libs/python-matter-server:stab | ✅ healthy | 13d | — | [guide](10-services/guides/matter-server.md) |
 
 ## Gathio (2)
@@ -63,7 +63,7 @@
 | Service | Image | Health | Uptime | URL | Docs |
 |---------|-------|--------|--------|-----|------|
 | gathio-db | mongo:7 | ✅ healthy | 13d | — | — |
-| gathio | lowercasename/gathio:latest | ✅ healthy | 6d | [events.patriark.org](https://events.patriark.org) | — |
+| gathio | lowercasename/gathio:latest | ✅ healthy | 4h | [events.patriark.org](https://events.patriark.org) | — |
 
 ## Homepage (1)
 
@@ -91,7 +91,7 @@
 
 - **Total Running:** 30
 - **Total Defined:** 30
-- **System Load:** 1,27, 1,17, 1,05
+- **System Load:** 0,54, 0,43, 0,55
 
 ---
 

@@ -421,10 +421,9 @@ run_traefik_checks() {
 
     # SA-TRF-03 (L1): CrowdSec bouncer in every public router middleware
     if should_run 1 traefik; then
-        # Count routers vs routers with crowdsec
         local total_routers cs_routers
-        total_routers=$(grep -cP '^\s{4}[a-z].*-secure:|^\s{4}[a-z].*-redirect:|^\s{4}[a-z].*-dashboard:|^\s{4}[a-z].*-portal:' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
-        cs_routers=$(grep -c "crowdsec-bouncer" "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        total_routers=$(yq '.http.routers | keys | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        cs_routers=$(yq '[.http.routers[] | select(.middlewares[] == "crowdsec-bouncer@file")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
         if (( total_routers > 0 && cs_routers >= total_routers )); then
             record_check "SA-TRF-03" 1 traefik "PASS" "CrowdSec bouncer in all $total_routers routers"
@@ -436,8 +435,8 @@ run_traefik_checks() {
     # SA-TRF-04 (L2): Rate limiting in every public router
     if should_run 2 traefik; then
         local total_routers rl_routers
-        total_routers=$(grep -cP '^\s{4}[a-z].*-secure:|^\s{4}[a-z].*-redirect:|^\s{4}[a-z].*-dashboard:|^\s{4}[a-z].*-portal:' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
-        rl_routers=$(grep -c "rate-limit" "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        total_routers=$(yq '.http.routers | keys | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        rl_routers=$(yq '[.http.routers[] | select(.middlewares[] | test("rate-limit"))] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
         if (( total_routers > 0 && rl_routers >= total_routers )); then
             record_check "SA-TRF-04" 2 traefik "PASS" "Rate limiting in all $total_routers routers"
@@ -448,21 +447,7 @@ run_traefik_checks() {
 
     # SA-TRF-05 (L2): Middleware ordering correct (crowdsec first)
     if should_run 2 traefik; then
-        local bad_order=0
-        # For each router's middleware list, crowdsec should be the first middleware
-        while IFS= read -r line; do
-            # Match middleware arrays: - crowdsec-bouncer@file should come before others
-            if [[ "$line" =~ ^[[:space:]]*-[[:space:]]+(rate-limit|authelia|security-headers) ]] && ! grep -q "crowdsec-bouncer" <<< "$prev_line" 2>/dev/null; then
-                # This is simplified - we check by looking at middleware blocks
-                true
-            fi
-            prev_line="$line"
-        done < "$TRAEFIK_DYNAMIC/routers.yml"
-
-        # Better approach: check each middleware list block
-        local middleware_blocks
-        middleware_blocks=$(grep -A1 "middlewares:" "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null | grep -v "^--$" | grep "^\s*-" | head -20)
-        # Count how many first-middleware entries are crowdsec
+        # Check each middleware list: first entry after "middlewares:" should be crowdsec
         local first_mw_count=0 cs_first=0
         local in_list=false
         while IFS= read -r line; do
@@ -510,14 +495,11 @@ run_traefik_checks() {
 
     # SA-TRF-07 (L2): Security headers on all routers
     if should_run 2 traefik; then
-        local header_count
-        header_count=$(grep -c "security-headers" "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
-        # Some routers use hsts-only or custom headers, so count both
-        local hsts_count
-        hsts_count=$(grep -c "hsts-only" "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
-        local total_header_routers=$(( header_count + hsts_count ))
+        # Count routers with any security/hsts header middleware
+        local total_header_routers
+        total_header_routers=$(yq '[.http.routers[] | select(.middlewares[] | test("security-headers|hsts-only"))] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
         local total_routers
-        total_routers=$(grep -cP '^\s{4}[a-z].*-secure:|^\s{4}[a-z].*-redirect:|^\s{4}[a-z].*-dashboard:|^\s{4}[a-z].*-portal:' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        total_routers=$(yq '.http.routers | keys | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
         # SSO portal doesn't need security headers (Authelia sets its own)
         # So we expect total_routers - 1 (at minimum)
@@ -756,7 +738,7 @@ run_container_checks() {
                     old_images="$old_images ${img_name##*/}:${age_days}d"
                 fi
             fi
-        done < <(podman images --format '{{.Repository}} {{.Created}}' 2>/dev/null | head -30)
+        done < <(podman images --format '{{.Repository}} {{.CreatedAt}}' 2>/dev/null | head -30)
         if [[ -z "$old_images" ]]; then
             record_check "SA-CTR-10" 3 containers "PASS" "All container images <30 days old"
         else
@@ -1266,6 +1248,9 @@ print_summary() {
 ##############################################################################
 
 main() {
+    # Ensure history directory exists
+    mkdir -p "$HISTORY_DIR"
+
     # Header
     if ! $JSON_OUTPUT && ! $QUIET; then
         echo ""
