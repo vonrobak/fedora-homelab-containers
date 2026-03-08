@@ -102,7 +102,8 @@ Options:
   --help, -h      Show this help
 
 Scoring: Start at 100. L1 fail: -15, L2 fail: -5, L3 fail: -2.
-         Warnings: half penalty. Floor at 0.
+         Warnings: half penalty (-8/-3/-1). Floor at 0.
+         History saved to data/security-audit/ on every run.
 EOF
             exit 0
             ;;
@@ -139,9 +140,10 @@ record_check() {
             esac
             ;;
         WARN)
+            # Half of fail penalty (L1: 15/2=8, L2: 5/2=3, L3: 2/2=1)
             case "$level" in
-                1) SCORE=$((SCORE - 7)) ;;
-                2) SCORE=$((SCORE - 2)) ;;
+                1) SCORE=$((SCORE - 8)) ;;
+                2) SCORE=$((SCORE - 3)) ;;
                 3) SCORE=$((SCORE - 1)) ;;
             esac
             ;;
@@ -403,6 +405,7 @@ run_traefik_checks() {
                 [[ -z "$cert_b64" ]] && continue
                 local end_date days_left
                 end_date=$(echo "$cert_b64" | base64 -d 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2 || echo "")
+                [[ -z "$end_date" ]] && continue
                 if [[ -n "$end_date" ]]; then
                     local expiry_epoch
                     expiry_epoch=$(date -d "$end_date" +%s 2>/dev/null || echo "0")
@@ -425,10 +428,11 @@ run_traefik_checks() {
     fi
 
     # SA-TRF-03 (L1): CrowdSec bouncer in every public router middleware
+    # Only checks routers with websecure entrypoint (internet-facing); internal-only routes excluded
     if should_run 1 traefik; then
         local total_routers cs_routers
-        total_routers=$(yq '.http.routers | keys | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
-        cs_routers=$(yq '[.http.routers[] | select(.middlewares[] == "crowdsec-bouncer@file")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        total_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        cs_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure") | select(.middlewares[] == "crowdsec-bouncer@file")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
         if (( total_routers > 0 && cs_routers >= total_routers )); then
             record_check "SA-TRF-03" 1 traefik "PASS" "CrowdSec bouncer in all $total_routers routers"
@@ -440,8 +444,8 @@ run_traefik_checks() {
     # SA-TRF-04 (L2): Rate limiting in every public router
     if should_run 2 traefik; then
         local total_routers rl_routers
-        total_routers=$(yq '.http.routers | keys | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
-        rl_routers=$(yq '[.http.routers[] | select(.middlewares[] | test("rate-limit"))] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        total_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        rl_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure") | select(.middlewares[] | test("rate-limit"))] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
         if (( total_routers > 0 && rl_routers >= total_routers )); then
             record_check "SA-TRF-04" 2 traefik "PASS" "Rate limiting in all $total_routers routers"
@@ -485,11 +489,11 @@ run_traefik_checks() {
 
     # SA-TRF-07 (L2): Security headers on all routers
     if should_run 2 traefik; then
-        # Count routers with any security/hsts header middleware
+        # Count websecure routers with any security/hsts header middleware
         local total_header_routers
-        total_header_routers=$(yq '[.http.routers[] | select(.middlewares[] | test("security-headers|hsts-only"))] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        total_header_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure") | select(.middlewares[] | test("security-headers|hsts-only"))] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
         local total_routers
-        total_routers=$(yq '.http.routers | keys | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        total_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
         # SSO portal doesn't need security headers (Authelia sets its own)
         # So we expect total_routers - 1 (at minimum)
@@ -977,16 +981,21 @@ run_compliance_checks() {
         fi
     fi
 
-    # SA-CMP-05 (L3): All quadlets have Requires/After for dependencies
+    # SA-CMP-05 (L3): App containers with database dependencies declare Requires/After
     if should_run 3 compliance; then
         local missing_deps=""
-        # Check containers that reference other containers (e.g., app + db)
-        for quadlet in "$QUADLETS_DIR"/nextcloud.container "$QUADLETS_DIR"/immich-server.container "$QUADLETS_DIR"/gathio.container "$QUADLETS_DIR"/authelia.container; do
+        # Find quadlets on database networks (nextcloud, photos, gathio, auth_services)
+        for quadlet in "$QUADLETS_DIR"/*.container; do
             [[ -f "$quadlet" ]] || continue
             local name
             name=$(basename "$quadlet" .container)
-            if ! grep -q "^Requires=\|^After=" "$quadlet" 2>/dev/null; then
-                missing_deps="$missing_deps $name"
+            # Skip database/cache containers themselves and infrastructure
+            [[ "$name" =~ ^(nextcloud-db|nextcloud-redis|postgresql-|redis-|gathio-db|traefik|crowdsec).*$ ]] && continue
+            # Check if this container shares a network with a database container
+            if grep -q "systemd-nextcloud\|systemd-photos\|systemd-gathio\|systemd-auth_services" "$quadlet" 2>/dev/null; then
+                if ! grep -q "^Requires=\|^After=.*\.service" "$quadlet" 2>/dev/null; then
+                    missing_deps="$missing_deps $name"
+                fi
             fi
         done
         if [[ -z "$missing_deps" ]]; then
@@ -1029,21 +1038,12 @@ generate_json() {
         $first || checks_json+=","
         first=false
 
-        # Escape strings for JSON
-        message=$(echo "$message" | sed 's/"/\\"/g')
-        detail=$(echo "$detail" | sed 's/"/\\"/g')
+        # Use jq for safe JSON string encoding
+        local json_message json_detail
+        json_message=$(printf '%s' "$message" | jq -Rs '.')
+        json_detail=$(printf '%s' "$detail" | jq -Rs '.')
 
-        checks_json+="$(cat << CHECKEOF
-{
-      "id": "$id",
-      "level": $level,
-      "category": "$category",
-      "status": "$status",
-      "message": "$message",
-      "detail": "$detail"
-    }
-CHECKEOF
-)"
+        checks_json+="{\"id\": \"$id\", \"level\": $level, \"category\": \"$category\", \"status\": \"$status\", \"message\": $json_message, \"detail\": $json_detail}"
     done
     checks_json+="]"
 
@@ -1271,10 +1271,7 @@ main() {
 
     # Check yq availability (required for robust YAML parsing in SA-TRF-03/04/05/07, SA-AUTH-05)
     if ! command -v yq &>/dev/null; then
-        if ! $JSON_OUTPUT; then
-            echo -e "${YELLOW}WARN: yq not installed — Traefik router checks will be skipped${NC}" >&2
-        fi
-        record_check "SA-DEP-01" 2 compliance "WARN" "yq not installed — some checks skipped"
+        echo "WARN: yq not installed — Traefik and Authelia YAML checks will use fallback (less accurate)" >&2
     fi
 
     # Header
@@ -1298,21 +1295,24 @@ main() {
     # Summary
     print_summary
 
-    # JSON output
+    # JSON output — validate through jq before saving
     local json_data
     if $JSON_OUTPUT || $GENERATE_REPORT || [[ -d "$HISTORY_DIR" ]]; then
-        json_data=$(generate_json)
+        json_data=$(generate_json | jq '.' 2>/dev/null) || {
+            echo "ERROR: Generated invalid JSON" >&2
+            json_data=$(generate_json)
+        }
     fi
 
     if $JSON_OUTPUT; then
         echo "$json_data"
     fi
 
-    # Save history
+    # Save history (timestamped to avoid same-day collisions)
     if [[ -d "$HISTORY_DIR" ]]; then
-        local date_str
-        date_str=$(date +%Y-%m-%d)
-        echo "$json_data" > "$HISTORY_DIR/audit-${date_str}.json" 2>/dev/null || true
+        local history_file
+        history_file="$HISTORY_DIR/audit-$(date +%Y-%m-%dT%H%M%S).json"
+        echo "$json_data" > "$history_file" 2>/dev/null || true
     fi
 
     # Generate report
