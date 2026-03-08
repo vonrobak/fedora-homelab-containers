@@ -1,105 +1,208 @@
-# Security Auditor - Scenarios & Examples
+# Security Auditor — Scenarios
 
-Detailed scenarios for the security-auditor skill. See [SKILL.md](SKILL.md) for the main workflow.
+Narratives exercising the 5-phase investigation methodology. See [SKILL.md](SKILL.md) for the methodology.
 
-## Scenario 1: Post-Change Security Verification
+---
 
-After deploying a new service or modifying configuration:
+## Scenario 1: Routine Biweekly Audit
 
-1. Run `./scripts/security-audit.sh --level 2 --json --compare`
-2. Focus on:
-   - SA-TRF-03: CrowdSec bouncer in new router
-   - SA-TRF-04: Rate limiting on new router
-   - SA-TRF-06: No Traefik labels in new quadlet (ADR-016)
-   - SA-CTR-04: SELinux labels on volume mounts
-   - SA-CTR-07: Healthcheck defined
-   - SA-AUTH-05: New domain has access_control rule
-3. Compare score with pre-change baseline
+The scheduled biweekly deep audit (1st and 15th of month). Full Phase 1-5.
 
-**Expected outcome:** Score should not decrease after changes. New check IDs should all pass.
-
-## Scenario 2: Monthly Comprehensive Audit
-
-For the biweekly deep audit (1st and 15th of month):
-
-1. Run `./scripts/security-audit.sh --level 3 --json --report --compare`
-2. Review all 53 checks
-3. Check trend vs previous audit
-4. Generate markdown report for audit trail
-5. Address any new failures or degradations
-
-**Focus areas:**
-- L3 checks that are informational (SA-AUTH-07 auth failures, SA-NET-08 CrowdSec decisions)
-- Container image age (SA-CTR-10) — images >30 days should be updated
-- Compliance drift (SA-CMP-01..05) — configuration should match git
-
-## Scenario 3: Security Incident Investigation
-
-When investigating a potential security event:
-
-1. Run `./scripts/security-audit.sh --category network --json` for CrowdSec status
-2. Run `./scripts/security-audit.sh --category auth --json` for auth status
-3. Cross-reference with:
-   - CrowdSec alerts: `podman exec crowdsec cscli alerts list --since 24h`
-   - Authelia logs: `journalctl --user -u authelia.service --since "1 hour ago"`
-   - Traefik access logs: Loki queries in Grafana
-4. Reference IR runbooks based on findings
-
-## Scenario 4: Score Dropped Significantly
-
-When the security score drops >10 points from previous:
-
-1. Identify which checks changed status (compare JSON outputs)
-2. Categorize: infrastructure issue vs configuration drift vs external factor
-3. Priority order:
-   - L1 failures: Fix immediately (service down, cert expiring, SELinux disabled)
-   - L2 failures: Fix within 24h (missing middleware, memory limits)
-   - L3 warnings: Track and address in next maintenance window
-
-**Common causes of score drops:**
-- Service restart/reboot left something not running (L1 failures)
-- Configuration change didn't include all required middleware (L2)
-- System update changed SELinux or firewall state (L1)
-
-## Scenario 5: Category-Specific Deep Dive
-
-When a specific domain needs attention:
-
+### Phase 1: Data Collection
 ```bash
-# Authentication issues
-./scripts/security-audit.sh --category auth --level 3 --json
-
-# Network/CrowdSec issues
-./scripts/security-audit.sh --category network --level 3 --json
-
-# Container security
-./scripts/security-audit.sh --category containers --level 3 --json
+cd ~/containers
+./scripts/security-audit.sh --level 3 --json --compare --report
+./scripts/homelab-intel.sh --quiet
+podman exec crowdsec cscli alerts list --since 336h -o json | jq 'length'  # 14 days since last audit
 ```
 
-## Check ID Quick Reference
+### Phase 2: Triage
+- Parse JSON output. Classify every WARN/FAIL.
+- **Expected accepted risks:** SA-TRF-07 (streaming service headers), SA-SEC-04 (GPG signing preference), SA-CTR-07/loki (distroless healthcheck), SA-CMP-02 (NOCOW migration deferred).
+- Check for attack chain combinations (see threat-model.md).
+- Compare with previous audit — flag new failures.
 
-**Critical (L1) - Fix immediately:**
-- SA-AUTH-01..03: Authelia + Redis running and healthy
-- SA-NET-01..03: CrowdSec running, CAPI connected, bouncers active
-- SA-TRF-01..03: Traefik running, TLS valid, CrowdSec in routers
-- SA-CTR-01: SELinux enforcing
-- SA-MON-01..03: Prometheus, Alertmanager, Grafana running
-- SA-SEC-01..02: gitignore and git history clean
+### Phase 3: Investigation
+- Investigate any **new** failures or warnings not present in previous audit.
+- For SA-AUTH-07 (auth failures): check pattern — bot scan vs targeted. Cross-reference with CrowdSec alert breakdown.
+- For SA-NET-09 (CrowdSec alerts): get alert type breakdown. Normal volume for scanners is 10-50/day.
+- For SA-CTR-10 (old images): which images are stale? Are they pinned (expected) or `:latest` (should auto-update)?
 
-**Important (L2) - Fix within 24h:**
-- SA-AUTH-04..06: Deny policy, access_control rules, Redis isolation
-- SA-NET-04..07: Scenarios loaded, port audit, monitoring internal, no Samba
-- SA-TRF-04..08: Rate limits, middleware order, ADR-016, headers, port 8080
-- SA-CTR-02..09: Memory limits, DB pinning, SELinux labels, OOM, healthchecks
-- SA-MON-04..06: Scrape targets, Promtail, Alertmanager port
-- SA-SEC-03..04: File permissions, GPG signing
-- SA-CMP-01..03: Git status, NOCOW, filesystem permissions
+### Phase 4: Risk Assessment
+- Build remediation roadmap from any genuine findings.
+- Reference remediation-catalog.md for effort estimates.
+- Accepted risks get re-validated — still accepted? Circumstances changed?
 
-**Best Practice (L3) - Track:**
-- SA-AUTH-07: Auth failure volume
-- SA-NET-08..09: CrowdSec decisions and alerts
-- SA-TRF-09: TLS minimum version
-- SA-CTR-10..11: Image age, Slice directive
-- SA-MON-07: Alert rules loaded
-- SA-SEC-05: Podman secrets count
-- SA-CMP-04..05: Naming conventions, dependency declarations
+### Phase 5: Report
+- Full report with executive summary, investigated findings, known exceptions, trend analysis.
+- Highlight any score changes and explain why.
+- Include remediation roadmap if any new actions needed.
+
+**Expected outcome:** Score stable (90-97 range). Most findings are accepted risks. Trend narrative: "stable posture, no degradation."
+
+---
+
+## Scenario 2: Post-Deployment Verification
+
+After deploying a new service, verify it doesn't degrade security posture.
+
+### Phase 1: Focused Data Collection
+```bash
+# Run relevant categories only
+./scripts/security-audit.sh --category traefik --json
+./scripts/security-audit.sh --category containers --json
+./scripts/security-audit.sh --category auth --json --compare
+```
+
+### Phase 2: Triage
+Focus on deployment-related checks:
+- **SA-TRF-03:** Does the new router have CrowdSec bouncer?
+- **SA-TRF-04:** Does it have rate limiting?
+- **SA-TRF-05:** Is CrowdSec first in middleware chain?
+- **SA-TRF-06:** No Traefik labels in the new quadlet?
+- **SA-TRF-07:** Security headers present?
+- **SA-CTR-02:** Memory limits set?
+- **SA-CTR-04:** SELinux labels on volumes?
+- **SA-CTR-07:** Healthcheck defined?
+- **SA-AUTH-05:** If Authelia-protected, access_control rule exists?
+- **SA-CTR-09:** If multi-network, static IPs assigned?
+
+### Phase 3: Investigation
+- Only investigate failures — new service should pass all checks.
+- For any FAIL: determine if it's a deployment gap or intentional design.
+- Reference check-reference.md for the specific check's false positive documentation.
+
+### Phase 4 & 5: Assessment & Report
+- Brief report focused on the new service.
+- Score should not decrease from pre-deployment baseline.
+- Remediation for any new failures is immediate (deployment isn't complete until security checks pass).
+
+**Expected outcome:** All relevant checks pass. No score decrease.
+
+---
+
+## Scenario 3: Score Drop Investigation
+
+Security score dropped > 5 points from previous audit. Requires deep investigation.
+
+### Phase 1: Data Collection
+```bash
+./scripts/security-audit.sh --level 3 --json --compare
+# The --compare flag shows which checks changed status
+```
+
+### Phase 2: Triage
+- Parse the `trend.new_failures` array from JSON — these caused the drop.
+- For each new failure, check:
+  - Is it L1 (critical)? If so, investigate immediately.
+  - Did multiple failures appear simultaneously? Check attack chain table in threat-model.md.
+  - Correlate timing: when did the score drop? `ls -lt ~/containers/data/security-audit/` — was it gradual or sudden?
+
+### Phase 3: Deep Investigation
+- **Infrastructure issue** (services down): Check `journalctl --user` for crash reasons. Was there a reboot? Did `systemctl --user` daemon restart?
+- **Configuration drift** (middleware, labels): Check `git log --oneline -10` and `git diff`. Was a change made without full audit?
+- **External factor** (CrowdSec, certs): Check connectivity, API keys, Let's Encrypt logs.
+- Run investigation playbook commands for each affected category.
+- Cross-correlate: Are the failures related? (e.g., system reboot → multiple services down → score drops from multiple L1 checks)
+
+### Phase 4: Risk Assessment
+- Determine root cause: single event causing multiple failures vs independent issues.
+- Blast radius assessment using threat-model.md.
+- Prioritized fix list with effort estimates.
+
+### Phase 5: Report
+- Lead with root cause and blast radius.
+- Show the attack chain impact if applicable.
+- Remediation roadmap with clear priorities.
+
+**Expected outcome:** Root cause identified. Score recoverable after fixes.
+
+---
+
+## Scenario 4: Active Security Incident
+
+Real-time investigation triggered by high alert volume, auth failure spike, or external indicator.
+
+### Phase 1: Rapid Data Collection
+```bash
+# Quick critical checks first
+./scripts/security-audit.sh --level 1 --json
+
+# CrowdSec intel (most time-sensitive)
+podman exec crowdsec cscli alerts list --since 1h -o json | jq '.[0:5]'
+podman exec crowdsec cscli decisions list -o json | jq 'length'
+
+# Traefik access patterns via Loki
+# {job="traefik-access"} | json | status >= 400 | count_over_time([5m])
+
+# Auth failure pattern
+journalctl --user -u authelia.service --since "1 hour ago" | grep -i "unsuccessful" | wc -l
+```
+
+### Phase 2: Rapid Triage
+- **Is the attacker blocked?** Check SA-NET-01 (CrowdSec running) + SA-NET-03 (bouncer active). If both pass, CrowdSec is handling it.
+- **Is auth intact?** Check SA-AUTH-01..03. If all pass, Authelia is still protecting services.
+- **What's the attack type?** Cross-reference CrowdSec scenario names with auth failure patterns.
+
+### Phase 3: Active Investigation
+- **Identify the attacker:** Source IPs from CrowdSec alerts and Traefik access logs.
+- **Determine scope:** Which subdomains are targeted? Single service or broad scan?
+- **Assess effectiveness:** Are they getting past CrowdSec? Are auth failures from same IPs?
+- **Timeline:** When did it start? Is it escalating or steady?
+
+```bash
+# Top attacking IPs (last hour)
+podman exec crowdsec cscli alerts list --since 1h -o json | jq '[.[].source.ip] | group_by(.) | map({ip: .[0], count: length}) | sort_by(.count) | reverse | .[0:5]'
+
+# Manual ban if needed
+podman exec crowdsec cscli decisions add -i <IP> -d 24h -R "manual ban - active attack"
+```
+
+### Phase 4: Incident-Specific Actions
+- Reference IR runbooks based on attack type.
+- If credential stuffing → IR-001 (brute force)
+- If vulnerability probe → IR-003 (critical CVE)
+- If sustained DDoS → IR-005 (DDoS/abuse)
+- Document actions taken for post-incident review.
+
+### Phase 5: Incident Report
+- Timeline of events and response.
+- Attack indicators and source attribution.
+- Effectiveness of defenses (what blocked, what got through).
+- Remediation actions taken.
+- Preventive measures for recurrence.
+
+**Expected outcome:** Attack contained by existing defenses. Report documents what happened and what (if anything) needs hardening.
+
+---
+
+## Scenario 5: Compliance-Focused Audit
+
+Pre-maintenance drift check. Ensures configuration matches expected state before making changes.
+
+### Phase 1: Compliance Data Collection
+```bash
+./scripts/security-audit.sh --category compliance --level 3 --json
+./scripts/check-drift.sh 2>&1 | head -30
+git status
+```
+
+### Phase 2: Triage
+- SA-CMP-01 (uncommitted changes): What changed? Is it intentional work-in-progress?
+- SA-CMP-02 (BTRFS NOCOW): Known accepted risk — re-validate.
+- SA-CMP-03 (filesystem permissions): Did a recent operation break ACLs?
+- SA-CMP-04 (naming conventions): Any new containers with mismatched names?
+- SA-CMP-05 (dependency declarations): Any new services missing Requires/After?
+
+### Phase 3: Investigation
+- For permission drift: run `scripts/verify-permissions.sh` and check specific failures.
+- For uncommitted changes: `git diff` — are these security-relevant configs?
+- For drift: `scripts/check-drift.sh` output — which services drifted?
+
+### Phase 4 & 5: Assessment & Report
+- Brief compliance report.
+- Clear before/after for any drift found.
+- Remediation for anything that shouldn't have drifted.
+- Explicitly note accepted risks that were re-validated.
+
+**Expected outcome:** Clean compliance state before maintenance. Any drift either fixed or documented as accepted.

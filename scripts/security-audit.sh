@@ -14,12 +14,15 @@
 #   ./scripts/security-audit.sh --compare            # Show trend vs previous audit
 #   ./scripts/security-audit.sh --quiet              # Minimal terminal output
 #
-# Exit codes: 0 = all pass, 1 = warnings, 2 = failures
+# Exit codes: 0 = all pass, 1 = warnings, 2 = failures, 3 = script error
 #
 # Status: ACTIVE
 # Updated: 2026-03-08
 
 set -euo pipefail
+
+# Exit 3 on unexpected script errors (vs 0/1/2 for audit results)
+trap 'echo "ERROR: Script failed at line $LINENO" >&2; exit 3' ERR
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINERS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -260,12 +263,16 @@ run_auth_checks() {
 
     # SA-AUTH-07 (L3): Auth failure count last 24h (informational)
     if should_run 3 auth; then
-        local fail_count=0
-        fail_count=$(journalctl --user -u authelia.service --since "24 hours ago" 2>/dev/null | grep -ci "unsuccessful\|failed\|denied" || echo "0")
+        local fail_count=0 fail_samples=""
+        fail_count=$(journalctl --user -u authelia.service --since "24 hours ago" 2>/dev/null | grep -ci "unsuccessful\|failed\|denied" || true)
+        # Capture first 3 failure messages for investigation context
+        if (( fail_count > 0 )); then
+            fail_samples=$(journalctl --user -u authelia.service --since "24 hours ago" 2>/dev/null | grep -i "unsuccessful\|failed\|denied" | head -3 | sed 's/^.*authelia[^:]*: //' | tr '\n' '; ' | sed 's/; $//' || echo "")
+        fi
         if (( fail_count > 50 )); then
-            record_check "SA-AUTH-07" 3 auth "WARN" "High auth failure count: $fail_count in 24h" "$fail_count failures"
+            record_check "SA-AUTH-07" 3 auth "WARN" "High auth failure count: $fail_count in 24h" "Samples: ${fail_samples:-none}"
         else
-            record_check "SA-AUTH-07" 3 auth "PASS" "Auth failures in 24h: $fail_count"
+            record_check "SA-AUTH-07" 3 auth "PASS" "Auth failures in 24h: $fail_count" "${fail_samples:+Samples: $fail_samples}"
         fi
     fi
 }
@@ -289,7 +296,7 @@ run_network_checks() {
     # SA-NET-02 (L1): CrowdSec CAPI connected
     if should_run 1 network; then
         local capi_ok
-        capi_ok=$(timeout 10 podman exec crowdsec cscli capi status 2>&1 | grep -c "successfully interact" || echo "0")
+        capi_ok=$(timeout 10 podman exec crowdsec cscli capi status 2>&1 | grep -c "successfully interact" || true)
         if (( capi_ok > 0 )); then
             record_check "SA-NET-02" 1 network "PASS" "CrowdSec CAPI connected"
         else
@@ -368,12 +375,15 @@ run_network_checks() {
 
     # SA-NET-09 (L3): Recent alerts summary
     if should_run 3 network; then
-        local alert_count
-        alert_count=$(timeout 10 podman exec crowdsec cscli alerts list --since 24h -o json 2>/dev/null | jq 'length' 2>/dev/null || echo "0")
+        local alert_json alert_count alert_breakdown=""
+        alert_json=$(timeout 10 podman exec crowdsec cscli alerts list --since 24h -o json 2>/dev/null || echo "[]")
+        alert_count=$(echo "$alert_json" | jq 'length' 2>/dev/null || echo "0")
+        # Get top 3 alert types for investigation context
+        alert_breakdown=$(echo "$alert_json" | jq -r '[.[].scenario // "unknown"] | group_by(.) | map({s: .[0], c: length}) | sort_by(.c) | reverse | .[0:3] | map("\(.s):\(.c)") | join(", ")' 2>/dev/null || echo "")
         if (( alert_count > 100 )); then
-            record_check "SA-NET-09" 3 network "WARN" "High CrowdSec alert volume: $alert_count in 24h"
+            record_check "SA-NET-09" 3 network "WARN" "High CrowdSec alert volume: $alert_count in 24h" "Top types: ${alert_breakdown:-unknown}"
         else
-            record_check "SA-NET-09" 3 network "PASS" "CrowdSec alerts in 24h: $alert_count"
+            record_check "SA-NET-09" 3 network "PASS" "CrowdSec alerts in 24h: $alert_count" "${alert_breakdown:+Top types: $alert_breakdown}"
         fi
     fi
 }
@@ -500,7 +510,10 @@ run_traefik_checks() {
         if (( total_header_routers >= total_routers - 2 )); then
             record_check "SA-TRF-07" 2 traefik "PASS" "Security headers on $total_header_routers/$total_routers routers"
         else
-            record_check "SA-TRF-07" 2 traefik "WARN" "Security headers coverage: $total_header_routers/$total_routers routers"
+            # Identify which routers lack security headers for investigation
+            local missing_header_routers
+            missing_header_routers=$(yq '[.http.routers | to_entries[] | select(.value.entryPoints[]? == "websecure") | select([.value.middlewares[]? | test("security-headers|hsts-only")] | any | not) | .key] | join(", ")' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "unknown")
+            record_check "SA-TRF-07" 2 traefik "WARN" "Security headers coverage: $total_header_routers/$total_routers routers" "Missing: $missing_header_routers"
         fi
     fi
 
@@ -608,13 +621,16 @@ run_container_checks() {
     fi
 
     # SA-CTR-05 (L2): No OOMKilled containers (24h)
+    # Uses specific patterns for actual OOM kills, not informational mentions
     if should_run 2 containers; then
-        local oom_count
-        oom_count=$(journalctl --user --since "24 hours ago" 2>/dev/null | grep -ci "oom\|out of memory" || echo "0")
+        local oom_count oom_details=""
+        oom_count=$(journalctl --user --since "24 hours ago" 2>/dev/null | grep -ci "oom_kill\|oom-kill\|killed process\|memory\.max\|invoked oom" || true)
         if (( oom_count == 0 )); then
-            record_check "SA-CTR-05" 2 containers "PASS" "No OOM events in 24h"
+            record_check "SA-CTR-05" 2 containers "PASS" "No OOM kills in 24h"
         else
-            record_check "SA-CTR-05" 2 containers "WARN" "OOM events in 24h: $oom_count"
+            # Extract which containers/units were involved (first 3 unique)
+            oom_details=$(journalctl --user --since "24 hours ago" 2>/dev/null | grep -i "oom_kill\|oom-kill\|killed process\|memory\.max\|invoked oom" | grep -oP '(unit|UNIT|cgroup)[= ]\K[^ ]+|container[= ]\K[^ ]+' | sort -u | head -3 | tr '\n' ', ' | sed 's/,$//' || echo "")
+            record_check "SA-CTR-05" 2 containers "WARN" "OOM kills in 24h: $oom_count" "Affected: ${oom_details:-unknown}"
         fi
     fi
 
@@ -629,7 +645,7 @@ run_container_checks() {
             local networks
             networks=$(grep "^Network=" "$quadlet" 2>/dev/null || echo "")
             local net_count
-            net_count=$(echo "$networks" | grep -c "Network=" || echo "0")
+            net_count=$(echo "$networks" | grep -c "Network=" || true)
             if (( net_count > 1 )); then
                 # Multi-network: check if reverse_proxy is present and first
                 if echo "$networks" | grep -q "reverse_proxy" 2>/dev/null; then
@@ -692,7 +708,10 @@ run_container_checks() {
         fi
     fi
 
-    # SA-CTR-09 (L2): Static IPs for multi-network containers (.69+)
+    # SA-CTR-09 (L2): Static IPs for multi-network containers on reverse_proxy (ADR-018)
+    # Only containers on reverse_proxy + other networks need static IPs, because Traefik
+    # routes to them and aardvark-dns returns IPs in undefined order across networks.
+    # Backend-only containers (e.g., nextcloud-db on nextcloud+monitoring) are fine without.
     if should_run 2 containers; then
         local missing_static=""
         for quadlet in "$QUADLETS_DIR"/*.container; do
@@ -700,16 +719,18 @@ run_container_checks() {
             local name
             name=$(basename "$quadlet" .container)
             local net_count
-            net_count=$(grep -c "^Network=" "$quadlet" 2>/dev/null || echo "0")
+            net_count=$(grep -c "^Network=" "$quadlet" 2>/dev/null || true)
             if (( net_count > 1 )); then
-                # Multi-network: should have static IPs
-                if ! grep -q "ip=10\." "$quadlet" 2>/dev/null; then
-                    missing_static="$missing_static $name"
+                # Only flag if container is on reverse_proxy (Traefik-routed)
+                if grep -q "^Network=.*reverse_proxy" "$quadlet" 2>/dev/null; then
+                    if ! grep -q "ip=10\." "$quadlet" 2>/dev/null; then
+                        missing_static="$missing_static $name"
+                    fi
                 fi
             fi
         done
         if [[ -z "$missing_static" ]]; then
-            record_check "SA-CTR-09" 2 containers "PASS" "Multi-network containers have static IPs"
+            record_check "SA-CTR-09" 2 containers "PASS" "Traefik-routed multi-network containers have static IPs"
         else
             record_check "SA-CTR-09" 2 containers "WARN" "Missing static IPs:$missing_static"
         fi
@@ -1206,7 +1227,53 @@ generate_report() {
         for cat in auth network traefik containers monitoring secrets compliance; do
             echo "| ${cat^^} | ${rpt_pass[$cat]} | ${rpt_warn[$cat]} | ${rpt_fail[$cat]} |"
         done
-        echo ""
+        # Trend section (compare with previous audit)
+        local prev_file
+        prev_file=$(ls -t "$HISTORY_DIR"/audit-*.json 2>/dev/null | head -1 || echo "")
+        if [[ -f "$prev_file" ]]; then
+            local prev_score prev_date score_delta
+            prev_score=$(jq '.security_score' "$prev_file" 2>/dev/null || echo "0")
+            prev_date=$(jq -r '.timestamp' "$prev_file" 2>/dev/null | cut -dT -f1)
+            score_delta=$(( SCORE - prev_score ))
+
+            echo "## Trend (vs $prev_date)"
+            echo ""
+            if (( score_delta > 0 )); then
+                echo "**Score: $SCORE/100** (+$score_delta from $prev_score)"
+            elif (( score_delta < 0 )); then
+                echo "**Score: $SCORE/100** ($score_delta from $prev_score)"
+            else
+                echo "**Score: $SCORE/100** (unchanged from previous)"
+            fi
+            echo ""
+
+            # New failures
+            local current_fail_ids="" prev_fail_ids=""
+            for result in "${RESULTS[@]}"; do
+                IFS='|' read -r id _ _ status _ _ <<< "$result"
+                [[ "$status" == "FAIL" ]] && current_fail_ids="$current_fail_ids $id"
+            done
+            prev_fail_ids=$(jq -r '[.checks[] | select(.status == "FAIL") | .id] | .[]' "$prev_file" 2>/dev/null || echo "")
+
+            local has_new=false has_resolved=false
+            for id in $current_fail_ids; do
+                if ! echo "$prev_fail_ids" | grep -qw "$id" 2>/dev/null; then
+                    $has_new || echo "**New failures:**"
+                    has_new=true
+                    echo "- $id"
+                fi
+            done
+            for id in $prev_fail_ids; do
+                if ! echo "$current_fail_ids" | grep -qw "$id" 2>/dev/null; then
+                    $has_resolved || echo "**Resolved:**"
+                    has_resolved=true
+                    echo "- ~~$id~~"
+                fi
+            done
+            $has_new || $has_resolved || echo "No changes in failure set."
+            echo ""
+        fi
+
         echo "---"
         echo "Generated by \`security-audit.sh --level $LEVEL --report\`"
     } > "$report_file"
