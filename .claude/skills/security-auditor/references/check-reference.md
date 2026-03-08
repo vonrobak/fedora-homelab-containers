@@ -63,7 +63,7 @@ Complete catalog of all 53 checks in `security-audit.sh`. Organized by category 
 - **Investigation:** Check which quadlet publishes the port. Remove `PublishPort=` directive.
 
 ### SA-AUTH-07 | L3 | Auth failure count (24h)
-- **Checks:** `journalctl --user -u authelia.service --since "24 hours ago"` grep for unsuccessful/failed/denied. WARN if > 50.
+- **Checks:** `journalctl --user -u authelia.service --since "24 hours ago"` grep for unsuccessful/failed/denied. WARN if > 50. Detail includes failure type counts (e.g., "unsuccessful:12, denied:3") without usernames or IPs to avoid PII in JSON output.
 - **Why:** High failure count may indicate brute force attempts, credential stuffing, or misconfigured clients. Informational — context determines severity.
 - **WARN penalty:** -1 (if > 50)
 - **False positives:** Legitimate typos, expired sessions causing re-auth, mobile app reconnections. Bot scanners typically produce consistent patterns.
@@ -238,7 +238,7 @@ Complete catalog of all 53 checks in `security-audit.sh`. Organized by category 
 - **Investigation:** Add `:Z` (private) or `:z` (shared) to the Volume= directive.
 
 ### SA-CTR-05 | L2 | No OOM kills (24h)
-- **Checks:** `journalctl --user --since "24 hours ago"` for OOM kill patterns.
+- **Checks:** `journalctl --user --since "24 hours ago"` for specific OOM patterns: `oom_kill`, `oom-kill`, `memory.max`, `invoked oom`. Excludes generic `killed process` (too broad, matches non-OOM kernel messages). Detail includes affected unit/cgroup names.
 - **Why:** OOM kills indicate memory limits are too low or memory leaks. Repeated OOM kills degrade service availability.
 - **WARN penalty:** -3
 - **False positives:** cAdvisor monitoring logs may contain informational OOM mentions that aren't actual kills. Check the specific journal entries.

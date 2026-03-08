@@ -265,9 +265,9 @@ run_auth_checks() {
     if should_run 3 auth; then
         local fail_count=0 fail_samples=""
         fail_count=$(journalctl --user -u authelia.service --since "24 hours ago" 2>/dev/null | grep -ci "unsuccessful\|failed\|denied" || true)
-        # Capture first 3 failure messages for investigation context
+        # Capture failure pattern summary (type counts only — no usernames/IPs to avoid leaking PII in JSON output)
         if (( fail_count > 0 )); then
-            fail_samples=$(journalctl --user -u authelia.service --since "24 hours ago" 2>/dev/null | grep -i "unsuccessful\|failed\|denied" | head -3 | sed 's/^.*authelia[^:]*: //' | tr '\n' '; ' | sed 's/; $//' || echo "")
+            fail_samples=$(journalctl --user -u authelia.service --since "24 hours ago" 2>/dev/null | grep -i "unsuccessful\|failed\|denied" | grep -oiP 'unsuccessful authentication|authentication failed|access denied|request denied' | sort | uniq -c | sort -rn | awk '{print $2":"$1}' | head -3 | tr '\n' ', ' | sed 's/,$//' || echo "")
         fi
         if (( fail_count > 50 )); then
             record_check "SA-AUTH-07" 3 auth "WARN" "High auth failure count: $fail_count in 24h" "Samples: ${fail_samples:-none}"
@@ -621,15 +621,15 @@ run_container_checks() {
     fi
 
     # SA-CTR-05 (L2): No OOMKilled containers (24h)
-    # Uses specific patterns for actual OOM kills, not informational mentions
+    # Only match specific OOM patterns; "killed process" excluded (too broad, matches non-OOM kernel messages)
     if should_run 2 containers; then
         local oom_count oom_details=""
-        oom_count=$(journalctl --user --since "24 hours ago" 2>/dev/null | grep -ci "oom_kill\|oom-kill\|killed process\|memory\.max\|invoked oom" || true)
+        oom_count=$(journalctl --user --since "24 hours ago" 2>/dev/null | grep -ci "oom_kill\|oom-kill\|memory\.max\|invoked oom" || true)
         if (( oom_count == 0 )); then
             record_check "SA-CTR-05" 2 containers "PASS" "No OOM kills in 24h"
         else
             # Extract which containers/units were involved (first 3 unique)
-            oom_details=$(journalctl --user --since "24 hours ago" 2>/dev/null | grep -i "oom_kill\|oom-kill\|killed process\|memory\.max\|invoked oom" | grep -oP '(unit|UNIT|cgroup)[= ]\K[^ ]+|container[= ]\K[^ ]+' | sort -u | head -3 | tr '\n' ', ' | sed 's/,$//' || echo "")
+            oom_details=$(journalctl --user --since "24 hours ago" 2>/dev/null | grep -i "oom_kill\|oom-kill\|memory\.max\|invoked oom" | grep -oP '(unit|UNIT|cgroup)[= ]\K[^ ]+|container[= ]\K[^ ]+' | sort -u | head -3 | tr '\n' ', ' | sed 's/,$//' || echo "")
             record_check "SA-CTR-05" 2 containers "WARN" "OOM kills in 24h: $oom_count" "Affected: ${oom_details:-unknown}"
         fi
     fi
