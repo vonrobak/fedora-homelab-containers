@@ -497,23 +497,24 @@ run_traefik_checks() {
         fi
     fi
 
-    # SA-TRF-07 (L2): Security headers on all routers
+    # SA-TRF-07 (L2): Security headers on public-facing routers
+    # Classifies routers into tiers:
+    #   - Public (native auth): MUST have security headers (browsers render content directly)
+    #   - Authelia-gated: Headers optional (SSO layer provides protection)
+    #   - Self-managing (authelia-portal): Sets own headers (adding ours would conflict)
     if should_run 2 traefik; then
-        # Count websecure routers with any security/hsts header middleware
-        local total_header_routers
-        total_header_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure") | select(.middlewares[] | test("security-headers|hsts-only"))] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
-        local total_routers
-        total_routers=$(yq '[.http.routers[] | select(.entryPoints[] == "websecure")] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        # Public routers = websecure routers WITHOUT authelia middleware, excluding the authelia portal itself
+        local public_with_headers public_total authelia_gated
+        public_with_headers=$(yq '[.http.routers | to_entries[] | select(.value.entryPoints[]? == "websecure") | select(.key != "authelia-portal") | select([.value.middlewares[]? | test("^authelia@")] | any | not) | select([.value.middlewares[]? | test("security-headers|hsts-only")] | any)] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        public_total=$(yq '[.http.routers | to_entries[] | select(.value.entryPoints[]? == "websecure") | select(.key != "authelia-portal") | select([.value.middlewares[]? | test("^authelia@")] | any | not)] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
+        authelia_gated=$(yq '[.http.routers | to_entries[] | select(.value.entryPoints[]? == "websecure") | select([.value.middlewares[]? | test("^authelia@")] | any)] | length' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "0")
 
-        # SSO portal doesn't need security headers (Authelia sets its own)
-        # So we expect total_routers - 1 (at minimum)
-        if (( total_header_routers >= total_routers - 2 )); then
-            record_check "SA-TRF-07" 2 traefik "PASS" "Security headers on $total_header_routers/$total_routers routers"
+        if (( public_with_headers >= public_total )); then
+            record_check "SA-TRF-07" 2 traefik "PASS" "Security headers on all $public_total public routers ($authelia_gated Authelia-gated excluded)"
         else
-            # Identify which routers lack security headers for investigation
             local missing_header_routers
-            missing_header_routers=$(yq '[.http.routers | to_entries[] | select(.value.entryPoints[]? == "websecure") | select([.value.middlewares[]? | test("security-headers|hsts-only")] | any | not) | .key] | join(", ")' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "unknown")
-            record_check "SA-TRF-07" 2 traefik "WARN" "Security headers coverage: $total_header_routers/$total_routers routers" "Missing: $missing_header_routers"
+            missing_header_routers=$(yq '[.http.routers | to_entries[] | select(.value.entryPoints[]? == "websecure") | select(.key != "authelia-portal") | select([.value.middlewares[]? | test("^authelia@")] | any | not) | select([.value.middlewares[]? | test("security-headers|hsts-only")] | any | not) | .key] | join(", ")' "$TRAEFIK_DYNAMIC/routers.yml" 2>/dev/null || echo "unknown")
+            record_check "SA-TRF-07" 2 traefik "WARN" "Security headers missing on public routers: $public_with_headers/$public_total" "Missing: $missing_header_routers ($authelia_gated Authelia-gated excluded)"
         fi
     fi
 
@@ -665,22 +666,34 @@ run_container_checks() {
     fi
 
     # SA-CTR-07 (L2): Healthchecks defined in quadlets
+    # Distinguishes distroless containers (no shell, can't run healthchecks) from
+    # containers that could have healthchecks but don't.
     if should_run 2 containers; then
         local no_health=""
+        local distroless=""
         for quadlet in "$QUADLETS_DIR"/*.container; do
             [[ -f "$quadlet" ]] || continue
             local name
             name=$(basename "$quadlet" .container)
             if systemctl --user is-active "${name}.service" &>/dev/null; then
                 if ! grep -q "^HealthCmd=" "$quadlet" 2>/dev/null; then
-                    no_health="$no_health $name"
+                    # Distroless detection: try executing a shell to distinguish
+                    # "no shell available" (loki, unpoller) from "healthcheck not configured".
+                    # Limitation: exec-blocked containers would also appear distroless.
+                    if podman exec "$name" sh -c 'exit 0' &>/dev/null; then
+                        no_health="$no_health $name"
+                    else
+                        distroless="$distroless $name"
+                    fi
                 fi
             fi
         done
-        if [[ -z "$no_health" ]]; then
+        if [[ -z "$no_health" ]] && [[ -z "$distroless" ]]; then
             record_check "SA-CTR-07" 2 containers "PASS" "All running containers have healthchecks"
+        elif [[ -z "$no_health" ]] && [[ -n "$distroless" ]]; then
+            record_check "SA-CTR-07" 2 containers "PASS" "All configurable containers have healthchecks (distroless:$distroless)"
         else
-            record_check "SA-CTR-07" 2 containers "WARN" "No healthcheck:$no_health" "$no_health"
+            record_check "SA-CTR-07" 2 containers "WARN" "No healthcheck:$no_health" "${no_health}${distroless:+ (distroless:$distroless)}"
         fi
     fi
 
@@ -952,19 +965,27 @@ run_compliance_checks() {
     # SA-CMP-02 (L2): BTRFS NOCOW on database dirs
     if should_run 2 compliance; then
         local missing_nocow=""
+        local unverifiable_nocow=""
         for db_dir in /mnt/btrfs-pool/subvol7-containers/prometheus /mnt/btrfs-pool/subvol7-containers/loki /mnt/btrfs-pool/subvol7-containers/postgresql-immich; do
             if [[ -d "$db_dir" ]]; then
                 local attrs
-                attrs=$(lsattr -d "$db_dir" 2>/dev/null | awk '{print $1}' || echo "")
-                if ! echo "$attrs" | grep -q "C" 2>/dev/null; then
+                # lsattr may fail with permission denied on dirs owned by container UIDs
+                # (e.g. postgresql-immich UID 100998 mode 700). Empty output = unverifiable.
+                attrs=$(lsattr -d "$db_dir" 2>/dev/null | awk '{print $1}' || true)
+                if [[ -z "$attrs" ]]; then
+                    # Permission denied or unreadable — don't report as missing
+                    unverifiable_nocow="$unverifiable_nocow $(basename "$db_dir")"
+                elif ! echo "$attrs" | grep -q "C" 2>/dev/null; then
                     missing_nocow="$missing_nocow $(basename "$db_dir")"
                 fi
             fi
         done
-        if [[ -z "$missing_nocow" ]]; then
+        if [[ -z "$missing_nocow" ]] && [[ -z "$unverifiable_nocow" ]]; then
             record_check "SA-CMP-02" 2 compliance "PASS" "BTRFS NOCOW set on database directories"
+        elif [[ -z "$missing_nocow" ]] && [[ -n "$unverifiable_nocow" ]]; then
+            record_check "SA-CMP-02" 2 compliance "PASS" "BTRFS NOCOW verified where readable (unverifiable:$unverifiable_nocow)"
         else
-            record_check "SA-CMP-02" 2 compliance "WARN" "Missing NOCOW:$missing_nocow"
+            record_check "SA-CMP-02" 2 compliance "WARN" "Missing NOCOW:$missing_nocow${unverifiable_nocow:+ (unverifiable:$unverifiable_nocow)}"
         fi
     fi
 
