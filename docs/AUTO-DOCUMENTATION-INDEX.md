@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-03-08 06:01:15 UTC
-**Total Documents:** 403
+**Generated:** 2026-03-09 06:02:55 UTC
+**Total Documents:** 405
 
 ---
 
@@ -199,7 +199,7 @@
 
 ---
 
-### 98-journals/ (178 documents)
+### 98-journals/ (179 documents)
 
 **Chronological project history (append-only log)**
 
@@ -207,7 +207,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (31 documents)
+### 99-reports/ (32 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -217,18 +217,16 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-03-01: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 - 2026-03-08: [automation-reference.md](20-operations/guides/automation-reference.md)
 - 2026-03-08: [security-audit.md](30-security/guides/security-audit.md)
-- 2026-03-01: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-- 2026-03-01: [2026-03-01-network-architecture-security-review.md](98-journals/2026-03-01-network-architecture-security-review.md)
-- 2026-03-01: [2026-03-01-skill-usage-report.md](99-reports/2026-03-01-skill-usage-report.md)
-- 2026-03-01: [remediation-monthly-202602.md](99-reports/remediation-monthly-202602.md)
+- 2026-03-09: [2026-03-08-security-auditor-skill-evaluation.md](98-journals/2026-03-08-security-auditor-skill-evaluation.md)
+- 2026-03-08: [2026-03-08-security-audit-investigated.md](99-reports/2026-03-08-security-audit-investigated.md)
+- 2026-03-09: [remediation-monthly-202602.md](99-reports/remediation-monthly-202602.md)
 - 2026-03-08: [security-audit-2026-03-08.md](99-reports/security-audit-2026-03-08.md)
-- 2026-03-08: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-03-08: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-03-08: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-03-08: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-03-09: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-03-09: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-03-09: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-03-09: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

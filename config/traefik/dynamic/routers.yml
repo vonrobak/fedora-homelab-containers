@@ -34,9 +34,10 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit@file
+        - rate-limit@file               # Standard rate limit (Authelia's built-in regulation handles brute-force)
         - circuit-breaker@file         # Prevent cascade failures
         - retry@file                   # Retry transient endpoint errors
+        - hsts-only@file               # HSTS + strip server headers (Authelia sets own CSP)
       tls:
         certResolver: letsencrypt
 
@@ -48,7 +49,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit-vaultwarden@file
+        - rate-limit-vaultwarden-auth@file
         - security-headers@file
       tls:
         certResolver: letsencrypt

@@ -83,21 +83,8 @@ access_control:
       subject:
         - 'group:admins'
 
-    # Tier 2: Media Services - Web UI requires auth, APIs bypass
-    # Jellyfin - Bypass API endpoints for mobile apps
-    - domain: 'jellyfin.patriark.org'
-      policy: bypass
-      resources:
-        - '^/api/.*'
-        - '^/System/.*'
-        - '^/Sessions/.*'
-        - '^/Users/.*/Authenticate'
-
-    # Jellyfin - Web UI requires two-factor
-    - domain: 'jellyfin.patriark.org'
-      policy: two_factor
-      subject:
-        - 'group:users'
+    # Tier 2: Application-Specific Access Control
+    # (Jellyfin rules removed - router uses native auth, not Authelia middleware)
 
     # Gathio Event Management - Path-based protection
     # Protect event CREATION (admin only)
@@ -116,7 +103,7 @@ access_control:
       policy: bypass
       resources:
         - '^/$'             # Homepage (if you want public event list)
-        - '^/[A-Za-z0-9_-]{10,30}.*$'  # Event/group pages by ID (e.g., /TvdMqJQ4jZfJXsUSyZgUf)
+        - '^/[A-Za-z0-9_-]{10,30}$'  # Event/group pages by ID (e.g., /TvdMqJQ4jZfJXsUSyZgUf)
         - '^/attendee/.*'   # Attendee management (RSVP, add/remove attendees)
         - '^/comment/.*'    # Comments on events
         - '^/api/.*'        # Public API endpoints

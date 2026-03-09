@@ -645,12 +645,17 @@ curl http://localhost:9091/api/health
 
 **Fix 1: Rate limit adjustment**
 
+The SSO portal uses `rate-limit@file` (100/min, 50 burst) — NOT `rate-limit-auth` (10/min).
+The stricter auth rate limit causes 429 errors because Authelia's SPA makes 5-8 requests per
+page load (state, config, WebAuthn challenge, etc.). Authelia's built-in regulation (5 failed
+logins in 2min = 5min IP ban) handles brute-force protection instead.
+
 Edit `/config/traefik/dynamic/routers.yml`:
 ```yaml
 authelia-portal:
   middlewares:
     - crowdsec-bouncer
-    - rate-limit  # Use 100 req/min, NOT rate-limit-auth (10 req/min)
+    - rate-limit  # Standard 100/min — Authelia's built-in regulation handles brute-force
 ```
 
 Traefik auto-reloads. Test in browser.
