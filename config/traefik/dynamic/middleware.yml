@@ -136,6 +136,7 @@ http:
       forwardAuth:
         address: "http://authelia:9091/api/verify?rd=https://sso.patriark.org"
         trustForwardHeader: true
+        maxResponseBodySize: 4096      # Limit ForwardAuth response (Authelia verify is ~200 bytes)
         authResponseHeaders:
           - "Remote-User"
           - "Remote-Groups"
@@ -271,11 +272,13 @@ http:
           Server: ""
           X-Powered-By: ""
 
-    # HSTS-only for Nextcloud (sets own CSP, just needs HSTS)
+    # HSTS-only for Nextcloud (sets own CSP, just needs HSTS + server header stripping)
     hsts-only:
       headers:
         customResponseHeaders:
           Strict-Transport-Security: "max-age=31536000; includeSubDomains; preload"
+          Server: ""
+          X-Powered-By: ""
 
     # ═══════════════════════════════════════════════════════════
     # IP WHITELISTING - For admin access
