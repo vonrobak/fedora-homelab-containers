@@ -42,6 +42,21 @@ http:
         certResolver: letsencrypt
 
     # Vaultwarden Password Manager (NO Authelia - has own authentication)
+    # Split into two routers: strict rate limit on auth endpoints, general on everything else.
+    # The Bitwarden extension fetches 20+ favicons simultaneously on open, which triggers
+    # the auth-tier rate limit (5/min) and blocks WebSocket/API calls. See 2026-03-12 analysis.
+    vaultwarden-auth:
+      rule: "Host(`vault.patriark.org`) && PathPrefix(`/identity/`)"
+      service: "vaultwarden"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-vaultwarden-auth@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
     vaultwarden-secure:
       rule: "Host(`vault.patriark.org`)"
       service: "vaultwarden"
@@ -49,7 +64,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit-vaultwarden-auth@file
+        - rate-limit-vaultwarden@file
         - security-headers@file
       tls:
         certResolver: letsencrypt
