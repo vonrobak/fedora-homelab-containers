@@ -45,8 +45,24 @@ http:
     # Split into two routers: strict rate limit on auth endpoints, general on everything else.
     # The Bitwarden extension fetches 20+ favicons simultaneously on open, which triggers
     # the auth-tier rate limit (5/min) and blocks WebSocket/API calls. See 2026-03-12 analysis.
+    # Priority order (implicit via rule length — longer rule = higher priority):
+    #   1. vaultwarden-auth: /identity/* (login/token exchange)
+    #   2. vaultwarden-sensitive: /api/accounts/password, /two-factor (credential mutations)
+    #   3. vaultwarden-secure: everything else (icons, WebSocket, general API)
     vaultwarden-auth:
       rule: "Host(`vault.patriark.org`) && PathPrefix(`/identity/`)"
+      service: "vaultwarden"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-vaultwarden-auth@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
+    vaultwarden-sensitive:
+      rule: "Host(`vault.patriark.org`) && (PathPrefix(`/api/accounts/password`) || PathPrefix(`/api/accounts/two-factor`) || PathPrefix(`/api/accounts/register`))"
       service: "vaultwarden"
       entryPoints:
         - websecure
