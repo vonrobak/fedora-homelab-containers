@@ -1,17 +1,17 @@
 # Fedora Homelab: Self-Hosted Services with Podman
 
-A learning-focused homelab project documenting the journey of building production-ready, self-hosted infrastructure using rootless Podman containers managed through systemd quadlets.
+Self-hosted infrastructure built for independence — replacing cloud dependencies with owned hardware, tested backups, and full data sovereignty. A learning-focused project documenting the journey of building production-ready infrastructure using rootless Podman containers managed through systemd quadlets.
 
 ## Infrastructure
 
 | Host | Platform | Role | Storage |
 |------|----------|------|---------|
-| Primary server | Fedora Workstation 43 | Container host (27 containers) | BTRFS (SSD + 14.5TB HDD pool) |
+| Primary server | Fedora Workstation 43 | Container host (30 containers) | BTRFS (SSD + 14.5TB HDD pool) |
 | Control center | Fedora Workstation 43 | Workstation | Encrypted BTRFS |
 | DNS server | Debian 12 (PiOS) | Pi-hole | SD card |
 | Laptop | macOS | Command center | Time Machine |
 
-## Services (13 groups, 27 containers)
+## Services (16 groups, 30 containers)
 
 **Core Infrastructure:**
 - **Traefik** - Reverse proxy with Let's Encrypt SSL and layered middleware
@@ -25,6 +25,13 @@ A learning-focused homelab project documenting the journey of building productio
 - **Vaultwarden** - Password manager
 - **Gathio** - Event management
 - **Homepage** - Dashboard
+
+**Audio:**
+- **Audiobookshelf** - Audiobooks, ebooks, and podcasts
+- **Navidrome** - Music streaming server
+
+**Downloads:**
+- **qBittorrent** - Torrent client
 
 **Home Automation:**
 - **Home Assistant** - Smart home hub (with Matter Server)
@@ -48,7 +55,7 @@ A learning-focused homelab project documenting the journey of building productio
 - **Security:** 7-layer defense-in-depth (CrowdSec, rate limiting, MFA, headers, network segmentation, container isolation, firewall)
 - **Networking:** 8 segmented Podman networks for trust boundaries
 - **Storage:** BTRFS with automated daily snapshots and incremental backups
-- **Monitoring:** SLO tracking (9 SLOs), burn-rate alerting, monthly compliance
+- **Monitoring:** SLO tracking (13 SLOs across 8 services), burn-rate alerting, monthly compliance
 - **Automation:** 53 systemd timers, 65+ scripts, daily autonomous operations
 
 ## Key Capabilities
@@ -60,7 +67,7 @@ A learning-focused homelab project documenting the journey of building productio
 - Circuit breaker safety controls and BTRFS snapshots before destructive actions
 
 **Security & Compliance:**
-- 40+ item automated security audits
+- 53-check automated security audits across 7 categories
 - Weekly CVE scanning with severity-based alerting
 - 10 runbooks (4 disaster recovery, 5 incident response, + procedures)
 - Validated disaster recovery with 6-minute RTO
@@ -68,7 +75,7 @@ A learning-focused homelab project documenting the journey of building productio
 **Operational Excellence:**
 - Pattern-based deployment with validation and health checks
 - SLO tracking with error budgets and burn-rate alerting
-- Comprehensive documentation (373 files, 18 ADRs)
+- 19 Architecture Decision Records documenting key choices
 - Weekly intelligence reports with health scores and predictions
 
 ## Documentation Structure
@@ -82,16 +89,16 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for conventions.
 - `40-monitoring-and-documentation/` - SLO framework, monitoring stack
 - `90-archive/` - Historical documentation
 - `97-plans/` - Strategic planning
-- `98-journals/` - Chronological learning log (156 entries)
+- `98-journals/` - Chronological learning log
 - `99-reports/` - Automated reports and snapshots
 
 ## Learning Goals
 
-1. Systems design and architecture
-2. Container orchestration with Podman
-3. Security hardening and best practices
-4. Autonomous operations and observability
-5. Documentation as a learning tool
+1. **Digital sovereignty** — owning infrastructure and data end-to-end
+2. Systems design and container orchestration with Podman
+3. Security hardening, threat modeling, and incident response
+4. Autonomous operations and observability engineering
+5. Documentation as a learning accelerator
 
 ---
 
