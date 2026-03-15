@@ -142,3 +142,6 @@ quadlets/*-test.container
 quadlets/*-experimental.container
 quadlets/*.container.bak
 quadlets/*.network.bak
+
+# Skill Creator Workspace (eval run artifacts, regenerated per iteration)
+*-workspace/

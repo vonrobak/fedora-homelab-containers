@@ -1,7 +1,7 @@
 ---
 name: skill-creator
 description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy. Also use when users say things like "turn this into a skill", "make a slash command for this", "package this workflow", or want to evaluate whether an existing skill is working well.
-argument-hint: "[create|improve|evaluate] [skill-name]"
+argument-hint: "[create|improve|benchmark] [skill-name]"
 ---
 
 # Skill Creator
@@ -325,7 +325,7 @@ Keep going until:
 
 ## Advanced: Blind comparison
 
-For rigorous A/B comparison between skill versions, read `references/blind-comparison.md`.
+For rigorous A/B comparison between skill versions, read `agents/comparator.md` and `agents/analyzer.md`. This is optional, requires subagents, and most users won't need it — the human review loop is usually sufficient.
 
 ---
 
@@ -435,7 +435,6 @@ The references/ directory has additional documentation:
 - `references/schemas.md` — JSON structures for evals.json, grading.json, etc.
 - `references/claude-ai.md` — Claude.ai platform adaptations (no subagents, no CLI)
 - `references/cowork.md` — Cowork platform adaptations (headless, static viewer)
-- `references/blind-comparison.md` — Rigorous A/B comparison between skill versions
 
 ---
 
