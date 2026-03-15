@@ -60,7 +60,9 @@ Each layer is more expensive than the last. Reject malicious IPs before wasting 
 **Static config:** `config/traefik/traefik.yml` | **Dynamic config:** `config/traefik/dynamic/` (auto-reloads):
 - `routers.yml` - All service routing rules
 - `middleware.yml` - CrowdSec, rate limiting, auth, security headers
-- `tls.yml` - TLS 1.2+ | `rate-limit.yml` - Tiered (global: 50/min, auth: 10/min, API: 30/min, public: 200/min) | `security-headers-strict.yml` - CSP/HSTS
+- `tls.yml` - TLS 1.2+
+- `rate-limit.yml` - Tiered (global: 50/min, auth: 10/min, API: 30/min, public: 200/min)
+- `security-headers-strict.yml` - CSP/HSTS
 
 ## Critical Conventions
 
@@ -88,6 +90,8 @@ Pattern-based deployment available via `homelab-deployment` skill (see `.claude/
 Most services use `:latest` tags. **Exceptions (pinned, manual upgrade only):**
 - **Databases:** PostgreSQL, MariaDB (major version migrations required)
 - **Immich:** Pinned to specific version (tight ML + postgres coupling)
+
+Rollback: BTRFS snapshots enable instant recovery if an update breaks a service.
 
 See ADR-015 for full rationale. Workflow: `scripts/update-before-reboot.sh` before DNF updates.
 
