@@ -1,3 +1,7 @@
+> **ARCHIVED:** 2026-03-15
+> **Reason:** One-time implementation summary, not a living reference
+> **Superseded by:** `docs/10-services/guides/home-assistant.md`
+
 # Home Assistant Learning Journey - Final Implementation Summary
 
 **Date:** 2026-01-31

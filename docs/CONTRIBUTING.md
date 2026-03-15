@@ -240,7 +240,7 @@ Add an archival header to the top of the moved file:
 > **Superseded by:** <Link to new doc if applicable>
 ```
 
-Do not delete documentation -- archive it. The historical context has value.
+Do not delete documentation -- archive it. The historical context has value. The archival header is the sole required metadata -- `90-archive/ARCHIVE-INDEX.md` is a legacy file and does not need updating.
 
 ---
 

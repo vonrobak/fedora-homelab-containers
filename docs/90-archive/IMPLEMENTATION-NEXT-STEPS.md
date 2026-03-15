@@ -1,3 +1,7 @@
+> **ARCHIVED:** 2026-03-15
+> **Reason:** Implementation complete, next steps either done or tracked elsewhere
+> **Superseded by:** `docs/10-services/guides/home-assistant.md`
+
 # Home Assistant Learning Journey - Implementation Complete ✅
 
 **Date:** 2026-01-31
