@@ -1,133 +1,86 @@
-# Documentation Contribution Guide
+# Documentation Standards
 
-**Last Updated:** 2025-12-18
-**Purpose:** Standards and conventions for homelab documentation
+**Primary consumer:** Claude Code sessions | **For deployment/architecture:** see `CLAUDE.md`
 
----
-
-## Quick Start
-
-**Before adding documentation:**
-1. Determine document type (guide, journal, plan, decision)
-2. Choose the appropriate directory
-3. Follow naming conventions below
-4. Place in correct location
+This guide covers when, where, and how to write documentation. It does not repeat deployment procedures or architecture details from `CLAUDE.md`.
 
 ---
 
-## Directory Structure
+## Decision Tree: Should You Document?
 
-```
-docs/
-├── 97-plans/              # Strategic planning documents
-│   └── [forward-looking plans and roadmaps]
-│
-├── 98-journals/           # Chronological project history (FLAT)
-│   └── [all dated logs, sessions, deployments]
-│
-├── 99-reports/            # System state snapshots
-│   ├── intel-*.json      # Automated health reports
-│   └── SYSTEM-STATE-*.md # Formal infrastructure snapshots
-│
-├── 00-foundation/         # Core concepts and design patterns
-│   ├── guides/           # Living reference documentation
-│   └── decisions/        # Architecture Decision Records
-│
-├── 10-services/          # Service-specific documentation
-│   ├── guides/           # Service operation guides
-│   └── decisions/        # Service architecture decisions
-│
-├── 20-operations/        # Operational procedures and architecture
-│   ├── guides/           # How-to operational documentation
-│   ├── decisions/        # Operational policy decisions
-│   └── runbooks/         # Disaster recovery procedures
-│
-├── 30-security/          # Security configuration and incidents
-│   ├── guides/           # Security procedures and policies
-│   ├── decisions/        # Security architecture decisions
-│   └── runbooks/         # Incident response procedures
-│
-├── 40-monitoring-and-documentation/
-│   ├── guides/           # Monitoring and documentation guides
-│   └── decisions/        # Monitoring decisions
-│
-└── 90-archive/           # Superseded documentation
-```
+### Step 1: Is documentation needed?
+
+**Do NOT create documentation for:**
+- Routine config changes (the commit message is sufficient)
+- Bug fixes with obvious causes (the fix speaks for itself)
+- Changes already captured by auto-generated docs (`AUTO-*.md`)
+- Information that duplicates `CLAUDE.md` content
+
+**DO create documentation for:**
+- Architectural decisions with non-obvious trade-offs (ADR)
+- Multi-step procedures someone will repeat (guide)
+- Learning or context that would be lost without a record (journal)
+- Forward-looking work with milestones to track (plan)
+- Security incidents requiring post-mortem (incident)
+
+### Step 2: What type of document?
+
+| If you need to... | Create a... | Mutable? |
+|---|---|---|
+| Explain how something works now | Guide | Yes (update in place) |
+| Record what happened and why | Journal | No (append-only) |
+| Plan future work with milestones | Plan | Yes (status updates) |
+| Justify an architectural choice | ADR | No (supersede only) |
+| Capture a system state snapshot | Report | No (immutable) |
+| Analyze a security incident | Incident post-mortem | No (immutable) |
+
+### Step 3: Where does it go?
+
+| Domain | Directory |
+|---|---|
+| Core design patterns, philosophy | `00-foundation/` |
+| Service-specific (Jellyfin, Immich, etc.) | `10-services/` |
+| Operational procedures, DR runbooks | `20-operations/` |
+| Security, incident response | `30-security/` |
+| Monitoring, SLOs, documentation meta | `40-monitoring-and-documentation/` |
+| Strategic plans, roadmaps | `97-plans/` |
+| Chronological logs, session notes | `98-journals/` |
+| Automated reports (JSON, snapshots) | `99-reports/` |
+| Superseded documentation | `90-archive/` |
+
+Within domain directories, use subdirectories: `guides/` for living docs, `decisions/` for ADRs, `runbooks/` for procedures.
 
 ---
 
 ## Document Types
 
-### 1. Guides (Living Documents)
+### Guide (living document)
 
-**Purpose:** Reference documentation that's kept current
+**Location:** `*/guides/<topic>.md` | **No date prefix**
 
-**Characteristics:**
-- Updated in place when information changes
-- No date prefix in filename
-- Focus on "how it is now" not "how it was"
-
-**Location:** `*/guides/`
-
-**Naming:**
-```
-<topic>.md
-<service-name>.md
-<procedure-name>.md
-
-Examples:
-- podman-fundamentals.md
-- jellyfin.md
-- backup-strategy.md
-- middleware-patterns.md
-```
-
-**Template:**
 ```markdown
 # <Title>
 
 **Last Updated:** YYYY-MM-DD
-**Maintainer:** <username>
 
 ## Overview
-[Current state description]
+...
 
-## [Sections as appropriate]
+## [Sections as needed]
 ...
 ```
 
----
+Update in place when information changes. Focus on current state, not history.
 
-### 2. Journal Entries (Dated Logs)
+### Journal Entry
 
-**Purpose:** Chronological record of learning, changes, and progress
+**Location:** `98-journals/YYYY-MM-DD-<description>.md`
 
-**Characteristics:**
-- Never updated after creation (append-only)
-- Always has date prefix
-- Records the journey and decision context
-- Includes session logs, deployments, strategic assessments
-
-**Location:** `98-journals/` (flat directory, all entries together)
-
-**Naming:**
-```
-YYYY-MM-DD-<description>.md
-
-Examples:
-- 2025-11-07-monitoring-deployment.md
-- 2025-10-26-middleware-ordering-experiment.md
-- 2025-11-05-project-state-crossroads.md
-- 2025-11-12-session-summary.md
-- 2025-11-09-strategic-assessment.md
-```
-
-**Template:**
 ```markdown
 # <Title>
 
 **Date:** YYYY-MM-DD
-**Context:** [Why this work was done]
+**Context:** <Why this work was done>
 
 ## What Was Done
 ...
@@ -139,31 +92,12 @@ Examples:
 ...
 ```
 
----
+Never edited after creation. Records the journey and decision context.
 
-### 3. Plans (Strategic Documents)
+### Plan
 
-**Purpose:** Forward-looking plans, proposals, and roadmaps
+**Location:** `97-plans/YYYY-MM-DD-<description>.md`
 
-**Characteristics:**
-- Living documents (status updated as work progresses)
-- Always has date prefix
-- Includes status metadata
-- Not archived automatically (user decides)
-
-**Location:** `97-plans/`
-
-**Naming:**
-```
-YYYY-MM-DD-<description>.md
-
-Examples:
-- 2025-11-22-disaster-recovery-plan.md
-- 2025-11-28-autonomous-operations-expansion.md
-- 2025-12-01-multi-service-orchestration.md
-```
-
-**Template:**
 ```markdown
 # <Plan Title>
 
@@ -172,122 +106,55 @@ Examples:
 **Last Updated:** YYYY-MM-DD
 
 ## Objective
-[What are we trying to achieve?]
+...
 
 ## Approach
-[How will we do it?]
+...
 
 ## Success Criteria
-[How will we know it worked?]
-
-## Implementation Timeline
-[Key milestones - no specific dates]
+...
 
 ## Progress Log
-[Update as work progresses]
+...
 ```
 
-**Lifecycle:**
-- Plans stay in 97-plans throughout their lifecycle
-- Update status metadata as work progresses
-- Document implementation in 98-journals
-- Archive manually when no longer relevant
+Plans stay in `97-plans/` throughout their lifecycle. Update status as work progresses.
 
----
+### Architecture Decision Record (ADR)
 
-### 4. Architecture Decision Records (ADRs)
+**Location:** `*/decisions/YYYY-MM-DD-decision-NNN-<title>.md`
 
-**Purpose:** Document significant architectural decisions and their rationale
-
-**Characteristics:**
-- Immutable once written (never edited, only superseded)
-- Numbered sequentially
-- Follows ADR format
-
-**Location:** `*/decisions/`
-
-**Naming:**
-```
-YYYY-MM-DD-decision-<number>-<title>.md
-
-Examples:
-- 2025-10-20-decision-001-rootless-containers.md
-- 2025-10-25-decision-002-traefik-over-caddy.md
-- 2025-11-06-decision-003-monitoring-stack-architecture.md
-```
-
-**Template:**
 ```markdown
-# ADR-<number>: <Title>
+# ADR-NNN: <Title>
 
 **Date:** YYYY-MM-DD
 **Status:** Accepted | Superseded by ADR-XXX | Deprecated
 
 ## Context
-[What is the issue motivating this decision?]
+...
 
 ## Decision
-[What is the change we're proposing/making?]
+...
 
 ## Consequences
-[What becomes easier or more difficult?]
+...
 
 ## Alternatives Considered
-[What other options were evaluated?]
+...
 ```
 
----
+Immutable once written. New decisions get new ADRs; never edit existing ones. Check `CLAUDE.md` for the current ADR count before numbering.
 
-### 5. Reports (System State Snapshots)
+### Report
 
-**Purpose:** Automated system reports and formal infrastructure snapshots
+**Location:** `99-reports/` | Automated JSON (`intel-*.json`) or formal snapshots (`SYSTEM-STATE-YYYY-MM-DD.md`)
 
-**Characteristics:**
-- Immutable historical record
-- Machine-generated (JSON) or formal snapshots (markdown)
-- Consumed by automation or used as authoritative reference
+Machine-generated or rare authoritative snapshots. Do not create reports for content that belongs in journals.
 
-**Location:** `99-reports/`
+### Incident Post-Mortem
 
-**Contents:**
-- **Automated JSON:** `intel-*.json`, `resource-forecast-*.json` (do not modify)
-- **Formal snapshots:** `SYSTEM-STATE-YYYY-MM-DD.md` (rare, authoritative)
+**Location:** `30-security/incidents/YYYY-MM-DD-incident-<description>.md`
 
-**Note:** Most dated markdown documentation now goes in `98-journals/`. Only use `99-reports/` for:
-- Automated system output (JSON)
-- Formal infrastructure state snapshots (rare)
-
-**Naming for formal snapshots:**
-```
-SYSTEM-STATE-YYYY-MM-DD.md
-
-Example:
-- SYSTEM-STATE-2025-11-06.md
-```
-
----
-
-### 6. Incident Post-Mortems
-
-**Purpose:** Document security incidents and operational failures
-
-**Characteristics:**
-- Written after incident resolution
-- Focus on learning, not blame
-- Include remediation and prevention
-
-**Location:** `30-security/incidents/`
-
-**Naming:**
-```
-YYYY-MM-DD-incident-<description>.md
-
-Examples:
-- 2025-11-05-incident-secrets-in-git.md
-- 2025-10-20-incident-certificate-expiry.md
-```
-
-**Template:**
 ```markdown
 # Incident: <Title>
 
@@ -296,204 +163,120 @@ Examples:
 **Status:** Resolved | Ongoing
 
 ## Summary
-[One-paragraph description]
+...
 
 ## Timeline
-[Chronological events]
+...
 
 ## Root Cause
-[What actually caused this?]
-
-## Impact
-[What was affected?]
+...
 
 ## Resolution
-[How was it fixed?]
+...
 
 ## Prevention
-[How do we prevent recurrence?]
-
-## References
-[Related documentation, commits, etc.]
+...
 ```
 
 ---
 
-## Naming Conventions Summary
+## Naming Conventions
 
 | Document Type | Date Prefix? | Location | Example |
-|---------------|--------------|----------|---------|
+|---|---|---|---|
 | Guide | No | `*/guides/` | `jellyfin.md` |
 | Journal | Yes | `98-journals/` | `2025-11-07-deployment-log.md` |
 | Plan | Yes | `97-plans/` | `2025-11-22-disaster-recovery.md` |
 | ADR | Yes | `*/decisions/` | `2025-11-07-decision-001-title.md` |
-| Report | N/A | `99-reports/` | `SYSTEM-STATE-2025-11-06.md` or `intel-*.json` |
-| Incident | Yes | `30-security/incidents` | `2025-11-23-immich-data-loss-incident.md` |
+| Report | N/A | `99-reports/` | `intel-*.json` |
+| Runbook (DR) | Yes | `20-operations/runbooks/` | `DR-001-system-ssd-failure.md` |
+| Runbook (IR) | Yes | `30-security/runbooks/` | `IR-005-network-security-event.md` |
+| Incident | Yes | `30-security/incidents/` | `2025-11-23-incident-data-loss.md` |
+
+**Filename rules:** lowercase, hyphens (no underscores or spaces), `.md` extension, descriptive but concise.
 
 ---
 
-## When to Update vs. Create New
+## Writing Standards
 
-### Update Existing (Guides)
-- Service configuration changed
-- Operational procedure improved
-- Architectural diagram needs correction
-- Best practices evolved
+**Tone:** Direct and practical. Write for someone solving a problem at 2 AM, not reading for pleasure. Lead with the answer, then explain why.
 
-### Create New (Journal/Plan/ADR)
-- Documenting a change or deployment → journal
-- Planning a new project or initiative → plan
-- Recording an architectural decision → ADR
-- Session work log → journal
-- Strategic assessment → journal
-- Learning log from experimentation → journal
+**Depth:** Include enough context to act without reading other docs. If a guide requires reading 3 other files first, it's not self-contained enough.
+
+**Formatting:**
+- Use headers to enable scanning -- someone should find their answer without reading the whole doc
+- Prefer tables and lists over prose for structured information
+- Code blocks must specify the language (`bash`, `yaml`, `markdown`)
+- Keep lines under ~120 characters for terminal readability
+
+**Cross-linking:**
+- Link to related docs using relative paths: `[SLO framework](40-monitoring-and-documentation/guides/slo-framework.md)`
+- When referencing an ADR, use the format: `ADR-NNN` (readers can find it via `docs/*/decisions/`)
+- Do not duplicate content across docs -- link instead
+
+**Metadata:** Every document needs at minimum a title (`# ...`) and a date (either in the filename or a `Last Updated` field). Guides must have `Last Updated`.
 
 ---
 
-## Archiving Documentation
+## Archiving
 
 ### When to Archive
 
-Archive a document when:
-1. **Superseded:** A newer document replaces it entirely
-2. **Obsolete:** Technology/service no longer in use
-3. **Outdated:** Information no longer relevant
-4. **Consolidated:** Multiple docs merged into one
+- **Superseded:** A newer document replaces it entirely
+- **Obsolete:** Technology/service no longer in use
+- **Consolidated:** Multiple docs merged into one
 
 ### How to Archive
 
 ```bash
-# 1. Move to archive
 git mv docs/<category>/<file>.md docs/90-archive/
-
-# 2. Add archival header to the file
 ```
 
-**Archival Header:**
+Add an archival header to the top of the moved file:
+
 ```markdown
 > **ARCHIVED:** YYYY-MM-DD
-> **Reason:** [Why archived]
-> **Superseded by:** [Link to new doc if applicable]
-> **Historical context:** [Why this doc existed]
+> **Reason:** <Why archived>
+> **Superseded by:** <Link to new doc if applicable>
 ```
 
-### Archive Index
-
-Update `docs/90-archive/ARCHIVE-INDEX.md` when archiving:
-
-```markdown
-## YYYY-MM-DD: <filename>
-- **Original location:** docs/<category>/<filename>
-- **Reason:** [Why archived]
-- **Superseded by:** [New doc if applicable]
-- **Value:** [Why keeping it in archive]
-```
+Do not delete documentation -- archive it. The historical context has value.
 
 ---
 
-## Documentation Review Checklist
+## Auto-Generated Documents
+
+The following files are regenerated by `scripts/auto-doc-orchestrator.sh` and should **never be manually edited**:
+
+- `docs/AUTO-SERVICE-CATALOG.md` -- Service inventory and status
+- `docs/AUTO-NETWORK-TOPOLOGY.md` -- Network diagrams and segmentation
+- `docs/AUTO-DEPENDENCY-GRAPH.md` -- Service dependency tree
+- `docs/AUTO-DOCUMENTATION-INDEX.md` -- Full documentation index
+
+To update these, run the orchestrator script. Manual edits will be overwritten.
+
+---
+
+## Pre-Commit Checklist
 
 Before committing documentation:
 
-- [ ] File is in correct directory (97-plans/, 98-journals/, */guides/, */decisions/)
-- [ ] Filename follows naming convention
-- [ ] Date prefix is present (if required for document type)
-- [ ] Document has required metadata header
-- [ ] Internal links are valid
-- [ ] Code examples are tested
-- [ ] Sensitive information removed (secrets, passwords, API keys)
-- [ ] CLAUDE.md updated if architecture/process changed
+- [ ] File is in the correct directory for its type
+- [ ] Filename follows naming convention (date prefix where required)
+- [ ] Required metadata is present (title, date, status for ADRs/plans)
+- [ ] No sensitive information (secrets, passwords, API keys, internal IPs)
+- [ ] Cross-links use relative paths and point to existing files
+- [ ] `CLAUDE.md` updated if architecture or process changed
 
 ---
 
-## Maintenance Schedule
+## Quick Rules
 
-### After Every Major Change
-- Update relevant guide documents
-- Create journal entry documenting the change
-- Create ADR if architectural decision was made
-
-### Monthly
-- Review guides for accuracy
-- Check for broken links
-- Identify candidates for archival
-
-### Quarterly
-- Comprehensive documentation audit
-- Update documentation index
-- Clean up archive (add metadata)
-- Review naming convention compliance
-
----
-
-## Tools and Automation
-
-### Check for Broken Links
-```bash
-# Find markdown files with links to non-existent files
-grep -r "\[.*\](.*\.md)" docs/ | while read line; do
-  # Extract file paths and verify they exist
-  # (script to be implemented)
-done
-```
-
-### List Files Violating Naming Convention
-```bash
-# Find files in 98-journals/, 97-plans/, or decisions/ without date prefix
-find docs/98-journals docs/97-plans docs/*/decisions -name "*.md" ! -name "20[0-9][0-9]-*"
-```
-
-### Identify Archival Candidates
-```bash
-# Find journal entries older than 1 year
-find docs/98-journals -name "*.md" -mtime +365
-```
-
----
-
-## Examples
-
-### Example 1: Deploying New Service
-
-**Steps:**
-1. Create deployment journal entry: `docs/98-journals/2025-11-07-vaultwarden-deployment.md`
-2. Create/update service guide: `docs/10-services/guides/vaultwarden.md`
-3. If architectural decision made: `docs/10-services/decisions/2025-11-07-decision-004-vaultwarden-database-choice.md`
-4. Update `CLAUDE.md` if needed
-
-### Example 2: Planning a New Project
-
-**Steps:**
-1. Create plan: `docs/97-plans/2025-11-22-disaster-recovery-testing.md`
-2. Add status metadata in file header
-3. As work progresses, document in journals: `docs/98-journals/2025-11-23-dr-testing-phase1.md`
-4. Update plan status when milestones complete
-
-### Example 3: Security Incident
-
-**Steps:**
-1. Create incident journal: `docs/30-security/incidents/2025-11-07-incident-exposed-api-key.md`
-2. Update security guide if process changed: `docs/30-security/guides/secrets-management.md`
-3. Create ADR if policy changed: `docs/30-security/decisions/2025-11-07-decision-005-mandatory-vault.md`
-
-### Example 4: Operational Procedure Change
-
-**Steps:**
-1. Update procedure guide: `docs/20-operations/guides/backup-restore.md`
-2. Create journal entry explaining why: `docs/98-journals/2025-11-07-backup-procedure-improvement.md`
-3. Archive old procedure if completely replaced
-
----
-
-## Questions?
-
-When in doubt:
-1. Check existing docs for similar examples
-2. Prefer creating new dated docs over updating old ones
-3. Guides are living, everything else is immutable
-4. Archive rather than delete
-5. Document decisions, not just implementations
-
----
-
-**Remember:** Documentation is a love letter to your future self. Be kind to them. 💙
+1. **Don't document what the code already says** -- commit messages and config files are documentation too
+2. **Guides are living, everything else is immutable** -- update guides in place, never edit journals/ADRs
+3. **Archive, never delete** -- future context has value
+4. **One source of truth** -- link, don't duplicate
+5. **Date prefix = immutable** -- if the filename has a date, don't edit the content
+6. **Check before creating** -- search for existing docs on the topic first
+7. **Auto-docs are hands-off** -- never manually edit `AUTO-*.md` files
+8. **When in doubt, journal it** -- a journal entry is always a safe choice for recording context
