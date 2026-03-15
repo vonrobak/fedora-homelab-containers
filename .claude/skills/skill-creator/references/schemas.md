@@ -2,6 +2,17 @@
 
 This document defines the JSON schemas used by skill-creator.
 
+## Table of Contents
+
+- [evals.json](#evalsjson) — Skill evaluation definitions
+- [history.json](#historyjson) — Version progression tracking
+- [grading.json](#gradingjson) — Grader agent output
+- [metrics.json](#metricsjson) — Executor agent metrics
+- [timing.json](#timingjson) — Wall-clock timing data
+- [benchmark.json](#benchmarkjson) — Benchmark aggregation results
+- [comparison.json](#comparisonjson) — Blind comparator output
+- [analysis.json](#analysisjson) — Post-hoc analyzer output
+
 ---
 
 ## evals.json
