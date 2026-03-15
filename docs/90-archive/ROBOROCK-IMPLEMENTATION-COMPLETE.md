@@ -1,3 +1,7 @@
+> **ARCHIVED:** 2026-03-15
+> **Reason:** One-time implementation record, automations are in Home Assistant
+> **Superseded by:** `docs/10-services/guides/home-assistant.md`
+
 # Roborock Smart Automation Implementation - COMPLETE ✅
 
 **Date:** 2026-01-31
