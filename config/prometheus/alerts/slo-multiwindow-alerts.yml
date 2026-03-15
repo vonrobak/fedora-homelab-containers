@@ -855,11 +855,15 @@ groups:
         # Nextcloud has high traffic (~4,200 req/day) so 5m window is appropriate.
         # WebDAV sync naturally produces 404s (moved/deleted files) and 401s, but
         # sustained >10% 4xx rate for 10 minutes likely indicates a real problem.
+        # Minimum traffic guard: 0.01 req/s (~5 req/5m) prevents false positives
+        # during restarts or traffic lulls where a single 4xx would show as 100%.
         expr: |
           (
             sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"4.."}[5m]))
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m])), 1e-10)
           ) > 0.10
+          and
+          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m])) > 0.01
         for: 10m
         labels:
           severity: warning
