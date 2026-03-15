@@ -60,7 +60,7 @@ Each layer is more expensive than the last. Reject malicious IPs before wasting 
 **Static config:** `config/traefik/traefik.yml` | **Dynamic config:** `config/traefik/dynamic/` (auto-reloads):
 - `routers.yml` - All service routing rules
 - `middleware.yml` - CrowdSec, rate limiting, auth, security headers
-- `tls.yml` - TLS 1.2+ | `rate-limit.yml` - Tiered limits | `security-headers-strict.yml` - CSP/HSTS
+- `tls.yml` - TLS 1.2+ | `rate-limit.yml` - Tiered (global: 50/min, auth: 10/min, API: 30/min, public: 200/min) | `security-headers-strict.yml` - CSP/HSTS
 
 ## Critical Conventions
 
@@ -76,7 +76,7 @@ Why: Separation of concerns (quadlets = deployment, Traefik = routing), centrali
 
 1. Create quadlet file in `~/containers/quadlets/` (NO Traefik labels)
 2. Add route to `config/traefik/dynamic/routers.yml` with standard middleware chain:
-   - **With Authelia:** `crowdsec-bouncer@file, rate-limit@file, authelia@file, security-headers@file`
+   - **Default (Authelia):** `crowdsec-bouncer@file, rate-limit@file, authelia@file, security-headers@file` — used by qBittorrent, Homepage, Grafana, etc.
    - **Native auth** (Jellyfin, Nextcloud, Immich, Vaultwarden, HA, Navidrome, Audiobookshelf): `crowdsec-bouncer@file, rate-limit-public@file, compression@file, security-headers@file` — NO authelia
 3. `systemctl --user daemon-reload && systemctl --user enable --now <service>.service`
 4. Verify: `curl -I https://service.patriark.org`
@@ -130,6 +130,8 @@ Check if an ADR exists before proposing changes. Reference the ADR and explain w
 
 **Quadlet changes need daemon-reload.** After editing `.container` files: `systemctl --user daemon-reload && systemctl --user restart <service>.service`.
 
+**Multi-network services get untrusted proxy errors** if Podman's DNS returns the wrong network IP. Solution: static IPs + Traefik `/etc/hosts` override (ADR-018). Already implemented for HA and other multi-network containers.
+
 ## Operations
 
 ### Key Scripts
@@ -174,6 +176,7 @@ Full script catalog: `docs/20-operations/guides/automation-reference.md`
 | Architecture overview | `docs/20-operations/guides/homelab-architecture.md` |
 | Script catalog | `docs/20-operations/guides/automation-reference.md` |
 | Autonomous ops | `docs/20-operations/guides/autonomous-operations.md` |
+| Drift detection | `docs/20-operations/guides/drift-detection-workflow.md` |
 | SLO framework | `docs/40-monitoring-and-documentation/guides/slo-framework.md` |
 | Monitoring stack | `docs/40-monitoring-and-documentation/guides/monitoring-stack.md` |
 | Security guides | `docs/30-security/guides/` (7 guides + 5 IR runbooks) |
