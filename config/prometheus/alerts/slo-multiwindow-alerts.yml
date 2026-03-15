@@ -842,7 +842,7 @@ groups:
 
   # ===========================================================================
   # COMPENSATING 4xx ALERTS for denylist services
-  # Home Assistant, Navidrome, and Audiobookshelf use code!~"5.." for SLO.
+  # Home Assistant, Nextcloud, Navidrome, and Audiobookshelf use code!~"5.." for SLO.
   # These alerts catch 4xx spikes that bypass burn rate detection:
   #   - 429: rate limiting firing (possible attack or misconfigured client)
   #   - 403: middleware misconfiguration
@@ -851,6 +851,34 @@ groups:
   - name: denylist_services_4xx_compensating
     interval: 1m
     rules:
+      - alert: NextcloudHigh4xxRate
+        # Nextcloud has high traffic (~4,200 req/day) so 5m window is appropriate.
+        # WebDAV sync naturally produces 404s (moved/deleted files) and 401s, but
+        # sustained >10% 4xx rate for 10 minutes likely indicates a real problem.
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"4.."}[5m]))
+            / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m])), 1e-10)
+          ) > 0.10
+        for: 10m
+        labels:
+          severity: warning
+          component: slo
+          service: nextcloud
+        annotations:
+          summary: "Nextcloud 4xx rate above 10% for 10 minutes"
+          description: |
+            Current 4xx rate: {{ $value | humanizePercentage }}
+
+            This alert compensates for the SLO denylist criteria (code!~"5..") which
+            excludes 4xx from burn rate detection. A sustained 4xx spike may indicate:
+            - 404: Broken WebDAV sync or misconfigured client
+            - 401: Authentication issues
+            - 429: Rate limiting (attack or sync storm)
+
+            Check Traefik access logs in Loki for code breakdown:
+              {container_name="traefik"} |= "nextcloud" | json | status >= 400 | status < 500
+
       - alert: HomeAssistantHigh4xxRate
         # Uses 30m rate window (not 5m like audio services) because HA has very low
         # Traefik traffic (~37 req/day). With a 5m window, a single 404 would show as

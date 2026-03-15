@@ -4,6 +4,7 @@
 # Updated: 2026-03-01 - Navidrome/Audiobookshelf: count only 5xx as errors (404/499 are valid responses)
 # Updated: 2026-03-01 - Home Assistant: switch to denylist (code!~"5..") - 404s at low traffic amplified error budget
 # Updated: 2026-03-01 - Nextcloud/Immich: add 499 (client disconnect) to success criteria
+# Updated: 2026-03-15 - Nextcloud: switch to denylist (code!~"5..") - WebDAV 404s are normal sync behavior
 # Purpose: Pre-calculate Service Level Indicators for efficient querying
 #
 # Note: Traefik reports WebSocket connections as code="0" (not HTTP status).
@@ -64,10 +65,12 @@ groups:
         expr: |
           sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m]))
 
-      # Nextcloud - Successful requests (2xx/3xx + WebSocket code=0 + client disconnect 499)
+      # Nextcloud - Successful requests (everything except 5xx)
+      # WebDAV sync clients legitimately produce 404s when checking for moved/deleted files.
+      # Uses denylist criteria (code!~"5..") same as Navidrome/Audiobookshelf/Home Assistant.
       - record: sli:nextcloud:requests:success
         expr: |
-          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[5m]))
+          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code!~"5.."}[5m]))
 
       # Nextcloud - Availability (use 30d SLO for current display)
       - record: sli:nextcloud:availability:ratio
@@ -286,13 +289,16 @@ groups:
           slo:authelia:availability:actual >= bool slo:authelia:availability:target
 
       # Nextcloud - 99.5% availability target over 30 days
+      # WebDAV sync produces expected 404s (moved/deleted files) and 401s.
+      # Uses denylist criteria: only 5xx counts as error.
+      # Compensating control: NextcloudHigh4xxRate alert in slo-multiwindow-alerts.yml.
       - record: slo:nextcloud:availability:target
         expr: 0.995
 
       - record: slo:nextcloud:availability:actual
         expr: |
           (
-            sum(increase(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[30d]))
+            sum(increase(traefik_service_requests_total{exported_service="nextcloud@file", code!~"5.."}[30d]))
             /
             sum(increase(traefik_service_requests_total{exported_service="nextcloud@file"}[30d]))
           )
@@ -671,13 +677,14 @@ groups:
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="authelia@file"}[30m])), 1e-10)
           / error_budget:authelia:availability:budget_total
 
-      # Nextcloud - Burn rates
+      # Nextcloud - Burn rates (denylist: only 5xx = errors)
+      # 4xx intentionally excluded: 404 (WebDAV sync tree-walking) and 401 are expected.
+      # High traffic (~4,200 req/day) means denylist is safe — 5xx-only is meaningful.
+      # Compensating control: NextcloudHigh4xxRate alert in slo-multiwindow-alerts.yml.
       - record: burn_rate:nextcloud:availability:1h
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1h]))
-            -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[1h]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"5.."}[1h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[1h])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
@@ -685,9 +692,7 @@ groups:
       - record: burn_rate:nextcloud:availability:5m
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m]))
-            -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[5m]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"5.."}[5m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
@@ -695,9 +700,7 @@ groups:
       - record: burn_rate:nextcloud:availability:6h
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[6h]))
-            -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[6h]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"5.."}[6h]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[6h])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
@@ -705,9 +708,7 @@ groups:
       - record: burn_rate:nextcloud:availability:30m
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[30m]))
-            -
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"0|2..|3..|499"}[30m]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"5.."}[30m]))
           )
           / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[30m])), 1e-10)
           / error_budget:nextcloud:availability:budget_total
