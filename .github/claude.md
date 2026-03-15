@@ -24,8 +24,9 @@ Keep reviews concise. Focus on correctness, security, and convention violations.
 - Never commit secrets (`.env`, `*.key`, `*.pem`, passwords, tokens)
 - SSO portal uses standard rate-limit (100/min) NOT rate-limit-auth — Authelia's SPA makes 5-8 requests per page load; built-in regulation handles brute-force
 
-### BTRFS
+### Filesystem & Storage
 - Database directories (Prometheus, Loki, PostgreSQL) need NOCOW (`chattr +C`)
+- Filesystem permission model (ADR-019): POSIX ACLs for container access, `chmod` resets ACL mask — re-apply ACLs after chmod
 
 ## Common Mistakes to Flag
 
