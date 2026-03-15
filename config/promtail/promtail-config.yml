@@ -53,18 +53,19 @@ scrape_configs:
       #               action: inc
 
       # METRIC 2: Immich thumbnail failures
+      # Only counts lines matching "AssetGenerateThumbnails" + "ERROR" (not all immich-server lines)
       - match:
           selector: '{syslog_id="immich-server"}'
           pipeline_name: "immich_metrics"
           stages:
             - regex:
-                expression: '.*AssetGenerateThumbnails.*ERROR.*'
+                expression: '(?P<thumb_error>AssetGenerateThumbnails.*ERROR)'
             - metrics:
                 immich_thumbnail_failures_total:
                   type: Counter
                   description: "Immich thumbnail generation failures"
+                  source: thumb_error
                   config:
-                    match_all: true
                     action: inc
 
       # METRIC 3: Nextcloud cron success counter (NOT a traditional counter - just tracks successes)
