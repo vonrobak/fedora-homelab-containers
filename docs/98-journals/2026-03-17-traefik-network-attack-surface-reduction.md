@@ -1,7 +1,7 @@
 # Traefik Network Attack Surface Reduction
 
 **Date:** 2026-03-17
-**Status:** PROPOSAL — validated through connection analysis, ready for implementation
+**Status:** IMPLEMENTED — PR #124
 **Related:** [2026-03-17-pasta-source-nat-investigation.md](2026-03-17-pasta-source-nat-investigation.md), [ADR-018](../00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 
 ---
