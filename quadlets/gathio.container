@@ -1,6 +1,6 @@
 [Unit]
 Description=Gathio Event Management Platform
-After=network-online.target gathio-db.service reverse_proxy-network.service monitoring-network.service
+After=network-online.target gathio-db.service reverse_proxy-network.service
 Wants=network-online.target
 Requires=gathio-db.service
 
@@ -32,7 +32,6 @@ Volume=%h/containers/data/gathio/images:/app/public/events:Z
 # Static IPs assigned to ensure consistent DNS resolution
 Network=systemd-reverse_proxy:ip=10.89.2.84
 Network=systemd-gathio:ip=10.89.0.84
-Network=systemd-monitoring:ip=10.89.4.84
 
 # DNS
 DNS=192.168.1.69

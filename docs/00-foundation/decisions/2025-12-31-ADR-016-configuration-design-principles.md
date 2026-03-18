@@ -694,6 +694,48 @@ ContainerName=container-abc123
 
 ---
 
+## Principle 6a: Network Minimalism
+
+### Statement
+
+**Every network membership must be justified by an actual service dependency. Do not assign networks speculatively.**
+
+### Rationale
+
+Each Podman network a container joins creates a routable interface inside its network namespace. A compromised container can open connections to any service on any of its networks. Network membership is therefore an extension of attack surface and must earn its place.
+
+**Justification categories:**
+- **reverse_proxy:** Service has external routing via Traefik, or needs internet access (default route)
+- **monitoring:** Prometheus scrapes metrics directly from this service
+- **auth_services:** Service participates in the authentication flow (Authelia ↔ Redis)
+- **Domain-specific** (nextcloud, photos, media_services, etc.): Service requires direct communication with other services on that network
+
+**This principle complements ADR-018:** ADR-018 says "if a service is on multiple networks, use static IPs." This principle says "before assigning multiple networks, justify each one."
+
+### Implementation
+
+**When deploying a new service,** only add networks where the service has a direct dependency. Do not add monitoring just because other services have it — verify that Prometheus has a scrape job for it.
+
+**When auditing existing services,** check each network membership against the justification categories above. Remove memberships that exist only as historical artifact.
+
+### Validation (2026-03-18)
+
+Applied this principle to audit all services on the monitoring network. Removed 7 services that had no Prometheus scrape job and no other monitoring dependency:
+
+| Service | Removed from | Reason |
+|---------|-------------|--------|
+| traefik | auth_services, monitoring | Metrics reachable via reverse_proxy; Authelia reachable via /etc/hosts override |
+| nextcloud | monitoring | Prometheus scraping explicitly removed (ServerInfo requires auth) |
+| nextcloud-db | monitoring | No Prometheus scrape job |
+| nextcloud-redis | monitoring | No Prometheus scrape job |
+| jellyfin | monitoring | No Prometheus scrape job |
+| immich-server | monitoring | No Prometheus scrape job |
+| gathio | monitoring | No Prometheus scrape job |
+
+**Impact:** Eliminated 12 unnecessary network interfaces. Zero effect on SLOs, Grafana dashboards, or Prometheus scraping — all observability uses Traefik metrics (about services) and cAdvisor metrics (about containers), both of which remain on the monitoring network.
+
+---
+
 ## Consequences
 
 ### Positive Outcomes

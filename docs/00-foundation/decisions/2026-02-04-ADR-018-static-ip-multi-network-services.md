@@ -63,7 +63,7 @@ Each service uses a **consistent last octet across all networks** for easy ident
 
 | IP | Service | Networks |
 |---|---|---|
-| .69 | traefik | reverse_proxy, auth_services, monitoring |
+| .69 | traefik | reverse_proxy |
 | .70 | crowdsec | reverse_proxy |
 | .71 | vaultwarden | reverse_proxy |
 | .72 | alertmanager | reverse_proxy, monitoring |
@@ -74,11 +74,11 @@ Each service uses a **consistent last octet across all networks** for easy ident
 | .77 | grafana | reverse_proxy, monitoring |
 | .78 | authelia | reverse_proxy, auth_services |
 | .79 | prometheus | reverse_proxy, monitoring |
-| .80 | immich-server | reverse_proxy, photos, monitoring |
-| .81 | jellyfin | reverse_proxy, media_services, monitoring |
-| .82 | nextcloud | reverse_proxy, nextcloud, monitoring |
+| .80 | immich-server | reverse_proxy, photos |
+| .81 | jellyfin | reverse_proxy, media_services |
+| .82 | nextcloud | reverse_proxy, nextcloud |
 | .83 | loki | reverse_proxy, monitoring |
-| .84 | gathio | reverse_proxy, gathio, monitoring |
+| .84 | gathio | reverse_proxy, gathio |
 | .85 | qbittorrent | reverse_proxy |
 | .86 | alert-discord-relay | reverse_proxy, monitoring |
 | .87 | unpoller | reverse_proxy, monitoring |
@@ -156,3 +156,27 @@ the static IPs (.8-.16) were in the dynamic IPAM allocation range.
 - PR #109: Static IP .69+ convention and IPAM lease range enforcement
 - Podman issue #14262: DNS nameserver order is random (WONT_FIX)
 - Podman issue #12850: Network attachment order undefined
+
+### 2026-03-18: Network Minimalism — Attack Surface Reduction
+
+**Problem:** Traefik was on 3 networks (reverse_proxy, auth_services, monitoring) but only needed
+reverse_proxy. Six application services (nextcloud, nextcloud-db, nextcloud-redis, jellyfin,
+immich-server, gathio) were on monitoring with no Prometheus scrape job — historical artifact.
+
+A compromised Traefik container had direct L3 access to 6 backend services (redis-authelia,
+nextcloud-db, nextcloud-redis, node_exporter, cadvisor, promtail) that have no authentication
+and rely entirely on network isolation for security.
+
+**Principle established (ADR-016 Principle 6a):** Every network membership must be justified by
+an actual service dependency. Network membership is an extension of attack surface.
+
+**Changes:**
+1. Traefik removed from auth_services and monitoring (metrics reachable via reverse_proxy)
+2. Six application services removed from monitoring (no Prometheus scrape jobs)
+3. Allocation table updated to reflect reduced network memberships
+4. ADR-016 updated with Network Minimalism principle (6a)
+
+**Verification:** All Prometheus targets healthy, all Grafana dashboards unaffected, all SLO
+recording rules use Traefik metrics (not direct service scrapes), all services accessible via Traefik.
+
+**Investigation:** `docs/98-journals/2026-03-17-traefik-network-attack-surface-reduction.md`

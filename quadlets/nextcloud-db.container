@@ -22,7 +22,6 @@ Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud-db/data:/var/lib/mysql:Z
 
 # Networks
 Network=systemd-nextcloud
-Network=systemd-monitoring
 
 # Health check
 HealthCmd=healthcheck.sh --connect --innodb_initialized
