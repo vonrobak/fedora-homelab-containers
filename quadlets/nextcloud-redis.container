@@ -18,7 +18,6 @@ Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud-redis/data:/data:Z
 
 # Networks
 Network=systemd-nextcloud
-Network=systemd-monitoring
 
 # Health check
 HealthCmd=sh -c 'redis-cli --no-auth-warning -a "$(cat /run/secrets/nextcloud_redis_password)" ping'

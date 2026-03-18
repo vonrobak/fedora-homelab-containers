@@ -1,8 +1,8 @@
 [Unit]
 Description=Traefik Reverse Proxy
-After=network-online.target reverse_proxy-network.service auth_services-network.service monitoring-network.service
+After=network-online.target reverse_proxy-network.service
 Wants=network-online.target
-Requires=reverse_proxy-network.service auth_services-network.service monitoring-network.service
+Requires=reverse_proxy-network.service
 
 [Container]
 Image=docker.io/library/traefik:latest
@@ -10,13 +10,11 @@ ContainerName=traefik
 HostName=traefik
 AutoUpdate=registry
 Network=systemd-reverse_proxy:ip=10.89.2.69
-Network=systemd-auth_services:ip=10.89.3.69
-Network=systemd-monitoring:ip=10.89.4.69
 PublishPort=80:80
 PublishPort=443:443
 # API/dashboard on port 8080 NOT published to host - only accessible via:
 #   - Traefik route: traefik.patriark.org (Authelia-protected)
-#   - Monitoring network: 10.89.4.69:8080 (Prometheus scraping)
+#   - reverse_proxy network: 10.89.2.69:8080 (Prometheus scraping)
 Volume=%h/containers/config/traefik/traefik.yml:/etc/traefik/traefik.yml:ro,Z
 Volume=%h/containers/config/traefik/dynamic:/etc/traefik/dynamic:ro,Z
 Volume=%h/containers/config/traefik/letsencrypt:/letsencrypt:Z

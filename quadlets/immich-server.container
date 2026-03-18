@@ -18,7 +18,6 @@ AutoUpdate=registry
 # Static IPs assigned to ensure consistent DNS resolution
 Network=systemd-reverse_proxy:ip=10.89.2.80
 Network=systemd-photos:ip=10.89.5.80
-Network=systemd-monitoring:ip=10.89.4.80
 
 # Environment - Database
 Environment=DB_HOSTNAME=postgresql-immich
