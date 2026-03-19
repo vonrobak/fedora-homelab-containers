@@ -179,7 +179,7 @@ Completed the follow-up audit. Home Assistant and Navidrome were the last two ap
 **Changes:**
 - Removed `Network=systemd-monitoring` from `home-assistant.container` and `navidrome.container`
 - Updated Prometheus target for Navidrome from `10.89.4.75:4533` → `10.89.2.75:4533`
-- Home Assistant target unchanged (uses DNS hostname, now resolves only to reverse_proxy IP)
+- Updated Prometheus target for Home Assistant from `home-assistant:8123` → `10.89.2.76:8123` (ADR-018 static IP pattern — HA remains multi-network, so hostname resolution is non-deterministic)
 
 **Verified:** Both Prometheus targets report `health=up`. Traefik backend routing unaffected.
 
