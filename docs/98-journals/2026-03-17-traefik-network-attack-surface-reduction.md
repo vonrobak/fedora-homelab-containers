@@ -169,3 +169,18 @@ Several application services (nextcloud, home-assistant, jellyfin, immich, gathi
 2. **Follow-up: Audit all application services on monitoring.** Determine whether each application's monitoring network membership serves a real purpose or is historical artifact. Remove where unnecessary.
 
 3. **Longer-term: Evaluate per-service scraping architecture.** If Prometheus needs metrics from application services, consider whether cAdvisor + Traefik metrics provide sufficient observability without requiring direct network access to every application.
+
+---
+
+## Follow-up: Application Services Removed from Monitoring (2026-03-19)
+
+Completed the follow-up audit. Home Assistant and Navidrome were the last two application services on the monitoring network without justification. Prometheus (which is on both reverse_proxy and monitoring) can scrape them via their reverse_proxy IPs — no monitoring membership needed.
+
+**Changes:**
+- Removed `Network=systemd-monitoring` from `home-assistant.container` and `navidrome.container`
+- Updated Prometheus target for Navidrome from `10.89.4.75:4533` → `10.89.2.75:4533`
+- Home Assistant target unchanged (uses DNS hostname, now resolves only to reverse_proxy IP)
+
+**Verified:** Both Prometheus targets report `health=up`. Traefik backend routing unaffected.
+
+The other services listed in the broader audit (nextcloud, immich, jellyfin, gathio) had already been removed from monitoring prior to this entry. All application service monitoring network memberships are now resolved.

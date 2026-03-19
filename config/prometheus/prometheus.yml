@@ -106,11 +106,10 @@ scrape_configs:
   # Nextcloud availability monitored via Traefik metrics (SLO recording rules)
 
   # Navidrome - Music Streaming Server (native Prometheus metrics)
-  # Static IP: Navidrome is multi-network (reverse_proxy + monitoring).
-  # Hostname resolution via aardvark-dns may return the wrong IP (ADR-018).
+  # Scraped via reverse_proxy network (Navidrome no longer on monitoring)
   - job_name: 'navidrome'
     static_configs:
-      - targets: ['10.89.4.75:4533']
+      - targets: ['10.89.2.75:4533']
         labels:
           instance: 'fedora-htpc'
           service: 'navidrome'
