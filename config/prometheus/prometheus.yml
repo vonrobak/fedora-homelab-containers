@@ -115,9 +115,11 @@ scrape_configs:
           service: 'navidrome'
 
   # Home Assistant - Home Automation Hub
+  # Static IP: HA is multi-network (reverse_proxy + home_automation),
+  # hostname resolution non-deterministic per ADR-018
   - job_name: 'home-assistant'
     static_configs:
-      - targets: ['home-assistant:8123']
+      - targets: ['10.89.2.76:8123']
         labels:
           instance: 'fedora-htpc'
           service: 'home-assistant'
