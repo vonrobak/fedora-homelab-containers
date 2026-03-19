@@ -1,8 +1,8 @@
 [Unit]
 Description=Home Assistant - Home Automation Hub
-After=network-online.target reverse_proxy-network.service home_automation-network.service monitoring-network.service
+After=network-online.target reverse_proxy-network.service home_automation-network.service
 Wants=network-online.target
-Requires=reverse_proxy-network.service home_automation-network.service monitoring-network.service
+Requires=reverse_proxy-network.service home_automation-network.service
 
 [Container]
 Image=ghcr.io/home-assistant/home-assistant:stable
@@ -14,7 +14,6 @@ AutoUpdate=registry
 # Static IPs assigned to ensure consistent routing (see ADR-018)
 Network=systemd-reverse_proxy:ip=10.89.2.76
 Network=systemd-home_automation:ip=10.89.6.76
-Network=systemd-monitoring:ip=10.89.4.76
 
 # Environment
 Environment=TZ=Europe/Oslo

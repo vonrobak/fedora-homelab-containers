@@ -21,9 +21,8 @@ ContainerName=navidrome
 HostName=navidrome
 AutoUpdate=registry
 
-# Networks (reverse_proxy FIRST for internet access, monitoring for Prometheus scraping)
+# Networks (reverse_proxy FIRST for internet access)
 Network=systemd-reverse_proxy:ip=10.89.2.75
-Network=systemd-monitoring:ip=10.89.4.75
 
 # Environment
 Environment=TZ=Europe/Oslo
