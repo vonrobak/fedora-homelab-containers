@@ -31,7 +31,8 @@ fail() { echo -e "${RED}❌ FAIL:${NC} $1"; ((FAIL++)) || true; }
 info() { echo -e "${BLUE}ℹ️  INFO:${NC} $1"; }
 
 POOL="/mnt/btrfs-pool"
-NC_UID=100032  # Nextcloud www-data (container UID 33 + 100000 offset)
+NC_UID=100032   # Nextcloud www-data (container UID 33 + subuid base 100000)
+QB_UID=100999   # qBittorrent abc user (container UID 1000 + subuid base 100000 - 1)
 DOWNLOADS="$POOL/subvol6-tmp/Downloads"
 
 echo ""
@@ -80,6 +81,8 @@ ACL_PATHS=(
     "$DOWNLOADS:Downloads"
 )
 
+HOST_UID=1000  # patriark
+
 for entry in "${ACL_PATHS[@]}"; do
     IFS=':' read -r path name <<< "$entry"
     if [[ ! -d "$path" ]]; then
@@ -87,17 +90,70 @@ for entry in "${ACL_PATHS[@]}"; do
         continue
     fi
 
-    # Check access ACL
+    # Check Nextcloud (100032) access + default ACL
     ACCESS_ACL=$(getfacl -c "$path" 2>/dev/null | grep "^user:$NC_UID:" || true)
-    # Check default ACL
     DEFAULT_ACL=$(getfacl -c "$path" 2>/dev/null | grep "^default:user:$NC_UID:" || true)
 
     if [[ -n "$ACCESS_ACL" ]] && [[ -n "$DEFAULT_ACL" ]]; then
-        pass "$name: ACL access($ACCESS_ACL) + default($DEFAULT_ACL)"
+        pass "$name: NC ACL access($ACCESS_ACL) + default($DEFAULT_ACL)"
     elif [[ -n "$ACCESS_ACL" ]]; then
-        warn "$name: has access ACL but missing default ACL"
+        warn "$name: has NC access ACL but missing default ACL"
     else
         fail "$name: missing ACL for user:$NC_UID"
+    fi
+
+    # Check patriark default ACL (without this, subdirs created by Nextcloud
+    # are unwritable by host user — only gets group r-x)
+    # Match by UID or username since getfacl resolves names
+    HOST_USER=$(id -nu "$HOST_UID" 2>/dev/null || echo "$HOST_UID")
+    PATRIARK_DEFAULT=$(getfacl -c "$path" 2>/dev/null | grep -E "^default:user:($HOST_UID|$HOST_USER):" || true)
+    if [[ -n "$PATRIARK_DEFAULT" ]]; then
+        pass "$name: host user default ACL ($PATRIARK_DEFAULT)"
+    else
+        fail "$name: missing default ACL for patriark — NC-created subdirs will be read-only for host user"
+    fi
+
+    # Spot-check: sample subdirs for missing default ACL inheritance
+    MISSING_INHERIT=0
+    while IFS= read -r subdir; do
+        if ! getfacl -c "$subdir" 2>/dev/null | grep -qE "^default:user:($HOST_UID|$HOST_USER):"; then
+            ((MISSING_INHERIT++)) || true
+        fi
+    done < <(find "$path" -maxdepth 2 -mindepth 1 -type d 2>/dev/null | head -20)
+    if [[ "$MISSING_INHERIT" -gt 0 ]]; then
+        warn "$name: $MISSING_INHERIT subdirs missing d:u:patriark:rwx (run: sudo find $path -type d -exec setfacl -m d:u:patriark:rwx {} +)"
+    elif [[ "$MISSING_INHERIT" -eq 0 ]]; then
+        pass "$name: subdirectory default ACL inheritance OK"
+    fi
+done
+
+# ============================================================================
+# Check 2b: POSIX ACLs for qBittorrent
+# ============================================================================
+echo ""
+echo "[2b] Checking POSIX ACLs for qBittorrent (user:$QB_UID)..."
+
+QB_ACL_PATHS=(
+    "$POOL/subvol4-multimedia:subvol4-multimedia"
+    "$DOWNLOADS:Downloads"
+)
+
+for entry in "${QB_ACL_PATHS[@]}"; do
+    IFS=':' read -r path name <<< "$entry"
+    if [[ ! -d "$path" ]]; then
+        warn "$name not found"
+        continue
+    fi
+
+    ACCESS_ACL=$(getfacl -c "$path" 2>/dev/null | grep "^user:$QB_UID:" || true)
+    DEFAULT_ACL=$(getfacl -c "$path" 2>/dev/null | grep "^default:user:$QB_UID:" || true)
+
+    if [[ -n "$ACCESS_ACL" ]] && [[ -n "$DEFAULT_ACL" ]]; then
+        pass "$name: QB ACL access($ACCESS_ACL) + default($DEFAULT_ACL)"
+    elif [[ -n "$ACCESS_ACL" ]]; then
+        warn "$name: has QB access ACL but missing default ACL"
+    else
+        fail "$name: missing ACL for user:$QB_UID (qBittorrent cannot write)"
     fi
 done
 
@@ -192,6 +248,32 @@ else
             fail "Nextcloud www-data cannot write to $name ($mount_path)"
             # Clean up just in case touch succeeded but rm failed
             podman exec nextcloud rm -f "$TEST_FILE" 2>/dev/null || true
+        fi
+    done
+fi
+
+# ============================================================================
+# Check 7: qBittorrent abc write test
+# ============================================================================
+echo ""
+echo "[7] Checking qBittorrent write access..."
+
+if ! podman ps --format '{{.Names}}' 2>/dev/null | grep -q '^qbittorrent$'; then
+    warn "qBittorrent container not running, skipping write tests"
+else
+    QB_MOUNTS=(
+        "/mnt/btrfs-pool/subvol4-multimedia:Multimedia"
+        "/mnt/btrfs-pool/subvol6-tmp/Downloads:Downloads"
+    )
+    for entry in "${QB_MOUNTS[@]}"; do
+        IFS=':' read -r mount_path name <<< "$entry"
+        TEST_FILE="$mount_path/.perm-test-$$"
+        if podman exec -u abc qbittorrent touch "$TEST_FILE" 2>/dev/null && \
+           podman exec -u abc qbittorrent rm -f "$TEST_FILE" 2>/dev/null; then
+            pass "qBittorrent abc can write to $name ($mount_path)"
+        else
+            fail "qBittorrent abc cannot write to $name ($mount_path)"
+            podman exec qbittorrent rm -f "$TEST_FILE" 2>/dev/null || true
         fi
     done
 fi
