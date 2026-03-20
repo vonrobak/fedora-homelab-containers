@@ -22,11 +22,15 @@ Export all 27 Podman secrets to an encrypted migration bundle:
 
 ```bash
 # scripts/migration/export-secrets.sh
+# Use tmpfs to avoid secrets touching persistent storage
+TMPDIR=$(mktemp -d --tmpdir=/dev/shm migration-secrets.XXXXXX)
+chmod 700 "$TMPDIR"
+trap 'rm -rf "$TMPDIR"' EXIT
+
 podman secret ls --format '{{.Name}}' | while read name; do
-  podman secret inspect "$name" --showsecret | jq -r '.SecretData' | base64 -d > "/tmp/migration-secrets/$name"
+  podman secret inspect "$name" --showsecret | jq -r '.SecretData' | base64 -d > "$TMPDIR/$name"
 done
-tar czf - /tmp/migration-secrets | gpg --symmetric > migration-secrets.tar.gz.gpg
-rm -rf /tmp/migration-secrets
+tar czf - -C "$(dirname "$TMPDIR")" "$(basename "$TMPDIR")" | gpg --symmetric > migration-secrets.tar.gz.gpg
 ```
 
 ### 1.2 Database Dumps (stop services first)
@@ -92,6 +96,7 @@ storage:
     - device: /dev/disk/by-id/<DISK-ID>   # Existing BTRFS pool — do NOT format
       path: /mnt/btrfs-pool
       format: btrfs
+      wipe_filesystem: false               # CRITICAL: preserve existing data
       mount_options: [compress=zstd:3, noatime, space_cache=v2]
       with_mount_unit: true
 
@@ -132,8 +137,16 @@ storage:
             <service name="ssh"/>
             <port protocol="tcp" port="80"/>
             <port protocol="tcp" port="443"/>
-            <port protocol="tcp" port="8096"/>
-            <port protocol="tcp" port="8123"/>
+            <!-- Jellyfin and HA ports are LAN-only; do NOT expose to internet -->
+            <!-- Port forward only 80/443 on UDM Pro. 8096/8123 for local network access only -->
+            <rule family="ipv4">
+              <source address="192.168.1.0/24"/>
+              <port protocol="tcp" port="8096"/>
+            </rule>
+            <rule family="ipv4">
+              <source address="192.168.1.0/24"/>
+              <port protocol="tcp" port="8123"/>
+            </rule>
             <port protocol="udp" port="7359"/>
           </zone>
 
@@ -323,7 +336,7 @@ After=network-online.target reverse_proxy-network.service
 
 [Pod]
 PodName=nextcloud-pod
-Network=systemd-reverse_proxy:ip=10.89.2.82
+Network=reverse_proxy:ip=10.89.2.82
 
 [Install]
 WantedBy=default.target
@@ -382,11 +395,15 @@ git clone <repo-url> /var/home/patriark/containers
 ### 5.3 Secret Re-Creation
 
 ```bash
-gpg --decrypt migration-secrets.tar.gz.gpg | tar xz -C /tmp/
-for secret_file in /tmp/migration-secrets/*; do
+# Use tmpfs to avoid plaintext secrets on persistent storage
+TMPDIR=$(mktemp -d --tmpdir=/dev/shm migration-import.XXXXXX)
+chmod 700 "$TMPDIR"
+trap 'rm -rf "$TMPDIR"' EXIT
+
+gpg --decrypt migration-secrets.tar.gz.gpg | tar xz -C "$TMPDIR"
+for secret_file in "$TMPDIR"/migration-secrets.*/*; do
   podman secret create "$(basename "$secret_file")" "$secret_file"
 done
-rm -rf /tmp/migration-secrets
 ```
 
 ### 5.4 Database Restoration

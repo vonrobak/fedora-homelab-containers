@@ -4,7 +4,7 @@
 **Created:** 2026-03-19
 **Target:** NixOS (replacing Fedora Workstation 43)
 **Scope:** Full rebuild with best-tool-for-NixOS evaluation per service category
-**Prerequisite:** ADR-020 (NixOS Migration Decision) required before execution
+**Prerequisite:** ADR-020/021 required before execution (supersedes ADR-001, ADR-016, ADR-019)
 
 ---
 
@@ -403,9 +403,33 @@ nixos-homelab/
       "/var/lib/crowdsec/config:/etc/crowdsec"
       "/var/log/nginx:/var/log/nginx:ro"
     ];
-    ports = [ "127.0.0.1:8080:8080" ];
+    ports = [ "127.0.0.1:8180:8080" ];   # Port 8080 avoided — Nextcloud module uses it
     extraOptions = [ "--memory=512m" ];
   };
+
+  # CrowdSec Nginx Bouncer integration
+  # Option A (recommended): Use OpenResty (Nginx + Lua) for native CrowdSec bouncer
+  # Option B: Use cs-nginx-bouncer standalone binary with auth_request
+  #
+  # For Option A, replace pkgs.nginxMainline with pkgs.openresty in nginx.nix
+  # and add the lua-resty-crowdsec module. This provides the same inline
+  # request-blocking that the Traefik plugin offered.
+  #
+  # For Option B, run cs-nginx-bouncer as a systemd service on port 8280,
+  # then add auth_request to each Nginx vhost (similar to Authelia pattern):
+  #   auth_request /crowdsec;
+  #   location = /crowdsec { proxy_pass http://127.0.0.1:8280/; internal; }
+  #
+  # Implementation note: The CrowdSec bouncer MUST be the first auth_request
+  # in each vhost (before Authelia) to preserve fail-fast middleware ordering.
+  # Combined pattern per protected location:
+  #   auth_request /crowdsec;        # Layer 1: IP reputation (fast)
+  #   auth_request /authelia;        # Layer 2: SSO validation (expensive)
+  #
+  # Security trade-off: Without the bouncer integration, CrowdSec only provides
+  # threat intelligence (ban lists) but cannot actively block requests at the
+  # Nginx layer. fail2ban provides some coverage but lacks CrowdSec's global
+  # threat intel feeds. Both options above restore full blocking capability.
 }
 ```
 
@@ -488,7 +512,7 @@ nixos-homelab/
 | **Promtail** | Native module | Reads journald directly (no journal-export workaround) | 1 |
 | **Alertmanager** | Native module | Declarative config, existing YAML reusable | 1 |
 | **Node Exporter** | Native module | Zero-config native module | 1 |
-| **cAdvisor** | **Drop** | Most services native; use systemd collector instead | 1 |
+| **cAdvisor** | **Drop** (see note) | Most services native; use systemd collector instead | 1 |
 | **UnPoller** | OCI container | No NixOS module | 0 |
 | **Alert Discord Relay** | Native systemd | Custom binary → Nix derivation + DynamicUser | 1 |
 | **Nextcloud** | Native module | Flagship module: handles PHP-FPM, MariaDB, Redis, cron | 3 |
@@ -505,6 +529,12 @@ nixos-homelab/
 | **Homepage** | OCI container | No NixOS module | 0 |
 
 **Result:** 30 containers → 12 OCI containers + 12 native services. 60% container reduction.
+
+**cAdvisor drop impact:** Existing Grafana dashboards use cAdvisor metrics (`container_cpu_usage_seconds_total`, `container_memory_usage_bytes`, etc.) for the 12 remaining OCI containers. Two options:
+1. **Keep cAdvisor as OCI** for the remaining containers (simple, dashboards work unchanged)
+2. **Port dashboards** to use `systemd` collector metrics for native services + Podman's built-in metrics endpoint for OCI containers. This requires rewriting dashboard queries.
+
+Recommendation: Keep cAdvisor initially for the 12 OCI containers, retire it only after dashboards are ported.
 
 ### 4.2 Monitoring Stack (All Native)
 
@@ -553,7 +583,7 @@ nixos-homelab/
       { job_name = "loki";
         static_configs = [{ targets = [ "127.0.0.1:3100" ]; }]; }
       { job_name = "crowdsec";
-        static_configs = [{ targets = [ "127.0.0.1:6060" ]; }]; }
+        static_configs = [{ targets = [ "127.0.0.1:6060" ]; }]; }  # CrowdSec metrics on 6060, LAPI on 8180
       { job_name = "unpoller";
         static_configs = [{ targets = [ "127.0.0.1:9130" ]; }]; }
       { job_name = "navidrome";
@@ -814,7 +844,15 @@ in {
 
   hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs; [ libva libva-utils mesa ];
+    extraPackages = with pkgs; [
+      mesa                    # OpenGL + Vulkan
+      libva                   # VA-API runtime
+      vaapiVdpau              # VDPAU backend for VA-API
+      # Note: libva-utils is diagnostic only (vainfo) — install in systemPackages, not here
+      # For AMD Radeon Vega: mesa provides VAAPI through radeonsi driver
+      # If hardware transcoding fails, also try: amdvlk, rocmPackages.clr
+      # Verify with: vainfo --display drm --device /dev/dri/renderD128
+    ];
   };
 
   # Bind-mount media libraries (read-only)
@@ -900,6 +938,15 @@ virtualisation.oci-containers.containers.audiobookshelf = {
 };
 
 # Home Assistant (host network for mDNS/SSDP)
+# SECURITY TRADE-OFF: --network=host gives HA full host network access.
+# This is a regression from the current setup (isolated home_automation network).
+# Required because mDNS/SSDP device discovery needs broadcast/multicast on the
+# LAN interface, which container networks can't provide.
+# Mitigations:
+#   - Vet HACS plugins carefully — they run with host network access
+#   - HA's built-in auth + Authelia on the Nginx route limits remote access
+#   - Consider macvlan network as a future alternative (gives HA its own LAN IP
+#     without full host access, but requires UDM Pro DHCP reservation)
 virtualisation.oci-containers.containers.home-assistant = {
   image = "ghcr.io/home-assistant/home-assistant:stable";
   environment.TZ = "Europe/Oslo";
@@ -995,16 +1042,19 @@ sops = {
 ### Migration from Podman Secrets
 
 ```bash
-# Export from current system
+# Export from current system — use tmpfs to avoid plaintext on persistent storage
+TMPDIR=$(mktemp -d --tmpdir=/dev/shm sops-migration.XXXXXX)
+chmod 700 "$TMPDIR"
+trap 'rm -rf "$TMPDIR"' EXIT
+
 podman secret ls --format '{{.Name}}' | while read name; do
   value=$(podman secret inspect "$name" --showsecret | jq -r '.SecretData' | base64 -d)
   echo "$name: $value"
-done > /tmp/secrets-plain.yaml
+done > "$TMPDIR/secrets-plain.yaml"
 
 # On NixOS: generate age key, encrypt
 age-keygen -o /etc/age/keys.txt
-sops --encrypt --age "$(age-keygen -y /etc/age/keys.txt)" /tmp/secrets-plain.yaml > secrets/secrets.yaml
-rm /tmp/secrets-plain.yaml
+sops --encrypt --age "$(age-keygen -y /etc/age/keys.txt)" "$TMPDIR/secrets-plain.yaml" > secrets/secrets.yaml
 ```
 
 ---
@@ -1049,11 +1099,15 @@ rm /tmp/secrets-plain.yaml
   };
 
   # Pre-backup database dumps
+  # MariaDB uses socket auth (NixOS default) — no password needed for local root
   systemd.services."btrbk-homelab".preStart = ''
-    ${pkgs.mariadb}/bin/mariadb-dump -u root --all-databases \
+    ${pkgs.mariadb}/bin/mariadb-dump --socket=/run/mysqld/mysqld.sock \
+      -u root --all-databases \
       > /mnt/btrfs-pool/subvol7-containers/nextcloud-db/dump-latest.sql
+
     ${pkgs.podman}/bin/podman exec postgresql-immich pg_dumpall -U immich \
       > /mnt/btrfs-pool/subvol7-containers/postgresql-immich/dump-latest.sql
+
     ${pkgs.podman}/bin/podman exec gathio-db mongodump \
       --archive=/data/db/dump-latest.archive 2>/dev/null || true
   '';
@@ -1259,14 +1313,14 @@ All services bind to `127.0.0.1` (Nginx reverse-proxies):
 |---------|------|------|
 | Nginx | 80, 443 | Native |
 | Authelia | 9091 | OCI |
-| CrowdSec LAPI | 8080 | OCI |
+| CrowdSec LAPI | 8180 | OCI |
 | Prometheus | 9090 | Native |
 | Grafana | 3000 | Native |
 | Loki | 3100 | Native |
 | Alertmanager | 9093 | Native |
 | Node Exporter | 9100 | Native |
 | Promtail | 9080 | Native |
-| Nextcloud | 8080 | Native |
+| Nextcloud | unix socket or 8080 | Native (verify — see Appendix B #4) |
 | Jellyfin | 8096 | Native |
 | Vaultwarden | 8000 | Native |
 | Navidrome | 4533 | Native |
@@ -1283,7 +1337,21 @@ All services bind to `127.0.0.1` (Nginx reverse-proxies):
 | UnPoller | 9130 | OCI |
 | Alert Discord Relay | 9095 | Native |
 
-## Appendix B: Key Advantages Over Current System
+## Appendix B: NixOS Module Verification Flags
+
+Before execution, verify these assumptions in a NixOS VM:
+
+1. **`services.nextcloud` + `caching.redis`** — Does the module auto-configure the Redis connection from `services.redis.servers.nextcloud`, or does it need explicit `redis.host`/`redis.port` in `settings`? Check the module source or test in VM.
+
+2. **`services.loki` configuration schema** — The `common:` key used in the Loki config may not match the NixOS module's expected schema exactly. The module passes `configuration` as raw YAML to Loki, so it should work, but verify the Loki version in nixpkgs-unstable matches the config format.
+
+3. **`virtualisation.oci-containers` with `dependsOn`** — Supported in recent nixpkgs for the Podman backend, but verify that `dependsOn = [ "postgresql-immich" ]` generates correct systemd `After=`/`Requires=` directives.
+
+4. **`services.nextcloud` port** — The NixOS Nextcloud module sets up its own Nginx internally. Confirm the internal listen port (likely 80 or a unix socket) doesn't conflict with the main Nginx instance. The module may need `config.services.nextcloud.nginx.listen` override or may use a unix socket by default.
+
+5. **ADR conflicts** — This plan conflicts with ADR-001 (rootless containers → system services), ADR-016 (Traefik routing → Nginx), and ADR-019 (SELinux → AppArmor). A new ADR-021 should explicitly supersede these for the NixOS target, documenting the trade-offs.
+
+## Appendix C: Key Advantages Over Current System
 
 1. **Full reproducibility** — `nixos-rebuild switch` from bare metal
 2. **Atomic upgrades** — instant rollback via boot generations
