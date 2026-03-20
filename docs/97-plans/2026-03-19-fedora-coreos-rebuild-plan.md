@@ -28,6 +28,7 @@ chmod 700 "$TMPDIR"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 podman secret ls --format '{{.Name}}' | while read name; do
+  # Note: --showsecret requires Podman 4.7+
   podman secret inspect "$name" --showsecret | jq -r '.SecretData' | base64 -d > "$TMPDIR/$name"
 done
 tar czf - -C "$(dirname "$TMPDIR")" "$(basename "$TMPDIR")" | gpg --symmetric > migration-secrets.tar.gz.gpg
@@ -162,10 +163,12 @@ storage:
       mode: 0440
       contents:
         inline: |
-          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume *
-          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs send *
-          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs receive *
-          patriark ALL=(root) NOPASSWD: /usr/bin/chattr +C *
+          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume snapshot *
+          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume delete *
+          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs subvolume list *
+          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs send /mnt/btrfs-pool/*
+          patriark ALL=(root) NOPASSWD: /usr/sbin/btrfs receive /run/media/patriark/*
+          patriark ALL=(root) NOPASSWD: /usr/bin/chattr +C /mnt/btrfs-pool/*
 
     - path: /usr/local/bin/setup-nocow.sh
       mode: 0755
@@ -204,11 +207,12 @@ systemd:
         [Unit]
         Description=Set NOCOW on database directories
         After=mnt-btrfs\\x2dpool.mount
-        ConditionPathExists=!/var/lib/setup-nocow-done
+        # Sentinel on BTRFS pool so it survives OS reinstalls
+        ConditionPathExists=!/mnt/btrfs-pool/.setup-nocow-done
         [Service]
         Type=oneshot
         ExecStart=/usr/local/bin/setup-nocow.sh
-        ExecStartPost=/usr/bin/touch /var/lib/setup-nocow-done
+        ExecStartPost=/usr/bin/touch /mnt/btrfs-pool/.setup-nocow-done
         RemainAfterExit=true
         [Install]
         WantedBy=multi-user.target
@@ -322,6 +326,20 @@ Pods get a single IP on `reverse_proxy`. IPs are backwards-compatible with the c
 
 Traefik's `/etc/hosts` references the same IPs — Traefik resolves container names to pod IPs via the hosts file.
 
+**Post-migration `/etc/hosts` example:**
+```
+# Pod IPs on reverse_proxy — Traefik resolves service names to these
+10.89.2.82 nextcloud          # Pod IP, Traefik routes to nextcloud:80 inside pod
+10.89.2.80 immich-server      # Pod IP, Traefik routes to immich-server:2283
+10.89.2.78 authelia           # Pod IP, Traefik routes to authelia:9091
+10.89.2.84 gathio             # Pod IP, Traefik routes to gathio:3000
+# ... standalone services unchanged
+10.89.2.69 traefik
+10.89.2.81 jellyfin
+```
+
+**routers.yml** service URLs remain unchanged — e.g., `url: "http://nextcloud:80"` resolves to `10.89.2.82` via the hosts file, which hits the pod's infra container and reaches the `nextcloud` container on localhost:80 within the pod.
+
 ---
 
 ## Phase 4: Quadlet File Design
@@ -367,6 +385,8 @@ SetWorkingDirectory=%h/containers/services/alert-discord-relay
 ```
 
 ### 4.4 Image Quadlets for Pinned Versions
+
+**Note:** `.image` quadlet files require Podman 5.0+. Verify the target FCOS release includes Podman 5.x (`podman --version` on a test FCOS boot). If Podman 4.x, fall back to pinning via `Image=ghcr.io/immich-app/immich-server:v2.5.6` directly in each `.container` file (already the current approach).
 
 `quadlets/immich-server.image`:
 ```ini
@@ -575,3 +595,32 @@ quadlets/auth_services.network
 | rpm-ostree layering breaks updates | Low | Minimize layers (3 packages only) |
 | Zincati auto-update breaks services | Medium | Saturday maintenance window, test rollback |
 | Home directory path (/var/home/) | Low | %h handles this; audit absolute paths |
+
+---
+
+## ADR-020 Stub: Fedora CoreOS Migration
+
+**Title:** ADR-020: Fedora CoreOS Migration — Immutable OS with Podman Pods
+
+**Status:** Proposed
+
+**Context:** The current Fedora Workstation 43 setup has 30 containers, 8 networks, and 56 scripts. The OS is mutable and requires manual `dnf update` with custom pre/post scripts. Network segmentation via 8 Podman networks creates DNS resolution complexity (ADR-018).
+
+**Decision:** Migrate to Fedora CoreOS. Use Butane/Ignition for declarative provisioning. Group tightly-coupled services into Podman pods (reducing 8 networks to 4). Use Zincati for automatic OS updates within a Saturday maintenance window.
+
+**Supersedes:** None (all existing ADRs remain valid; pods simplify ADR-018 for pod-internal communication).
+
+**Consequences:**
+- Positive: Immutable OS, declarative provisioning, fewer networks, auto-updates with rollback
+- Negative: rpm-ostree layering constraints, /var/home path differences, Podman pod maturity risk
+
+---
+
+## qBittorrent Incoming Peer Port
+
+qBittorrent requires an incoming peer port (default: 6881, user-configurable) for optimal torrent performance. This port must be:
+1. Published in the qBittorrent container quadlet: `PublishPort=<peer-port>:<peer-port>`
+2. Opened in the firewall (Butane config): `<port protocol="tcp" port="<peer-port>"/>`
+3. Port-forwarded on the UDM Pro
+
+Check the current qBittorrent configuration for the configured peer port before migration.

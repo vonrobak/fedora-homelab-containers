@@ -95,7 +95,9 @@ nixos-homelab/
   description = "Patriark Homelab - NixOS";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Pin to stable release for production reliability.
+    # Use overlays for specific packages that need unstable versions.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -329,16 +331,19 @@ nixos-homelab/
     };
 
     # ── Native auth services (no Authelia) ──
-    virtualHosts."nextcloud.patriark.org" = {
-      useACMEHost = "patriark.org";
-      forceSSL = true;
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:8080";
-        extraConfig = "limit_req zone=nextcloud burst=3000 nodelay;";
-      };
-      locations."/.well-known/carddav".return = "301 $scheme://$host/remote.php/dav";
-      locations."/.well-known/caldav".return = "301 $scheme://$host/remote.php/dav";
-    };
+    # NOTE: Nextcloud vhost is NOT defined here.
+    # The NixOS services.nextcloud module auto-creates
+    # virtualHosts."nextcloud.patriark.org" via its built-in Nginx integration.
+    # To add rate limiting and ACME to it, use:
+    #   services.nextcloud.nginx.hstsMaxAge = 31536000;
+    # And override the vhost via:
+    #   services.nginx.virtualHosts."nextcloud.patriark.org" = {
+    #     useACMEHost = "patriark.org";
+    #     forceSSL = true;
+    #   };
+    # The module merges these settings with its own Nginx config.
+    # Do NOT duplicate the vhost — it will fail at nixos-rebuild switch.
+    # CalDAV/.well-known redirects are handled by the module automatically.
 
     virtualHosts."jellyfin.patriark.org" = {
       useACMEHost = "patriark.org";
@@ -408,35 +413,41 @@ nixos-homelab/
   };
 
   # CrowdSec Nginx Bouncer integration
-  # Option A (recommended): Use OpenResty (Nginx + Lua) for native CrowdSec bouncer
-  # Option B: Use cs-nginx-bouncer standalone binary with auth_request
   #
-  # For Option A, replace pkgs.nginxMainline with pkgs.openresty in nginx.nix
-  # and add the lua-resty-crowdsec module. This provides the same inline
-  # request-blocking that the Traefik plugin offered.
+  # CRITICAL: Nginx's auth_request module only honors ONE auth_request per
+  # location block. You CANNOT chain auth_request /crowdsec + auth_request
+  # /authelia — the second silently overrides the first. This rules out
+  # Option B (standalone bouncer via auth_request).
   #
-  # For Option B, run cs-nginx-bouncer as a systemd service on port 8280,
-  # then add auth_request to each Nginx vhost (similar to Authelia pattern):
-  #   auth_request /crowdsec;
-  #   location = /crowdsec { proxy_pass http://127.0.0.1:8280/; internal; }
+  # REQUIRED APPROACH: Use OpenResty (Nginx + Lua) with lua-resty-crowdsec.
+  # This integrates CrowdSec inline (via access_by_lua) BEFORE auth_request,
+  # preserving the fail-fast middleware ordering:
   #
-  # Implementation note: The CrowdSec bouncer MUST be the first auth_request
-  # in each vhost (before Authelia) to preserve fail-fast middleware ordering.
-  # Combined pattern per protected location:
-  #   auth_request /crowdsec;        # Layer 1: IP reputation (fast)
-  #   auth_request /authelia;        # Layer 2: SSO validation (expensive)
+  #   access_by_lua_block { require("crowdsec").check() }  # Layer 1: IP rep
+  #   auth_request /authelia;                               # Layer 2: SSO
   #
-  # Security trade-off: Without the bouncer integration, CrowdSec only provides
-  # threat intelligence (ban lists) but cannot actively block requests at the
-  # Nginx layer. fail2ban provides some coverage but lacks CrowdSec's global
-  # threat intel feeds. Both options above restore full blocking capability.
+  # Implementation:
+  # 1. Replace pkgs.nginxMainline with pkgs.openresty in nginx.nix
+  # 2. Install lua-resty-crowdsec module
+  # 3. Configure CrowdSec LAPI connection in lua:
+  #      lua_shared_dict crowdsec_cache 50m;
+  #      init_by_lua_block {
+  #        local cs = require "crowdsec"
+  #        cs.init("/etc/crowdsec/bouncers/crowdsec-openresty.conf")
+  #      }
+  # 4. Add access_by_lua_block to each protected location (before auth_request)
+  #
+  # This provides the same inline request-blocking as the Traefik plugin,
+  # with CrowdSec's global threat intel feeds, fail-fast ordering preserved.
 }
 ```
 
 ### 3.3 Authelia
 
 **Decision:** OCI container (Redis runs natively)
-**Rationale:** No NixOS module. The container image is well-maintained. Existing `configuration.yml` reused with minor changes (Redis host → `127.0.0.1`).
+**Rationale:** No NixOS module. The container image is well-maintained. Existing `configuration.yml` reused with minor changes (Redis host → `127.0.0.1:6380`).
+
+**WebAuthn/FIDO2 note (ADR-006):** The Authelia `webauthn:` config includes `rp_id` which is tied to the domain (`patriark.org`). Since the domain doesn't change, registered YubiKeys remain valid. However, verify that the `rp_origin` URL in `configuration.yml` matches `https://sso.patriark.org` exactly — any mismatch will break WebAuthn authentication. Test YubiKey login immediately after migration.
 
 ```nix
 # modules/security/authelia.nix
@@ -514,12 +525,12 @@ nixos-homelab/
 | **Node Exporter** | Native module | Zero-config native module | 1 |
 | **cAdvisor** | **Drop** (see note) | Most services native; use systemd collector instead | 1 |
 | **UnPoller** | OCI container | No NixOS module | 0 |
-| **Alert Discord Relay** | Native systemd | Custom binary → Nix derivation + DynamicUser | 1 |
+| **Alert Discord Relay** | Native systemd | Custom binary → Nix derivation + DynamicUser (see derivation stub below) | 1 |
 | **Nextcloud** | Native module | Flagship module: handles PHP-FPM, MariaDB, Redis, cron | 3 |
 | **Immich** | OCI containers | No NixOS module, custom PostgreSQL + vectorchord | 0 |
 | **Jellyfin** | Native module | Direct GPU access, no device passthrough complexity | 1 |
 | **Vaultwarden** | Native module | Mature module + systemd sandboxing | 1 |
-| **Navidrome** | Native systemd | Single Go binary in nixpkgs + sandboxing | 1 |
+| **Navidrome** | Native module | `services.navidrome` with built-in hardening | 1 |
 | **Audiobookshelf** | OCI container | No NixOS module/package | 0 |
 | **Home Assistant** | OCI container | HACS/Matter ecosystem requires container | 0 |
 | **Matter Server** | OCI container | Requires specific dbus/BT access | 0 |
@@ -885,40 +896,37 @@ in {
     };
     environmentFile = config.sops.secrets.vaultwarden-env.path;
   };
+
+  # UID compatibility: The NixOS vaultwarden module runs as DynamicUser by default
+  # (random UID). The current container uses UID 1000. Since DATA_FOLDER points to
+  # the BTRFS pool, file ownership must match. Either:
+  # 1. chown the data dir to the NixOS vaultwarden user after first start, or
+  # 2. Override: systemd.services.vaultwarden.serviceConfig.DynamicUser = false;
+  #    users.users.vaultwarden = { uid = 1000; group = "patriark"; };
+  # Option 1 is cleaner — run chown once during migration.
 }
 ```
 
-#### Navidrome (Native systemd Service)
+#### Navidrome (Native NixOS Module)
 
 ```nix
 # modules/services/navidrome.nix
 { config, pkgs, ... }: {
-  systemd.services.navidrome = {
-    description = "Navidrome Music Server";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    serviceConfig = {
-      ExecStart = "${pkgs.navidrome}/bin/navidrome";
-      User = "patriark";
-      WorkingDirectory = "/mnt/btrfs-pool/subvol7-containers/navidrome";
-      EnvironmentFile = config.sops.secrets.navidrome-env.path;
-      MemoryMax = "1G";
-      ProtectHome = "read-only";
-      ProtectSystem = "strict";
-      ReadWritePaths = [ "/mnt/btrfs-pool/subvol7-containers/navidrome" ];
-      ReadOnlyPaths = [ "/mnt/btrfs-pool/subvol5-music" ];
-      PrivateTmp = true;
-      NoNewPrivileges = true;
+  services.navidrome = {
+    enable = true;
+    settings = {
+      MusicFolder = "/mnt/btrfs-pool/subvol5-music";
+      DataFolder = "/mnt/btrfs-pool/subvol7-containers/navidrome";
+      Address = "127.0.0.1";
+      Port = 4533;
+      ScanSchedule = "1h";
+      "Prometheus.Enabled" = true;
     };
-    environment = {
-      ND_MUSICFOLDER = "/mnt/btrfs-pool/subvol5-music";
-      ND_DATAFOLDER = "/mnt/btrfs-pool/subvol7-containers/navidrome";
-      ND_SCANSCHEDULE = "1h";
-      ND_PROMETHEUS_ENABLED = "true";
-      ND_PORT = "4533";
-      ND_ADDRESS = "127.0.0.1";
-    };
+    # Last.fm credentials via sops
+    environmentFile = config.sops.secrets.navidrome-env.path;
   };
+  # The NixOS module provides systemd hardening (DynamicUser, sandboxing)
+  # automatically — no need for manual serviceConfig overrides.
 }
 ```
 
@@ -945,8 +953,10 @@ virtualisation.oci-containers.containers.audiobookshelf = {
 # Mitigations:
 #   - Vet HACS plugins carefully — they run with host network access
 #   - HA's built-in auth + Authelia on the Nginx route limits remote access
-#   - Consider macvlan network as a future alternative (gives HA its own LAN IP
-#     without full host access, but requires UDM Pro DHCP reservation)
+#   - macvlan network is a realistic near-term improvement (gives HA its own
+#     LAN IP without full host access). Since UDM Pro is already in use,
+#     create a DHCP reservation for the macvlan interface.
+#     See Appendix B #6 for follow-up task.
 virtualisation.oci-containers.containers.home-assistant = {
   image = "ghcr.io/home-assistant/home-assistant:stable";
   environment.TZ = "Europe/Oslo";
@@ -1320,7 +1330,7 @@ All services bind to `127.0.0.1` (Nginx reverse-proxies):
 | Alertmanager | 9093 | Native |
 | Node Exporter | 9100 | Native |
 | Promtail | 9080 | Native |
-| Nextcloud | unix socket or 8080 | Native (verify — see Appendix B #4) |
+| Nextcloud | unix socket (module-managed) | Native (Nginx vhost auto-created by module) |
 | Jellyfin | 8096 | Native |
 | Vaultwarden | 8000 | Native |
 | Navidrome | 4533 | Native |
@@ -1337,6 +1347,59 @@ All services bind to `127.0.0.1` (Nginx reverse-proxies):
 | UnPoller | 9130 | OCI |
 | Alert Discord Relay | 9095 | Native |
 
+### Alert Discord Relay — Nix Derivation Stub
+
+The relay is a Python/Flask app (`relay.py` + `requirements.txt`: Flask, requests, gunicorn). Derivation skeleton:
+
+```nix
+# overlays/alert-discord-relay.nix
+{ lib, python3Packages, ... }:
+python3Packages.buildPythonApplication {
+  pname = "alert-discord-relay";
+  version = "1.0.0";
+  src = ../services/alert-discord-relay;  # Copy source from current repo
+
+  propagatedBuildInputs = with python3Packages; [
+    flask
+    requests
+    gunicorn
+  ];
+
+  # No tests in this project
+  doCheck = false;
+
+  meta = { description = "Alertmanager to Discord webhook relay"; };
+}
+```
+
+Systemd service:
+```nix
+systemd.services.alert-discord-relay = {
+  description = "Alert Discord Relay";
+  wantedBy = [ "multi-user.target" ];
+  serviceConfig = {
+    ExecStart = "${pkgs.alert-discord-relay}/bin/gunicorn -b 127.0.0.1:9095 relay:app";
+    DynamicUser = true;
+    EnvironmentFile = config.sops.secrets.discord-webhook-env.path;
+    MemoryMax = "128M";
+    PrivateTmp = true;
+    ProtectSystem = "strict";
+  };
+};
+```
+
+### qBittorrent Incoming Peer Port
+
+qBittorrent requires an incoming peer port for torrent traffic. Add to firewall and container config:
+```nix
+# In networking.nix:
+networking.firewall.allowedTCPPorts = [ 80 443 8096 8123 <peer-port> ];
+
+# In qbittorrent container:
+ports = [ "127.0.0.1:8085:8085" "<peer-port>:<peer-port>" ];
+```
+Check the current qBittorrent configuration for the user-configured peer port before migration.
+
 ## Appendix B: NixOS Module Verification Flags
 
 Before execution, verify these assumptions in a NixOS VM:
@@ -1347,9 +1410,15 @@ Before execution, verify these assumptions in a NixOS VM:
 
 3. **`virtualisation.oci-containers` with `dependsOn`** — Supported in recent nixpkgs for the Podman backend, but verify that `dependsOn = [ "postgresql-immich" ]` generates correct systemd `After=`/`Requires=` directives.
 
-4. **`services.nextcloud` port** — The NixOS Nextcloud module sets up its own Nginx internally. Confirm the internal listen port (likely 80 or a unix socket) doesn't conflict with the main Nginx instance. The module may need `config.services.nextcloud.nginx.listen` override or may use a unix socket by default.
+4. **`services.nextcloud` Nginx integration** — RESOLVED: The module auto-creates its own Nginx vhost. Do NOT define a manual `virtualHosts."nextcloud.patriark.org"` in `nginx.nix` — merge ACME and rate-limit settings into the module's auto-generated vhost instead. See section 3.1 comments.
 
-5. **ADR conflicts** — This plan conflicts with ADR-001 (rootless containers → system services), ADR-016 (Traefik routing → Nginx), and ADR-019 (SELinux → AppArmor). A new ADR-021 should explicitly supersede these for the NixOS target, documenting the trade-offs.
+5. **ADR conflicts** — This plan conflicts with ADR-001 (rootless containers → system services), ADR-016 (Traefik routing → Nginx), and ADR-019 (SELinux → AppArmor). ADR-021 must explicitly supersede these. See ADR stub below.
+
+6. **Home Assistant macvlan follow-up** — After initial deployment with `--network=host`, migrate HA to a macvlan network with a static DHCP reservation on the UDM Pro. This restores network isolation while preserving mDNS/SSDP. Test: `podman network create -d macvlan --subnet=192.168.1.0/24 --gateway=192.168.1.1 -o parent=enp4s0 ha-macvlan`.
+
+7. **Vaultwarden UID compatibility** — The NixOS module uses DynamicUser (random UID). Current container data is owned by UID 1000. Run `chown -R vaultwarden: /mnt/btrfs-pool/subvol7-containers/vaultwarden` after first module activation to fix ownership.
+
+8. **Authelia WebAuthn/FIDO2 verification** — Test YubiKey login immediately after migration. The `rp_id` and `rp_origin` in `configuration.yml` must match `patriark.org` / `https://sso.patriark.org` exactly.
 
 ## Appendix C: Key Advantages Over Current System
 
@@ -1363,3 +1432,33 @@ Before execution, verify these assumptions in a NixOS VM:
 8. **Integration tests** — automated NixOS test framework
 9. **Declarative backup** — btrbk replaces 500-line custom script
 10. **No SELinux labels** — AppArmor + systemd sandboxing (DynamicUser, ProtectSystem, etc.)
+
+---
+
+## ADR-020 Stub: NixOS Migration Decision
+
+**Title:** ADR-020: NixOS Migration — Declarative Infrastructure
+
+**Status:** Proposed
+
+**Context:** The Fedora Workstation 43 + Podman homelab has reached 30 containers, 38 quadlet files, 56 scripts, and 27 secrets. Configuration drift detection requires custom tooling. Rollback is manual. The system works but the complexity ceiling creates maintenance burden.
+
+**Decision:** Migrate to NixOS. Use native modules for services with mature NixOS support (18 of 30 containers). Keep OCI containers for 12 services without NixOS modules. Replace Traefik with Nginx (OpenResty). Replace Podman secrets with sops-nix. Replace custom backup with btrbk.
+
+**Supersedes:** ADR-002 (Systemd Quadlets — replaced by NixOS modules + OCI containers)
+
+## ADR-021 Stub: NixOS Security Model
+
+**Title:** ADR-021: NixOS Security Model — AppArmor + systemd Sandboxing
+
+**Status:** Proposed
+
+**Context:** The current system uses SELinux enforcing with `:Z`/`:z` labels on all bind mounts (ADR-001), rootless Podman containers (UID 1000), and Traefik-centralized routing (ADR-016).
+
+**Decision:** Replace SELinux with AppArmor (NixOS default) + systemd sandboxing directives (DynamicUser, ProtectSystem, PrivateTmp, NoNewPrivileges). Replace Traefik with OpenResty/Nginx for routing. Native services run as system services (not rootless containers) with per-service sandboxing profiles.
+
+**Supersedes:** ADR-001 (Rootless Containers — native services run as system users with sandboxing), ADR-016 (Traefik Configuration — replaced by NixOS Nginx module), ADR-019 (Filesystem Permission Model — replaced by NixOS tmpfiles + DynamicUser)
+
+**Trade-offs:**
+- Lost: SELinux MAC, rootless container isolation for native services
+- Gained: Type-checked config, atomic rollback, DynamicUser auto-isolation, declarative firewall
