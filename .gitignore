@@ -143,5 +143,8 @@ quadlets/*-experimental.container
 quadlets/*.container.bak
 quadlets/*.network.bak
 
+# Host-specific scripts (contain local UIDs, paths, usernames)
+scripts/verify-permissions.sh
+
 # Skill Creator Workspace (eval run artifacts, regenerated per iteration)
 *-workspace/
