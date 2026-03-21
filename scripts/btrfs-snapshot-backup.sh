@@ -418,34 +418,34 @@ send_snapshot_incremental() {
     fi
 
     local send_type="full"
-    local send_cmd
+    local send_args=()
 
     if [[ -n "$parent_snapshot" ]] && [[ -d "$parent_snapshot" ]]; then
         send_type="incremental"
         log INFO "Sending incremental snapshot: $new_snapshot (parent: $parent_snapshot)"
-        send_cmd="sudo btrfs send -p '$parent_snapshot' '$new_snapshot'"
+        send_args=(sudo btrfs send -p "$parent_snapshot" "$new_snapshot")
     else
         log INFO "Sending full snapshot: $new_snapshot (no common parent — this may take a long time)"
-        send_cmd="sudo btrfs send '$new_snapshot'"
+        send_args=(sudo btrfs send "$new_snapshot")
     fi
 
     # Pre-flight space check
     check_external_space "$dest_dir" "$send_type" "$new_snapshot" || return 1
 
     if [[ "$DRY_RUN" == "true" ]]; then
-        log INFO "[DRY-RUN] Would execute: $send_cmd | sudo btrfs receive '$dest_dir'"
+        log INFO "[DRY-RUN] Would execute: ${send_args[*]} | sudo btrfs receive '$dest_dir'"
         return 0
     fi
 
     if [[ "$VERBOSE" == "true" ]]; then
-        log INFO "Executing: $send_cmd | sudo btrfs receive '$dest_dir'"
+        log INFO "Executing: ${send_args[*]} | sudo btrfs receive '$dest_dir'"
     fi
 
     # Execute with stderr capture for both sides of the pipeline
     local stderr_file
     stderr_file=$(mktemp /tmp/btrfs-send-stderr.XXXXXX)
 
-    eval "$send_cmd" 2>"${stderr_file}.send" | sudo btrfs receive "$dest_dir" 2>"${stderr_file}.recv"
+    "${send_args[@]}" 2>"${stderr_file}.send" | sudo btrfs receive "$dest_dir" 2>"${stderr_file}.recv"
     local pipe_status=("${PIPESTATUS[@]}")
 
     local send_exit=${pipe_status[0]}
@@ -1251,6 +1251,11 @@ send_failure_notification() {
 
     if [[ -z "$DISCORD_WEBHOOK" ]]; then
         log WARNING "No Discord webhook configured — cannot send failure notification"
+        return 0
+    fi
+
+    if ! command -v jq &>/dev/null; then
+        log WARNING "jq not found — cannot send Discord notification"
         return 0
     fi
 
