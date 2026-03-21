@@ -275,3 +275,87 @@ Deleted uncompressed snapshots, re-sent with `compress=zstd:3` active:
   with compression (remount), has fresh chains for containers + docs.
 - **2TB-backup**: Surplus ephemeral drive, 1.1TB free. Available for experiments.
 - Both WD drives share the same LUKS UUID and btrfs label (cloned).
+
+---
+
+## Addendum: Backup Strategy Overhaul (2026-03-21, evening session)
+
+Following the operational excellence fixes above, a broader review of the entire backup strategy
+was conducted. The core insight: now that incremental sends work reliably (pinned parents,
+space pre-checks, stderr capture), the weekly-only external schedule is no longer justified.
+The weekly gate was a constraint of the full-send era — incremental sends take minutes, not hours.
+
+### ADR-020: Daily External Backups
+
+Created `docs/00-foundation/decisions/2026-03-21-ADR-020-daily-external-backups.md` documenting
+the architectural shift. Key decisions:
+
+**1. Daily external sends for Tier 1/2** — RPO reduced from 7 days to ~1 day.
+Per-subvolume `EXTERNAL_SCHEDULE` config variable (`daily`/`weekly`/`monthly`) replaces
+all hardcoded `date +%u -eq 6` Saturday checks. Tier 3 remains weekly/monthly.
+
+**2. Single nightly timer** — The daily timer at 02:00 now runs the full script (removed
+`--local-only`). The weekly Saturday timer is disabled. The script internally determines
+per-subvolume whether to create local snapshots and/or send externally.
+
+**3. Graduated local retention (Time Machine-style)** — Replaced flat 15-daily retention
+with: 14 daily + 1/week for 6 weeks + 1/month for 3 months (~21 snapshots, 90-day coverage).
+This was driven by the offsite rotation plan: WD-18TB1 will live at a friend's location
+and cycle roughly quarterly. The old 15-daily retention would delete the offsite pinned
+parent long before the drive returns. New `cleanup_graduated()` function handles the
+date-based window logic.
+
+**4. Dual pin files** — `.last-external-parent-WD-18TB` and `.last-external-parent-WD-18TB1`
+maintain independent incremental chains. Both pinned parents are protected during cleanup,
+regardless of which drive is mounted. `get_all_pinned_parents()` collects all pin files
+for the cleanup functions.
+
+**5. Graceful drive absence** — When no external drive is mounted, the script logs INFO
+and skips external sends without recording a failure or triggering Discord alerts.
+Previously, an unmounted drive would register as a failure for every subvolume.
+
+**6. Simplified external retention** — Replaced the never-implemented "8 weekly + 12 monthly"
+config with a single `_EXTERNAL_RETENTION` count (14 for Tier 1/2). The cleanup function
+never distinguished weekly from monthly — the dual-count config was aspirational fiction.
+This resolves handoff item #4 above.
+
+**7. New Prometheus metrics** — `backup_send_type` (incremental vs full),
+`backup_external_drive_mounted`, `backup_external_free_bytes`. These enable Grafana
+alerting for chain breaks (handoff item #8 above) and drive capacity.
+
+### Additional bug fixes
+
+- `pin_parent()` now respects `--dry-run` (previously wrote pin files during dry runs)
+- Added `-mindepth 1` to all `find` commands in cleanup/query functions (the search
+  directory itself could match patterns like `*-containers` and get included in results)
+
+### Handoff items resolved
+
+| # | Item | Resolution |
+|---|------|-----------|
+| 3 | Review retention policy | Graduated retention (Time Machine-style) replaces flat 15-daily |
+| 4 | Monthly retention design | Dropped — single count per subvolume, no weekly/monthly distinction |
+| 5 | Increase Tier 1 frequency | Done — daily external sends for all Tier 1 + Tier 2 |
+| 8 | Prometheus chain break alert | `backup_send_type` metric tracks incremental vs full sends |
+
+### Remaining items
+
+- `/etc/udisks2/mount_options.conf` for offsite drive compression (item #1)
+- Swap back to primary WD-18TB drive and re-establish incremental chains (item #2)
+- `btrfs subvolume show` sudoers NOPASSWD (item #6)
+- Live Discord notification test (item #7)
+- subvol4-multimedia initial external backup (5.8TB, still disabled)
+
+### Verification
+
+Dry-run tested successfully. All 9 subvolumes processed correctly:
+- Tier 1/2: external sends attempted (daily schedule working)
+- Tier 3: Saturday-only local snapshots, monthly external gate working
+- htpc-root: monthly gate skipped correctly (not 1st of month)
+- Graduated cleanup: parsed dates, preserved pinned parents, kept all snapshots within 14-day window
+- Drive-specific pin files: "Pinned parent for WD-18TB1 incremental chain"
+
+**Next verification:** Check morning logs after tonight's 02:00 run:
+```bash
+journalctl --user -u btrfs-backup-daily.service -n 100
+```
