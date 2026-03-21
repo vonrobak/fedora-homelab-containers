@@ -298,17 +298,18 @@ check_external_space() {
         exclusive_bytes=$(sudo btrfs subvolume show "$source_snapshot" 2>/dev/null | grep -i "exclusive" | head -1 | awk '{print $NF}' || echo "0")
 
         # Parse human-readable size (e.g., "2.10TiB", "500.00GiB", "100.00MiB")
+        # Uses awk instead of bc to avoid dependency on bc package
         if [[ "$exclusive_bytes" =~ ([0-9.]+)TiB ]]; then
-            required_bytes=$(echo "${BASH_REMATCH[1]} * 1099511627776" | bc | cut -d. -f1)
+            required_bytes=$(awk "BEGIN {printf \"%.0f\", ${BASH_REMATCH[1]} * 1099511627776}")
             size_source="btrfs-exclusive"
         elif [[ "$exclusive_bytes" =~ ([0-9.]+)GiB ]]; then
-            required_bytes=$(echo "${BASH_REMATCH[1]} * 1073741824" | bc | cut -d. -f1)
+            required_bytes=$(awk "BEGIN {printf \"%.0f\", ${BASH_REMATCH[1]} * 1073741824}")
             size_source="btrfs-exclusive"
         elif [[ "$exclusive_bytes" =~ ([0-9.]+)MiB ]]; then
-            required_bytes=$(echo "${BASH_REMATCH[1]} * 1048576" | bc | cut -d. -f1)
+            required_bytes=$(awk "BEGIN {printf \"%.0f\", ${BASH_REMATCH[1]} * 1048576}")
             size_source="btrfs-exclusive"
         elif [[ "$exclusive_bytes" =~ ([0-9.]+)KiB ]]; then
-            required_bytes=$(echo "${BASH_REMATCH[1]} * 1024" | bc | cut -d. -f1)
+            required_bytes=$(awk "BEGIN {printf \"%.0f\", ${BASH_REMATCH[1]} * 1024}")
             size_source="btrfs-exclusive"
         fi
 
