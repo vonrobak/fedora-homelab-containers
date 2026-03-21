@@ -38,7 +38,7 @@ Replace flat 15-daily retention with graduated tiers:
 - **15-60 days:** 1 per week (newest in each ISO week)
 - **61-90 days:** 1 per month (newest in each month)
 
-~21 snapshots per subvolume, covering 3 months. This ensures the offsite drive's pinned parent survives the quarterly rotation cycle.
+~21 snapshots per subvolume, covering ~149 days (~5 months). This ensures the offsite drive's pinned parent survives even beyond the planned quarterly rotation cycle.
 
 ### 4. Dual pin files per drive
 
@@ -66,7 +66,7 @@ When no external drive is mounted, the script logs INFO and skips external sends
 - **Offsite drive needs full send after 3+ months without common parent** — if graduated retention is thinned before the drive returns, falls back to full send (slow but safe).
 
 ### Constraints
-- **Offsite cycle must not exceed ~90 days** (the graduated retention window). Beyond this, full sends are required.
+- **Offsite cycle must not exceed ~149 days** (the graduated retention window covers ~5 months). Beyond this, full sends are required.
 - **Primary external drive must be always connected** for daily sends to work.
 
 ## Related

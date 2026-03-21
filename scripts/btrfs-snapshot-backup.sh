@@ -176,7 +176,7 @@ TIER3_PICS_SOURCE="/mnt/btrfs-pool/subvol2-pics"
 TIER3_PICS_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol2-pics"
 TIER3_PICS_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol2-pics"
 TIER3_PICS_LOCAL_SCHEDULE="weekly"
-TIER3_PICS_EXTERNAL_SCHEDULE="monthly"
+TIER3_PICS_EXTERNAL_SCHEDULE="first-saturday"
 TIER3_PICS_LOCAL_RETENTION=8             # 8 weekly = 2 months
 TIER3_PICS_EXTERNAL_RETENTION=6
 
@@ -189,7 +189,7 @@ TIER3_MULTIMEDIA_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol4-multimedia"
 TIER3_MULTIMEDIA_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol4-multimedia"
 TIER3_MULTIMEDIA_EXTERNAL_ENABLED=false  # Set to true after initial manual backup
 TIER3_MULTIMEDIA_LOCAL_SCHEDULE="weekly"
-TIER3_MULTIMEDIA_EXTERNAL_SCHEDULE="monthly"
+TIER3_MULTIMEDIA_EXTERNAL_SCHEDULE="first-saturday"
 TIER3_MULTIMEDIA_LOCAL_RETENTION=4
 TIER3_MULTIMEDIA_EXTERNAL_RETENTION=3
 
@@ -199,7 +199,7 @@ TIER3_MUSIC_SOURCE="/mnt/btrfs-pool/subvol5-music"
 TIER3_MUSIC_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol5-music"
 TIER3_MUSIC_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol5-music"
 TIER3_MUSIC_LOCAL_SCHEDULE="weekly"
-TIER3_MUSIC_EXTERNAL_SCHEDULE="monthly"
+TIER3_MUSIC_EXTERNAL_SCHEDULE="first-saturday"
 TIER3_MUSIC_LOCAL_RETENTION=8            # 8 weekly = 2 months
 TIER3_MUSIC_EXTERNAL_RETENTION=6
 
@@ -209,15 +209,16 @@ TIER3_TMP_SOURCE="/mnt/btrfs-pool/subvol6-tmp"
 TIER3_TMP_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol6-tmp"
 TIER3_TMP_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol6-tmp"
 TIER3_TMP_LOCAL_SCHEDULE="weekly"
-TIER3_TMP_EXTERNAL_SCHEDULE="monthly"
+TIER3_TMP_EXTERNAL_SCHEDULE="first-saturday"
 TIER3_TMP_LOCAL_RETENTION=4              # Only 4 weeks (cache data)
 TIER3_TMP_EXTERNAL_RETENTION=3
 
 # Graduated local retention (Time Machine-style) for daily-schedule subvolumes
 # Tier 3 (weekly) uses simple count via _LOCAL_RETENTION instead
+# Total coverage: 14 + (6*7) + (3*31) = ~149 days (~5 months)
 GRADUATED_RETENTION_DAILY=14    # Keep all snapshots from last 14 days
-GRADUATED_RETENTION_WEEKLY=6    # Keep 1 per week for next ~6 weeks (days 15-60)
-GRADUATED_RETENTION_MONTHLY=3   # Keep 1 per month for next ~3 months (days 61-90)
+GRADUATED_RETENTION_WEEKLY=6    # Keep 1 per week for next ~6 weeks (days 15-56)
+GRADUATED_RETENTION_MONTHLY=3   # Keep 1 per month for next ~3 months (days 57-149)
 
 ################################################################################
 # END OF CONFIGURATION SECTION
@@ -367,14 +368,16 @@ check_external_space() {
     return 0
 }
 
-should_send_external() {
-    # Determine if external send should happen based on schedule
-    local schedule=$1  # "daily" | "weekly" | "monthly"
+should_run_on_schedule() {
+    # Determine if an action should run based on schedule
+    # Used for both local snapshot gating and external send gating
+    local schedule=$1  # "daily" | "weekly" | "monthly" | "first-saturday"
     case "$schedule" in
-        daily)   return 0 ;;
-        weekly)  [[ $(date +%u) -eq 6 ]] ;;
-        monthly) [[ $(date +%d) == "01" ]] ;;
-        *)       return 1 ;;
+        daily)          return 0 ;;
+        weekly)         [[ $(date +%u) -eq 6 ]] ;;
+        monthly)        [[ $(date +%d) == "01" ]] ;;
+        first-saturday) [[ $(date +%u) -eq 6 ]] && [[ $(date +%d) -le 7 ]] ;;
+        *)              return 1 ;;
     esac
 }
 
@@ -394,7 +397,8 @@ pin_parent() {
         log INFO "Pinned parent for ${EXTERNAL_DRIVE_LABEL} incremental chain: $snapshot_name"
     fi
 
-    # Also maintain legacy pin file for backwards compatibility during transition
+    # Legacy pin file — remove after 2026-04-21 (1 month transition)
+    # Once both drives have drive-specific pin files, this is unused
     echo "$snapshot_name" > "$local_dir/.last-external-parent"
 }
 
@@ -872,7 +876,7 @@ backup_tier1_home() {
     fi
 
     # Send to external (per schedule)
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER1_HOME_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER1_HOME_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER1_HOME_LOCAL_DIR" "$TIER1_HOME_EXTERNAL_DIR" "*-htpc-home")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_HOME_EXTERNAL_DIR" || {
@@ -881,7 +885,11 @@ backup_tier1_home() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER1_HOME_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER1_HOME_EXTERNAL_DIR" "$TIER1_HOME_EXTERNAL_RETENTION" "*-htpc-home"
         else
@@ -925,7 +933,7 @@ backup_tier1_opptak() {
         }
     fi
 
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER1_OPPTAK_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER1_OPPTAK_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER1_OPPTAK_LOCAL_DIR" "$TIER1_OPPTAK_EXTERNAL_DIR" "*-opptak")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_OPPTAK_EXTERNAL_DIR" || {
@@ -934,7 +942,11 @@ backup_tier1_opptak() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER1_OPPTAK_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER1_OPPTAK_EXTERNAL_DIR" "$TIER1_OPPTAK_EXTERNAL_RETENTION" "*-opptak"
         else
@@ -977,7 +989,7 @@ backup_tier1_containers() {
         }
     fi
 
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER1_CONTAINERS_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER1_CONTAINERS_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER1_CONTAINERS_LOCAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_DIR" "*-containers")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER1_CONTAINERS_EXTERNAL_DIR" || {
@@ -986,7 +998,11 @@ backup_tier1_containers() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER1_CONTAINERS_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER1_CONTAINERS_EXTERNAL_DIR" "$TIER1_CONTAINERS_EXTERNAL_RETENTION" "*-containers"
         else
@@ -1029,7 +1045,7 @@ backup_tier2_docs() {
         }
     fi
 
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER2_DOCS_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER2_DOCS_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER2_DOCS_LOCAL_DIR" "$TIER2_DOCS_EXTERNAL_DIR" "*-docs")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_DOCS_EXTERNAL_DIR" || {
@@ -1038,7 +1054,11 @@ backup_tier2_docs() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER2_DOCS_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER2_DOCS_EXTERNAL_DIR" "$TIER2_DOCS_EXTERNAL_RETENTION" "*-docs"
         else
@@ -1071,7 +1091,7 @@ backup_tier2_root() {
     fi
 
     # Root is monthly only (local schedule gate)
-    if ! should_send_external "$TIER2_ROOT_LOCAL_SCHEDULE"; then
+    if ! should_run_on_schedule "$TIER2_ROOT_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name backup runs on 1st of month only, skipping"
         record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
         return 0
@@ -1088,7 +1108,7 @@ backup_tier2_root() {
         }
     fi
 
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER2_ROOT_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER2_ROOT_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER2_ROOT_EXTERNAL_DIR" || {
@@ -1097,7 +1117,11 @@ backup_tier2_root() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER2_ROOT_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER2_ROOT_EXTERNAL_DIR" "$TIER2_ROOT_EXTERNAL_RETENTION" "*-htpc-root"
         else
@@ -1130,7 +1154,7 @@ backup_tier3_pics() {
     fi
 
     # Tier 3: weekly local snapshots only
-    if ! should_send_external "$TIER3_PICS_LOCAL_SCHEDULE"; then
+    if ! should_run_on_schedule "$TIER3_PICS_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
         record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
         return 0
@@ -1147,7 +1171,7 @@ backup_tier3_pics() {
         }
     fi
 
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER3_PICS_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER3_PICS_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_PICS_EXTERNAL_DIR" || {
@@ -1156,7 +1180,11 @@ backup_tier3_pics() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER3_PICS_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER3_PICS_EXTERNAL_DIR" "$TIER3_PICS_EXTERNAL_RETENTION" "*-pics*"
         else
@@ -1189,7 +1217,7 @@ backup_tier3_multimedia() {
     fi
 
     # Tier 3: weekly local snapshots only
-    if ! should_send_external "$TIER3_MULTIMEDIA_LOCAL_SCHEDULE"; then
+    if ! should_run_on_schedule "$TIER3_MULTIMEDIA_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
         record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
         return 0
@@ -1206,7 +1234,7 @@ backup_tier3_multimedia() {
         }
     fi
 
-    if [[ "$TIER3_MULTIMEDIA_EXTERNAL_ENABLED" == "true" ]] && [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER3_MULTIMEDIA_EXTERNAL_SCHEDULE"; then
+    if [[ "$TIER3_MULTIMEDIA_EXTERNAL_ENABLED" == "true" ]] && [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER3_MULTIMEDIA_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" || {
@@ -1215,7 +1243,11 @@ backup_tier3_multimedia() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER3_MULTIMEDIA_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_RETENTION" "*-multimedia*"
         else
@@ -1250,7 +1282,7 @@ backup_tier3_music() {
     fi
 
     # Tier 3: weekly local snapshots only
-    if ! should_send_external "$TIER3_MUSIC_LOCAL_SCHEDULE"; then
+    if ! should_run_on_schedule "$TIER3_MUSIC_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
         record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
         return 0
@@ -1267,7 +1299,7 @@ backup_tier3_music() {
         }
     fi
 
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER3_MUSIC_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER3_MUSIC_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_MUSIC_EXTERNAL_DIR" || {
@@ -1276,7 +1308,11 @@ backup_tier3_music() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER3_MUSIC_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER3_MUSIC_EXTERNAL_DIR" "$TIER3_MUSIC_EXTERNAL_RETENTION" "*-music*"
         else
@@ -1309,7 +1345,7 @@ backup_tier3_tmp() {
     fi
 
     # Tier 3: weekly local snapshots only
-    if ! should_send_external "$TIER3_TMP_LOCAL_SCHEDULE"; then
+    if ! should_run_on_schedule "$TIER3_TMP_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
         record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
         return 0
@@ -1326,7 +1362,7 @@ backup_tier3_tmp() {
         }
     fi
 
-    if [[ "$LOCAL_ONLY" != "true" ]] && should_send_external "$TIER3_TMP_EXTERNAL_SCHEDULE"; then
+    if [[ "$LOCAL_ONLY" != "true" ]] && should_run_on_schedule "$TIER3_TMP_EXTERNAL_SCHEDULE"; then
         if check_external_mounted; then
             local parent=$(find_common_parent "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*")
             send_snapshot_incremental "$parent" "$local_snapshot" "$TIER3_TMP_EXTERNAL_DIR" || {
@@ -1335,7 +1371,11 @@ backup_tier3_tmp() {
                 return 1
             }
 
-            [[ -n "$parent" ]] && SEND_TYPE["$subvol_name"]="incremental" || SEND_TYPE["$subvol_name"]="full"
+            if [[ -n "$parent" ]]; then
+                SEND_TYPE["$subvol_name"]="incremental"
+            else
+                SEND_TYPE["$subvol_name"]="full"
+            fi
             pin_parent "$TIER3_TMP_LOCAL_DIR" "$snapshot_name"
             cleanup_old_snapshots "$TIER3_TMP_EXTERNAL_DIR" "$TIER3_TMP_EXTERNAL_RETENTION" "*-tmp*"
         else
@@ -1440,13 +1480,20 @@ export_prometheus_metrics() {
         done
 
         echo ""
-        echo "# HELP backup_send_type Whether last send was incremental (1) or full (0)"
+        echo "# HELP backup_send_type Whether last send was incremental (1), full (0), or no send (-1)"
         echo "# TYPE backup_send_type gauge"
 
-        for subvol in "${!SEND_TYPE[@]}"; do
-            local type_val=0
-            [[ "${SEND_TYPE[$subvol]}" == "incremental" ]] && type_val=1
-            echo "backup_send_type{subvolume=\"$subvol\"} $type_val"
+        # Emit for all known subvolumes to avoid disappearing series in Prometheus
+        for subvol in "${!BACKUP_SUCCESS[@]}"; do
+            if [[ -n "${SEND_TYPE[$subvol]:-}" ]]; then
+                if [[ "${SEND_TYPE[$subvol]}" == "incremental" ]]; then
+                    echo "backup_send_type{subvolume=\"$subvol\"} 1"
+                else
+                    echo "backup_send_type{subvolume=\"$subvol\"} 0"
+                fi
+            else
+                echo "backup_send_type{subvolume=\"$subvol\"} -1"
+            fi
         done
 
         echo ""
@@ -1455,12 +1502,14 @@ export_prometheus_metrics() {
         [[ "$EXTERNAL_DRIVE_MOUNTED" == "true" ]] && echo "backup_external_drive_mounted 1" || echo "backup_external_drive_mounted 0"
 
         echo ""
-        echo "# HELP backup_external_free_bytes Free space on external drive in bytes"
+        echo "# HELP backup_external_free_bytes Free space on external drive in bytes (0 when unmounted)"
         echo "# TYPE backup_external_free_bytes gauge"
         if [[ "$EXTERNAL_DRIVE_MOUNTED" == "true" ]] && [[ -d "$EXTERNAL_BACKUP_ROOT" ]]; then
             local free_bytes
             free_bytes=$(df --output=avail -B1 "$(dirname "$EXTERNAL_BACKUP_ROOT")" 2>/dev/null | tail -1 | tr -d ' ')
             echo "backup_external_free_bytes ${free_bytes:-0}"
+        else
+            echo "backup_external_free_bytes 0"
         fi
 
         echo ""

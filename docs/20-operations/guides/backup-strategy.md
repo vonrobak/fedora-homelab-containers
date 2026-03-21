@@ -45,10 +45,10 @@ Automated BTRFS snapshot and incremental backup strategy, optimized for:
 | 1 | subvol7-containers | Daily | Daily | 14 snapshots |
 | 2 | subvol1-docs | Daily | Daily | 14 snapshots |
 | 2 | htpc-root | Monthly | Monthly | 6 snapshots |
-| 3 | subvol2-pics | Weekly (Sat) | Monthly (1st) | 6 snapshots |
-| 3 | subvol4-multimedia | Weekly (Sat) | Monthly (1st) | 3 snapshots |
-| 3 | subvol5-music | Weekly (Sat) | Monthly (1st) | 6 snapshots |
-| 3 | subvol6-tmp | Weekly (Sat) | Monthly (1st) | 3 snapshots |
+| 3 | subvol2-pics | Weekly (Sat) | First Saturday | 6 snapshots |
+| 3 | subvol4-multimedia | Weekly (Sat) | First Saturday | 3 snapshots |
+| 3 | subvol5-music | Weekly (Sat) | First Saturday | 6 snapshots |
+| 3 | subvol6-tmp | Weekly (Sat) | First Saturday | 3 snapshots |
 
 ### Local Retention (Graduated / Time Machine-style)
 
@@ -56,7 +56,7 @@ For daily-schedule subvolumes (Tier 1/2):
 - **Last 14 days:** All snapshots kept
 - **15-60 days:** 1 per ISO week
 - **61-90 days:** 1 per month
-- ~21 snapshots total, covering 3 months
+- ~21 snapshots total, covering ~5 months (149 days)
 
 For weekly-schedule subvolumes (Tier 3): simple count (4-8 snapshots).
 
@@ -130,7 +130,7 @@ The offsite drive (WD-18TB1) is stored at a friend's location and cycled roughly
 
 ### Constraints
 
-- Offsite cycle must not exceed **~90 days** (graduated retention window)
+- Offsite cycle must not exceed **~149 days** (graduated retention window covers ~5 months)
 - If exceeded: full sends required (slow, but data integrity maintained)
 - Both drives maintain independent incremental chains
 
