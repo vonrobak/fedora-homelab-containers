@@ -209,7 +209,7 @@ TIER3_TMP_SOURCE="/mnt/btrfs-pool/subvol6-tmp"
 TIER3_TMP_LOCAL_DIR="$LOCAL_POOL_SNAPSHOTS/subvol6-tmp"
 TIER3_TMP_EXTERNAL_DIR="$EXTERNAL_BACKUP_ROOT/subvol6-tmp"
 TIER3_TMP_LOCAL_SCHEDULE="weekly"
-TIER3_TMP_EXTERNAL_SCHEDULE="first-saturday"
+TIER3_TMP_EXTERNAL_SCHEDULE="never"      # Cache data — fully replaceable, no external backup
 TIER3_TMP_LOCAL_RETENTION=4              # Only 4 weeks (cache data)
 TIER3_TMP_EXTERNAL_RETENTION=3
 
@@ -1480,10 +1480,11 @@ export_prometheus_metrics() {
         done
 
         echo ""
-        echo "# HELP backup_send_type Whether last send was incremental (1), full (0), or no send (-1)"
+        echo "# HELP backup_send_type Last send type: 2=no send this run, 1=incremental, 0=full"
         echo "# TYPE backup_send_type gauge"
 
         # Emit for all known subvolumes to avoid disappearing series in Prometheus
+        # Uses 2 for no-send (not -1) so alert rules on ==0 (full send) don't false-positive
         for subvol in "${!BACKUP_SUCCESS[@]}"; do
             if [[ -n "${SEND_TYPE[$subvol]:-}" ]]; then
                 if [[ "${SEND_TYPE[$subvol]}" == "incremental" ]]; then
@@ -1492,7 +1493,7 @@ export_prometheus_metrics() {
                     echo "backup_send_type{subvolume=\"$subvol\"} 0"
                 fi
             else
-                echo "backup_send_type{subvolume=\"$subvol\"} -1"
+                echo "backup_send_type{subvolume=\"$subvol\"} 2"
             fi
         done
 
