@@ -31,8 +31,9 @@ fail() { echo -e "${RED}❌ FAIL:${NC} $1"; ((FAIL++)) || true; }
 info() { echo -e "${BLUE}ℹ️  INFO:${NC} $1"; }
 
 POOL="/mnt/btrfs-pool"
-NC_UID=100032   # Nextcloud www-data (container UID 33 + subuid base 100000)
-QB_UID=100999   # qBittorrent abc user (container UID 1000 + subuid base 100000 - 1)
+HOST_UID=1000   # patriark
+NC_UID=100032   # Nextcloud www-data (container UID 33 → subuid base 100000 + 32)
+QB_UID=100999   # qBittorrent abc (container UID 1000 → subuid base 100000 + 999)
 DOWNLOADS="$POOL/subvol6-tmp/Downloads"
 
 echo ""
@@ -81,8 +82,6 @@ ACL_PATHS=(
     "$DOWNLOADS:Downloads"
 )
 
-HOST_UID=1000  # patriark
-
 for entry in "${ACL_PATHS[@]}"; do
     IFS=':' read -r path name <<< "$entry"
     if [[ ! -d "$path" ]]; then
@@ -115,15 +114,19 @@ for entry in "${ACL_PATHS[@]}"; do
 
     # Spot-check: sample subdirs for missing default ACL inheritance
     MISSING_INHERIT=0
+    CHECKED_SUBDIRS=0
     while IFS= read -r subdir; do
+        ((CHECKED_SUBDIRS++)) || true
         if ! getfacl -c "$subdir" 2>/dev/null | grep -qE "^default:user:($HOST_UID|$HOST_USER):"; then
             ((MISSING_INHERIT++)) || true
         fi
     done < <(find "$path" -maxdepth 2 -mindepth 1 -type d 2>/dev/null | head -20)
-    if [[ "$MISSING_INHERIT" -gt 0 ]]; then
-        warn "$name: $MISSING_INHERIT subdirs missing d:u:patriark:rwx (run: sudo find $path -type d -exec setfacl -m d:u:patriark:rwx {} +)"
-    elif [[ "$MISSING_INHERIT" -eq 0 ]]; then
-        pass "$name: subdirectory default ACL inheritance OK"
+    if [[ "$CHECKED_SUBDIRS" -eq 0 ]]; then
+        info "$name: no subdirectories to verify ACL inheritance"
+    elif [[ "$MISSING_INHERIT" -gt 0 ]]; then
+        warn "$name: $MISSING_INHERIT/$CHECKED_SUBDIRS subdirs missing d:u:$HOST_USER:rwx (run: find $path -type d -exec setfacl -m d:u:$HOST_USER:rwx {} +)"
+    else
+        pass "$name: subdirectory default ACL inheritance OK ($CHECKED_SUBDIRS checked)"
     fi
 done
 
