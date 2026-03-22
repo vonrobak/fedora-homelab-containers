@@ -1,0 +1,27 @@
+[Unit]
+Description=Nightly BTRFS Snapshot and External Backup
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/backup-strategy.md
+After=network-online.target
+# Stop crash-looping on permanent failures (e.g., disk full)
+# After 3 failures within 6 hours, stay failed until next timer trigger
+StartLimitBurst=3
+StartLimitIntervalSec=6h
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flock -n /tmp/btrfs-backup.lock %h/containers/scripts/btrfs-snapshot-backup.sh
+StandardOutput=journal
+StandardError=journal
+# 12h headroom: full re-sends (chain break) can take 6+ hours for large subvols
+TimeoutStartSec=12h
+
+# Lower priority to not impact system performance
+Nice=10
+
+# IO scheduling class (best-effort, low priority)
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+# Retry on failure (e.g., transient external drive issue)
+Restart=on-failure
+RestartSec=30min

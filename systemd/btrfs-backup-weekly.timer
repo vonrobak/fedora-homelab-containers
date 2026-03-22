@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly BTRFS External Backup Timer
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/backup-strategy.md
+
+[Timer]
+OnCalendar=Sat *-*-* 04:00:00
+Persistent=true
+AccuracySec=15min
+
+[Install]
+WantedBy=timers.target
