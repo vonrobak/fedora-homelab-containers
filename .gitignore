@@ -148,3 +148,6 @@ scripts/verify-permissions.sh
 
 # Skill Creator Workspace (eval run artifacts, regenerated per iteration)
 *-workspace/
+
+# Data exports (sensitive, not for version control)
+*.jsonl
