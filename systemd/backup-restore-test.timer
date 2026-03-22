@@ -1,0 +1,17 @@
+[Unit]
+Description=Monthly Backup Restore Test
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/disaster-recovery.md
+
+[Timer]
+# Run on last Sunday of every month at 11:00 AM
+# (gives backup process time to complete - weekly backup runs Sunday 03:00)
+OnCalendar=Sun *-*-22..28 11:00:00
+
+# Random delay up to 5 minutes to avoid conflicts
+RandomizedDelaySec=300
+
+# Run immediately if we missed the scheduled time
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly BTRFS Snapshot and External Backup Timer
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/backup-strategy.md
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target

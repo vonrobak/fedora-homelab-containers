@@ -1,0 +1,24 @@
+[Unit]
+Description=Weekly BTRFS External Backup
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/backup-strategy.md
+After=network-online.target
+StartLimitBurst=3
+StartLimitIntervalSec=6h
+
+[Service]
+Type=oneshot
+# Wait up to 2h for daily run to release lock (daily fires at 02:00, weekly at 04:00 Sat)
+ExecStart=/usr/bin/flock -w 7200 /tmp/btrfs-backup.lock %h/containers/scripts/btrfs-snapshot-backup.sh
+StandardOutput=journal
+StandardError=journal
+# Tier 3 backups: initial full sends can take 27h+ (subvol4-multimedia)
+TimeoutStartSec=48h
+
+# Lower priority to not impact system performance
+Nice=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+# Retry on failure (external drive might not be mounted)
+Restart=on-failure
+RestartSec=30min
