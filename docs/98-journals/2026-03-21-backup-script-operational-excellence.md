@@ -345,6 +345,11 @@ alerting for chain breaks (handoff item #8 above) and drive capacity.
 - `btrfs subvolume show` sudoers NOPASSWD (item #6)
 - Live Discord notification test (item #7)
 - subvol4-multimedia initial external backup (5.8TB, still disabled)
+- **2026-04-21:** Remove legacy `.last-external-parent` files and the fallback code path
+  in `get_pinned_parent()`. By then, both drives will have drive-specific pin files.
+  Search for "Legacy pin file" in `btrfs-snapshot-backup.sh`.
+- Weekly timer unit files left on disk for rollback — remove after 2026-04-07 if daily
+  model is stable: `rm ~/.config/systemd/user/btrfs-backup-weekly.{timer,service}`
 
 ### Verification
 
