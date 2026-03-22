@@ -15,7 +15,10 @@
 #   --local-only        Create local snapshots only (no external backup)
 #   --external-only     Send to external only (no new local snapshots)
 #   --tier <1|2|3>      Run specific tier only (default: all)
-#   --subvolume <name>  Run specific subvolume only
+#   --subvolume <name>  Run specific subvolume only (overrides schedule)
+#                       Names: home, opptak, containers, docs, root, pics,
+#                              multimedia, music, tmp
+#                       Also accepts full names: htpc-home, subvol3-opptak, etc.
 #   --verbose           Verbose output
 #   --help              Show this help message
 #
@@ -242,13 +245,15 @@ log() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
     mkdir -p "$LOG_DIR"
-    echo "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
+    # Write timestamped plain text to log file
+    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
 
+    # Write colorized output to terminal (stderr for ERROR, stdout otherwise)
     case $level in
-        ERROR)   echo -e "${RED}[ERROR]${NC} $message" >&2 ;;
-        SUCCESS) echo -e "${GREEN}[SUCCESS]${NC} $message" ;;
-        WARNING) echo -e "${YELLOW}[WARNING]${NC} $message" ;;
-        INFO)    echo -e "${BLUE}[INFO]${NC} $message" ;;
+        ERROR)   echo -e "${RED}[$level]${NC} $message" >&2 ;;
+        SUCCESS) echo -e "${GREEN}[$level]${NC} $message" ;;
+        WARNING) echo -e "${YELLOW}[$level]${NC} $message" ;;
+        INFO)    echo -e "${BLUE}[$level]${NC} $message" ;;
     esac
 }
 
@@ -371,7 +376,15 @@ check_external_space() {
 should_run_on_schedule() {
     # Determine if an action should run based on schedule
     # Used for both local snapshot gating and external send gating
-    local schedule=$1  # "daily" | "weekly" | "monthly" | "first-saturday"
+    local schedule=$1  # "daily" | "weekly" | "monthly" | "first-saturday" | "never"
+    # "never" means never, even with --subvolume (e.g., tmp external backup)
+    if [[ "$schedule" == "never" ]]; then
+        return 1
+    fi
+    # When --subvolume is set, override time-based schedules (explicit manual request)
+    if [[ -n "$SUBVOL_FILTER" ]]; then
+        return 0
+    fi
     case "$schedule" in
         daily)          return 0 ;;
         weekly)         [[ $(date +%u) -eq 6 ]] ;;
@@ -793,13 +806,19 @@ find_common_parent() {
         return 1
     fi
 
-    # Get local snapshots sorted by date (newest first), excluding the current one being sent
+    # Prefer the pinned parent (the known-good chain anchor for this drive)
+    local pinned
+    pinned=$(get_pinned_parent "$local_dir")
+    if [[ -n "$pinned" ]] && [[ -d "$local_dir/$pinned" ]] && [[ -d "$external_dir/$pinned" ]]; then
+        echo "$local_dir/$pinned"
+        return 0
+    fi
+
+    # Fall back to scanning: find newest local snapshot that also exists on external
     local local_snapshots=$(find "$local_dir" -mindepth 1 -maxdepth 1 -type d -name "$pattern" -printf '%f\n' | sort -r)
 
-    # Check each local snapshot to see if it exists on external
     for snap in $local_snapshots; do
         if [[ -d "$external_dir/$snap" ]]; then
-            # Found a common ancestor
             echo "$local_dir/$snap"
             return 0
         fi
@@ -813,7 +832,7 @@ find_common_parent() {
 record_backup_metrics() {
     local subvol_name=$1
     local start_time=$2
-    local success=$3  # 1 for success, 0 for failure
+    local success=$3  # 1=success, 0=failure, 2=schedule-skipped (not scheduled today)
     local local_snapshot_dir=$4
     local external_snapshot_dir=$5
     local pattern=$6
@@ -1093,7 +1112,7 @@ backup_tier2_root() {
     # Root is monthly only (local schedule gate)
     if ! should_run_on_schedule "$TIER2_ROOT_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name backup runs on 1st of month only, skipping"
-        record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
+        record_backup_metrics "$subvol_name" "$start_time" 2 "$TIER2_ROOT_LOCAL_DIR" "$TIER2_ROOT_EXTERNAL_DIR" "*-htpc-root"
         return 0
     fi
 
@@ -1156,7 +1175,7 @@ backup_tier3_pics() {
     # Tier 3: weekly local snapshots only
     if ! should_run_on_schedule "$TIER3_PICS_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
-        record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
+        record_backup_metrics "$subvol_name" "$start_time" 2 "$TIER3_PICS_LOCAL_DIR" "$TIER3_PICS_EXTERNAL_DIR" "*-pics*"
         return 0
     fi
 
@@ -1219,7 +1238,7 @@ backup_tier3_multimedia() {
     # Tier 3: weekly local snapshots only
     if ! should_run_on_schedule "$TIER3_MULTIMEDIA_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
-        record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
+        record_backup_metrics "$subvol_name" "$start_time" 2 "$TIER3_MULTIMEDIA_LOCAL_DIR" "$TIER3_MULTIMEDIA_EXTERNAL_DIR" "*-multimedia*"
         return 0
     fi
 
@@ -1284,7 +1303,7 @@ backup_tier3_music() {
     # Tier 3: weekly local snapshots only
     if ! should_run_on_schedule "$TIER3_MUSIC_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
-        record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
+        record_backup_metrics "$subvol_name" "$start_time" 2 "$TIER3_MUSIC_LOCAL_DIR" "$TIER3_MUSIC_EXTERNAL_DIR" "*-music*"
         return 0
     fi
 
@@ -1347,7 +1366,7 @@ backup_tier3_tmp() {
     # Tier 3: weekly local snapshots only
     if ! should_run_on_schedule "$TIER3_TMP_LOCAL_SCHEDULE"; then
         log INFO "$subvol_name local backup runs on Saturdays only, skipping"
-        record_backup_metrics "$subvol_name" "$start_time" 1 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
+        record_backup_metrics "$subvol_name" "$start_time" 2 "$TIER3_TMP_LOCAL_DIR" "$TIER3_TMP_EXTERNAL_DIR" "*-tmp*"
         return 0
     fi
 
@@ -1400,6 +1419,18 @@ show_help() {
 }
 
 parse_args() {
+    # Valid short names for --subvolume filter (must match the filter checks in main)
+    local -A VALID_SUBVOLS=(
+        [home]=1 [opptak]=1 [containers]=1 [docs]=1 [root]=1
+        [pics]=1 [multimedia]=1 [music]=1 [tmp]=1
+    )
+    # Map full names to short names for convenience
+    local -A SUBVOL_ALIASES=(
+        [htpc-home]=home [subvol3-opptak]=opptak [subvol7-containers]=containers
+        [subvol1-docs]=docs [htpc-root]=root [subvol2-pics]=pics
+        [subvol4-multimedia]=multimedia [subvol5-music]=music [subvol6-tmp]=tmp
+    )
+
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run)
@@ -1423,7 +1454,18 @@ parse_args() {
                 shift 2
                 ;;
             --subvolume)
-                SUBVOL_FILTER="$2"
+                local raw_name="$2"
+                # Resolve alias (full name -> short name)
+                if [[ -n "${SUBVOL_ALIASES[$raw_name]:-}" ]]; then
+                    SUBVOL_FILTER="${SUBVOL_ALIASES[$raw_name]}"
+                elif [[ -n "${VALID_SUBVOLS[$raw_name]:-}" ]]; then
+                    SUBVOL_FILTER="$raw_name"
+                else
+                    echo "ERROR: Unknown subvolume '$raw_name'" >&2
+                    echo "Valid names: ${!VALID_SUBVOLS[*]}" >&2
+                    echo "Also accepts: ${!SUBVOL_ALIASES[*]}" >&2
+                    exit 1
+                fi
                 shift 2
                 ;;
             --help)
@@ -1452,7 +1494,7 @@ export_prometheus_metrics() {
         done
 
         echo ""
-        echo "# HELP backup_success Whether last backup succeeded (1) or failed (0)"
+        echo "# HELP backup_success Backup result: 1=success, 0=failure, 2=schedule-skipped"
         echo "# TYPE backup_success gauge"
 
         for subvol in "${!BACKUP_SUCCESS[@]}"; do
