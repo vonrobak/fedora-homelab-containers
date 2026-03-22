@@ -807,6 +807,8 @@ find_common_parent() {
     fi
 
     # Prefer the pinned parent (the known-good chain anchor for this drive)
+    # No need to exclude the current snapshot here — the pin always points to
+    # the *previous* successful send, never the snapshot currently being sent
     local pinned
     pinned=$(get_pinned_parent "$local_dir")
     if [[ -n "$pinned" ]] && [[ -d "$local_dir/$pinned" ]] && [[ -d "$external_dir/$pinned" ]]; then

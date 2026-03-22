@@ -7,7 +7,8 @@ StartLimitIntervalSec=6h
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/flock -n /tmp/btrfs-backup.lock %h/containers/scripts/btrfs-snapshot-backup.sh
+# Wait up to 2h for daily run to release lock (daily fires at 02:00, weekly at 04:00 Sat)
+ExecStart=/usr/bin/flock -w 7200 /tmp/btrfs-backup.lock %h/containers/scripts/btrfs-snapshot-backup.sh
 StandardOutput=journal
 StandardError=journal
 # Tier 3 backups: initial full sends can take 27h+ (subvol4-multimedia)
