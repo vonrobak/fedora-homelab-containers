@@ -25,6 +25,12 @@ Volume=/dev/disk:/dev/disk:ro
 # Note: Privileged mode required for cgroup access in rootless containers
 PodmanArgs=--privileged --cgroupns=host
 
+# Memory reduction flags (256M OOM root cause: default settings too aggressive for 30+ containers)
+# --housekeeping_interval=10s: Reduce from 1s default (homelab doesn't need per-second granularity)
+# --storage_duration=1m: Reduce in-memory stats retention from 2m default
+# --disable_metrics: Drop expensive metrics not needed for homelab monitoring
+Exec=-logtostderr -housekeeping_interval=10s -storage_duration=1m0s -disable_metrics=percpu,perf_event,hugetlb,referenced_memory,resctrl,advtcp,udp,sched,process,tcp
+
 DNS=192.168.1.69
 
 # Health check
@@ -38,9 +44,9 @@ Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=60
 
-# Resource Limits
-MemoryMax=256M
-MemoryHigh=230M
+# Resource Limits (256M caused OOM + zombie spiral within ~10h with 30 containers)
+MemoryMax=512M
+MemoryHigh=460M
 
 [Install]
 WantedBy=default.target
