@@ -1,8 +1,7 @@
 [Unit]
 Description=Matter Server (python-matter-server)
 After=network-online.target home_automation-network.service
-Wants=network-online.target
-Requires=home_automation-network.service
+Wants=home_automation-network.service network-online.target
 
 [Container]
 Image=ghcr.io/home-assistant-libs/python-matter-server:stable

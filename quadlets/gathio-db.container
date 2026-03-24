@@ -1,8 +1,7 @@
 [Unit]
 Description=MongoDB Database for Gathio
 After=network-online.target gathio-network.service
-Wants=network-online.target
-Requires=gathio-network.service
+Wants=gathio-network.service network-online.target
 
 [Container]
 Image=docker.io/library/mongo:7

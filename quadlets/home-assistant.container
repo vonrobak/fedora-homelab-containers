@@ -1,8 +1,7 @@
 [Unit]
 Description=Home Assistant - Home Automation Hub
 After=network-online.target reverse_proxy-network.service home_automation-network.service
-Wants=network-online.target
-Requires=reverse_proxy-network.service home_automation-network.service
+Wants=home_automation-network.service network-online.target reverse_proxy-network.service
 
 [Container]
 Image=ghcr.io/home-assistant/home-assistant:stable

@@ -2,8 +2,7 @@
 Description=Unpoller - UniFi Metrics Exporter for Prometheus
 Documentation=https://unpoller.com/docs/
 After=network-online.target reverse_proxy-network.service prometheus.service
-Wants=network-online.target
-Requires=reverse_proxy-network.service
+Wants=network-online.target reverse_proxy-network.service
 
 [Container]
 Image=ghcr.io/unpoller/unpoller:latest

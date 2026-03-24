@@ -1,8 +1,7 @@
 [Unit]
 Description=Traefik Reverse Proxy
 After=network-online.target reverse_proxy-network.service
-Wants=network-online.target
-Requires=reverse_proxy-network.service
+Wants=network-online.target reverse_proxy-network.service
 
 [Container]
 Image=docker.io/library/traefik:latest

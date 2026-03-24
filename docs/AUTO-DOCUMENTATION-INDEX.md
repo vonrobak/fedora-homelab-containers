@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-03-09 06:02:55 UTC
-**Total Documents:** 405
+**Generated:** 2026-03-24 06:01:53 UTC
+**Total Documents:** 419
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (13 documents)
+### 00-foundation/ (14 documents)
 
 **Fundamentals and core concepts**
 
@@ -42,6 +42,7 @@
 - ADR-017: [2026-01-05-ADR-017-slash-commands-and-subagents](00-foundation/decisions/2026-01-05-ADR-017-slash-commands-and-subagents.md)
 - ADR-018: [2026-02-04-ADR-018-static-ip-multi-network-services](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 - ADR-019: [2026-02-22-ADR-019-filesystem-permission-model](00-foundation/decisions/2026-02-22-ADR-019-filesystem-permission-model.md)
+- ADR-020: [2026-03-21-ADR-020-daily-external-backups](00-foundation/decisions/2026-03-21-ADR-020-daily-external-backups.md)
 
 ---
 
@@ -166,7 +167,7 @@
 
 ---
 
-### 97-plans/ (27 documents)
+### 97-plans/ (30 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
@@ -178,6 +179,9 @@
 - 📋 [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
 - 📋 [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
 - ✅ [2026-01-22-monthly-review-matter-hybrid-approach.md](97-plans/2026-01-22-monthly-review-matter-hybrid-approach.md)
+- 📋 [2026-03-19-fedora-coreos-rebuild-plan.md](97-plans/2026-03-19-fedora-coreos-rebuild-plan.md)
+- 📋 [2026-03-19-nixos-homelab-rebuild-plan.md](97-plans/2026-03-19-nixos-homelab-rebuild-plan.md)
+- 📋 [2026-03-22-urd-btrfs-time-machine-plan.md](97-plans/2026-03-22-urd-btrfs-time-machine-plan.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
 - ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
@@ -199,7 +203,7 @@
 
 ---
 
-### 98-journals/ (179 documents)
+### 98-journals/ (188 documents)
 
 **Chronological project history (append-only log)**
 
@@ -207,7 +211,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (32 documents)
+### 99-reports/ (34 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -217,16 +221,22 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-03-08: [automation-reference.md](20-operations/guides/automation-reference.md)
-- 2026-03-08: [security-audit.md](30-security/guides/security-audit.md)
-- 2026-03-09: [2026-03-08-security-auditor-skill-evaluation.md](98-journals/2026-03-08-security-auditor-skill-evaluation.md)
-- 2026-03-08: [2026-03-08-security-audit-investigated.md](99-reports/2026-03-08-security-audit-investigated.md)
-- 2026-03-09: [remediation-monthly-202602.md](99-reports/remediation-monthly-202602.md)
-- 2026-03-08: [security-audit-2026-03-08.md](99-reports/security-audit-2026-03-08.md)
-- 2026-03-09: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-03-09: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-03-09: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-03-09: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-03-18: [2025-12-31-ADR-016-configuration-design-principles.md](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
+- 2026-03-18: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
+- 2026-03-22: [2026-03-21-ADR-020-daily-external-backups.md](00-foundation/decisions/2026-03-21-ADR-020-daily-external-backups.md)
+- 2026-03-22: [backup-strategy.md](20-operations/guides/backup-strategy.md)
+- 2026-03-20: [2026-03-19-fedora-coreos-rebuild-plan.md](97-plans/2026-03-19-fedora-coreos-rebuild-plan.md)
+- 2026-03-20: [2026-03-19-nixos-homelab-rebuild-plan.md](97-plans/2026-03-19-nixos-homelab-rebuild-plan.md)
+- 2026-03-22: [2026-03-22-urd-btrfs-time-machine-plan.md](97-plans/2026-03-22-urd-btrfs-time-machine-plan.md)
+- 2026-03-17: [2026-03-17-pasta-source-nat-investigation.md](98-journals/2026-03-17-pasta-source-nat-investigation.md)
+- 2026-03-19: [2026-03-17-traefik-network-attack-surface-reduction.md](98-journals/2026-03-17-traefik-network-attack-surface-reduction.md)
+- 2026-03-22: [2026-03-21-backup-script-operational-excellence.md](98-journals/2026-03-21-backup-script-operational-excellence.md)
+- 2026-03-22: [2026-03-22-backup-system-audit-and-architecture-exploration.md](98-journals/2026-03-22-backup-system-audit-and-architecture-exploration.md)
+- 2026-03-23: [2026-03-23-cadvisor-oom-death-spiral-postmortem.md](98-journals/2026-03-23-cadvisor-oom-death-spiral-postmortem.md)
+- 2026-03-24: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-03-24: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-03-24: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-03-24: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

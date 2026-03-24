@@ -1,8 +1,8 @@
 [Unit]
 Description=Authelia - SSO & MFA Authentication Server (YubiKey-First)
 After=network-online.target redis-authelia.service reverse_proxy-network.service auth_services-network.service
-Wants=network-online.target
-Requires=redis-authelia.service reverse_proxy-network.service auth_services-network.service
+Wants=auth_services-network.service network-online.target reverse_proxy-network.service
+Requires=redis-authelia.service
 
 [Container]
 Image=docker.io/authelia/authelia:latest

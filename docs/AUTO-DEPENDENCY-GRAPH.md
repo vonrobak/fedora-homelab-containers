@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-03-09 06:02:55 UTC
+**Generated:** 2026-03-24 06:01:52 UTC
 **System:** fedora-htpc
 
 ---
@@ -82,15 +82,6 @@ graph TB
     traefik -.-> vaultwarden
 
     %% Monitoring (Prometheus scrapes via monitoring network)
-    prometheus -.->|scrapes| gathio
-    prometheus -.->|scrapes| home_assistant
-    prometheus -.->|scrapes| immich_server
-    prometheus -.->|scrapes| jellyfin
-    prometheus -.->|scrapes| navidrome
-    prometheus -.->|scrapes| nextcloud
-    prometheus -.->|scrapes| nextcloud_db
-    prometheus -.->|scrapes| nextcloud_redis
-    prometheus -.->|scrapes| traefik
 
     %% Styling
     style traefik fill:#f9f,stroke:#333,stroke-width:4px
@@ -203,7 +194,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 
 Services on the same network can communicate:
 
-**auth_services:** authelia,redis-authelia,traefik
+**auth_services:** authelia,redis-authelia
 
 **gathio:** gathio,gathio-db
 
@@ -211,7 +202,7 @@ Services on the same network can communicate:
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,nextcloud-db,nextcloud-redis,node_exporter,prometheus,promtail,traefik,unpoller
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,loki,node_exporter,prometheus,promtail,unpoller
 
 **nextcloud:** nextcloud,nextcloud-db,nextcloud-redis
 

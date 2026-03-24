@@ -117,6 +117,17 @@ http:
           ipStrategy:
             depth: 1
 
+    # qBittorrent (WebUI loads 500+ resources on first page load: JS, HTML views, images, API calls)
+    # Already behind Authelia SSO — only authenticated users reach this service
+    rate-limit-qbittorrent:
+      rateLimit:
+        average: 300      # Generous sustained rate for authenticated WebUI
+        burst: 600        # Support initial page load (~500 resources: JS, HTML, images, API)
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
     # Immich (photo management - high capacity for thumbnail loading)
     rate-limit-immich:
       rateLimit:

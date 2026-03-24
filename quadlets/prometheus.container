@@ -1,8 +1,7 @@
 [Unit]
 Description=Prometheus Metrics Database
 After=network-online.target monitoring-network.service node_exporter.service
-Wants=network-online.target node_exporter.service
-Requires=monitoring-network.service
+Wants=monitoring-network.service network-online.target node_exporter.service
 
 [Container]
 Image=quay.io/prometheus/prometheus:latest

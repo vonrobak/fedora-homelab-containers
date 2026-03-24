@@ -1,8 +1,7 @@
 [Unit]
 Description=Homepage - Homelab Dashboard
 After=network-online.target reverse_proxy-network.service
-Wants=network-online.target
-Requires=reverse_proxy-network.service
+Wants=network-online.target reverse_proxy-network.service
 
 [Container]
 Image=ghcr.io/gethomepage/homepage:latest

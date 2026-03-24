@@ -266,7 +266,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit@file
+        - rate-limit-qbittorrent@file
         - authelia@file
         - security-headers@file
       tls:
