@@ -1,8 +1,7 @@
 [Unit]
 Description=PostgreSQL for Immich
 After=network-online.target photos-network.service
-Wants=network-online.target
-Requires=photos-network.service
+Wants=network-online.target photos-network.service
 
 [Container]
 Image=ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0

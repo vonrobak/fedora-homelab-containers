@@ -1,8 +1,7 @@
 [Unit]
 Description=Jellyfin Media Server
 After=network-online.target reverse_proxy-network.service media_services-network.service
-Wants=network-online.target
-Requires=reverse_proxy-network.service media_services-network.service
+Wants=media_services-network.service network-online.target reverse_proxy-network.service
 
 [Container]
 Image=docker.io/jellyfin/jellyfin:latest

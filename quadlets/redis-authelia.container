@@ -1,8 +1,7 @@
 [Unit]
 Description=Redis - Authelia Session Storage
 After=network-online.target auth_services-network.service
-Wants=network-online.target
-Requires=auth_services-network.service
+Wants=auth_services-network.service network-online.target
 
 [Container]
 Image=docker.io/library/redis:7-alpine

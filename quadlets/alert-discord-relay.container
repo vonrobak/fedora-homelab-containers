@@ -1,8 +1,7 @@
 [Unit]
 Description=Alert Discord Relay - Alertmanager to Discord Webhook Bridge
 After=network-online.target reverse_proxy-network.service monitoring-network.service
-Wants=network-online.target
-Requires=reverse_proxy-network.service monitoring-network.service
+Wants=monitoring-network.service network-online.target reverse_proxy-network.service
 
 [Container]
 Image=localhost/alert-discord-relay:latest

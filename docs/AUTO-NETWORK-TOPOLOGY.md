@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-03-09 06:02:51 UTC
+**Generated:** 2026-03-24 06:01:49 UTC
 **System:** fedora-htpc | **Networks:** 8 | **Containers:** 30
 
 ---
@@ -62,7 +62,6 @@ graph TB
         direction LR
         auth_services_authelia[authelia]
         auth_services_redis_authelia[redis-authelia]
-        auth_services_traefik[traefik]
     end
 
     subgraph gathio["gathio<br/>10.89.0.0/24"]
@@ -87,20 +86,11 @@ graph TB
         monitoring_alert_discord_relay[alert-discord-relay]
         monitoring_alertmanager[alertmanager]
         monitoring_cadvisor[cadvisor]
-        monitoring_gathio[gathio]
         monitoring_grafana[grafana]
-        monitoring_home_assistant[home-assistant]
-        monitoring_immich_server[immich-server]
-        monitoring_jellyfin[jellyfin]
         monitoring_loki[loki]
-        monitoring_navidrome[navidrome]
-        monitoring_nextcloud[nextcloud]
-        monitoring_nextcloud_db[nextcloud-db]
-        monitoring_nextcloud_redis[nextcloud-redis]
         monitoring_node_exporter[node_exporter]
         monitoring_prometheus[prometheus]
         monitoring_promtail[promtail]
-        monitoring_traefik[traefik]
         monitoring_unpoller[unpoller]
     end
 
@@ -164,17 +154,17 @@ Shows which services belong to which networks. Dynamically generated from runnin
 | authelia | ✅ | - | - | - | - | - | - | ✅ |
 | crowdsec | - | - | - | - | - | - | - | ✅ |
 | redis-authelia | ✅ | - | - | - | - | - | - | - |
-| traefik | ✅ | - | - | - | ✅ | - | - | ✅ |
+| traefik | - | - | - | - | - | - | - | ✅ |
 | **Public Services** |
 | alert-discord-relay | - | - | - | - | ✅ | - | - | ✅ |
 | audiobookshelf | - | - | - | - | - | - | - | ✅ |
-| gathio | - | ✅ | - | - | ✅ | - | - | ✅ |
-| home-assistant | - | - | ✅ | - | ✅ | - | - | ✅ |
+| gathio | - | ✅ | - | - | - | - | - | ✅ |
+| home-assistant | - | - | ✅ | - | - | - | - | ✅ |
 | homepage | - | - | - | - | - | - | - | ✅ |
-| immich-server | - | - | - | - | ✅ | - | ✅ | ✅ |
-| jellyfin | - | - | - | ✅ | ✅ | - | - | ✅ |
-| navidrome | - | - | - | - | ✅ | - | - | ✅ |
-| nextcloud | - | - | - | - | ✅ | ✅ | - | ✅ |
+| immich-server | - | - | - | - | - | - | ✅ | ✅ |
+| jellyfin | - | - | - | ✅ | - | - | - | ✅ |
+| navidrome | - | - | - | - | - | - | - | ✅ |
+| nextcloud | - | - | - | - | - | ✅ | - | ✅ |
 | qbittorrent | - | - | - | - | - | - | - | ✅ |
 | unpoller | - | - | - | - | ✅ | - | - | ✅ |
 | vaultwarden | - | - | - | - | - | - | - | ✅ |
@@ -190,8 +180,8 @@ Shows which services belong to which networks. Dynamically generated from runnin
 | gathio-db | - | ✅ | - | - | - | - | - | - |
 | immich-ml | - | - | - | - | - | - | ✅ | - |
 | matter-server | - | - | ✅ | - | - | - | - | - |
-| nextcloud-db | - | - | - | - | ✅ | ✅ | - | - |
-| nextcloud-redis | - | - | - | - | ✅ | ✅ | - | - |
+| nextcloud-db | - | - | - | - | - | ✅ | - | - |
+| nextcloud-redis | - | - | - | - | - | ✅ | - | - |
 | postgresql-immich | - | - | - | - | - | - | ✅ | - |
 | redis-immich | - | - | - | - | - | - | ✅ | - |
 
@@ -250,12 +240,11 @@ sequenceDiagram
 
 - **Full Name:** `systemd-auth_services`
 - **Subnet:** 10.89.3.0/24
-- **Services:** 3
+- **Services:** 2
 
 **Members:**
 - authelia
 - redis-authelia
-- traefik
 
 
 ### gathio
@@ -294,26 +283,17 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 18
+- **Services:** 9
 
 **Members:**
 - alert-discord-relay
 - alertmanager
 - cadvisor
-- gathio
 - grafana
-- home-assistant
-- immich-server
-- jellyfin
 - loki
-- navidrome
-- nextcloud
-- nextcloud-db
-- nextcloud-redis
 - node_exporter
 - prometheus
 - promtail
-- traefik
 - unpoller
 
 
