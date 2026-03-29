@@ -97,7 +97,7 @@ See ADR-015 for full rationale. Workflow: `scripts/update-before-reboot.sh` befo
 
 ### Architecture Decision Records
 
-**19 ADRs documenting architectural decisions** (see `docs/*/decisions/` for full details)
+**20 ADRs documenting architectural decisions** (see `docs/*/decisions/` for full details)
 
 **Design-Guiding ADRs (affect future decisions):**
 - **ADR-001:** Rootless Containers — UID 1000, `:Z` SELinux labels on all mounts
@@ -110,6 +110,7 @@ See ADR-015 for full rationale. Workflow: `scripts/update-before-reboot.sh` befo
 - **ADR-016:** Configuration Design Principles — **CRITICAL:** ALL routing in dynamic config, NEVER in labels
 - **ADR-018:** Static IP Multi-Network Services — /etc/hosts override for predictable routing
 - **ADR-019:** Filesystem Permission Model — POSIX ACLs for container access
+- **ADR-021:** Urd Backup Tool — Rust-based BTRFS Time Machine replaces shell script (supersedes ADR-020 implementation)
 
 Check if an ADR exists before proposing changes. Reference the ADR and explain what changed if suggesting alternatives. New decisions get new ADRs (don't edit existing ones).
 

@@ -1,7 +1,7 @@
 # ADR-020: Daily External Backups with Incremental Sends
 
 **Date:** 2026-03-21
-**Status:** Accepted
+**Status:** Superseded by ADR-021 (strategy decisions remain valid; shell script implementation replaced by Urd)
 **Supersedes:** None (updates the weekly-only external backup model from initial implementation)
 
 ## Context
