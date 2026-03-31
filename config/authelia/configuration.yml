@@ -37,7 +37,8 @@ webauthn:
   timeout: 60s
   display_name: Patriark Homelab
   attestation_conveyance_preference: indirect
-  user_verification: preferred
+  selection_criteria:
+    user_verification: preferred
 
 authentication_backend:
   password_reset:
@@ -98,19 +99,27 @@ access_control:
         - '^/group$'        # Group creation POST endpoint
         - '^/edit/.*'       # Event editing (backup - also password protected)
 
-    # Public access for event VIEWING and RSVP (shareable links)
+    # Public access for event VIEWING, RSVP, and editing (shareable links)
+    # Gathio handles its own auth: editToken for hosts, removalPassword for attendees
     - domain: 'events.patriark.org'
       policy: bypass
       resources:
-        - '^/$'             # Homepage (if you want public event list)
-        - '^/[A-Za-z0-9_-]{10,30}$'  # Event/group pages by ID (e.g., /TvdMqJQ4jZfJXsUSyZgUf)
-        - '^/attendee/.*'   # Attendee management (RSVP, add/remove attendees)
-        - '^/comment/.*'    # Comments on events
+        - '^/$'             # Homepage
+        - '^/[A-Za-z0-9_-]{10,30}(\?.*)?$'  # Event/group pages by ID
+        - '^/event/.*'      # All event actions (RSVP, attendee mgmt, edit — token-authed by Gathio)
+        - '^/verifytoken/.*' # Edit token verification (required for ?e= links to work)
+        - '^/deleteevent/.*' # Event deletion (edit token in path)
+        - '^/deleteimage/.*' # Image deletion (edit token in path)
+        - '^/post/comment/.*' # Comments: POST /post/comment/{id}/
+        - '^/export/.*'     # ICS calendar export
+        - '^/attendee/.*'   # Attendee provisioning and management
+        - '^/comment/.*'    # Comment display endpoints
+        - '^/known/.*'      # Group/event lookup endpoints
         - '^/api/.*'        # Public API endpoints
-        - '^/css/.*'        # CSS files (required for page rendering)
-        - '^/js/.*'         # JavaScript files (required for buttons)
-        - '^/fonts/.*'      # Web fonts
-        - '^/images/.*'     # Static images
+        - '^/css/.*'        # Static: CSS
+        - '^/js/.*'         # Static: JavaScript
+        - '^/fonts/.*'      # Static: Web fonts
+        - '^/images/.*'     # Static: Images
         - '^/.*\.(ico|png|jpg|svg|webmanifest|xml)$'  # Favicon and icons
 
     # Immich - Not protected by Authelia (uses native authentication)
