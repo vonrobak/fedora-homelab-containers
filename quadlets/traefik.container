@@ -1,7 +1,9 @@
 [Unit]
 Description=Traefik Reverse Proxy
-After=network-online.target reverse_proxy-network.service
+After=network-online.target reverse_proxy-network.service http.socket https.socket
 Wants=network-online.target reverse_proxy-network.service
+# ADR-022: socket activation preserves real source IPs (rootlessport bypass)
+Requires=http.socket https.socket
 
 [Container]
 Image=docker.io/library/traefik:latest
@@ -9,8 +11,9 @@ ContainerName=traefik
 HostName=traefik
 AutoUpdate=registry
 Network=systemd-reverse_proxy:ip=10.89.2.69
-PublishPort=80:80
-PublishPort=443:443
+# Ports 80/443 come in via socket activation (see systemd/{http,https}.socket
+# + ADR-022). Do NOT add PublishPort=80/443 — that re-introduces the
+# rootlessport SNAT the socket activation is there to bypass.
 # API/dashboard on port 8080 NOT published to host - only accessible via:
 #   - Traefik route: traefik.patriark.org (Authelia-protected)
 #   - reverse_proxy network: 10.89.2.69:8080 (Prometheus scraping)
@@ -32,6 +35,10 @@ Secret=cloudflare_dns_token,type=env,target=CF_DNS_API_TOKEN
 Entrypoint=/traefik-entrypoint.sh
 Exec=traefik
 SecurityLabelDisable=true
+# ADR-022: sd_notify readiness + inherit listening FDs from http.socket /
+# https.socket. FileDescriptorName on each socket matches the Traefik
+# entrypoint name (web / websecure), so Traefik picks them up automatically.
+Notify=true
 
 # Health check
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:8080/ping || exit 1
@@ -43,6 +50,10 @@ HealthRetries=3
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
+# ADR-022: socket-activated entrypoints. FileDescriptorName on each socket
+# matches the Traefik entrypoint name (web, websecure).
+Sockets=http.socket
+Sockets=https.socket
 
 # Resource Limits
 MemoryMax=512M
