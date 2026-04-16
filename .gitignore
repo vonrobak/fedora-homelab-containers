@@ -8,6 +8,9 @@
 *.crt
 *secret*
 !.claude/hooks/*secret*.sh   # Exception: pre-commit hooks that validate secrets
+
+# Claude Code Directory (may contain security-sensitive context)
+.claude/
 *password*
 *api_key*
 *apiKey*
@@ -50,10 +53,7 @@ config/jellyfin/transcoding-temp/
 # that are regenerated regularly and don't need version control
 docs/99-reports/
 
-# Claude Code Context Files
-# Ephemeral state files that change constantly and aren't valuable in git history
-.claude/context/
-.claude/remediation/metrics-history.json
+# (Entire .claude/ directory is ignored above)
 
 # Container Runtime
 *.pid

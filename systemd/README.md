@@ -7,9 +7,9 @@ Systemd service and timer units for automating homelab operations.
 Copy units to systemd user directory and enable:
 
 ```bash
-cp ~/containers/systemd/*.{service,timer} ~/.config/systemd/user/
+cp ~/containers/systemd/*.{service,timer,socket} ~/.config/systemd/user/
 systemctl --user daemon-reload
-systemctl --user enable --now <unit>.timer
+systemctl --user enable --now <unit>.timer   # or .socket, .service
 ```
 
 ## Available Units
@@ -164,6 +164,33 @@ curl http://127.0.0.1:9096/health
 **Configuration:**
 - Routing rules: `~/.claude/remediation/webhook-routing.yml`
 - Alertmanager config: `~/containers/config/alertmanager/alertmanager.yml`
+
+### http.socket / https.socket
+
+**Purpose:** Host-side TCP listeners for ports 80 and 443, inherited by the Traefik container via systemd socket activation. Bypasses rootless Podman's `rootlessport` SNAT path so Traefik sees real external source IPs (required for CrowdSec IP-reputation and per-IP rate limiting to function).
+
+**Why these are not in `quadlets/`:** Podman quadlet only processes `.container`, `.network`, `.volume`, `.pod`, `.build`, `.kube`, `.image`, and `.artifact` files. `.socket` units are plain systemd user units and must live in `~/.config/systemd/user/` directly.
+
+**Wiring:** `FileDescriptorName=web` on `http.socket` and `FileDescriptorName=websecure` on `https.socket` match the Traefik entrypoint names in `config/traefik/traefik.yml`, so Traefik v3.1+ automatically uses the inherited FDs instead of binding its own. `quadlets/traefik.container` declares `Requires=/After=` the two sockets and `Sockets=http.socket` / `Sockets=https.socket` in its `[Service]` section, plus `Notify=true` for sd_notify readiness.
+
+**Installation:**
+```bash
+cp ~/containers/systemd/{http,https}.socket ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user stop traefik.service   # release ports 80/443 from rootlessport
+systemctl --user enable --now http.socket https.socket
+# Traefik starts on first connection (triggered via Requires=)
+```
+
+**Rollback:** Disable the sockets, re-add `PublishPort=80:80` + `PublishPort=443:443` to `quadlets/traefik.container`, drop the `Sockets=` / `Notify=true` / `Requires=` lines, `daemon-reload`, restart Traefik.
+
+**Check status:**
+```bash
+systemctl --user status http.socket https.socket traefik.service
+ss -tlnp | grep -E ":(80|443)\s"   # owner should be traefik (in-container), NOT rootlessport
+```
+
+**See:** [ADR-022](../docs/00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md) for rationale, alternatives considered, and verification plan.
 
 ## Notes
 

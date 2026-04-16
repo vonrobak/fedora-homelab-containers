@@ -1,0 +1,15 @@
+[Unit]
+Description=HTTPS (port 443) socket-activation for Traefik
+Documentation=file:///home/patriark/containers/docs/00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md
+
+[Socket]
+ListenStream=0.0.0.0:443
+# FileDescriptorName must match the Traefik entrypoint name (websecure)
+# so that Traefik v3.1+ recognises the inherited FD and uses it instead
+# of binding its own listener (preserves real source IPs).
+FileDescriptorName=websecure
+Service=traefik.service
+NoDelay=true
+
+[Install]
+WantedBy=sockets.target
