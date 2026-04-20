@@ -151,8 +151,15 @@ check_dependency_health() {
         return
     fi
 
-    # Check if it's a real systemd service
-    if systemctl --user is-active "$dep.service" >/dev/null 2>&1; then
+    # If target already carries a systemd unit suffix (e.g. https.socket, backup.timer),
+    # query it verbatim. Otherwise default to the .service unit.
+    local unit
+    if [[ "$dep" =~ \.(service|socket|timer|target|mount|path|device|scope|slice)$ ]]; then
+        unit="$dep"
+    else
+        unit="$dep.service"
+    fi
+    if systemctl --user is-active "$unit" >/dev/null 2>&1; then
         echo "1"
         return
     fi
