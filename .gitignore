@@ -109,6 +109,12 @@ data/crowdsec/config/parsers/s02-enrich/*
 **/backup/
 **/*.bak
 
+# Build artifacts (binary installers, vendored RPMs)
+builds/**/*.rpm
+builds/**/*.deb
+builds/**/*.tar.gz
+builds/**/*.tar.xz
+
 # OS Files
 .DS_Store
 Thumbs.db

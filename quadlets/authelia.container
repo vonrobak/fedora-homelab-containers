@@ -1,7 +1,7 @@
 [Unit]
 Description=Authelia - SSO & MFA Authentication Server (YubiKey-First)
-After=network-online.target redis-authelia.service reverse_proxy-network.service auth_services-network.service
-Wants=auth_services-network.service network-online.target reverse_proxy-network.service
+After=network-online.target redis-authelia.service reverse_proxy-network.service auth_services-network.service mail-network.service
+Wants=auth_services-network.service network-online.target reverse_proxy-network.service mail-network.service
 Requires=redis-authelia.service
 
 [Container]
@@ -13,6 +13,7 @@ AutoUpdate=registry
 # Static IPs assigned to ensure consistent DNS resolution
 Network=systemd-reverse_proxy:ip=10.89.2.78
 Network=systemd-auth_services:ip=10.89.3.78
+Network=systemd-mail:ip=10.89.9.78
 
 # Configuration and data (SELinux :Z labels)
 Volume=%h/containers/config/authelia:/config:Z
@@ -22,6 +23,9 @@ Volume=%h/containers/data/authelia:/data:Z
 Secret=authelia_jwt_secret
 Secret=authelia_session_secret
 Secret=authelia_storage_key
+# SMTP secret (uncomment when Proton Bridge SMTP auth is resolved)
+# Secret=proton_bridge_smtp_password,type=mount,target=notifier_smtp_password
+# Environment=AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE=/run/secrets/notifier_smtp_password
 
 # Expose metrics for Prometheus
 Environment=AUTHELIA_SERVER_DISABLE_HEALTHCHECK=false

@@ -1,0 +1,45 @@
+[Unit]
+Description=Proton Mail Bridge - SMTP Relay for Homelab Services
+After=network-online.target reverse_proxy-network.service mail-network.service
+Wants=network-online.target reverse_proxy-network.service mail-network.service
+
+[Container]
+Image=localhost/proton-bridge:3.23.1
+ContainerName=proton-bridge
+
+# Map host UID into container (ADR-001: rootless containers)
+UserNS=keep-id
+
+# Allow binding port 25 (socat forwarder for Authelia smtp:// scheme compat)
+AddCapability=NET_BIND_SERVICE
+
+# Networks: reverse_proxy FIRST for internet access to Proton servers
+Network=systemd-reverse_proxy:ip=10.89.2.88
+Network=systemd-mail:ip=10.89.9.69
+
+# Persistent storage (encrypted credentials + cache)
+Volume=/mnt/btrfs-pool/subvol7-containers/proton-bridge/config:/home/bridge/.config/protonmail/bridge-v3:Z
+Volume=/mnt/btrfs-pool/subvol7-containers/proton-bridge/data:/home/bridge/.local/share/protonmail/bridge-v3:Z
+Volume=/mnt/btrfs-pool/subvol7-containers/proton-bridge/gnupg:/home/bridge/.gnupg:Z
+Volume=/mnt/btrfs-pool/subvol7-containers/proton-bridge/password-store:/home/bridge/.password-store:Z
+
+# Health check (SMTP handshake verification)
+HealthCmd=bash -c 'echo QUIT | nc -w 3 localhost 1025 | grep -q 220 || exit 1'
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=120s
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+RestartSec=30s
+TimeoutStartSec=300
+TimeoutStopSec=30s
+
+MemoryMax=512M
+MemoryHigh=400M
+CPUQuota=50%
+
+[Install]
+WantedBy=default.target
