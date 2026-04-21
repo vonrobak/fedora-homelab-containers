@@ -10,8 +10,8 @@ HostName=cadvisor
 AutoUpdate=registry
 Network=systemd-monitoring
 
-# cAdvisor needs access to host resources
-Volume=/:/rootfs:ro
+# rshared propagation on / so removable-drive unmounts propagate in — see ADR-023.
+Volume=/:/rootfs:ro,rshared
 Volume=/run/user/1000/podman/podman.sock:/var/run/docker.sock:ro
 Volume=/sys:/sys:rw
 Volume=%h/.local/share/containers:/var/lib/containers:ro
