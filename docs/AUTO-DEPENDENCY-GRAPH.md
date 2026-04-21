@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-03-24 06:01:52 UTC
+**Generated:** 2026-04-21 08:27:34 UTC
 **System:** fedora-htpc
 
 ---
@@ -52,6 +52,7 @@ graph TB
         navidrome[navidrome]
         node_exporter[node_exporter]
         promtail[promtail]
+        proton_bridge[proton-bridge]
         qbittorrent[qbittorrent]
         unpoller[unpoller]
     end
@@ -77,6 +78,7 @@ graph TB
     traefik -.-> navidrome
     traefik -.-> nextcloud
     traefik -.-> prometheus
+    traefik -.-> proton_bridge
     traefik -.-> qbittorrent
     traefik -.-> unpoller
     traefik -.-> vaultwarden
@@ -100,7 +102,7 @@ graph TB
 |---------|-------------------|----------------|
 | **authelia** | redis-authelia | 🟡 Cannot access Authelia-protected services (monitoring, dashboard) |
 | **redis-authelia** | — | 🟡 All SSO sessions lost, users must re-authenticate |
-| **traefik** | — | 🔴 Total outage — no external access to any service |
+| **traefik** | http.socket,https.socket | 🔴 Total outage — no external access to any service |
 
 ### Tier 2: Infrastructure
 
@@ -146,6 +148,7 @@ graph TB
 | **navidrome** | — | 🟢 Service-specific impact |
 | **node_exporter** | — | 🟢 Service-specific impact |
 | **promtail** | — | 🟢 Service-specific impact |
+| **proton-bridge** | — | 🟢 Service-specific impact |
 | **qbittorrent** | — | 🟢 Service-specific impact |
 | **unpoller** | — | 🟢 Service-specific impact |
 
@@ -181,10 +184,11 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | postgresql-immich | (no ordering constraints) |
 | prometheus | node_exporter |
 | promtail | loki |
+| proton-bridge | (no ordering constraints) |
 | qbittorrent | (no ordering constraints) |
 | redis-authelia | (no ordering constraints) |
 | redis-immich | (no ordering constraints) |
-| traefik | (no ordering constraints) |
+| traefik | http.socket,https.socket |
 | unpoller | prometheus |
 | vaultwarden | traefik |
 
@@ -200,6 +204,8 @@ Services on the same network can communicate:
 
 **home_automation:** home-assistant,matter-server
 
+**mail:** authelia,proton-bridge
+
 **media_services:** jellyfin
 
 **monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,loki,node_exporter,prometheus,promtail,unpoller
@@ -208,7 +214,7 @@ Services on the same network can communicate:
 
 **photos:** immich-ml,immich-server,postgresql-immich,redis-immich
 
-**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,qbittorrent,traefik,unpoller,vaultwarden
+**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
 
 ---
 
