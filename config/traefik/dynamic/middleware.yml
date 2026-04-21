@@ -106,33 +106,37 @@ http:
           ipStrategy:
             depth: 1
 
-    # Nextcloud (authenticated users - high capacity for WebDAV sync, bulk imports)
-    # Burst sized for Music library tree walk (2,080+ directories via PROPFIND)
+    # Nextcloud (per-IP post-ADR-022) — sized for one user's worst-case bulk op.
+    # Burst covers Music library tree walk (~2080 PROPFINDs, parallel ~4–8 conns).
+    # Average drops from NAT-era 600 to steady-state-realistic 300/min.
     rate-limit-nextcloud:
       rateLimit:
-        average: 600      # Higher sustained rate for file/calendar/contact sync
-        burst: 3000       # Support full directory tree PROPFIND + bulk operations
+        average: 300
+        burst: 1500
         period: 1m
         sourceCriterion:
           ipStrategy:
             depth: 1
 
-    # qBittorrent (WebUI loads 500+ resources on first page load: JS, HTML views, images, API calls)
-    # Already behind Authelia SSO — only authenticated users reach this service
+    # qBittorrent (per-IP post-ADR-022, also behind Authelia SSO).
+    # Burst covers initial WebUI page load (~500 resources). Average matches
+    # WebUI poll cadence (~30-60 req/min) with headroom.
     rate-limit-qbittorrent:
       rateLimit:
-        average: 300      # Generous sustained rate for authenticated WebUI
-        burst: 600        # Support initial page load (~500 resources: JS, HTML, images, API)
+        average: 100
+        burst: 600
         period: 1m
         sourceCriterion:
           ipStrategy:
             depth: 1
 
-    # Immich (photo management - high capacity for thumbnail loading)
+    # Immich (per-IP post-ADR-022) — sized for one device's worst-case op.
+    # Burst covers rapid timeline scroll / mobile-app upload burst.
+    # Average drops from NAT-era 500 to realistic browsing rate.
     rate-limit-immich:
       rateLimit:
-        average: 500      # High sustained rate for browsing photo library
-        burst: 2000       # Support rapid thumbnail loading (scrolling through albums)
+        average: 200
+        burst: 1500
         period: 1m
         sourceCriterion:
           ipStrategy:
