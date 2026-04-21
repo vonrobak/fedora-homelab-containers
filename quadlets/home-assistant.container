@@ -24,8 +24,8 @@ DNSSearch=lokal
 Volume=%h/containers/config/home-assistant:/config:Z
 Volume=%h/containers/data/home-assistant:/data:Z
 
-# Ports (published for local access)
-PublishPort=8123:8123
+# Ports (bound to LAN interface only - see GH #142)
+PublishPort=192.168.1.70:8123:8123
 
 # Health Check
 HealthCmd=curl -f http://localhost:8123/manifest.json || exit 1
