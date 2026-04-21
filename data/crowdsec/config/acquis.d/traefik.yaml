@@ -1,0 +1,18 @@
+# CrowdSec acquisition: Traefik access log
+#
+# Traefik writes JSON access logs to /var/log/traefik/access.log inside its
+# own container, bind-mounted from /mnt/btrfs-pool/subvol7-containers/traefik-logs
+# on the host. CrowdSec mounts the same host path read-only at the same path.
+#
+# traefik.yml filters to statusCodes 400-599 — CrowdSec only sees errors,
+# which is what the scenarios care about (no signal in 2xx traffic).
+#
+# Parser: crowdsecurity/traefik-logs (from crowdsecurity/traefik collection)
+# Scenarios fired: base-http-scenarios + http-cve (via collections)
+#
+# force_inotify: log rotation via logrotate; inotify detects new file correctly.
+filenames:
+  - /var/log/traefik/access.log
+labels:
+  type: traefik
+force_inotify: true

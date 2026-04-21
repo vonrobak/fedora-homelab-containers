@@ -159,9 +159,20 @@ storage:
 notifier:
   disable_startup_check: false
 
+  # SMTP via Proton Bridge — blocked by AUTH 454 error (bridge requires STARTTLS before AUTH)
+  # TODO: resolve SMTP AUTH issue, then switch back from filesystem to smtp
+  # smtp:
+  #   host: 'proton-bridge'
+  #   port: 25
+  #   timeout: 10s
+  #   username: 'surfaceideology@pm.me'
+  #   # password: set via AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE env var (Podman secret)
+  #   sender: 'Patriark Homelab <surfaceideology@pm.me>'
+  #   startup_check_address: 'surfaceideology@pm.me'
+  #   disable_starttls: false
+  #   disable_require_tls: false
+  #   tls:
+  #     skip_verify: true
+
   filesystem:
     filename: /data/notification.txt
-
-identity_validation:
-  reset_password:
-    jwt_secret: file:///run/secrets/authelia_jwt_secret

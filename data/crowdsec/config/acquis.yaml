@@ -1,21 +1,17 @@
-# CrowdSec Log Acquisition Configuration
+# CrowdSec Log Acquisition (primary file)
 #
-# Note: CrowdSec primary value comes from CAPI (Community API) which provides
-# 5000+ known-bad IPs from the global CrowdSec community. Local log parsing
-# is secondary and optional.
+# Per-source acquisition configs live in ./acquis.d/ — see that directory
+# for the authoritative source list. This file intentionally empty so the
+# primary and dir-based configs don't double up.
 #
-# Current setup: Minimal configuration (satisfies requirement for datasource)
-# - Primary threat intel: CAPI (5000+ known-bad IPs from global community)
-# - Local acquisition: Placeholder file source (no actual logs processed yet)
+# Active sources (as of 2026-04-21):
+#   - acquis.d/traefik.yaml — Traefik JSON access log (fires base-http + http-cve scenarios)
 #
-# Future enhancement: Configure actual log sources when needed
-# Options: journald export to file, docker socket mount, or syslog
-#
+# Deferred sources:
+#   - sshd journald: SSH is not internet-exposed (UDM doesn't port-forward 22);
+#     LAN-only brute-force is low-value. Revisit if sshd exposure changes.
+#   - Authelia journald: crowdsec:latest image lacks journalctl. Options: (a) switch
+#     to a debian-based image variant, (b) deploy a systemd journal-to-file
+#     bridge, (c) enable LePresidente/authelia collection after wiring a
+#     file-based log path in authelia.container. Separate ADR.
 ---
-# Placeholder file source (satisfies CrowdSec's requirement for at least one datasource)
-# Note: This file doesn't need to exist - CrowdSec will wait for it
-filenames:
-  - /var/log/crowdsec-placeholder.log
-labels:
-  type: syslog
-force_inotify: false

@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-03-24 06:01:53 UTC
-**Total Documents:** 419
+**Generated:** 2026-04-21 08:27:35 UTC
+**Total Documents:** 446
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (14 documents)
+### 00-foundation/ (19 documents)
 
 **Fundamentals and core concepts**
 
@@ -43,6 +43,11 @@
 - ADR-018: [2026-02-04-ADR-018-static-ip-multi-network-services](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
 - ADR-019: [2026-02-22-ADR-019-filesystem-permission-model](00-foundation/decisions/2026-02-22-ADR-019-filesystem-permission-model.md)
 - ADR-020: [2026-03-21-ADR-020-daily-external-backups](00-foundation/decisions/2026-03-21-ADR-020-daily-external-backups.md)
+- ADR-021: [2026-03-28-ADR-021-urd-backup-tool](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
+- ADR-022: [2026-04-16-ADR-022-traefik-socket-activation](00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md)
+- ADR-024: [2026-04-18-ADR-024-database-dump-backup](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
+- ADR-025: [2026-04-18-ADR-025-db-storage-migration-deferred](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
+- ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
 ---
 
@@ -203,7 +208,7 @@
 
 ---
 
-### 98-journals/ (188 documents)
+### 98-journals/ (197 documents)
 
 **Chronological project history (append-only log)**
 
@@ -211,7 +216,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (34 documents)
+### 99-reports/ (47 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -221,22 +226,26 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-03-18: [2025-12-31-ADR-016-configuration-design-principles.md](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
-- 2026-03-18: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
-- 2026-03-22: [2026-03-21-ADR-020-daily-external-backups.md](00-foundation/decisions/2026-03-21-ADR-020-daily-external-backups.md)
-- 2026-03-22: [backup-strategy.md](20-operations/guides/backup-strategy.md)
-- 2026-03-20: [2026-03-19-fedora-coreos-rebuild-plan.md](97-plans/2026-03-19-fedora-coreos-rebuild-plan.md)
-- 2026-03-20: [2026-03-19-nixos-homelab-rebuild-plan.md](97-plans/2026-03-19-nixos-homelab-rebuild-plan.md)
-- 2026-03-22: [2026-03-22-urd-btrfs-time-machine-plan.md](97-plans/2026-03-22-urd-btrfs-time-machine-plan.md)
-- 2026-03-17: [2026-03-17-pasta-source-nat-investigation.md](98-journals/2026-03-17-pasta-source-nat-investigation.md)
-- 2026-03-19: [2026-03-17-traefik-network-attack-surface-reduction.md](98-journals/2026-03-17-traefik-network-attack-surface-reduction.md)
-- 2026-03-22: [2026-03-21-backup-script-operational-excellence.md](98-journals/2026-03-21-backup-script-operational-excellence.md)
-- 2026-03-22: [2026-03-22-backup-system-audit-and-architecture-exploration.md](98-journals/2026-03-22-backup-system-audit-and-architecture-exploration.md)
-- 2026-03-23: [2026-03-23-cadvisor-oom-death-spiral-postmortem.md](98-journals/2026-03-23-cadvisor-oom-death-spiral-postmortem.md)
-- 2026-03-24: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-03-24: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-03-24: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-03-24: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-04-20: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
+- 2026-04-16: [2026-04-16-ADR-022-traefik-socket-activation.md](00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md)
+- 2026-04-18: [2026-04-18-ADR-024-database-dump-backup.md](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
+- 2026-04-18: [2026-04-18-ADR-025-db-storage-migration-deferred.md](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
+- 2026-04-18: [2026-04-18-ADR-023-btrfs-storage-architecture-databases.md](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
+- 2026-04-16: [2026-03-17-pasta-source-nat-investigation.md](98-journals/2026-03-17-pasta-source-nat-investigation.md)
+- 2026-04-16: [2026-03-26-promtail-journal-export-outage.md](98-journals/2026-03-26-promtail-journal-export-outage.md)
+- 2026-04-20: [2026-03-28-podman-storage-migration.md](98-journals/2026-03-28-podman-storage-migration.md)
+- 2026-04-16: [2026-03-31-authelia-sso-gathio-debugging.md](98-journals/2026-03-31-authelia-sso-gathio-debugging.md)
+- 2026-04-16: [2026-03-31-proton-bridge-smtp-integration-attempt.md](98-journals/2026-03-31-proton-bridge-smtp-integration-attempt.md)
+- 2026-04-16: [2026-04-16-adr-022-socket-activation-prototype.md](98-journals/2026-04-16-adr-022-socket-activation-prototype.md)
+- 2026-04-18: [2026-04-18-podman-storage-migration-execution.md](98-journals/2026-04-18-podman-storage-migration-execution.md)
+- 2026-04-21: [2026-04-21-crowdsec-acquisition-and-rate-limit-retune.md](98-journals/2026-04-21-crowdsec-acquisition-and-rate-limit-retune.md)
+- 2026-04-21: [2026-04-21-ha-rate-limit-rollback-post-adr022.md](98-journals/2026-04-21-ha-rate-limit-rollback-post-adr022.md)
+- 2026-04-16: [2026-04-16-nat-remediation-research.md](99-reports/2026-04-16-nat-remediation-research.md)
+- 2026-04-17: [2026-04-17-service-configuration-review.md](99-reports/2026-04-17-service-configuration-review.md)
+- 2026-04-18: [2026-04-18-design-review-ADR-023-btrfs-storage-architecture-databases.md](99-reports/2026-04-18-design-review-ADR-023-btrfs-storage-architecture-databases.md)
+- 2026-04-17: [remediation-monthly-202603.md](99-reports/remediation-monthly-202603.md)
+- 2026-04-15: [security-audit-2026-04-15.md](99-reports/security-audit-2026-04-15.md)
+- 2026-04-21: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
 
 ---
 
@@ -244,6 +253,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 **Traefik:**
 - Guide: [traefik.md](10-services/guides/traefik.md)
+- ADR: [ADR-022](00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md)
 - Config: `~/containers/config/traefik/`
 - Quadlet: `~/.config/containers/systemd/traefik.container`
 
@@ -275,7 +285,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - Guide: [nextcloud.md](10-services/guides/nextcloud.md)
 - ADR: [ADR-013](10-services/decisions/2025-12-20-ADR-013-nextcloud-native-authentication.md)
 - ADR: [ADR-014](10-services/decisions/2025-12-20-ADR-014-nextcloud-passwordless-authentication.md)
-- Config: `~/containers/config/nextcloud/`
 - Quadlet: `~/.config/containers/systemd/nextcloud.container`
 
 **Vaultwarden:**

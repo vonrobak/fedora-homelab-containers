@@ -12,6 +12,9 @@ Network=systemd-reverse_proxy:ip=10.89.2.70
 # Volumes
 Volume=%h/containers/data/crowdsec/db:/var/lib/crowdsec/data:Z
 Volume=%h/containers/data/crowdsec/config:/etc/crowdsec:Z
+# Traefik access log acquisition (read-only). Written by traefik.container.
+# Shared label (:z) — Traefik writes, CrowdSec tails.
+Volume=/mnt/btrfs-pool/subvol7-containers/traefik-logs:/var/log/traefik:ro,z
 
 # Environment - Install Traefik collection
 Environment=COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve

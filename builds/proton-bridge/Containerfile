@@ -1,0 +1,21 @@
+FROM registry.fedoraproject.org/fedora:43
+
+# Install Proton Mail Bridge from local RPM + netcat for healthcheck
+COPY protonmail-bridge-3.23.1-1.x86_64.rpm /tmp/
+RUN dnf install -y /tmp/protonmail-bridge-3.23.1-1.x86_64.rpm nmap-ncat pass socat && \
+    dnf clean all && \
+    rm -f /tmp/protonmail-bridge-3.23.1-1.x86_64.rpm
+
+# Create home directory for mapped host user (keep-id maps UID 1000)
+RUN mkdir -p /home/bridge && chown 1000:1000 /home/bridge
+ENV HOME=/home/bridge
+
+# Initialize pass (password-store) for bridge keychain
+# GPG key and pass store will be created during first interactive login
+
+# SMTP ports (1025 native + 25 forwarded for Authelia compat)
+EXPOSE 1025/tcp 25/tcp
+
+# Entrypoint script: start socat forwarder + bridge
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

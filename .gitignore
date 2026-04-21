@@ -80,18 +80,21 @@ data/*
 # CrowdSec: Un-ignore parent directories first (gitignore requires this)
 !data/crowdsec/
 !data/crowdsec/config/
+!data/crowdsec/config/acquis.d/
 !data/crowdsec/config/parsers/
 !data/crowdsec/config/parsers/s02-enrich/
 
 # CrowdSec: Track custom configs
 !data/crowdsec/config/profiles.yaml
 !data/crowdsec/config/acquis.yaml
+!data/crowdsec/config/acquis.d/*.yaml
 !data/crowdsec/config/parsers/s02-enrich/local-whitelist.yaml
 
 # CrowdSec: Re-ignore everything else in config (secrets, hub, etc.)
 data/crowdsec/config/*
 !data/crowdsec/config/profiles.yaml
 !data/crowdsec/config/acquis.yaml
+!data/crowdsec/config/acquis.d/
 !data/crowdsec/config/parsers/
 data/crowdsec/config/parsers/*
 !data/crowdsec/config/parsers/s02-enrich/
@@ -105,6 +108,12 @@ data/crowdsec/config/parsers/s02-enrich/*
 # Backup files (may contain old secrets)
 **/backup/
 **/*.bak
+
+# Build artifacts (binary installers, vendored RPMs)
+builds/**/*.rpm
+builds/**/*.deb
+builds/**/*.tar.gz
+builds/**/*.tar.xz
 
 # OS Files
 .DS_Store
