@@ -7,7 +7,6 @@ Wants=home_automation-network.service network-online.target
 Image=ghcr.io/home-assistant-libs/python-matter-server:stable
 ContainerName=matter-server
 HostName=matter-server
-AutoUpdate=registry
 
 # Network (home_automation only - no internet needed)
 Network=systemd-home_automation

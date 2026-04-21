@@ -220,11 +220,14 @@ Machine-generated or rare authoritative snapshots. Do not create reports for con
 
 ## Archiving
 
+**The archive location is always `docs/90-archive/`.** Do not create archive subdirectories inside other categories (no `98-journals/archive/`, no `10-services/archive/`, etc.). The single flat location is intentional — everything archived lives in one place, regardless of which category it came from.
+
 ### When to Archive
 
 - **Superseded:** A newer document replaces it entirely
 - **Obsolete:** Technology/service no longer in use
 - **Consolidated:** Multiple docs merged into one
+- **Session closure:** A postmortem, handoff, or session note whose follow-ups have been filed as issues and are being actioned — the journal's job is done, move it out of the active listing
 
 ### How to Archive
 

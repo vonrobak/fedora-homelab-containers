@@ -6,7 +6,6 @@ Wants=network-online.target photos-network.service
 [Container]
 Image=docker.io/valkey/valkey:latest
 ContainerName=redis-immich
-AutoUpdate=registry
 
 # Network
 Network=systemd-photos

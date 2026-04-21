@@ -7,7 +7,6 @@ Requires=redis-authelia.service
 [Container]
 Image=docker.io/authelia/authelia:latest
 ContainerName=authelia
-AutoUpdate=registry
 
 # Multi-network: Serves SSO portal + handles auth verification
 # Static IPs assigned to ensure consistent DNS resolution

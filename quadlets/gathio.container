@@ -8,7 +8,6 @@ Requires=gathio-db.service
 Image=ghcr.io/lowercasename/gathio:latest
 ContainerName=gathio
 HostName=gathio
-AutoUpdate=registry
 
 # MongoDB connection (password mounted as file at /run/secrets/mongodb_password)
 # config.toml will read this file for the connection string

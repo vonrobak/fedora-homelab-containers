@@ -6,7 +6,6 @@ Wants=network-online.target photos-network.service
 [Container]
 Image=ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
 ContainerName=postgresql-immich
-AutoUpdate=registry
 
 # Network
 Network=systemd-photos

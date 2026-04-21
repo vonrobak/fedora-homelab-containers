@@ -6,7 +6,6 @@ Wants=auth_services-network.service network-online.target
 [Container]
 Image=docker.io/library/redis:7-alpine
 ContainerName=redis-authelia
-AutoUpdate=registry
 
 # Network
 Network=systemd-auth_services

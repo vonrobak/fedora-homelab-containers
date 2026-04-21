@@ -7,7 +7,6 @@ Wants=network-online.target
 [Container]
 Image=docker.io/library/redis:7-alpine
 ContainerName=nextcloud-redis
-AutoUpdate=registry
 
 # Redis password authentication (using podman secret)
 Secret=nextcloud_redis_password

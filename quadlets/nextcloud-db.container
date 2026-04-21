@@ -7,7 +7,6 @@ Wants=network-online.target
 [Container]
 Image=docker.io/library/mariadb:11
 ContainerName=nextcloud-db
-AutoUpdate=registry
 
 # MariaDB configuration (using podman secrets)
 Secret=nextcloud_db_root_password,type=env,target=MYSQL_ROOT_PASSWORD
