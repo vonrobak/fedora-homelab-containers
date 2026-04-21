@@ -41,6 +41,10 @@ The backup *strategy* from ADR-020 is unchanged — Urd implements the same mode
 
 These are the touchpoints between Urd and the homelab infrastructure. **Update this ADR when any of these change.**
 
+### Drive-swap safety (ADR-023)
+
+Urd's drive-rotation pattern (swapping LUKS-encrypted BTRFS drives in the IcyBox dock) was pinning `/dev/mapper/luks-<UUID>` via recursive bind mounts in the monitoring stack. ADR-023 resolves this by putting `cadvisor` and `node_exporter` on `rshared` propagation so host unmounts propagate into the containers. Any future container that bind-mounts host paths reaching `/run/media` must follow the same pattern.
+
 ### Systemd units
 
 | Unit | Schedule | Description |

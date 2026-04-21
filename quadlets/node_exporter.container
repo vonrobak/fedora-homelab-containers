@@ -9,9 +9,8 @@ ContainerName=node_exporter
 HostName=node_exporter
 Network=systemd-monitoring
 
-# Node exporter needs access to host filesystem for accurate metrics
-# Mount host paths as read-only
-Volume=/:/host:ro,rslave
+# rshared propagation on / so removable-drive unmounts propagate in — see ADR-023.
+Volume=/:/host:ro,rshared
 Volume=/sys:/host/sys:ro,rslave
 Volume=/proc:/host/proc:ro,rslave
 
@@ -22,7 +21,8 @@ Volume=%h/containers/data/backup-metrics:/textfile-metrics:ro,Z
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Node exporter command line arguments
-Exec=--path.rootfs=/host --collector.textfile.directory=/textfile-metrics
+# mount-points-exclude extends the upstream default with run/media/ for removable backup drives (ADR-023)
+Exec=--path.rootfs=/host --collector.textfile.directory=/textfile-metrics --collector.filesystem.mount-points-exclude=^/(dev|proc|run/(credentials/.+|media/.+)|sys|var/lib/(docker|containers)/.+|sysroot)($|/)
 
 DNS=192.168.1.69
 
