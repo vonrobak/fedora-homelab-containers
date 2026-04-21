@@ -35,9 +35,9 @@ Volume=/mnt/btrfs-pool/subvol6-tmp/jellyfin-cache:/cache:Z
 Volume=/mnt/btrfs-pool/subvol4-multimedia:/media/multimedia:ro,z
 Volume=/mnt/btrfs-pool/subvol5-music:/media/music:ro,z
 
-# Ports
-PublishPort=8096:8096
-PublishPort=7359:7359/udp
+# Ports (bound to LAN interface only - see GH #142)
+PublishPort=192.168.1.70:8096:8096
+PublishPort=192.168.1.70:7359:7359/udp
 
 # Health Check
 HealthCmd=curl -f http://localhost:8096/health || exit 1

@@ -6,3 +6,7 @@ Subnet=10.89.6.0/24
 Gateway=10.89.6.1
 IPRange=10.89.6.2-10.89.6.68
 DNS=192.168.1.69
+# Internal network - no outbound internet access
+# home-assistant has reverse_proxy as secondary network for cloud integrations
+# matter-server is LAN-only (Matter multicast) and needs no egress
+Internal=true
