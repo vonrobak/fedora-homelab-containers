@@ -35,7 +35,6 @@ HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy |
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=3
-AutoUpdate=registry
 
 [Service]
 Slice=container.slice

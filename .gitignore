@@ -53,6 +53,11 @@ config/jellyfin/transcoding-temp/
 # that are regenerated regularly and don't need version control
 docs/99-reports/
 
+# Archived Documentation
+# Superseded/obsolete/closed docs — kept locally for historical context
+# but not version-controlled. See docs/CONTRIBUTING.md for archive conventions.
+docs/90-archive/
+
 # (Entire .claude/ directory is ignored above)
 
 # Container Runtime

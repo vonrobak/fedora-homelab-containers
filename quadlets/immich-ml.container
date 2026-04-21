@@ -6,7 +6,6 @@ Wants=network-online.target photos-network.service
 [Container]
 Image=ghcr.io/immich-app/immich-machine-learning:v2.6.3
 ContainerName=immich-ml
-AutoUpdate=registry
 
 # Network (isolated - only on photos network)
 Network=systemd-photos

@@ -5,9 +5,8 @@ Wants=network-online.target
 
 
 [Container]
-Image=docker.io/library/nextcloud:latest
+Image=docker.io/library/nextcloud:33
 ContainerName=nextcloud
-AutoUpdate=registry
 
 # Database configuration (using podman secrets)
 Secret=nextcloud_db_password,type=env,target=MYSQL_PASSWORD

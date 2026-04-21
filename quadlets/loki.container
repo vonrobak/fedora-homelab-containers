@@ -22,7 +22,6 @@ DNS=192.168.1.69
 
 # No container healthcheck possible - Loki uses a scratch/distroless image with no shell or tools
 # External monitoring via Prometheus up{job="loki"} and homelab-intel.sh (verifies via Promtail logs)
-AutoUpdate=registry
 
 [Service]
 Slice=container.slice

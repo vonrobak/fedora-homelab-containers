@@ -7,7 +7,6 @@ Wants=home_automation-network.service network-online.target reverse_proxy-networ
 Image=ghcr.io/home-assistant/home-assistant:stable
 ContainerName=home-assistant
 HostName=home-assistant
-AutoUpdate=registry
 
 # Networks (reverse_proxy FIRST for internet access)
 # Static IPs assigned to ensure consistent routing (see ADR-018)

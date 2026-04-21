@@ -7,7 +7,6 @@ Wants=gathio-network.service network-online.target
 Image=docker.io/library/mongo:7
 ContainerName=gathio-db
 HostName=gathio-db
-AutoUpdate=registry
 
 # Database configuration (using podman secrets - Pattern 2: type=env)
 Secret=gathio_mongodb_password,type=env,target=MONGO_INITDB_ROOT_PASSWORD

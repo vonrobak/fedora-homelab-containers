@@ -958,3 +958,74 @@ groups:
             excludes 4xx from burn rate detection.
 
             Check: podman logs audiobookshelf --tail 100
+
+  # ===========================================================================
+  # LOW-VOLUME SUSTAINED-5xx COMPENSATING ALERTS
+  # Designed for the class of incident documented in
+  # docs/98-journals/2026-04-21-nextcloud-slo-collapse-postmortem.md:
+  # a service whose only traffic is probes (~1 req/min) can sit at ~90% 5xx
+  # for days without tripping the multi-window burn-rate machinery, which is
+  # sized for high-traffic services. The SLO dashboard will register 27x
+  # budget burn weeks after the fact, but no page fires in real time.
+  #
+  # These alerts fire on sustained absolute 5xx count over a long window
+  # combined with a low-traffic guard. The thresholds are per-service,
+  # calibrated against each service's typical traffic floor.
+  # ===========================================================================
+  - name: low_volume_sustained_5xx_compensating
+    interval: 1m
+    rules:
+      - alert: NextcloudSustained5xxLowVolume
+        # During the 2026-04-06 → 2026-04-14 incident: ~30-40 503s/hr against
+        # ~36 req/hr of probes → ~180-240 5xx per 6h at <0.5 req/s. Threshold
+        # of 100 fires well inside the incident envelope but is comfortably
+        # above any transient restart noise.
+        expr: |
+          sum(increase(traefik_service_requests_total{exported_service="nextcloud@file", code=~"5.."}[6h])) > 100
+          and
+          sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[6h])) < 0.5
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: nextcloud
+        annotations:
+          summary: "Nextcloud sustained 5xx at low traffic (>100 5xx in 6h, <0.5 req/s)"
+          description: |
+            Nextcloud has returned more than 100 5xx responses over the last 6 hours
+            while running at less than 0.5 req/s. This is the signature of a stuck
+            maintenance/upgrade state (see 2026-04-21 postmortem) that the burn-rate
+            alerts are blind to at this traffic level.
+
+            Check:
+              podman exec -u www-data nextcloud php occ status
+              podman exec -u www-data nextcloud php occ upgrade      # if needsDbUpgrade
+              curl -sf https://nextcloud.patriark.org/status.php | jq
+
+            Runbook reference: scripts/post-update-health-check.sh:76-116
+
+      - alert: HomeAssistantSustained5xxLowVolume
+        # HA runs at ~37 req/day through Traefik (most traffic is websocket/LAN).
+        # In 6h that's ~9 requests; a stuck-5xx state would produce at most
+        # ~9 5xx. Threshold of 20 requires at least ~2 full 6h windows of
+        # sustained failure or a burst of probe retries.
+        expr: |
+          sum(increase(traefik_service_requests_total{exported_service="home-assistant@file", code=~"5.."}[6h])) > 20
+          and
+          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[6h])) < 0.5
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: home-assistant
+        annotations:
+          summary: "Home Assistant sustained 5xx at low traffic (>20 5xx in 6h)"
+          description: |
+            Home Assistant has returned more than 20 5xx responses over the last 6
+            hours at low request rate. At this traffic level the standard burn-rate
+            alerts can't distinguish a stuck-503 state from normal idle traffic.
+
+            Check:
+              systemctl --user status home-assistant.service
+              podman logs home-assistant --tail 100
+              curl -sf -o /dev/null -w '%{http_code}' https://home.patriark.org/

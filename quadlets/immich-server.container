@@ -7,7 +7,6 @@ Requires=postgresql-immich.service redis-immich.service
 [Container]
 Image=ghcr.io/immich-app/immich-server:v2.6.3
 ContainerName=immich-server
-AutoUpdate=registry
 
 # Run as non-root user (security: ADR-001 Rootless Containers)
 # NOTE: User=1000:1000 removed due to Immich folder integrity check incompatibility
