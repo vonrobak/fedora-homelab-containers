@@ -58,6 +58,10 @@ docs/99-reports/
 # but not version-controlled. See docs/CONTRIBUTING.md for archive conventions.
 docs/90-archive/
 
+# Private journal entries — suffix any journal filename with `-private.md`
+# to keep it local (not version-controlled)
+docs/98-journals/*-private.md
+
 # (Entire .claude/ directory is ignored above)
 
 # Container Runtime
