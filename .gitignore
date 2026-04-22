@@ -62,6 +62,12 @@ docs/90-archive/
 # to keep it local (not version-controlled)
 docs/98-journals/*-private.md
 
+# Active-probe posture script — tuned attack tool for this specific perimeter
+# (curated attack paths, CrowdSec burst logic, Region Block negative test).
+# Low reconstruction cost but publishing it hands adversaries a pre-built
+# kit. Distributed to owner's MacBook via scp out-of-band, not via git.
+scripts/security/posture-remote.py
+
 # (Entire .claude/ directory is ignored above)
 
 # Container Runtime
