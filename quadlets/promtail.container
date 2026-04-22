@@ -21,6 +21,9 @@ Volume=%h/containers/.claude/context/decision-log.jsonl:/var/log/remediation/dec
 # Traefik access logs
 Volume=/mnt/btrfs-pool/subvol7-containers/traefik-logs:/var/log/traefik:ro,z
 
+# UniFi UDM Pro syslog (written by unifi-syslog container)
+Volume=/mnt/btrfs-pool/subvol8-db/unifi-syslog:/var/log/unifi-syslog:ro,z
+
 # Promtail command line arguments
 Exec=-config.file=/etc/promtail/promtail-config.yml
 

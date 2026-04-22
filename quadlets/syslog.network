@@ -1,0 +1,11 @@
+[Unit]
+Description=Syslog Ingestion Network
+
+[Network]
+Subnet=10.89.7.0/24
+Gateway=10.89.7.1
+IPRange=10.89.7.2-10.89.7.68
+DNS=192.168.1.69
+# Internal network - syslog receiver has no outbound internet.
+# Data flow is one-way: UDM Pro -> syslog-ng -> file -> Promtail (separate container).
+Internal=true
