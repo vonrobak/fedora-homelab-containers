@@ -1,0 +1,46 @@
+[Unit]
+Description=UniFi UDM Pro Syslog Receiver (syslog-ng)
+After=network-online.target syslog-network.service
+Wants=syslog-network.service network-online.target
+
+[Container]
+Image=docker.io/linuxserver/syslog-ng:latest
+ContainerName=unifi-syslog
+HostName=unifi-syslog
+AutoUpdate=registry
+Network=systemd-syslog:ip=10.89.7.69
+
+# Bind to LAN interface only - NOT 0.0.0.0. Defense in depth alongside firewalld rule.
+PublishPort=192.168.1.70:1514:1514/udp
+
+# Rootless Podman maps container-uid-0 to host-uid-1000 (patriark), which owns the bind
+# mount. Running syslog-ng as container-root keeps write semantics simple and avoids the
+# LSIO abc-user subuid shuffle that requires either a :U volume flag (unreliable with :Z)
+# or host-side subuid chown. For a write-only forensic-log receiver this is the cleaner
+# pattern.
+Environment=PUID=0
+Environment=PGID=0
+Environment=TZ=Europe/Oslo
+
+Volume=%h/containers/config/unifi-syslog/syslog-ng.conf:/config/syslog-ng.conf:ro,Z
+Volume=/mnt/btrfs-pool/subvol8-db/unifi-syslog:/var/log/unifi-syslog:Z
+
+DNS=192.168.1.69
+
+HealthCmd=pgrep -x syslog-ng
+HealthInterval=60s
+HealthRetries=3
+HealthStartPeriod=30s
+HealthTimeout=5s
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=60
+
+# Resource Limits
+MemoryMax=128M
+MemoryHigh=110M
+
+[Install]
+WantedBy=default.target

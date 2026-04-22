@@ -1,0 +1,24 @@
+# UniFi UDM Pro Syslog Rotation
+# Purpose: Bound growth of /var/log/unifi-syslog/udm.log (forensic log from UDM SIEM Server)
+#
+# Installation:
+#   sudo cp ~/containers/config/logrotate/unifi-syslog /etc/logrotate.d/unifi-syslog
+#   sudo chmod 644 /etc/logrotate.d/unifi-syslog
+#
+# Testing:
+#   sudo logrotate -d /etc/logrotate.d/unifi-syslog
+
+/mnt/btrfs-pool/subvol8-db/unifi-syslog/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    # copytruncate avoids cross-user podman signaling (logrotate runs as root,
+    # unifi-syslog is rootless under uid 1000). syslog-ng keeps its file
+    # descriptor open and continues writing; we accept a tiny rotation-window
+    # data gap for forensic logs.
+    copytruncate
+    minsize 1k
+}

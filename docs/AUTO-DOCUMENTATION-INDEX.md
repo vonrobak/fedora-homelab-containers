@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-04-21 08:27:35 UTC
-**Total Documents:** 446
+**Generated:** 2026-04-22 05:02:54 UTC
+**Total Documents:** 390
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (19 documents)
+### 00-foundation/ (21 documents)
 
 **Fundamentals and core concepts**
 
@@ -47,6 +47,8 @@
 - ADR-022: [2026-04-16-ADR-022-traefik-socket-activation](00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md)
 - ADR-024: [2026-04-18-ADR-024-database-dump-backup](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
 - ADR-025: [2026-04-18-ADR-025-db-storage-migration-deferred](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
+- ADR-023: [2026-04-21-ADR-023-monitoring-bind-propagation](00-foundation/decisions/2026-04-21-ADR-023-monitoring-bind-propagation.md)
+- ADR-026: [2026-04-21-ADR-026-nextcloud-pinned-major-version](00-foundation/decisions/2026-04-21-ADR-026-nextcloud-pinned-major-version.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
 ---
@@ -208,7 +210,7 @@
 
 ---
 
-### 98-journals/ (197 documents)
+### 98-journals/ (200 documents)
 
 **Chronological project history (append-only log)**
 
@@ -226,26 +228,26 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-04-20: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
+- 2026-04-22: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
 - 2026-04-16: [2026-04-16-ADR-022-traefik-socket-activation.md](00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md)
-- 2026-04-18: [2026-04-18-ADR-024-database-dump-backup.md](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
-- 2026-04-18: [2026-04-18-ADR-025-db-storage-migration-deferred.md](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
-- 2026-04-18: [2026-04-18-ADR-023-btrfs-storage-architecture-databases.md](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
-- 2026-04-16: [2026-03-17-pasta-source-nat-investigation.md](98-journals/2026-03-17-pasta-source-nat-investigation.md)
-- 2026-04-16: [2026-03-26-promtail-journal-export-outage.md](98-journals/2026-03-26-promtail-journal-export-outage.md)
-- 2026-04-20: [2026-03-28-podman-storage-migration.md](98-journals/2026-03-28-podman-storage-migration.md)
-- 2026-04-16: [2026-03-31-authelia-sso-gathio-debugging.md](98-journals/2026-03-31-authelia-sso-gathio-debugging.md)
-- 2026-04-16: [2026-03-31-proton-bridge-smtp-integration-attempt.md](98-journals/2026-03-31-proton-bridge-smtp-integration-attempt.md)
+- 2026-04-21: [2026-04-18-ADR-024-database-dump-backup.md](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
+- 2026-04-21: [2026-04-18-ADR-025-db-storage-migration-deferred.md](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
+- 2026-04-22: [2026-04-21-ADR-023-monitoring-bind-propagation.md](00-foundation/decisions/2026-04-21-ADR-023-monitoring-bind-propagation.md)
+- 2026-04-21: [2026-04-21-ADR-026-nextcloud-pinned-major-version.md](00-foundation/decisions/2026-04-21-ADR-026-nextcloud-pinned-major-version.md)
+- 2026-04-21: [2026-04-18-ADR-023-btrfs-storage-architecture-databases.md](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
+- 2026-04-21: [2026-04-21-nextcloud-slo-collapse-postmortem.md](90-archive/2026-04-21-nextcloud-slo-collapse-postmortem.md)
+- 2026-04-21: [2026-03-17-pasta-source-nat-investigation.md](98-journals/2026-03-17-pasta-source-nat-investigation.md)
+- 2026-04-21: [2026-03-26-promtail-journal-export-outage.md](98-journals/2026-03-26-promtail-journal-export-outage.md)
+- 2026-04-21: [2026-03-28-podman-storage-migration.md](98-journals/2026-03-28-podman-storage-migration.md)
+- 2026-04-21: [2026-03-31-authelia-sso-gathio-debugging.md](98-journals/2026-03-31-authelia-sso-gathio-debugging.md)
+- 2026-04-21: [2026-03-31-proton-bridge-smtp-integration-attempt.md](98-journals/2026-03-31-proton-bridge-smtp-integration-attempt.md)
 - 2026-04-16: [2026-04-16-adr-022-socket-activation-prototype.md](98-journals/2026-04-16-adr-022-socket-activation-prototype.md)
-- 2026-04-18: [2026-04-18-podman-storage-migration-execution.md](98-journals/2026-04-18-podman-storage-migration-execution.md)
+- 2026-04-21: [2026-04-18-podman-storage-migration-execution.md](98-journals/2026-04-18-podman-storage-migration-execution.md)
 - 2026-04-21: [2026-04-21-crowdsec-acquisition-and-rate-limit-retune.md](98-journals/2026-04-21-crowdsec-acquisition-and-rate-limit-retune.md)
 - 2026-04-21: [2026-04-21-ha-rate-limit-rollback-post-adr022.md](98-journals/2026-04-21-ha-rate-limit-rollback-post-adr022.md)
-- 2026-04-16: [2026-04-16-nat-remediation-research.md](99-reports/2026-04-16-nat-remediation-research.md)
-- 2026-04-17: [2026-04-17-service-configuration-review.md](99-reports/2026-04-17-service-configuration-review.md)
-- 2026-04-18: [2026-04-18-design-review-ADR-023-btrfs-storage-architecture-databases.md](99-reports/2026-04-18-design-review-ADR-023-btrfs-storage-architecture-databases.md)
-- 2026-04-17: [remediation-monthly-202603.md](99-reports/remediation-monthly-202603.md)
-- 2026-04-15: [security-audit-2026-04-15.md](99-reports/security-audit-2026-04-15.md)
-- 2026-04-21: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-04-22: [2026-04-21-monitoring-bind-propagation.md](98-journals/2026-04-21-monitoring-bind-propagation.md)
+- 2026-04-21: [2026-04-21-network-ingress-egress-hardening.md](98-journals/2026-04-21-network-ingress-egress-hardening.md)
+- 2026-04-21: [2026-04-21-nextcloud-postmortem-followups.md](98-journals/2026-04-21-nextcloud-postmortem-followups.md)
 
 ---
 
@@ -283,6 +285,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 **Nextcloud:**
 - Guide: [nextcloud.md](10-services/guides/nextcloud.md)
+- ADR: [ADR-026](00-foundation/decisions/2026-04-21-ADR-026-nextcloud-pinned-major-version.md)
 - ADR: [ADR-013](10-services/decisions/2025-12-20-ADR-013-nextcloud-native-authentication.md)
 - ADR: [ADR-014](10-services/decisions/2025-12-20-ADR-014-nextcloud-passwordless-authentication.md)
 - Quadlet: `~/.config/containers/systemd/nextcloud.container`

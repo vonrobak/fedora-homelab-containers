@@ -165,6 +165,31 @@ scrape_configs:
       - output:
           source: stdout_preview
 
+  # UniFi UDM Pro SIEM syslog (firewall + IDS/IPS + system events)
+  # Receiver pipeline: UDM Pro -> UDP 1514 -> syslog-ng container -> udm.log
+  # Template written by syslog-ng:
+  #   ISODATE src=SOURCEIP host=HOST prog=PROGRAM pid=PID pri=PRIORITY fac=FACILITY msg=MESSAGE
+  - job_name: unifi-syslog
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: unifi-syslog
+          host: udm-pro
+          __path__: /var/log/unifi-syslog/udm.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<time>\S+)\s+src=(?P<src_ip>\S+)\s+host=(?P<src_host>\S+)\s+prog=(?P<program>\S+)\s+pid=(?P<pid>\S+)\s+pri=(?P<priority>\S+)\s+fac=(?P<facility>\S+)\s+msg=(?P<msg>.*)$'
+      - timestamp:
+          source: time
+          format: RFC3339
+      - labels:
+          program:
+          facility:
+          priority:
+      - output:
+          source: msg
+
   # Traefik access logs (errors only)
   - job_name: traefik-access
     static_configs:
