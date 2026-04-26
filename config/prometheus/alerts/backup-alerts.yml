@@ -15,8 +15,14 @@ groups:
           description: "Last backup attempt for {{ $labels.subvolume }} failed. Check backup logs immediately."
 
       # Critical: Backup hasn't run in 2+ days (for daily backups)
+      # Excludes subvolumes whose latest urd run was a no-send (send_type=2):
+      # urd correctly skips remote send when nothing changed, which would
+      # otherwise look stale forever for cold subvolumes (e.g. subvol2-pics).
+      # BackupScriptNotRunning catches the case where urd itself stops running.
       - alert: BackupStale
-        expr: (time() - backup_last_success_timestamp) > (86400 * 2)
+        expr: |
+          (time() - backup_last_success_timestamp) > (86400 * 2)
+          unless on(subvolume) backup_send_type == 2
         for: 1h
         labels:
           severity: critical

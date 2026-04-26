@@ -73,6 +73,14 @@ route:
 
     # Discord notification routes (standard behavior, unchanged)
 
+    # Slow-moving capacity alert: daily reminder, not hourly noise.
+    # Disk fill is real but not a 1h emergency — must precede the generic
+    # severity=critical route since first-match wins (continue defaults to false).
+    - matchers:
+        - alertname = "SystemDiskSpaceCritical"
+      receiver: 'discord-critical'
+      repeat_interval: 24h
+
     # Critical alerts: Discord for instant notifications
     - matchers:
         - severity = "critical"
