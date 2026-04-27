@@ -7,7 +7,10 @@
 *.pem
 *.crt
 *secret*
-!.claude/hooks/*secret*.sh   # Exception: pre-commit hooks that validate secrets
+# Exception: pre-commit hooks that validate secrets
+!.claude/hooks/*secret*.sh
+# Exception: ADRs (architectural decision docs, never secrets)
+!**/*ADR*.md
 
 # Claude Code Directory (may contain security-sensitive context)
 .claude/
