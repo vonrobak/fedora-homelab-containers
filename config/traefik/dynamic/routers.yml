@@ -27,6 +27,25 @@ http:
         certResolver: letsencrypt
 
     # Authelia SSO Portal (YubiKey-First Authentication)
+    # T1.4 attempted to add a rate-limit on this router on 2026-04-27 to clear
+    # SA-TRF-04. Both rate-limit-auth (10/min burst 5) and rate-limit (100/min
+    # burst 50) broke the SPA — the portal lazy-loads ~30 chunked components
+    # on initial render, which exceeds any per-IP burst sized for human
+    # traffic. Brute-force protection lives on authelia-portal-auth below
+    # (the actual credential POST endpoints). SA-TRF-04 stays WARN here by
+    # design. See 2026-04-27 SSO recovery journal.
+    authelia-portal-auth:
+      rule: "Host(`sso.patriark.org`) && (PathPrefix(`/api/firstfactor`) || PathPrefix(`/api/secondfactor`) || PathPrefix(`/api/reset-password`) || PathPrefix(`/api/checks/safe-redirection`))"
+      service: "authelia"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-auth@file         # 10/min burst 5 — brute-force protection on credential POSTs
+        - hsts-only@file
+      tls:
+        certResolver: letsencrypt
+
     authelia-portal:
       rule: "Host(`sso.patriark.org`)"
       service: "authelia"
@@ -34,7 +53,6 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit-auth@file         # Brute-force protection on login portal (SA-TRF-04, T1.4 2026-04-23)
         - hsts-only@file               # HSTS + strip server headers (Authelia sets own CSP)
       tls:
         certResolver: letsencrypt
