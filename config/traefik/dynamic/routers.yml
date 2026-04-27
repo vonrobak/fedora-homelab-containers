@@ -34,6 +34,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
+        - rate-limit-auth@file         # Brute-force protection on login portal (SA-TRF-04, T1.4 2026-04-23)
         - hsts-only@file               # HSTS + strip server headers (Authelia sets own CSP)
       tls:
         certResolver: letsencrypt

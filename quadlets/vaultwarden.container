@@ -45,6 +45,10 @@ Environment=IP_HEADER=X-Forwarded-For
 Environment=ROCKET_ADDRESS=0.0.0.0
 Environment=ROCKET_PORT=80
 
+# Event logging — forensic trail for credential access (T1.1, 2026-04-23 punchlist)
+Environment=EVENTS_ENABLED=true
+Environment=EVENTS_DAYS_RETAIN=90
+
 # Health check
 HealthCmd=curl -f http://localhost:80/ || exit 1
 HealthInterval=30s
