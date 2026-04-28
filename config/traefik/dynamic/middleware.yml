@@ -107,12 +107,14 @@ http:
             depth: 1
 
     # Nextcloud (per-IP post-ADR-022) — sized for one user's worst-case bulk op.
-    # Burst covers Music library tree walk (~2080 PROPFINDs, parallel ~4–8 conns).
-    # Average drops from NAT-era 600 to steady-state-realistic 300/min.
+    # Average steady-state browse rate; burst absorbs PROPFIND tree walks
+    # (Music library is ~2080 PROPFINDs, but client parallelism caps the
+    # 1-minute window at a few hundred). Tier 2 staged downsize 1500→800
+    # (2026-04-28); next step pending 7-day soak with zero 429s.
     rate-limit-nextcloud:
       rateLimit:
         average: 300
-        burst: 1500
+        burst: 800
         period: 1m
         sourceCriterion:
           ipStrategy:
