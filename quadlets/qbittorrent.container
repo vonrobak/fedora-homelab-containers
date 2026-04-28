@@ -9,8 +9,12 @@ ContainerName=qbittorrent
 HostName=qbittorrent
 AutoUpdate=registry
 Network=systemd-reverse_proxy:ip=10.89.2.85
-# No PublishPort - WebUI accessible only via Traefik reverse proxy
-# No BT port published - operates in passive/NAT mode (outbound connections only)
+# No PublishPort - WebUI (port 8085, set via WEBUI_PORT below) accessible only
+# via Traefik reverse proxy. No BT port published - Session\Port=30069 is set
+# in config/qbittorrent/qBittorrent/qBittorrent.conf but qBt operates in
+# passive/NAT mode (outbound connections only), so no UDM forward is required.
+# NOTE: `podman port qbittorrent` reports 6881/tcp, 6881/udp, 8080/tcp from the
+# upstream image's EXPOSE directives - those are NOT the actual ports in use.
 
 # linuxserver.io PUID/PGID
 Environment=PUID=1000

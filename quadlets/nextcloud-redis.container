@@ -29,6 +29,7 @@ Label=prometheus.scrape=true
 Label=prometheus.port=6379
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=120
 

@@ -55,7 +55,19 @@ ADR-025's acceptance criteria, migration procedure, and defensive tooling requir
     └── udm.log                        [syslog-ng output; rotated daily × 14 by logrotate]
 ```
 
-Compression on the subvolume root: `btrfs property set ... compression none`. NOCOW via `chattr +C` was attempted and returned EINVAL on kernel 6.19 for reasons not yet traced; for the `unifi-syslog` tenant this is accepted because (a) the subvolume is not snapshotted, so there's no COW-amplification fight to win, and (b) append-only log writes are not the fragmentation-sensitive pattern NOCOW is most valuable for. Future DB tenants (if ADR-025 accepts migration) will need the flag to work; that's on ADR-025 to resolve.
+Compression on the subvolume root: `btrfs property set ... compression none`. This sets the `m` (no-compress) inode flag on the subvol root, which **propagates to every directory created beneath it via inheritance**. The `m` flag and `+C` (NOCOW) are mutually exclusive at the inode level — `chattr +C` returns EINVAL on a directory that already has `m`.
+
+**Workaround (discovered 2026-04-28 during Loki tenant onboarding):** when adding a NOCOW-requiring tenant, drop the inherited `m` flag *first*, then set `+C`:
+
+```bash
+sudo mkdir -p /mnt/btrfs-pool/subvol8-db/<tenant>
+sudo chattr -m /mnt/btrfs-pool/subvol8-db/<tenant>   # remove inherited no-compress
+sudo chattr +C /mnt/btrfs-pool/subvol8-db/<tenant>   # then NOCOW
+lsattr -d /mnt/btrfs-pool/subvol8-db/<tenant>        # verify '+C' is set
+# rsync data into the (still-empty) dir; new files inherit +C from parent
+```
+
+`unifi-syslog` was deployed before this was traced; it remains without `+C`, which is acceptable because its workload (append-only UDP syslog) is not the fragmentation-sensitive pattern NOCOW is most valuable for. New tenants requiring NOCOW now have a working procedure.
 
 ## Integration requirements per new tenant
 
@@ -68,9 +80,10 @@ When adding a tenant to `subvol8-db`, the deploying change must:
 
 ## Tenants
 
-| Tenant | Added | Workload class | Backup |
-|---|---|---|---|
-| `unifi-syslog` | 2026-04-22 | Append-only UDP syslog receiver | None — forensic logs are replayable from UDM retention; 14-day logrotate locally |
+| Tenant | Added | Workload class | NOCOW (`+C`) | Backup |
+|---|---|---|---|---|
+| `unifi-syslog` | 2026-04-22 | Append-only UDP syslog receiver | No — accepted (append-only writes, not fragmentation-sensitive) | None — forensic logs are replayable from UDM retention; 14-day logrotate locally |
+| `loki` | 2026-04-28 | Log aggregator with compaction-rewrite I/O patterns | Yes — `+C` set after dropping inherited `m` flag (see workaround above) | None — Promtail re-ingests on restart; logs are not the source of truth, the originating systems are |
 
 This table is the living record. New tenants add a row; it does not require a new ADR unless the placement policy itself changes.
 
