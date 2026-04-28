@@ -4,7 +4,7 @@ After=network-online.target photos-network.service
 Wants=network-online.target photos-network.service
 
 [Container]
-Image=ghcr.io/immich-app/immich-machine-learning:v2.6.3
+Image=ghcr.io/immich-app/immich-machine-learning:v2.7.5
 ContainerName=immich-ml
 
 # Network (isolated - only on photos network)
