@@ -5,7 +5,7 @@ Wants=network-online.target photos-network.service
 Requires=postgresql-immich.service redis-immich.service
 
 [Container]
-Image=ghcr.io/immich-app/immich-server:v2.6.3
+Image=ghcr.io/immich-app/immich-server:v2.7.5
 ContainerName=immich-server
 
 # Run as non-root user (security: ADR-001 Rootless Containers)
