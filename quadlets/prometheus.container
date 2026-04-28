@@ -32,18 +32,20 @@ DNS=192.168.1.69
 
 # Health check
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1
-HealthInterval=30s
-HealthTimeout=10s
+HealthInterval=10s
+HealthTimeout=3s
 HealthRetries=3
 
 [Service]
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=120
+OOMPolicy=kill
 
 # Resource Limits
 MemoryMax=1G
 MemoryHigh=900M
+CPUQuota=400%
 
 [Install]
 WantedBy=default.target

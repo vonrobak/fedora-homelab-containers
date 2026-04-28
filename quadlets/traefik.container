@@ -42,14 +42,15 @@ Notify=true
 
 # Health check
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:8080/ping || exit 1
-HealthInterval=30s
-HealthTimeout=10s
+HealthInterval=10s
+HealthTimeout=3s
 HealthRetries=3
 
 [Service]
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
+OOMPolicy=kill
 # ADR-022: socket-activated entrypoints. FileDescriptorName on each socket
 # matches the Traefik entrypoint name (web, websecure).
 Sockets=http.socket
@@ -58,6 +59,7 @@ Sockets=https.socket
 # Resource Limits
 MemoryMax=512M
 MemoryHigh=460M
+CPUQuota=400%
 
 [Install]
 WantedBy=default.target

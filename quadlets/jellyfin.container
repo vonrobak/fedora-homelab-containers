@@ -55,6 +55,7 @@ TimeoutStartSec=900
 MemoryMax=8G
 MemoryHigh=7G
 MemorySwapMax=1G
+CPUQuota=600%
 
 # CPU Priority (higher priority for smooth streaming)
 Nice=-5

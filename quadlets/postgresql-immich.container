@@ -31,6 +31,7 @@ HealthRetries=5
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=900
+OOMPolicy=kill
 
 # Resource Limits
 MemoryMax=1G
