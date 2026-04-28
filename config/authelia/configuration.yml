@@ -18,7 +18,7 @@ server:
     idle: 120s
 
 log:
-  level: debug
+  level: info
   format: text
 
 # JWT secret for tokens (from Podman secret)
