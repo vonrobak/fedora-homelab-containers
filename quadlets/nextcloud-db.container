@@ -33,6 +33,7 @@ Label=prometheus.scrape=true
 Label=prometheus.port=3306
 
 [Service]
+Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
 

@@ -13,7 +13,7 @@ Network=systemd-monitoring:ip=10.89.4.83
 
 # Loki configuration and data
 Volume=%h/containers/config/loki/loki-config.yml:/etc/loki/local-config.yaml:ro,Z
-Volume=/mnt/btrfs-pool/subvol7-containers/loki:/loki:Z
+Volume=/mnt/btrfs-pool/subvol8-db/loki:/loki:Z
 
 # Loki command line arguments
 Exec=-config.file=/etc/loki/local-config.yaml

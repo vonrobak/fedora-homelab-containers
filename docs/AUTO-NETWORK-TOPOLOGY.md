@@ -1,7 +1,7 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-04-22 05:02:50 UTC
-**System:** fedora-htpc | **Networks:** 9 | **Containers:** 31
+**Generated:** 2026-04-28 19:15:30 UTC
+**System:** fedora-htpc | **Networks:** 10 | **Containers:** 32
 
 ---
 
@@ -140,6 +140,11 @@ graph TB
         reverse_proxy_vaultwarden[vaultwarden]
     end
 
+    subgraph syslog["syslog<br/>10.89.7.0/24"]
+        direction LR
+        syslog_unifi_syslog[unifi-syslog]
+    end
+
     %% Network styling
     classDef gatewayNet fill:#e6f3ff,stroke:#1a5490,stroke-width:3px
     classDef observeNet fill:#fff9e6,stroke:#d68910,stroke-width:3px
@@ -156,43 +161,44 @@ graph TB
 
 Shows which services belong to which networks. Dynamically generated from running container state.
 
-| Service | auth_services | gathio | home_automation | mail | media_services | monitoring | nextcloud | photos | reverse_proxy |
-|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Service | auth_services | gathio | home_automation | mail | media_services | monitoring | nextcloud | photos | reverse_proxy | syslog |
+|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **Gateway & Security** |
-| authelia | ✅ | - | - | ✅ | - | - | - | - | ✅ |
-| crowdsec | - | - | - | - | - | - | - | - | ✅ |
-| redis-authelia | ✅ | - | - | - | - | - | - | - | - |
-| traefik | - | - | - | - | - | - | - | - | ✅ |
+| authelia | ✅ | - | - | ✅ | - | - | - | - | ✅ | - |
+| crowdsec | - | - | - | - | - | - | - | - | ✅ | - |
+| redis-authelia | ✅ | - | - | - | - | - | - | - | - | - |
+| traefik | - | - | - | - | - | - | - | - | ✅ | - |
 | **Public Services** |
-| alert-discord-relay | - | - | - | - | - | ✅ | - | - | ✅ |
-| audiobookshelf | - | - | - | - | - | - | - | - | ✅ |
-| gathio | - | ✅ | - | - | - | - | - | - | ✅ |
-| home-assistant | - | - | ✅ | - | - | - | - | - | ✅ |
-| homepage | - | - | - | - | - | - | - | - | ✅ |
-| immich-server | - | - | - | - | - | - | - | ✅ | ✅ |
-| jellyfin | - | - | - | - | ✅ | - | - | - | ✅ |
-| navidrome | - | - | - | - | - | - | - | - | ✅ |
-| nextcloud | - | - | - | - | - | - | ✅ | - | ✅ |
-| proton-bridge | - | - | - | ✅ | - | - | - | - | ✅ |
-| qbittorrent | - | - | - | - | - | - | - | - | ✅ |
-| unpoller | - | - | - | - | - | ✅ | - | - | ✅ |
-| vaultwarden | - | - | - | - | - | - | - | - | ✅ |
+| alert-discord-relay | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| audiobookshelf | - | - | - | - | - | - | - | - | ✅ | - |
+| gathio | - | ✅ | - | - | - | - | - | - | ✅ | - |
+| home-assistant | - | - | ✅ | - | - | - | - | - | ✅ | - |
+| homepage | - | - | - | - | - | - | - | - | ✅ | - |
+| immich-server | - | - | - | - | - | - | - | ✅ | ✅ | - |
+| jellyfin | - | - | - | - | ✅ | - | - | - | ✅ | - |
+| navidrome | - | - | - | - | - | - | - | - | ✅ | - |
+| nextcloud | - | - | - | - | - | - | ✅ | - | ✅ | - |
+| proton-bridge | - | - | - | ✅ | - | - | - | - | ✅ | - |
+| qbittorrent | - | - | - | - | - | - | - | - | ✅ | - |
+| unpoller | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| vaultwarden | - | - | - | - | - | - | - | - | ✅ | - |
 | **Monitoring** |
-| alertmanager | - | - | - | - | - | ✅ | - | - | ✅ |
-| cadvisor | - | - | - | - | - | ✅ | - | - | - |
-| grafana | - | - | - | - | - | ✅ | - | - | ✅ |
-| loki | - | - | - | - | - | ✅ | - | - | ✅ |
-| node_exporter | - | - | - | - | - | ✅ | - | - | - |
-| prometheus | - | - | - | - | - | ✅ | - | - | ✅ |
-| promtail | - | - | - | - | - | ✅ | - | - | - |
+| alertmanager | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| cadvisor | - | - | - | - | - | ✅ | - | - | - | - |
+| grafana | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| loki | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| node_exporter | - | - | - | - | - | ✅ | - | - | - | - |
+| prometheus | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| promtail | - | - | - | - | - | ✅ | - | - | - | - |
 | **Backend Services** |
-| gathio-db | - | ✅ | - | - | - | - | - | - | - |
-| immich-ml | - | - | - | - | - | - | - | ✅ | - |
-| matter-server | - | - | ✅ | - | - | - | - | - | - |
-| nextcloud-db | - | - | - | - | - | - | ✅ | - | - |
-| nextcloud-redis | - | - | - | - | - | - | ✅ | - | - |
-| postgresql-immich | - | - | - | - | - | - | - | ✅ | - |
-| redis-immich | - | - | - | - | - | - | - | ✅ | - |
+| gathio-db | - | ✅ | - | - | - | - | - | - | - | - |
+| immich-ml | - | - | - | - | - | - | - | ✅ | - | - |
+| matter-server | - | - | ✅ | - | - | - | - | - | - | - |
+| nextcloud-db | - | - | - | - | - | - | ✅ | - | - | - |
+| nextcloud-redis | - | - | - | - | - | - | ✅ | - | - | - |
+| postgresql-immich | - | - | - | - | - | - | - | ✅ | - | - |
+| redis-immich | - | - | - | - | - | - | - | ✅ | - | - |
+| unifi-syslog | - | - | - | - | - | - | - | - | - | ✅ |
 
 ---
 
@@ -369,6 +375,16 @@ sequenceDiagram
 - traefik
 - unpoller
 - vaultwarden
+
+
+### syslog
+
+- **Full Name:** `systemd-syslog`
+- **Subnet:** 10.89.7.0/24
+- **Services:** 1
+
+**Members:**
+- unifi-syslog
 
 
 ---

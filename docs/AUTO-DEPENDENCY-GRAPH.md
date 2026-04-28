@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-04-22 05:02:53 UTC
+**Generated:** 2026-04-28 19:15:37 UTC
 **System:** fedora-htpc
 
 ---
@@ -54,6 +54,7 @@ graph TB
         promtail[promtail]
         proton_bridge[proton-bridge]
         qbittorrent[qbittorrent]
+        unifi_syslog[unifi-syslog]
         unpoller[unpoller]
     end
 
@@ -150,6 +151,7 @@ graph TB
 | **promtail** | — | 🟢 Service-specific impact |
 | **proton-bridge** | — | 🟢 Service-specific impact |
 | **qbittorrent** | — | 🟢 Service-specific impact |
+| **unifi-syslog** | — | 🟢 Service-specific impact |
 | **unpoller** | — | 🟢 Service-specific impact |
 
 ---
@@ -189,6 +191,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | redis-authelia | (no ordering constraints) |
 | redis-immich | (no ordering constraints) |
 | traefik | http.socket,https.socket |
+| unifi-syslog | (no ordering constraints) |
 | unpoller | prometheus |
 | vaultwarden | traefik |
 
@@ -215,6 +218,8 @@ Services on the same network can communicate:
 **photos:** immich-ml,immich-server,postgresql-immich,redis-immich
 
 **reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
+
+**syslog:** unifi-syslog
 
 ---
 

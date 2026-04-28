@@ -44,6 +44,8 @@ NoNewPrivileges=true
 SecurityLabelDisable=false
 
 [Service]
+Slice=container.slice
+
 # Resource limits
 MemoryMax=256M
 MemoryHigh=230M
