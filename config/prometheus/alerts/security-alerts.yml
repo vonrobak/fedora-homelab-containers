@@ -8,22 +8,25 @@ groups:
     interval: 5m
     rules:
       # ========================================================================
-      # ALERT 1: CrowdSec Ban Spike
+      # ALERT 1: CrowdSec Bouncer Block Spike
       # ========================================================================
-      # Detects potential attacks by monitoring ban rate
+      # cs_lapi_decisions_ko_total counts bouncer LAPI lookups that returned
+      # a "block" verdict (request from a banned IP). A sustained rate spike
+      # means attack traffic is hitting the bouncer in volume.
+      #
+      # Why not cs_active_decisions delta: that gauge is dominated by CAPI
+      # community-list churn (thousands of entries syncing in/out hourly),
+      # which is not actionable.
       - alert: CrowdSecBanSpike
-        expr: |
-          (
-            rate(crowdsec_decisions_total[1h]) > 10
-          )
+        expr: rate(cs_lapi_decisions_ko_total[5m]) > 0.17  # >10/min sustained
         for: 5m
         labels:
           severity: warning
           category: security
           component: security
         annotations:
-          summary: "CrowdSec ban rate spike detected"
-          description: "CrowdSec is banning IPs at {{ $value | humanize }} per hour. This may indicate an active attack or scan."
+          summary: "CrowdSec bouncer block spike detected"
+          description: "Bouncer is blocking {{ $value | humanize }} req/sec from banned IPs. Sustained for 5m+ — likely an active attack or scan."
 
       # ========================================================================
       # ALERT 2: Authelia Authentication Failure Spike
