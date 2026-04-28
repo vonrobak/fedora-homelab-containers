@@ -31,8 +31,8 @@ Environment=AUTHELIA_SERVER_DISABLE_HEALTHCHECK=false
 
 # Health check
 HealthCmd=wget --no-verbose --tries=1 --spider http://127.0.0.1:9091/api/health || exit 1
-HealthInterval=30s
-HealthTimeout=10s
+HealthInterval=10s
+HealthTimeout=3s
 HealthRetries=3
 HealthStartPeriod=90s
 
@@ -42,11 +42,12 @@ Restart=on-failure
 RestartSec=30s
 TimeoutStopSec=70s
 TimeoutStartSec=300
+OOMPolicy=kill
 
 # Resource limits (SSO can be memory intensive with sessions)
 MemoryMax=512M
 MemoryHigh=460M
-CPUQuota=100%
+CPUQuota=400%
 
 [Install]
 WantedBy=default.target

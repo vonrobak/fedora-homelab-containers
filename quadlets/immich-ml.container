@@ -33,6 +33,7 @@ TimeoutStartSec=1800
 MemoryMax=4G
 MemoryHigh=3.6G
 MemorySwapMax=512M
+CPUQuota=600%
 
 [Install]
 WantedBy=default.target

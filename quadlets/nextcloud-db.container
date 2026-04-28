@@ -36,6 +36,7 @@ Label=prometheus.port=3306
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
+OOMPolicy=kill
 
 # Resource limits (systemd memory control)
 MemoryMax=1G

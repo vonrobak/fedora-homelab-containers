@@ -14,18 +14,21 @@ Network=systemd-auth_services
 Volume=%h/containers/data/redis-authelia:/data:Z
 
 # Redis configuration for session storage
-Exec=redis-server --appendonly yes --appendfsync everysec --maxmemory 128mb --maxmemory-policy allkeys-lru
+# volatile-lru: only evict keys with TTLs (sessions). Regulation counters
+# (no TTL) are preserved across pressure — brute-force protection survives.
+Exec=redis-server --appendonly yes --appendfsync everysec --maxmemory 200mb --maxmemory-policy volatile-lru
 
 # Health check
 HealthCmd=redis-cli ping
 HealthInterval=10s
-HealthTimeout=5s
+HealthTimeout=3s
 HealthRetries=5
 
 [Service]
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
+OOMPolicy=kill
 
 # Resource Limits
 MemoryMax=256M

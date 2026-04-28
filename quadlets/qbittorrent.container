@@ -46,6 +46,7 @@ TimeoutStartSec=120
 # Resource Limits
 MemoryMax=1G
 MemoryHigh=900M
+CPUQuota=200%
 
 [Install]
 WantedBy=default.target
