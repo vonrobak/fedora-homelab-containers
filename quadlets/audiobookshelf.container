@@ -28,6 +28,12 @@ Network=systemd-reverse_proxy:ip=10.89.2.74
 Environment=TZ=Europe/Oslo
 Environment=PORT=80
 
+# Auth token lifetimes — workaround for upstream bug #4630
+# Default 1h access token forces frequent refresh; rotation has no grace period,
+# so any lost refresh response (mobile network transition, app suspend) permanently
+# breaks the session. Longer access token = fewer refreshes = fewer broken sessions.
+Environment=ACCESS_TOKEN_EXPIRY=86400
+
 # Config & metadata (exclusive - NOCOW for SQLite)
 Volume=/mnt/btrfs-pool/subvol7-containers/audiobookshelf/config:/config:Z
 Volume=/mnt/btrfs-pool/subvol7-containers/audiobookshelf/metadata:/metadata:Z
