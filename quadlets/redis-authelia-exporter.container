@@ -1,0 +1,32 @@
+[Unit]
+Description=Redis Exporter for redis-authelia (Prometheus)
+After=network-online.target auth_services-network.service monitoring-network.service redis-authelia.service
+Wants=network-online.target auth_services-network.service monitoring-network.service
+Requires=redis-authelia.service
+
+[Container]
+Image=quay.io/oliver006/redis_exporter:latest
+ContainerName=redis-authelia-exporter
+HostName=redis-authelia-exporter
+
+# Reach redis-authelia on auth_services; expose metrics on monitoring (static IPs per ADR-018).
+Network=systemd-monitoring:ip=10.89.4.92
+Network=systemd-auth_services:ip=10.89.3.92
+
+Environment=REDIS_ADDR=redis://redis-authelia:6379
+
+# No HealthCmd: oliver006/redis_exporter is a scratch image (no shell/wget).
+# Process health is enforced by Restart=on-failure; scrape health is visible
+# via Prometheus `redis_up` metric for redis-authelia.
+AutoUpdate=registry
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=60
+
+MemoryMax=64M
+MemoryHigh=58M
+
+[Install]
+WantedBy=default.target
