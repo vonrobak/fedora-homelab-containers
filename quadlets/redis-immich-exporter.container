@@ -1,0 +1,32 @@
+[Unit]
+Description=Redis Exporter for redis-immich (Prometheus)
+After=network-online.target photos-network.service monitoring-network.service redis-immich.service
+Wants=network-online.target photos-network.service monitoring-network.service
+Requires=redis-immich.service
+
+[Container]
+Image=quay.io/oliver006/redis_exporter:latest
+ContainerName=redis-immich-exporter
+HostName=redis-immich-exporter
+
+# Reach redis-immich (Valkey, Redis-protocol-compatible) on photos; expose metrics on monitoring.
+Network=systemd-monitoring:ip=10.89.4.93
+Network=systemd-photos:ip=10.89.5.93
+
+Environment=REDIS_ADDR=redis://redis-immich:6379
+
+# No HealthCmd: oliver006/redis_exporter is a scratch image (no shell/wget).
+# Process health is enforced by Restart=on-failure; scrape health is visible
+# via Prometheus `redis_up` metric for redis-immich.
+AutoUpdate=registry
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=60
+
+MemoryMax=64M
+MemoryHigh=58M
+
+[Install]
+WantedBy=default.target

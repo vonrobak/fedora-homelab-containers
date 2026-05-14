@@ -1,0 +1,36 @@
+[Unit]
+Description=PostgreSQL Exporter for postgresql-immich (Prometheus)
+After=network-online.target photos-network.service monitoring-network.service postgresql-immich.service
+Wants=network-online.target photos-network.service monitoring-network.service
+Requires=postgresql-immich.service
+
+[Container]
+Image=quay.io/prometheuscommunity/postgres-exporter:latest
+ContainerName=postgres-exporter
+HostName=postgres-exporter
+
+# Reach postgresql-immich on photos; expose metrics on monitoring.
+Network=systemd-monitoring:ip=10.89.4.94
+Network=systemd-photos:ip=10.89.5.94
+
+# Credentials: dedicated prometheus_exporter role with pg_monitor (created out-of-band, not in quadlet).
+Secret=postgres-exporter-password,type=env,target=DATA_SOURCE_PASS
+Environment=DATA_SOURCE_URI=postgresql-immich:5432/immich?sslmode=disable
+Environment=DATA_SOURCE_USER=prometheus_exporter
+
+HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9187/metrics || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+AutoUpdate=registry
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=60
+
+MemoryMax=128M
+MemoryHigh=115M
+
+[Install]
+WantedBy=default.target

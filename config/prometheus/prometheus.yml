@@ -125,3 +125,28 @@ scrape_configs:
           service: 'home-assistant'
     metrics_path: '/api/prometheus'
     bearer_token_file: '/run/secrets/ha-prometheus-token'
+
+  # Redis exporter — redis-authelia (session cache + regulation counters)
+  # Scraped via monitoring network static IP (ADR-018)
+  - job_name: 'redis-authelia'
+    static_configs:
+      - targets: ['10.89.4.92:9121']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'redis-authelia'
+
+  # Redis exporter — redis-immich (Valkey, Redis-protocol-compatible)
+  - job_name: 'redis-immich'
+    static_configs:
+      - targets: ['10.89.4.93:9121']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'redis-immich'
+
+  # PostgreSQL exporter — postgresql-immich
+  - job_name: 'postgres-immich'
+    static_configs:
+      - targets: ['10.89.4.94:9187']
+        labels:
+          instance: 'fedora-htpc'
+          service: 'postgres-immich'
