@@ -71,6 +71,26 @@ Key metrics consumed by homelab alerts (`config/prometheus/alerts/backup-alerts.
 | `backup_send_type` | gauge | `subvolume` | Grafana dashboard |
 | `backup_external_drive_mounted` | gauge | — | Grafana dashboard |
 | `backup_external_free_bytes` | gauge | — | Grafana dashboard |
+| `backup_subvolume_churn_bytes_per_second` | gauge | `subvolume` | `backup-health` Grafana dashboard (added Urd v0.16, [UPI 030](https://github.com/vonrobak/urd/pull/108)) |
+| `backup_subvolume_last_full_send_bytes` | gauge | `subvolume` | `backup-health` Grafana dashboard (added Urd v0.16, [UPI 030](https://github.com/vonrobak/urd/pull/108)) |
+
+**Drift telemetry (Urd v0.16+).** Urd computes a rolling time-windowed churn rate per
+subvolume from `wire_bytes` of recent successful sends, and emits two gauges:
+
+- `backup_subvolume_churn_bytes_per_second` — present for subvolumes whose latest
+  in-window send was incremental. Absent for cold-start subvolumes and for subvolumes
+  whose latest in-window send was a full send.
+- `backup_subvolume_last_full_send_bytes` — present for subvolumes whose latest
+  in-window send was a full send (e.g. transient or storage-critical subvolumes that
+  re-baseline). Absent otherwise.
+
+The two are mutually exclusive by design: a subvolume has either a churn rate (last
+send was incremental) or a last-full-send size (last send was a full send), never both.
+
+Two panels in the `backup-health` Grafana dashboard surface these gauges for capacity
+planning: a churn-rate timeseries (per-subvolume) and a last-full-send-size barchart.
+No alerts consume these yet — thresholds will be defined once enough data has
+accumulated to establish per-subvolume baselines (target: ~2–4 weeks post-deployment).
 
 ### File paths
 
@@ -78,9 +98,17 @@ Key metrics consumed by homelab alerts (`config/prometheus/alerts/backup-alerts.
 |------|---------|
 | `~/.config/urd/urd.toml` | Urd configuration |
 | `~/.local/share/urd/urd.db` | SQLite run history |
-| `~/.local/share/urd/heartbeat.json` | Health signal (Sentinel reads this) |
+| `~/.local/share/urd/heartbeat.json` | Health signal — read by Urd's own Sentinel daemon. **Not consumed by the homelab.** See note below. |
 | `~/containers/data/backup-metrics/backup.prom` | Prometheus metrics (shared with homelab) |
 | `~/containers/data/backup-logs/` | Log directory |
+
+**On `heartbeat.json`.** The heartbeat is an internal Urd contract between its nightly
+runner and the Sentinel daemon. The homelab consumes Urd state exclusively through the
+Prometheus textfile (`backup.prom`); there is no JSON parser on this side and none is
+planned. Urd versions the heartbeat schema (`schema_version`, currently `3` as of UPI
+030) for its own internal evolution. If a future homelab feature ever needs to read the
+heartbeat directly, add a new ADR entry covering the parser's schema tolerance — do not
+quietly take a dependency on the JSON shape.
 
 ### Notification path
 
