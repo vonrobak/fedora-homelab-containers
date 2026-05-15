@@ -155,9 +155,100 @@ This ADR documents the **integration boundary**, not Urd's internals. It needs u
 
 Urd's internal architecture, retention algorithms, config schema, and CLI commands are documented in the [Urd project](https://github.com/patriark/urd) and do not belong in this ADR.
 
+## Amendment 2026-05-16 (Urd UPI 043): pool-observability metrics + heartbeat v4
+
+Urd UPI 043 adds pool-level observability as additive on-disk contracts: four new
+Prometheus gauges and a heartbeat schema bump v3 → v4 (additive only). The Urd-side
+canonical text is the Amendment 2026-05-15 (UPI 043) section of Urd ADR-105
+(`~/projects/urd/docs/00-foundation/decisions/2026-03-24-ADR-105-backward-compatibility-contracts.md`).
+This amendment mirrors it from the homelab consumer side.
+
+The Urd PR for UPI 043 is gated on this amendment merging on the homelab side
+(Urd plan R7 cross-repo interlock).
+
+### New Prometheus metrics (additive; existing metrics unchanged)
+
+All four gauges arrive in `~/containers/data/backup-metrics/backup.prom` at the
+next Urd run after UPI 043 ships. Existing alerts and dashboard panels are
+unaffected — no alert or dashboard widget currently references these names.
+
+| Metric | Labels | Cadence / shape | Homelab use |
+|--------|--------|-----------------|-------------|
+| `backup_pool_free_bytes` | `uuid`, `role`, `label` | Snapshot per backup run. `role ∈ {source, destination}`. Identity is `uuid`; `label` is informational (drive label for destinations, canonical mountpoint for sources). | Available for a future "BTRFS pool health" Grafana panel. **Not yet consumed.** |
+| `backup_pool_metadata_utilization_ratio` | `uuid`, `role`, `label` | 0.0–1.0 from `/sys/fs/btrfs/<uuid>/allocation/metadata/`. Covers source and destination pools. | Available for the same panel. **Not yet consumed.** |
+| `backup_subvolume_local_snapshot_count` | `subvolume` | Line **absent** when local snapshots are not configured for the subvolume. Coexists with the legacy `backup_snapshot_count{subvolume,location="local"}` — same physical fact, different contract shape (`Option::None`-as-absent vs. always-present). | **Not yet consumed.** Existing dashboards continue to use `backup_snapshot_count{location="local"}`. |
+| `backup_subvolume_estimated_local_pinned_delta_bytes` | `subvolume` | Wire-bytes-derived estimate (mean over in-window incrementals × local snapshot count). Emit policy: `Some(0)` when local snapshots disabled or `local_snapshot_count == 0` (known zero, distinct from unknown); line **absent** in cold-start (`local_snapshot_count > 0` and `mean_incremental_bytes` unknown). | Primarily a UPI 044 input (headroom-aware retention recommendations, downstream Urd work). **Not yet consumed.** |
+
+The single-drive global `backup_external_free_bytes` is unchanged — sacred under
+ADR-105. The new per-pool `backup_pool_free_bytes` is additive, not a rename.
+
+### Heartbeat schema v4 (informational — no homelab consumer)
+
+Urd bumps `~/.local/share/urd/heartbeat.json` from `schema_version: 3` to
+`schema_version: 4`. Additions are strict-additive over v3:
+
+- Two new top-level fields:
+  - `pools: Vec<PoolHeartbeat>` — deduplicated BTRFS pools (source + mounted destinations).
+  - `drives: Vec<DriveHeartbeat>` — configured destination drives, mounted or not.
+- Three new per-subvolume fields:
+  - `pool_uuid: Option<String>` — joins the subvolume to a `PoolHeartbeat` by UUID; `None` when pool detection failed.
+  - `local_snapshot_count: Option<u32>` — `Some(_)` iff local snapshots are configured for the subvolume.
+  - `estimated_local_pinned_delta_bytes: Option<u64>` — same emit policy as the Prometheus metric above (`Some(0)` for known zero; `None` for cold-start).
+
+All new fields use `#[serde(default, skip_serializing_if = …)]` on the Urd side,
+so an older reader (v3-aware) parsing a v4 payload sees the new fields as unknown
+keys and ignores them, and a v4 reader parsing a v3 payload gets empty vecs and
+`None` for the new fields.
+
+**The homelab still consumes Urd state exclusively through the Prometheus
+textfile** (`backup.prom`). The position recorded in the original "On
+`heartbeat.json`" note above is unchanged: there is no homelab-side parser for
+`heartbeat.json`, and none is planned. A v3-reader-on-v4-payload tolerance test
+in this repo would have nothing to exercise; the equivalent test on the Urd side
+(`heartbeat_v3_reader_tolerates_v4_unknown_fields` in `src/heartbeat.rs`) is the
+load-bearing one. A v4 sample payload is checked in at
+`docs/00-foundation/decisions/fixtures/urd-heartbeat-v4-sample.json` as a
+manual tolerance fixture (Urd plan R-cross-repo-1 escape) and as a
+forward-compatibility seed for any future homelab parser. The fixture parses as
+valid JSON under stdlib `json.load`; that is the entire current acceptance test.
+
+### Heartbeat contract softening (Urd-side wording change)
+
+The v3 heartbeat contract in Urd ADR-105 said: *consumers MUST check
+`schema_version` and refuse to interpret fields from a higher version.* The v4
+contract softens this to: *consumers SHOULD check version; MAY refuse.* Additive
+bumps are forward-compatible by serde default; **field removal** still requires
+an ADR-105 amendment and a major schema bump.
+
+This softening has no behavioral effect on the homelab because there is no
+heartbeat consumer on this side, but it makes the cross-repo R7 interlock
+contractually meaningful: it explicitly licenses the kind of additive bump that
+a v3-aware homelab parser would tolerate by default if one is ever added.
+
+### Verification done before merging this amendment
+
+- Audited `config/prometheus/alerts/*.yml` and
+  `config/grafana/provisioning/dashboards/json/backup-health.json`: no alert or
+  dashboard widget references any of the four new metric names or any v3
+  heartbeat field that v4 changes. New gauges are additive; pre-existing
+  `backup_snapshot_count{location="local"}` is preserved as the dashboard's
+  local-snapshot source of truth.
+- Manual JSON parse of the v4 fixture passes:
+  `python3 -c "import json; json.load(open('docs/00-foundation/decisions/fixtures/urd-heartbeat-v4-sample.json'))"`.
+
+### Dashboard surfacing — deferred
+
+Surfacing `backup_pool_free_bytes` and `backup_pool_metadata_utilization_ratio`
+as a "BTRFS pool health" panel in the `backup-health` Grafana dashboard, and
+deciding whether to swap `backup_snapshot_count{location="local"}` for the new
+`backup_subvolume_local_snapshot_count` in existing widgets, are UX choices and
+sit outside the contract change recorded by this amendment. Track as a separate
+follow-up issue.
+
 ## Related
 - **ADR-020:** Daily external backups (strategy — still valid, implementation superseded)
 - **Urd project:** `~/projects/urd/` — CLAUDE.md, ADRs 100–111, status.md
 - **Urd design plan:** `docs/00-foundation/decisions/2026-03-23-urd-btrfs-time-machine-design.md`
+- **Urd ADR-105 Amendment 2026-05-15 (UPI 043):** canonical pool-observability + heartbeat v4 contract text.
 - **Backup alerts:** `config/prometheus/alerts/backup-alerts.yml`
 - **Node exporter integration:** `quadlets/node_exporter.container` (textfile collector mount)
