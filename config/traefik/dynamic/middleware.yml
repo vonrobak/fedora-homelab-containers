@@ -274,23 +274,9 @@ http:
           - text/event-stream  # Don't compress SSE
         minResponseBodyBytes: 1024  # Only compress responses > 1KB
 
-    # ═══════════════════════════════════════════════════════════
-    # RELIABILITY PATTERNS
-    # ═══════════════════════════════════════════════════════════
-
-    # Circuit breaker (prevents cascade failures)
-    # Tuned for low-traffic services: higher network error threshold (50%)
-    # to prevent false positives from single failures, while still protecting
-    # against server errors (30% threshold for 5xx responses)
-    circuit-breaker:
-      circuitBreaker:
-        expression: "NetworkErrorRatio() > 0.50 || ResponseCodeRatio(500, 600, 0, 600) > 0.30"
-        checkPeriod: 10s
-        fallbackDuration: 30s
-        recoveryDuration: 10s
-
-    # Retry logic for transient failures
-    retry:
-      retry:
-        attempts: 3
-        initialInterval: 100ms
+    # Circuit-breaker and retry middlewares were removed 2026-05-15 (issue #146).
+    # The homelab converged on no-circuit-breaker / no-retry across all routers
+    # after the 2026-02-08 Immich stress test: client ECONNRESET from sync clients
+    # inflates NetworkErrorRatio (false trips), and retry cannot replay streamed
+    # request bodies. Reintroduce only with a router-specific definition and
+    # documented justification.
