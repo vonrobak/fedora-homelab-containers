@@ -8,9 +8,11 @@ Wants=network-online.target
 Image=docker.io/library/redis:7-alpine
 ContainerName=nextcloud-redis
 
-# Redis password authentication (using podman secret)
-Secret=nextcloud_redis_password
-Exec=sh -c 'redis-server --requirepass "$(cat /run/secrets/nextcloud_redis_password)"'
+# Redis password authentication via REDISCLI_AUTH env (avoids password on argv).
+# redis-cli auto-reads REDISCLI_AUTH; redis-server gets it via shell expansion
+# and rewrites its own argv post-startup. See issue #154.
+Secret=nextcloud_redis_password,type=env,target=REDISCLI_AUTH
+Exec=sh -c 'exec redis-server --requirepass "$REDISCLI_AUTH"'
 
 # Storage
 Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud-redis/data:/data:Z
@@ -19,7 +21,7 @@ Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud-redis/data:/data:Z
 Network=systemd-nextcloud
 
 # Health check
-HealthCmd=sh -c 'redis-cli --no-auth-warning -a "$(cat /run/secrets/nextcloud_redis_password)" ping'
+HealthCmd=redis-cli ping
 HealthInterval=30s
 HealthTimeout=10s
 HealthRetries=5
