@@ -53,6 +53,7 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
+        - sso-rate-limit@file          # 30/min avg, burst 100 — sized for parallel module loads
         - hsts-only@file               # HSTS + strip server headers (Authelia sets own CSP)
       tls:
         certResolver: letsencrypt
