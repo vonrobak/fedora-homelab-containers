@@ -123,6 +123,19 @@ http:
           ipStrategy:
             depth: 1
 
+    # Authelia portal — sized for parallel JS module loads at login.
+    # The shared rate-limit (100/min) was removed 2026-03-31 because it
+    # starved concurrent asset fetches and caused SSO blank pages.
+    # Burst covers the worst-case parallel module fetch on a cold load.
+    sso-rate-limit:
+      rateLimit:
+        average: 30
+        burst: 100
+        period: 1m
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
     # ═══════════════════════════════════════════════════════════
     # AUTHENTICATION
     # ═══════════════════════════════════════════════════════════
