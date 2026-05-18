@@ -32,6 +32,7 @@ TRAEFIK_DYNAMIC="$CONTAINERS_DIR/config/traefik/dynamic"
 AUTHELIA_CONFIG="$CONTAINERS_DIR/config/authelia/configuration.yml"
 HISTORY_DIR="$CONTAINERS_DIR/data/security-audit"
 REPORT_DIR="$CONTAINERS_DIR/docs/99-reports"
+EXEMPTIONS_FILE="$CONTAINERS_DIR/data/security-audit-exemptions.yml"
 
 # CLI options
 LEVEL=2
@@ -48,6 +49,11 @@ SCORE=100
 # Audit run metadata — captured at start, emitted in run_meta JSON block
 STARTED_AT="$(date -Iseconds)"
 STARTED_EPOCH=$EPOCHSECONDS
+
+# Exemptions registry — loaded once at startup, populated by load_exemptions()
+EXEMPTIONS_JSON="[]"
+EXPIRED_EXEMPTIONS_JSON="[]"
+EXEMPT_REASON=""
 
 # Colors (disabled for JSON/quiet)
 RED='\033[0;31m'
@@ -127,11 +133,81 @@ if $JSON_OUTPUT || $QUIET; then
 fi
 
 ##############################################################################
+# Exemption Registry
+##############################################################################
+#
+# Loads data/security-audit-exemptions.yml into two JSON blobs:
+#   - EXEMPTIONS_JSON         active exemptions (expires null or in the future)
+#   - EXPIRED_EXEMPTIONS_JSON exemptions whose expires date has passed
+#
+# Active exemptions downgrade matching findings to EXEMPT status (no score
+# penalty, listed separately). Expired exemptions are surfaced in output so
+# they get re-reviewed rather than silently rotting.
+
+load_exemptions() {
+    if [[ ! -f "$EXEMPTIONS_FILE" ]]; then
+        return 0
+    fi
+    if ! command -v yq &>/dev/null; then
+        echo "WARN: yq not installed — security-audit-exemptions.yml ignored" >&2
+        return 0
+    fi
+
+    local today all_json
+    today=$(date +%Y-%m-%d)
+    all_json=$(yq -o=json '.exemptions // []' "$EXEMPTIONS_FILE" 2>/dev/null || echo "[]")
+
+    EXEMPTIONS_JSON=$(echo "$all_json" \
+        | jq --arg today "$today" '[.[] | select(.expires == null or .expires >= $today)]' 2>/dev/null || echo "[]")
+    EXPIRED_EXEMPTIONS_JSON=$(echo "$all_json" \
+        | jq --arg today "$today" '[.[] | select(.expires != null and .expires < $today)]' 2>/dev/null || echo "[]")
+}
+
+# jq filter that pulls .reason and collapses newlines/runs of whitespace to single
+# spaces. RESULTS rows are line-delimited internally, so a multi-line YAML reason
+# survives the round-trip only if flattened here.
+readonly _REASON_FLATTEN='.reason // "" | gsub("\\s+"; " ") | sub("^\\s+"; "") | sub("\\s+$"; "")'
+
+# Check if a check has a global exemption (applies to every finding under that ID).
+# Sets EXEMPT_REASON on match. Returns 0 if exempt, 1 otherwise.
+is_exempt_check() {
+    local check_id="$1"
+    EXEMPT_REASON=""
+    local match
+    match=$(echo "$EXEMPTIONS_JSON" | jq -r --arg id "$check_id" \
+        "first(.[] | select(.check == \$id and (.global == true))) // empty | $_REASON_FLATTEN" 2>/dev/null)
+    if [[ -n "$match" ]]; then
+        EXEMPT_REASON="$match"
+        return 0
+    fi
+    return 1
+}
+
+# Check if a specific match (key=value) is exempt for this check.
+# Falls back to a global exemption if no field-match is found.
+# Sets EXEMPT_REASON on match. Returns 0 if exempt, 1 otherwise.
+is_exempt_match() {
+    local check_id="$1" key="$2" value="$3"
+    EXEMPT_REASON=""
+    local match
+    match=$(echo "$EXEMPTIONS_JSON" | jq -r --arg id "$check_id" --arg k "$key" --arg v "$value" \
+        "first(.[] | select(.check == \$id and (.match[\$k] == \$v))) // empty | $_REASON_FLATTEN" 2>/dev/null)
+    if [[ -n "$match" ]]; then
+        EXEMPT_REASON="$match"
+        return 0
+    fi
+    # No per-match entry — fall back to global
+    is_exempt_check "$check_id"
+}
+
+##############################################################################
 # Result Tracking
 ##############################################################################
 
 # Record a check result
-# Usage: record_check "SA-XXX-NN" level category "PASS|WARN|FAIL" "message" "detail"
+# Usage: record_check "SA-XXX-NN" level category "PASS|WARN|FAIL|EXEMPT" "message" "detail"
+# EXEMPT status carries no score penalty and is listed separately in output;
+# `detail` for EXEMPT records should be the exemption reason.
 record_check() {
     local id="$1" level="$2" category="$3" status="$4" message="$5" detail="${6:-}"
 
@@ -161,9 +237,10 @@ record_check() {
     # Terminal output (unless JSON-only)
     if ! $JSON_OUTPUT; then
         case "$status" in
-            PASS) $QUIET || echo -e "  ${GREEN}PASS${NC}  [$id] $message" ;;
-            WARN) echo -e "  ${YELLOW}WARN${NC}  [$id] $message" ;;
-            FAIL) echo -e "  ${RED}FAIL${NC}  [$id] $message" ;;
+            PASS) $QUIET || echo -e "  ${GREEN}PASS${NC}    [$id] $message" ;;
+            WARN) echo -e "  ${YELLOW}WARN${NC}    [$id] $message" ;;
+            FAIL) echo -e "  ${RED}FAIL${NC}    [$id] $message" ;;
+            EXEMPT) $QUIET || echo -e "  ${BLUE}EXEMPT${NC}  [$id] $message" ;;
         esac
     fi
 }
@@ -755,21 +832,29 @@ run_container_checks() {
 
     # SA-CTR-10 (L3): Container image age < 30 days
     if should_run 3 containers; then
-        local old_images=""
+        local old_images="" exempted_images=""
         local now_epoch
         now_epoch=$(date +%s)
         # Use JSON output for reliable epoch timestamps (CreatedAt has spaces)
         while IFS=$'\t' read -r img_name img_epoch; do
             [[ -z "$img_epoch" || "$img_epoch" == "0" ]] && continue
             local age_days=$(( (now_epoch - img_epoch) / 86400 ))
-            if (( age_days > 30 )); then
+            (( age_days > 30 )) || continue
+            if is_exempt_match SA-CTR-10 image "$img_name"; then
+                exempted_images="$exempted_images ${img_name##*/}:${age_days}d"
+            else
                 old_images="$old_images ${img_name##*/}:${age_days}d"
             fi
         done < <(podman images --format json 2>/dev/null | jq -r '.[] | "\(.Names[0] // .Id)\t\(.Created)"' 2>/dev/null)
         if [[ -z "$old_images" ]]; then
-            record_check "SA-CTR-10" 3 containers "PASS" "All container images <30 days old"
+            record_check "SA-CTR-10" 3 containers "PASS" "All non-exempt container images <30 days old"
         else
             record_check "SA-CTR-10" 3 containers "WARN" "Old images:$old_images" "$old_images"
+        fi
+        if [[ -n "$exempted_images" ]]; then
+            record_check "SA-CTR-10" 3 containers "EXEMPT" \
+                "Pinned images exempted:$exempted_images" \
+                "Pinned per ADR-015 (see data/security-audit-exemptions.yml)"
         fi
     fi
 
@@ -893,13 +978,41 @@ run_secrets_checks() {
     fi
 
     # SA-SEC-02 (L1): No secrets in git history (check recent commits)
+    # Iterates per-commit so per-commit exemptions (data/security-audit-exemptions.yml)
+    # can downgrade documented false positives (e.g. ADR commit titles using the
+    # word "secret") to EXEMPT instead of WARN.
     if should_run 1 secrets; then
-        local secret_leaks
-        secret_leaks=$(cd "$CONTAINERS_DIR" && git log --oneline -20 --diff-filter=A --name-only 2>/dev/null | grep -iE '\.(key|pem|env)$|secret|password|credential' | head -5 || echo "")
-        if [[ -z "$secret_leaks" ]]; then
-            record_check "SA-SEC-02" 1 secrets "PASS" "No secret files in recent git history"
+        local non_exempt_leaks="" exempt_commits=""
+        while IFS= read -r sha; do
+            [[ -z "$sha" ]] && continue
+            local title files combined
+            title=$(git -C "$CONTAINERS_DIR" log -1 --format=%s "$sha" 2>/dev/null)
+            files=$(git -C "$CONTAINERS_DIR" show --name-only --format= --diff-filter=A "$sha" 2>/dev/null)
+            combined="$title"$'\n'"$files"
+            if echo "$combined" | grep -qiE '\.(key|pem|env)$|secret|password|credential'; then
+                if is_exempt_match SA-SEC-02 commit "$sha"; then
+                    exempt_commits="$exempt_commits $sha"
+                else
+                    non_exempt_leaks="$non_exempt_leaks $sha"
+                fi
+            fi
+        done < <(git -C "$CONTAINERS_DIR" log -20 --format=%h 2>/dev/null)
+
+        if [[ -z "$non_exempt_leaks" ]]; then
+            if [[ -n "$exempt_commits" ]]; then
+                record_check "SA-SEC-02" 1 secrets "EXEMPT" \
+                    "Secret-keyword matches all exempted:$exempt_commits" \
+                    "Documented exemptions in data/security-audit-exemptions.yml"
+            else
+                record_check "SA-SEC-02" 1 secrets "PASS" "No secret files in recent git history"
+            fi
         else
-            record_check "SA-SEC-02" 1 secrets "WARN" "Possible secrets in git history: $secret_leaks"
+            record_check "SA-SEC-02" 1 secrets "WARN" "Possible secrets in git history:$non_exempt_leaks"
+            if [[ -n "$exempt_commits" ]]; then
+                record_check "SA-SEC-02" 1 secrets "EXEMPT" \
+                    "Additional matches exempted:$exempt_commits" \
+                    "Documented exemptions in data/security-audit-exemptions.yml"
+            fi
         fi
     fi
 
@@ -926,12 +1039,18 @@ run_secrets_checks() {
 
     # SA-SEC-04 (L2): GPG signing enabled
     if should_run 2 secrets; then
-        local gpg_sign
-        gpg_sign=$(cd "$CONTAINERS_DIR" && git config --get commit.gpgsign 2>/dev/null || echo "false")
-        if [[ "$gpg_sign" == "true" ]]; then
-            record_check "SA-SEC-04" 2 secrets "PASS" "GPG commit signing enabled"
+        if is_exempt_check SA-SEC-04; then
+            record_check "SA-SEC-04" 2 secrets "EXEMPT" \
+                "GPG commit signing — structurally not applicable (squash-merge)" \
+                "$EXEMPT_REASON"
         else
-            record_check "SA-SEC-04" 2 secrets "WARN" "GPG commit signing not enabled"
+            local gpg_sign
+            gpg_sign=$(cd "$CONTAINERS_DIR" && git config --get commit.gpgsign 2>/dev/null || echo "false")
+            if [[ "$gpg_sign" == "true" ]]; then
+                record_check "SA-SEC-04" 2 secrets "PASS" "GPG commit signing enabled"
+            else
+                record_check "SA-SEC-04" 2 secrets "WARN" "GPG commit signing not enabled"
+            fi
         fi
     fi
 
@@ -1059,7 +1178,7 @@ run_compliance_checks() {
 generate_json() {
     local timestamp
     timestamp=$(date -Iseconds)
-    local total=0 pass=0 warn=0 fail=0
+    local total=0 pass=0 warn=0 fail=0 exempt=0
 
     # Run metadata — computed once, emitted in the run_meta JSON block below
     local completed_at duration_seconds host audit_script_version
@@ -1083,11 +1202,12 @@ generate_json() {
     fi
 
     # Category counters
-    declare -A cat_pass cat_warn cat_fail
+    declare -A cat_pass cat_warn cat_fail cat_exempt
     for cat in auth network traefik containers monitoring secrets compliance; do
         cat_pass[$cat]=0
         cat_warn[$cat]=0
         cat_fail[$cat]=0
+        cat_exempt[$cat]=0
     done
 
     # Build checks array
@@ -1097,9 +1217,10 @@ generate_json() {
         IFS='|' read -r id level category status message detail <<< "$result"
         ((total++)) || true
         case "$status" in
-            PASS) ((pass++)) || true; ((cat_pass[$category]++)) || true ;;
-            WARN) ((warn++)) || true; ((cat_warn[$category]++)) || true ;;
-            FAIL) ((fail++)) || true; ((cat_fail[$category]++)) || true ;;
+            PASS)   ((pass++))   || true; ((cat_pass[$category]++))   || true ;;
+            WARN)   ((warn++))   || true; ((cat_warn[$category]++))   || true ;;
+            FAIL)   ((fail++))   || true; ((cat_fail[$category]++))   || true ;;
+            EXEMPT) ((exempt++)) || true; ((cat_exempt[$category]++)) || true ;;
         esac
 
         $first || checks_json+=","
@@ -1120,7 +1241,7 @@ generate_json() {
     for cat in auth network traefik containers monitoring secrets compliance; do
         $first || categories_json+=","
         first=false
-        categories_json+="\"$cat\": {\"pass\": ${cat_pass[$cat]}, \"warn\": ${cat_warn[$cat]}, \"fail\": ${cat_fail[$cat]}}"
+        categories_json+="\"$cat\": {\"pass\": ${cat_pass[$cat]}, \"warn\": ${cat_warn[$cat]}, \"fail\": ${cat_fail[$cat]}, \"exempt\": ${cat_exempt[$cat]}}"
     done
     categories_json+="}"
 
@@ -1199,11 +1320,13 @@ generate_json() {
     "total": $total,
     "pass": $pass,
     "warn": $warn,
-    "fail": $fail
+    "fail": $fail,
+    "exempt": $exempt
   },
   "categories": $categories_json,
   "checks": $checks_json,
-  "trend": $trend_json
+  "trend": $trend_json,
+  "expired_exemptions": $EXPIRED_EXEMPTIONS_JSON
 }
 JSONEOF
 }
@@ -1342,14 +1465,15 @@ print_summary() {
     $JSON_OUTPUT && return
     $QUIET && return
 
-    local total=0 pass=0 warn=0 fail=0
+    local total=0 pass=0 warn=0 fail=0 exempt=0
     for result in "${RESULTS[@]}"; do
         IFS='|' read -r _ _ _ status _ _ <<< "$result"
         ((total++)) || true
         case "$status" in
-            PASS) ((pass++)) || true ;;
-            WARN) ((warn++)) || true ;;
-            FAIL) ((fail++)) || true ;;
+            PASS)   ((pass++))   || true ;;
+            WARN)   ((warn++))   || true ;;
+            FAIL)   ((fail++))   || true ;;
+            EXEMPT) ((exempt++)) || true ;;
         esac
     done
 
@@ -1358,11 +1482,23 @@ print_summary() {
     echo -e "${BOLD}  Security Score: ${SCORE}/100${NC}"
     echo -e "${BOLD}${BLUE}=========================================${NC}"
     echo ""
-    echo -e "  ${GREEN}PASS:${NC}  $pass"
-    echo -e "  ${YELLOW}WARN:${NC}  $warn"
-    echo -e "  ${RED}FAIL:${NC}  $fail"
+    echo -e "  ${GREEN}PASS:${NC}    $pass"
+    echo -e "  ${YELLOW}WARN:${NC}    $warn"
+    echo -e "  ${RED}FAIL:${NC}    $fail"
+    if (( exempt > 0 )); then
+        echo -e "  ${BLUE}EXEMPT:${NC}  $exempt (documented in data/security-audit-exemptions.yml)"
+    fi
     echo -e "  Total: $total checks (level $LEVEL)"
     echo ""
+
+    local expired_count
+    expired_count=$(echo "$EXPIRED_EXEMPTIONS_JSON" | jq 'length' 2>/dev/null || echo "0")
+    if (( expired_count > 0 )); then
+        echo -e "  ${YELLOW}⚠ $expired_count exemption(s) expired — review data/security-audit-exemptions.yml${NC}"
+        echo "$EXPIRED_EXEMPTIONS_JSON" \
+            | jq -r '.[] | "    - \(.check) (expired \(.expires)): \(.reason | split("\n")[0])"' 2>/dev/null
+        echo ""
+    fi
 
     if $COMPARE; then
         local prev_file
@@ -1397,6 +1533,9 @@ main() {
     if ! command -v yq &>/dev/null; then
         echo "WARN: yq not installed — Traefik and Authelia YAML checks will use fallback (less accurate)" >&2
     fi
+
+    # Load exemptions registry (no-op if file or yq is missing)
+    load_exemptions
 
     # Header
     if ! $JSON_OUTPUT && ! $QUIET; then

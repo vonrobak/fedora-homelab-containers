@@ -1,0 +1,118 @@
+# Security audit exemptions registry
+#
+# Documented exceptions to the WARN/FAIL findings produced by
+# ./scripts/security-audit.sh. Matching findings are downgraded to EXEMPT
+# (no score penalty, listed separately in the JSON output and report).
+#
+# Schema
+# ------
+# Each entry under `exemptions:` is an object with these fields:
+#
+#   check          (required, string) — SA-* check ID (e.g. "SA-CTR-10").
+#   reason         (required, string) — non-trivial explanation. Must justify
+#                                       why the finding is acceptable.
+#   documented_in  (required, string) — file path or "memory:NAME" reference
+#                                       to the authoritative documentation.
+#   added          (required, YYYY-MM-DD) — when the exemption was added.
+#   expires        (required, YYYY-MM-DD or null) — null = permanent,
+#                                                   else surfaced for review
+#                                                   on/after this date.
+#
+#   match          (optional, object) — exempt only findings whose detail
+#                                       matches all key=value pairs.
+#                                       Keys depend on the check (e.g. "image"
+#                                       for SA-CTR-10, "commit" for SA-SEC-02).
+#   global         (optional, bool, default false) — exempt every finding
+#                                                    produced by this check.
+#                                                    Use sparingly.
+#
+# Either `match` or `global: true` must be present; `global` takes precedence.
+#
+# Review cadence
+# --------------
+# Exemptions with `expires` in the past are surfaced in audit output as
+# `expired_exemptions` so they get re-evaluated rather than rotting.
+# Permanent exemptions (`expires: null`) should be re-justified during any
+# major architecture review.
+
+exemptions:
+  # SA-SEC-02 — commit-title regex matched on "secret" keyword in ADR doc.
+  - check: SA-SEC-02
+    match:
+      commit: 218ee5a
+    reason: |
+      Commit title "docs: ADR-028 — Podman secret-store path split after
+      storage migration" contains the word "secret" because the ADR
+      documents the Podman secret-store path. No secret material in the
+      diff (verified — pure markdown).
+    documented_in: docs/00-foundation/decisions/2026-04-27-ADR-028-podman-secret-store-path-split.md
+    added: 2026-05-18
+    expires: null
+
+  # SA-SEC-02 — title contains "password" because the commit FIXES a leak.
+  - check: SA-SEC-02
+    match:
+      commit: dbb918f
+    reason: |
+      Commit title "fix: stop leaking nextcloud-redis password via argv" is
+      itself the remediation — it removes plaintext password exposure in the
+      process list. Diff contains no new credentials; the keyword match is
+      structural.
+    documented_in: PR #194
+    added: 2026-05-18
+    expires: null
+
+  # SA-SEC-04 — GPG signing off locally by design.
+  - check: SA-SEC-04
+    global: true
+    reason: |
+      Local GPG signing is intentionally disabled. Commits are signed
+      server-side when the PR is squash-merged on GitHub. The check is
+      structurally non-applicable to this repo's workflow.
+    documented_in: memory:feedback_commit_signing_via_github_squash
+    added: 2026-05-18
+    expires: null
+
+  # SA-CTR-10 — pinned images per ADR-015 (manual upgrade only).
+  - check: SA-CTR-10
+    match:
+      image: docker.io/library/mariadb:11
+    reason: |
+      MariaDB pinned to :11 per ADR-015. Major-version upgrades require
+      manual migration; minor releases on the :11 tag are infrequent, so
+      the 30-day age trip is structural rather than actionable.
+    documented_in: docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md
+    added: 2026-05-18
+    expires: 2027-01-01
+
+  - check: SA-CTR-10
+    match:
+      image: ghcr.io/immich-app/immich-server:v2.7.5
+    reason: |
+      Immich server pinned per ADR-015 (tight ML/postgres coupling).
+      Upgrades require coordinated bump of immich-machine-learning and
+      vectorchord-pgvecto.rs base image; not safe to auto-roll.
+    documented_in: docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md
+    added: 2026-05-18
+    expires: 2027-01-01
+
+  - check: SA-CTR-10
+    match:
+      image: ghcr.io/immich-app/immich-machine-learning:v2.7.5
+    reason: |
+      Immich ML pinned per ADR-015 — must move in lockstep with
+      immich-server. See sibling exemption.
+    documented_in: docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md
+    added: 2026-05-18
+    expires: 2027-01-01
+
+  - check: SA-CTR-10
+    match:
+      image: localhost/proton-bridge:3.23.1
+    reason: |
+      Locally-built image with explicit version pin. Rebuilt manually when
+      Proton ships a new version; the audit script can't detect upstream
+      releases for a local build.
+    documented_in: docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md
+    added: 2026-05-18
+    expires: 2027-01-01
