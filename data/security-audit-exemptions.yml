@@ -108,6 +108,17 @@ exemptions:
 
   - check: SA-CTR-10
     match:
+      image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    reason: |
+      Immich's Postgres pinned per ADR-015 — bundles vectorchord + pgvecto.rs
+      extensions matched to a specific Immich release. Must move in lockstep
+      with immich-server/ML; a stray pull breaks vector search.
+    documented_in: docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md
+    added: 2026-05-18
+    expires: 2027-01-01
+
+  - check: SA-CTR-10
+    match:
       image: localhost/proton-bridge:3.23.1
     reason: |
       Locally-built image with explicit version pin. Rebuilt manually when
