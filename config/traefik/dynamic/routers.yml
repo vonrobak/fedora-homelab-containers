@@ -241,7 +241,11 @@ http:
         - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit@file
+        # rate-limit-public (200/min, burst 100) — Lovelace cold-load lazy-fetches
+        # 50+ JS chunks in parallel and overshoots the default rate-limit tier
+        # (100/min, burst 50) intended for Authelia-fronted services. Native-auth
+        # services follow rate-limit-public per CLAUDE.md convention.
+        - rate-limit-public@file
         # NO authelia@file - HA has robust built-in auth
         - security-headers-ha@file
       tls:
