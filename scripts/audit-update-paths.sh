@@ -37,7 +37,6 @@ STATEFUL_SERVICES=(
     gathio
     gathio-db
     home-assistant
-    matter-server
     authelia
     redis-authelia
     loki
