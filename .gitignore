@@ -119,6 +119,9 @@ data/crowdsec/config/parsers/*
 data/crowdsec/config/parsers/s02-enrich/*
 !data/crowdsec/config/parsers/s02-enrich/local-whitelist.yaml
 
+# Security audit: documented WARN/FAIL exemptions (read by security-audit.sh)
+!data/security-audit-exemptions.yml
+
 # Logs
 *.log
 **/logs/
