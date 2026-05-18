@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-04-28 19:15:38 UTC
-**Total Documents:** 400
+**Generated:** 2026-05-18 05:02:06 UTC
+**Total Documents:** 411
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (23 documents)
+### 00-foundation/ (24 documents)
 
 **Fundamentals and core concepts**
 
@@ -51,6 +51,7 @@
 - ADR-026: [2026-04-21-ADR-026-nextcloud-pinned-major-version](00-foundation/decisions/2026-04-21-ADR-026-nextcloud-pinned-major-version.md)
 - ADR-027: [2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db](00-foundation/decisions/2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md)
 - ADR-028: [2026-04-27-ADR-028-podman-secret-store-path-split](00-foundation/decisions/2026-04-27-ADR-028-podman-secret-store-path-split.md)
+- : [README](00-foundation/decisions/fixtures/README.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
 ---
@@ -212,7 +213,7 @@
 
 ---
 
-### 98-journals/ (208 documents)
+### 98-journals/ (213 documents)
 
 **Chronological project history (append-only log)**
 
@@ -220,7 +221,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (47 documents)
+### 99-reports/ (52 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -230,23 +231,16 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-04-22: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
-- 2026-04-22: [2026-04-21-ADR-023-monitoring-bind-propagation.md](00-foundation/decisions/2026-04-21-ADR-023-monitoring-bind-propagation.md)
-- 2026-04-28: [2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md](00-foundation/decisions/2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md)
-- 2026-04-28: [2026-04-27-ADR-028-podman-secret-store-path-split.md](00-foundation/decisions/2026-04-27-ADR-028-podman-secret-store-path-split.md)
-- 2026-04-22: [2026-04-21-monitoring-bind-propagation.md](98-journals/2026-04-21-monitoring-bind-propagation.md)
-- 2026-04-23: [2026-04-22-ingress-forensics-udm-blindspot-private.md](98-journals/2026-04-22-ingress-forensics-udm-blindspot-private.md)
-- 2026-04-23: [2026-04-22-posture-intel-scripts-handoff.md](98-journals/2026-04-22-posture-intel-scripts-handoff.md)
-- 2026-04-22: [2026-04-22-udm-pro-siem-syslog-pipeline.md](98-journals/2026-04-22-udm-pro-siem-syslog-pipeline.md)
-- 2026-04-23: [2026-04-23-security-posture-punchlist-private.md](98-journals/2026-04-23-security-posture-punchlist-private.md)
-- 2026-04-23: [2026-04-23-udm-siem-qbittorrent-attribution-private.md](98-journals/2026-04-23-udm-siem-qbittorrent-attribution-private.md)
-- 2026-04-27: [2026-04-27-sso-recovery-and-secret-store-bomb-private.md](98-journals/2026-04-27-sso-recovery-and-secret-store-bomb-private.md)
-- 2026-04-27: [2026-04-27-tier1-punchlist-closeout-private.md](98-journals/2026-04-27-tier1-punchlist-closeout-private.md)
-- 2026-04-28: [2026-04-28-tier2-perip-verification-and-nextcloud-burst-downsize-private.md](98-journals/2026-04-28-tier2-perip-verification-and-nextcloud-burst-downsize-private.md)
-- 2026-04-28: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-04-28: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-04-28: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-04-28: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-05-16: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
+- 2026-05-16: [README.md](00-foundation/decisions/fixtures/README.md)
+- 2026-05-13: [2026-05-13-udm-pro-threat-notifications-investigation-private.md](98-journals/2026-05-13-udm-pro-threat-notifications-investigation-private.md)
+- 2026-05-15: [2026-05-15-audit-backlog-drift-and-observability-deployment.md](98-journals/2026-05-15-audit-backlog-drift-and-observability-deployment.md)
+- 2026-05-13: [remediation-monthly-202604.md](99-reports/remediation-monthly-202604.md)
+- 2026-05-15: [security-audit-2026-05-15.md](99-reports/security-audit-2026-05-15.md)
+- 2026-05-18: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-05-18: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-05-18: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-05-18: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

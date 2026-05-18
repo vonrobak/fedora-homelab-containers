@@ -1,7 +1,7 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-04-28 19:15:30 UTC
-**System:** fedora-htpc | **Networks:** 10 | **Containers:** 32
+**Generated:** 2026-05-18 05:02:01 UTC
+**System:** fedora-htpc | **Networks:** 10 | **Containers:** 35
 
 ---
 
@@ -63,6 +63,7 @@ graph TB
         direction LR
         auth_services_authelia[authelia]
         auth_services_redis_authelia[redis-authelia]
+        auth_services_redis_authelia_exporter[redis-authelia-exporter]
     end
 
     subgraph gathio["gathio<br/>10.89.0.0/24"]
@@ -96,8 +97,11 @@ graph TB
         monitoring_grafana[grafana]
         monitoring_loki[loki]
         monitoring_node_exporter[node_exporter]
+        monitoring_postgres_exporter[postgres-exporter]
         monitoring_prometheus[prometheus]
         monitoring_promtail[promtail]
+        monitoring_redis_authelia_exporter[redis-authelia-exporter]
+        monitoring_redis_immich_exporter[redis-immich-exporter]
         monitoring_unpoller[unpoller]
     end
 
@@ -112,8 +116,10 @@ graph TB
         direction LR
         photos_immich_ml[immich-ml]
         photos_immich_server[immich-server]
+        photos_postgres_exporter[postgres-exporter]
         photos_postgresql_immich[postgresql-immich]
         photos_redis_immich[redis-immich]
+        photos_redis_immich_exporter[redis-immich-exporter]
     end
 
     subgraph reverse_proxy["reverse_proxy<br/>10.89.2.0/24"]
@@ -196,7 +202,10 @@ Shows which services belong to which networks. Dynamically generated from runnin
 | matter-server | - | - | ✅ | - | - | - | - | - | - | - |
 | nextcloud-db | - | - | - | - | - | - | ✅ | - | - | - |
 | nextcloud-redis | - | - | - | - | - | - | ✅ | - | - | - |
+| postgres-exporter | - | - | - | - | - | ✅ | - | ✅ | - | - |
 | postgresql-immich | - | - | - | - | - | - | - | ✅ | - | - |
+| redis-authelia-exporter | ✅ | - | - | - | - | ✅ | - | - | - | - |
+| redis-immich-exporter | - | - | - | - | - | ✅ | - | ✅ | - | - |
 | redis-immich | - | - | - | - | - | - | - | ✅ | - | - |
 | unifi-syslog | - | - | - | - | - | - | - | - | - | ✅ |
 
@@ -255,11 +264,12 @@ sequenceDiagram
 
 - **Full Name:** `systemd-auth_services`
 - **Subnet:** 10.89.3.0/24
-- **Services:** 2
+- **Services:** 3
 
 **Members:**
 - authelia
 - redis-authelia
+- redis-authelia-exporter
 
 
 ### gathio
@@ -309,7 +319,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 9
+- **Services:** 12
 
 **Members:**
 - alert-discord-relay
@@ -318,8 +328,11 @@ sequenceDiagram
 - grafana
 - loki
 - node_exporter
+- postgres-exporter
 - prometheus
 - promtail
+- redis-authelia-exporter
+- redis-immich-exporter
 - unpoller
 
 
@@ -339,13 +352,15 @@ sequenceDiagram
 
 - **Full Name:** `systemd-photos`
 - **Subnet:** 10.89.5.0/24
-- **Services:** 4
+- **Services:** 6
 
 **Members:**
 - immich-ml
 - immich-server
+- postgres-exporter
 - postgresql-immich
 - redis-immich
+- redis-immich-exporter
 
 
 ### reverse_proxy

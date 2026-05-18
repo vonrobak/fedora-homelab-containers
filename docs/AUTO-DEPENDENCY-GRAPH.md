@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-04-28 19:15:37 UTC
+**Generated:** 2026-05-18 05:02:05 UTC
 **System:** fedora-htpc
 
 ---
@@ -51,9 +51,12 @@ graph TB
         matter_server[matter-server]
         navidrome[navidrome]
         node_exporter[node_exporter]
+        postgres_exporter[postgres-exporter]
         promtail[promtail]
         proton_bridge[proton-bridge]
         qbittorrent[qbittorrent]
+        redis_authelia_exporter[redis-authelia-exporter]
+        redis_immich_exporter[redis-immich-exporter]
         unifi_syslog[unifi-syslog]
         unpoller[unpoller]
     end
@@ -63,6 +66,9 @@ graph TB
     gathio --> gathio_db
     immich_server --> postgresql_immich
     immich_server --> redis_immich
+    postgres_exporter --> postgresql_immich
+    redis_authelia_exporter --> redis_authelia
+    redis_immich_exporter --> redis_immich
 
     %% Routing dependencies (services in reverse_proxy depend on Traefik)
     traefik -.-> alert_discord_relay
@@ -85,6 +91,9 @@ graph TB
     traefik -.-> vaultwarden
 
     %% Monitoring (Prometheus scrapes via monitoring network)
+    prometheus -.->|scrapes| postgres_exporter
+    prometheus -.->|scrapes| redis_authelia_exporter
+    prometheus -.->|scrapes| redis_immich_exporter
 
     %% Styling
     style traefik fill:#f9f,stroke:#333,stroke-width:4px
@@ -148,9 +157,12 @@ graph TB
 | **matter-server** | — | 🟢 Service-specific impact |
 | **navidrome** | — | 🟢 Service-specific impact |
 | **node_exporter** | — | 🟢 Service-specific impact |
+| **postgres-exporter** | postgresql-immich | 🟢 Service-specific impact |
 | **promtail** | — | 🟢 Service-specific impact |
 | **proton-bridge** | — | 🟢 Service-specific impact |
 | **qbittorrent** | — | 🟢 Service-specific impact |
+| **redis-authelia-exporter** | redis-authelia | 🟢 Service-specific impact |
+| **redis-immich-exporter** | redis-immich | 🟢 Service-specific impact |
 | **unifi-syslog** | — | 🟢 Service-specific impact |
 | **unpoller** | — | 🟢 Service-specific impact |
 
@@ -183,13 +195,16 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | nextcloud-db | (no ordering constraints) |
 | nextcloud-redis | (no ordering constraints) |
 | node_exporter | (no ordering constraints) |
+| postgres-exporter | postgresql-immich |
 | postgresql-immich | (no ordering constraints) |
 | prometheus | node_exporter |
 | promtail | loki |
 | proton-bridge | (no ordering constraints) |
 | qbittorrent | (no ordering constraints) |
 | redis-authelia | (no ordering constraints) |
+| redis-authelia-exporter | redis-authelia |
 | redis-immich | (no ordering constraints) |
+| redis-immich-exporter | redis-immich |
 | traefik | http.socket,https.socket |
 | unifi-syslog | (no ordering constraints) |
 | unpoller | prometheus |
@@ -201,7 +216,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 
 Services on the same network can communicate:
 
-**auth_services:** authelia,redis-authelia
+**auth_services:** authelia,redis-authelia,redis-authelia-exporter
 
 **gathio:** gathio,gathio-db
 
@@ -211,11 +226,11 @@ Services on the same network can communicate:
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,loki,node_exporter,prometheus,promtail,unpoller
+**monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,loki,node_exporter,postgres-exporter,prometheus,promtail,redis-authelia-exporter,redis-immich-exporter,unpoller
 
 **nextcloud:** nextcloud,nextcloud-db,nextcloud-redis
 
-**photos:** immich-ml,immich-server,postgresql-immich,redis-immich
+**photos:** immich-ml,immich-server,postgres-exporter,postgresql-immich,redis-immich,redis-immich-exporter
 
 **reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
 
