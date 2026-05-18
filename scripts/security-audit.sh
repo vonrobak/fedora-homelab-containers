@@ -45,6 +45,10 @@ QUIET=false
 declare -a RESULTS=()
 SCORE=100
 
+# Audit run metadata — captured at start, emitted in run_meta JSON block
+STARTED_AT="$(date -Iseconds)"
+STARTED_EPOCH=$EPOCHSECONDS
+
 # Colors (disabled for JSON/quiet)
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -761,7 +765,7 @@ run_container_checks() {
             if (( age_days > 30 )); then
                 old_images="$old_images ${img_name##*/}:${age_days}d"
             fi
-        done < <(podman images --format json 2>/dev/null | jq -r '.[] | "\(.Names[0] // .Id)\t\(.Created)"' 2>/dev/null | head -30)
+        done < <(podman images --format json 2>/dev/null | jq -r '.[] | "\(.Names[0] // .Id)\t\(.Created)"' 2>/dev/null)
         if [[ -z "$old_images" ]]; then
             record_check "SA-CTR-10" 3 containers "PASS" "All container images <30 days old"
         else
@@ -1057,6 +1061,27 @@ generate_json() {
     timestamp=$(date -Iseconds)
     local total=0 pass=0 warn=0 fail=0
 
+    # Run metadata — computed once, emitted in the run_meta JSON block below
+    local completed_at duration_seconds host audit_script_version
+    local category_json compared_against_json
+    completed_at="$timestamp"
+    duration_seconds=$(( EPOCHSECONDS - STARTED_EPOCH ))
+    host="$(hostname -s 2>/dev/null || hostname)"
+    audit_script_version="$(git -C "$SCRIPT_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+    if [[ -n "$CATEGORY" ]]; then
+        category_json="\"$CATEGORY\""
+    else
+        category_json="null"
+    fi
+    compared_against_json="null"
+    if $COMPARE; then
+        local prev_file_for_meta
+        prev_file_for_meta=$(ls -t "$HISTORY_DIR"/audit-*.json 2>/dev/null | head -1 || echo "")
+        if [[ -f "$prev_file_for_meta" ]]; then
+            compared_against_json="\"$prev_file_for_meta\""
+        fi
+    fi
+
     # Category counters
     declare -A cat_pass cat_warn cat_fail
     for cat in auth network traefik containers monitoring secrets compliance; do
@@ -1158,7 +1183,18 @@ generate_json() {
   "timestamp": "$timestamp",
   "version": "2.0",
   "level": $LEVEL,
+  "score": $SCORE,
   "security_score": $SCORE,
+  "run_meta": {
+    "started_at": "$STARTED_AT",
+    "completed_at": "$completed_at",
+    "duration_seconds": $duration_seconds,
+    "host": "$host",
+    "audit_script_version": "$audit_script_version",
+    "level": $LEVEL,
+    "category": $category_json,
+    "compared_against": $compared_against_json
+  },
   "summary": {
     "total": $total,
     "pass": $pass,
