@@ -17,7 +17,7 @@ get_group() {
         immich-server|immich-ml|postgresql-immich|redis-immich) echo "3:Immich" ;;
         jellyfin)                                    echo "4:Jellyfin" ;;
         vaultwarden)                                 echo "5:Vaultwarden" ;;
-        home-assistant|matter-server)                echo "6:Home Automation" ;;
+        home-assistant)                              echo "6:Home Automation" ;;
         gathio|gathio-db)                            echo "7:Gathio" ;;
         homepage)                                    echo "8:Homepage" ;;
         prometheus|grafana|loki|alertmanager|promtail|node_exporter|cadvisor|unpoller|alert-discord-relay)

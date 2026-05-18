@@ -109,7 +109,7 @@ ALL_SERVICES=(
     nextcloud nextcloud-db nextcloud-redis
     immich-server immich-ml postgresql-immich redis-immich
     jellyfin vaultwarden homepage audiobookshelf navidrome qbittorrent
-    home-assistant matter-server
+    home-assistant
     gathio gathio-db
 )
 
@@ -144,7 +144,7 @@ echo ""
 
 # qbittorrent excluded — no healthcheck configured in quadlet
 HEALTH_CONTAINERS=(traefik authelia nextcloud immich-server jellyfin home-assistant crowdsec
-    nextcloud-db nextcloud-redis gathio gathio-db matter-server audiobookshelf navidrome)
+    nextcloud-db nextcloud-redis gathio gathio-db audiobookshelf navidrome)
 HEALTH_OK=0
 HEALTH_FAIL=0
 

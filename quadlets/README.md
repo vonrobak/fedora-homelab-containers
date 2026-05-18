@@ -248,9 +248,8 @@ Test quadlets with placeholder credentials are **excluded from git**:
 - `collabora.container` - Online office suite
 - `homepage.container` - Dashboard/homepage
 
-### Home Automation (2)
+### Home Automation (1)
 - `home-assistant.container` - Home automation hub
-- `matter-server.container` - Matter smart home protocol server
 
 ### Utilities (2)
 - `gathio.container` - Event management

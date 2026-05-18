@@ -30,7 +30,7 @@ NC='\033[0m'
 declare -A PHASES
 PHASES=(
     [1_name]="Supporting services"
-    [1_services]="alert-discord-relay cadvisor node_exporter promtail unpoller immich-ml matter-server"
+    [1_services]="alert-discord-relay cadvisor node_exporter promtail unpoller immich-ml"
     [2_name]="Applications"
     [2_services]="nextcloud gathio immich-server jellyfin home-assistant homepage vaultwarden audiobookshelf navidrome qbittorrent"
     [3_name]="Infrastructure"
