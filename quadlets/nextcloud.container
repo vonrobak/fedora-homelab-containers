@@ -44,7 +44,7 @@ Volume=/mnt/btrfs-pool/subvol5-music:/external/music:ro,z
 # Immich has exclusive :Z access to this subdirectory
 
 # External storage - read-write
-Volume=/mnt/btrfs-pool/subvol6-tmp/Downloads:/external/downloads:Z
+Volume=/mnt/btrfs-pool/subvol6-tmp/Downloads:/external/downloads:z
 Volume=/mnt/btrfs-pool/subvol1-docs:/external/user-documents:Z
 Volume=/mnt/btrfs-pool/subvol2-pics:/external/user-photos:Z
 
