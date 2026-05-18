@@ -33,8 +33,13 @@ if ! "$DRIFT_SCRIPT" > "$DRIFT_OUTPUT" 2>&1; then
 fi
 
 # Parse results
-DRIFT_COUNT=$(grep -c "✗ DRIFT" "$DRIFT_OUTPUT" 2>/dev/null || echo "0")
-WARNING_COUNT=$(grep -c "⚠ WARNING" "$DRIFT_OUTPUT" 2>/dev/null || echo "0")
+# grep -c exits 1 on no-match while still printing "0"; the trailing `|| echo "0"`
+# would then concatenate to "0\n0" and break the arithmetic test below. Suppress
+# the non-zero exit and default to 0 instead.
+DRIFT_COUNT=$(grep -c "✗ DRIFT" "$DRIFT_OUTPUT" 2>/dev/null; true)
+DRIFT_COUNT=${DRIFT_COUNT:-0}
+WARNING_COUNT=$(grep -c "⚠ WARNING" "$DRIFT_OUTPUT" 2>/dev/null; true)
+WARNING_COUNT=${WARNING_COUNT:-0}
 
 # Write status to daily digest directory (consolidated Discord notification)
 DIGEST_DIR="/tmp/daily-digest"
