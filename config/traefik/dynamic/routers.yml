@@ -251,6 +251,21 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # Forgejo - Git forge with native auth
+    # NO authelia@file: forward-auth breaks git CLI operations over HTTPS
+    forgejo-secure:
+      rule: "Host(`git.patriark.org`)"
+      service: "forgejo"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit-public@file
+        - compression@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
     # Audiobookshelf - Uses native authentication (no Authelia SSO)
     # iOS app (abs) and web UI use Audiobookshelf's built-in auth
     audiobookshelf-secure:
@@ -351,6 +366,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://gathio:3000"
+
+    forgejo:
+      loadBalancer:
+        servers:
+          - url: "http://forgejo:3000"
 
     home-assistant:
       loadBalancer:

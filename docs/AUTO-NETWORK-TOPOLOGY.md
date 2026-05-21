@@ -1,7 +1,7 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-05-18 05:02:01 UTC
-**System:** fedora-htpc | **Networks:** 10 | **Containers:** 35
+**Generated:** 2026-05-21 20:54:04 UTC
+**System:** fedora-htpc | **Networks:** 11 | **Containers:** 36
 
 ---
 
@@ -31,6 +31,7 @@ graph TB
     CrowdSec -->|Rate Limit| alert_discord_relay[alert-discord-relay]
     CrowdSec -->|Rate Limit| alertmanager[alertmanager]
     CrowdSec -->|Rate Limit| audiobookshelf[audiobookshelf]
+    CrowdSec -->|Rate Limit| forgejo[forgejo]
     CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
     CrowdSec -->|Rate Limit| navidrome[navidrome]
@@ -66,6 +67,12 @@ graph TB
         auth_services_redis_authelia_exporter[redis-authelia-exporter]
     end
 
+    subgraph forgejo["forgejo<br/>10.89.8.0/24"]
+        direction LR
+        forgejo_forgejo[forgejo]
+        forgejo_forgejo_db[forgejo-db]
+    end
+
     subgraph gathio["gathio<br/>10.89.0.0/24"]
         direction LR
         gathio_gathio[gathio]
@@ -75,7 +82,6 @@ graph TB
     subgraph home_automation["home_automation<br/>10.89.6.0/24"]
         direction LR
         home_automation_home_assistant[home-assistant]
-        home_automation_matter_server[matter-server]
     end
 
     subgraph mail["mail<br/>10.89.9.0/24"]
@@ -129,6 +135,7 @@ graph TB
         reverse_proxy_audiobookshelf[audiobookshelf]
         reverse_proxy_authelia[authelia]
         reverse_proxy_crowdsec[crowdsec]
+        reverse_proxy_forgejo[forgejo]
         reverse_proxy_gathio[gathio]
         reverse_proxy_grafana[grafana]
         reverse_proxy_home_assistant[home-assistant]
@@ -167,47 +174,48 @@ graph TB
 
 Shows which services belong to which networks. Dynamically generated from running container state.
 
-| Service | auth_services | gathio | home_automation | mail | media_services | monitoring | nextcloud | photos | reverse_proxy | syslog |
-|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Service | auth_services | forgejo | gathio | home_automation | mail | media_services | monitoring | nextcloud | photos | reverse_proxy | syslog |
+|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **Gateway & Security** |
-| authelia | ✅ | - | - | ✅ | - | - | - | - | ✅ | - |
-| crowdsec | - | - | - | - | - | - | - | - | ✅ | - |
-| redis-authelia | ✅ | - | - | - | - | - | - | - | - | - |
-| traefik | - | - | - | - | - | - | - | - | ✅ | - |
+| authelia | ✅ | - | - | - | ✅ | - | - | - | - | ✅ | - |
+| crowdsec | - | - | - | - | - | - | - | - | - | ✅ | - |
+| redis-authelia | ✅ | - | - | - | - | - | - | - | - | - | - |
+| traefik | - | - | - | - | - | - | - | - | - | ✅ | - |
 | **Public Services** |
-| alert-discord-relay | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| audiobookshelf | - | - | - | - | - | - | - | - | ✅ | - |
-| gathio | - | ✅ | - | - | - | - | - | - | ✅ | - |
-| home-assistant | - | - | ✅ | - | - | - | - | - | ✅ | - |
-| homepage | - | - | - | - | - | - | - | - | ✅ | - |
-| immich-server | - | - | - | - | - | - | - | ✅ | ✅ | - |
-| jellyfin | - | - | - | - | ✅ | - | - | - | ✅ | - |
-| navidrome | - | - | - | - | - | - | - | - | ✅ | - |
-| nextcloud | - | - | - | - | - | - | ✅ | - | ✅ | - |
-| proton-bridge | - | - | - | ✅ | - | - | - | - | ✅ | - |
-| qbittorrent | - | - | - | - | - | - | - | - | ✅ | - |
-| unpoller | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| vaultwarden | - | - | - | - | - | - | - | - | ✅ | - |
+| alert-discord-relay | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| audiobookshelf | - | - | - | - | - | - | - | - | - | ✅ | - |
+| forgejo | - | ✅ | - | - | - | - | - | - | - | ✅ | - |
+| gathio | - | - | ✅ | - | - | - | - | - | - | ✅ | - |
+| home-assistant | - | - | - | ✅ | - | - | - | - | - | ✅ | - |
+| homepage | - | - | - | - | - | - | - | - | - | ✅ | - |
+| immich-server | - | - | - | - | - | - | - | - | ✅ | ✅ | - |
+| jellyfin | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
+| navidrome | - | - | - | - | - | - | - | - | - | ✅ | - |
+| nextcloud | - | - | - | - | - | - | - | ✅ | - | ✅ | - |
+| proton-bridge | - | - | - | - | ✅ | - | - | - | - | ✅ | - |
+| qbittorrent | - | - | - | - | - | - | - | - | - | ✅ | - |
+| unpoller | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| vaultwarden | - | - | - | - | - | - | - | - | - | ✅ | - |
 | **Monitoring** |
-| alertmanager | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| cadvisor | - | - | - | - | - | ✅ | - | - | - | - |
-| grafana | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| loki | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| node_exporter | - | - | - | - | - | ✅ | - | - | - | - |
-| prometheus | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| promtail | - | - | - | - | - | ✅ | - | - | - | - |
+| alertmanager | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| cadvisor | - | - | - | - | - | - | ✅ | - | - | - | - |
+| grafana | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| loki | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| node_exporter | - | - | - | - | - | - | ✅ | - | - | - | - |
+| prometheus | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| promtail | - | - | - | - | - | - | ✅ | - | - | - | - |
 | **Backend Services** |
-| gathio-db | - | ✅ | - | - | - | - | - | - | - | - |
-| immich-ml | - | - | - | - | - | - | - | ✅ | - | - |
-| matter-server | - | - | ✅ | - | - | - | - | - | - | - |
-| nextcloud-db | - | - | - | - | - | - | ✅ | - | - | - |
-| nextcloud-redis | - | - | - | - | - | - | ✅ | - | - | - |
-| postgres-exporter | - | - | - | - | - | ✅ | - | ✅ | - | - |
-| postgresql-immich | - | - | - | - | - | - | - | ✅ | - | - |
-| redis-authelia-exporter | ✅ | - | - | - | - | ✅ | - | - | - | - |
-| redis-immich-exporter | - | - | - | - | - | ✅ | - | ✅ | - | - |
-| redis-immich | - | - | - | - | - | - | - | ✅ | - | - |
-| unifi-syslog | - | - | - | - | - | - | - | - | - | ✅ |
+| forgejo-db | - | ✅ | - | - | - | - | - | - | - | - | - |
+| gathio-db | - | - | ✅ | - | - | - | - | - | - | - | - |
+| immich-ml | - | - | - | - | - | - | - | - | ✅ | - | - |
+| nextcloud-db | - | - | - | - | - | - | - | ✅ | - | - | - |
+| nextcloud-redis | - | - | - | - | - | - | - | ✅ | - | - | - |
+| postgres-exporter | - | - | - | - | - | - | ✅ | - | ✅ | - | - |
+| postgresql-immich | - | - | - | - | - | - | - | - | ✅ | - | - |
+| redis-authelia-exporter | ✅ | - | - | - | - | - | ✅ | - | - | - | - |
+| redis-immich-exporter | - | - | - | - | - | - | ✅ | - | ✅ | - | - |
+| redis-immich | - | - | - | - | - | - | - | - | ✅ | - | - |
+| unifi-syslog | - | - | - | - | - | - | - | - | - | - | ✅ |
 
 ---
 
@@ -272,6 +280,17 @@ sequenceDiagram
 - redis-authelia-exporter
 
 
+### forgejo
+
+- **Full Name:** `systemd-forgejo`
+- **Subnet:** 10.89.8.0/24
+- **Services:** 2
+
+**Members:**
+- forgejo
+- forgejo-db
+
+
 ### gathio
 
 - **Full Name:** `systemd-gathio`
@@ -287,11 +306,10 @@ sequenceDiagram
 
 - **Full Name:** `systemd-home_automation`
 - **Subnet:** 10.89.6.0/24
-- **Services:** 2
+- **Services:** 1
 
 **Members:**
 - home-assistant
-- matter-server
 
 
 ### mail
@@ -367,7 +385,7 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 20
+- **Services:** 21
 
 **Members:**
 - alert-discord-relay
@@ -375,6 +393,7 @@ sequenceDiagram
 - audiobookshelf
 - authelia
 - crowdsec
+- forgejo
 - gathio
 - grafana
 - home-assistant

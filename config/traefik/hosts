@@ -30,6 +30,9 @@
 10.89.2.80  immich-server
 10.89.2.84  gathio
 
+# Development
+10.89.2.89  forgejo
+
 # Monitoring & Logging
 10.89.2.83  loki
 

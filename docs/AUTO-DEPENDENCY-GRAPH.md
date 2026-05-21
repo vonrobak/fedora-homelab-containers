@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-05-18 05:02:05 UTC
+**Generated:** 2026-05-21 20:54:09 UTC
 **System:** fedora-htpc
 
 ---
@@ -47,8 +47,9 @@ graph TB
         alert_discord_relay[alert-discord-relay]
         audiobookshelf[audiobookshelf]
         cadvisor[cadvisor]
+        forgejo[forgejo]
+        forgejo_db[forgejo-db]
         immich_ml[immich-ml]
-        matter_server[matter-server]
         navidrome[navidrome]
         node_exporter[node_exporter]
         postgres_exporter[postgres-exporter]
@@ -63,6 +64,7 @@ graph TB
 
     %% Hard dependencies (from Requires= directives)
     authelia --> redis_authelia
+    forgejo --> forgejo_db
     gathio --> gathio_db
     immich_server --> postgresql_immich
     immich_server --> redis_immich
@@ -75,6 +77,7 @@ graph TB
     traefik -.-> alertmanager
     traefik -.-> audiobookshelf
     traefik -.-> authelia
+    traefik -.-> forgejo
     traefik -.-> gathio
     traefik -.-> grafana
     traefik -.-> home_assistant
@@ -153,8 +156,9 @@ graph TB
 | **alert-discord-relay** | — | 🟢 Service-specific impact |
 | **audiobookshelf** | — | 🟢 Service-specific impact |
 | **cadvisor** | — | 🟢 Service-specific impact |
+| **forgejo** | forgejo-db | 🟢 Service-specific impact |
+| **forgejo-db** | — | 🟢 Service-specific impact |
 | **immich-ml** | — | 🟢 Service-specific impact |
-| **matter-server** | — | 🟢 Service-specific impact |
 | **navidrome** | — | 🟢 Service-specific impact |
 | **node_exporter** | — | 🟢 Service-specific impact |
 | **postgres-exporter** | postgresql-immich | 🟢 Service-specific impact |
@@ -180,6 +184,8 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | authelia | redis-authelia |
 | cadvisor | (no ordering constraints) |
 | crowdsec | (no ordering constraints) |
+| forgejo | forgejo-db |
+| forgejo-db | (no ordering constraints) |
 | gathio | gathio-db |
 | gathio-db | (no ordering constraints) |
 | grafana | (no ordering constraints) |
@@ -189,7 +195,6 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | immich-server | postgresql-immich,redis-immich |
 | jellyfin | (no ordering constraints) |
 | loki | (no ordering constraints) |
-| matter-server | (no ordering constraints) |
 | navidrome | traefik |
 | nextcloud | nextcloud-db,nextcloud-redis |
 | nextcloud-db | (no ordering constraints) |
@@ -218,9 +223,11 @@ Services on the same network can communicate:
 
 **auth_services:** authelia,redis-authelia,redis-authelia-exporter
 
+**forgejo:** forgejo,forgejo-db
+
 **gathio:** gathio,gathio-db
 
-**home_automation:** home-assistant,matter-server
+**home_automation:** home-assistant
 
 **mail:** authelia,proton-bridge
 
@@ -232,7 +239,7 @@ Services on the same network can communicate:
 
 **photos:** immich-ml,immich-server,postgres-exporter,postgresql-immich,redis-immich,redis-immich-exporter
 
-**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
+**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,forgejo,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
 
 **syslog:** unifi-syslog
 

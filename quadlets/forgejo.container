@@ -1,0 +1,62 @@
+[Unit]
+Description=Forgejo Git Forge
+After=network-online.target forgejo-db.service reverse_proxy-network.service forgejo-network.service
+Wants=network-online.target
+Requires=forgejo-db.service
+
+[Container]
+Image=codeberg.org/forgejo/forgejo:15
+ContainerName=forgejo
+HostName=forgejo
+
+Environment=USER_UID=1000
+Environment=USER_GID=1000
+Environment=TZ=Europe/Oslo
+
+# Server
+Environment=FORGEJO__server__DOMAIN=git.patriark.org
+Environment=FORGEJO__server__ROOT_URL=https://git.patriark.org/
+Environment=FORGEJO__server__HTTP_PORT=3000
+Environment=FORGEJO__server__DISABLE_SSH=true
+Environment=FORGEJO__server__START_SSH_SERVER=false
+
+# Database (forgejo-db reached by container name on systemd-forgejo)
+Environment=FORGEJO__database__DB_TYPE=postgres
+Environment=FORGEJO__database__HOST=forgejo-db:5432
+Environment=FORGEJO__database__NAME=forgejo
+Environment=FORGEJO__database__USER=forgejo
+Secret=forgejo_db_password,type=env,target=FORGEJO__database__PASSWD
+
+# Closed forge (HTTPS-only, native auth; installer locked)
+Environment=FORGEJO__security__INSTALL_LOCK=true
+Environment=FORGEJO__service__DISABLE_REGISTRATION=true
+Environment=FORGEJO__service__REQUIRE_SIGNIN_VIEW=true
+Environment=FORGEJO__session__COOKIE_SECURE=true
+
+# Storage (repos/LFS/data on container pool; not a DB, no NOCOW)
+Volume=/mnt/btrfs-pool/subvol7-containers/forgejo:/data:Z
+
+# Networks (reverse_proxy FIRST = default route for internet; static IPs per ADR-018)
+Network=systemd-reverse_proxy:ip=10.89.2.89
+Network=systemd-forgejo:ip=10.89.8.89
+
+DNS=192.168.1.69
+
+# Health Check
+HealthCmd=wget --quiet --tries=1 --spider http://localhost:3000/api/healthz || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=300
+
+# Resource Limits
+MemoryHigh=1G
+MemoryMax=1536M
+
+[Install]
+WantedBy=default.target
