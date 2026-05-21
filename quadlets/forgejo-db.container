@@ -1,0 +1,41 @@
+[Unit]
+Description=PostgreSQL Database for Forgejo
+After=network-online.target forgejo-network.service
+Wants=network-online.target forgejo-network.service
+
+[Container]
+Image=docker.io/library/postgres:16-alpine
+ContainerName=forgejo-db
+HostName=forgejo-db
+
+# Database configuration (podman secret, Pattern 2: type=env)
+Environment=POSTGRES_USER=forgejo
+Environment=POSTGRES_DB=forgejo
+Environment=POSTGRES_INITDB_ARGS=--data-checksums
+Secret=forgejo_db_password,type=env,target=POSTGRES_PASSWORD
+
+# Storage (subvol8-db, NOCOW set on dir before first use)
+Volume=/mnt/btrfs-pool/subvol8-db/forgejo-db:/var/lib/postgresql/data:Z
+
+# Network (dedicated Forgejo network, Internal=true)
+Network=systemd-forgejo
+
+# Health Check
+HealthCmd=pg_isready -U forgejo -d forgejo
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=300
+OOMPolicy=kill
+
+# Resource Limits
+MemoryHigh=384M
+MemoryMax=512M
+MemorySwapMax=16M
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Forgejo Application Network
+Documentation=man:podman-network(1)
+
+[Network]
+NetworkName=systemd-forgejo
+Driver=bridge
+Subnet=10.89.8.0/24
+Gateway=10.89.8.1
+IPRange=10.89.8.2-10.89.8.68
+DNS=192.168.1.69
+Internal=true
+
+[Install]
+WantedBy=default.target

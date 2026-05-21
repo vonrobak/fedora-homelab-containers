@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-05-18 05:02:06 UTC
-**Total Documents:** 411
+**Generated:** 2026-05-21 20:54:10 UTC
+**Total Documents:** 413
 
 ---
 
@@ -213,7 +213,7 @@
 
 ---
 
-### 98-journals/ (213 documents)
+### 98-journals/ (215 documents)
 
 **Chronological project history (append-only log)**
 
@@ -233,14 +233,14 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 - 2026-05-16: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
 - 2026-05-16: [README.md](00-foundation/decisions/fixtures/README.md)
-- 2026-05-13: [2026-05-13-udm-pro-threat-notifications-investigation-private.md](98-journals/2026-05-13-udm-pro-threat-notifications-investigation-private.md)
-- 2026-05-15: [2026-05-15-audit-backlog-drift-and-observability-deployment.md](98-journals/2026-05-15-audit-backlog-drift-and-observability-deployment.md)
-- 2026-05-13: [remediation-monthly-202604.md](99-reports/remediation-monthly-202604.md)
+- 2026-05-18: [2026-05-15-audit-backlog-drift-and-observability-deployment.md](98-journals/2026-05-15-audit-backlog-drift-and-observability-deployment.md)
+- 2026-05-18: [2026-05-18-audit-subsystem-hardening-private.md](98-journals/2026-05-18-audit-subsystem-hardening-private.md)
+- 2026-05-18: [2026-05-18-security-audit-and-drift-cleanup-private.md](98-journals/2026-05-18-security-audit-and-drift-cleanup-private.md)
 - 2026-05-15: [security-audit-2026-05-15.md](99-reports/security-audit-2026-05-15.md)
-- 2026-05-18: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-05-18: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-05-18: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-05-18: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-05-21: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-05-21: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-05-21: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-05-21: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
