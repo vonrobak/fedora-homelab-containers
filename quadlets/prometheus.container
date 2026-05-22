@@ -21,12 +21,19 @@ Volume=/mnt/btrfs-pool/subvol7-containers/prometheus:/prometheus:Z
 Secret=ha-prometheus-token,type=mount,target=/run/secrets/ha-prometheus-token
 
 # Prometheus command line arguments
+# --web.enable-admin-api exposes the TSDB snapshot endpoint used by db-dump.sh
+# (ADR-029 Tier-2 backup). It also exposes destructive endpoints
+# (/api/v1/admin/tsdb/delete_series, clean_tombstones) to the unauthenticated
+# systemd-monitoring network. Accepted for this homelab: the external path is
+# Authelia-fronted (routers.yml), only the snapshot endpoint is used, and the
+# dump job pre-cleans orphaned snapshots. See ADR-029.
 Exec=--config.file=/etc/prometheus/prometheus.yml \
      --storage.tsdb.path=/prometheus \
      --storage.tsdb.retention.time=15d \
      --web.console.libraries=/usr/share/prometheus/console_libraries \
      --web.console.templates=/usr/share/prometheus/consoles \
-     --web.enable-lifecycle
+     --web.enable-lifecycle \
+     --web.enable-admin-api
 
 DNS=192.168.1.69
 

@@ -1,7 +1,7 @@
 # ADR-027: Forward-Only NOCOW Placement on subvol8-db (Policy)
 
 **Date:** 2026-04-22
-**Status:** Accepted
+**Status:** Superseded by ADR-029 (2026-05-22) — NOCOW-candidate criteria + tenant table consolidated there as the Tier-2 growth rule
 **Companion:** ADR-025 (deferred DB migration — unchanged)
 **First tenant:** `unifi-syslog` (UDM Pro SIEM forensic log receiver)
 

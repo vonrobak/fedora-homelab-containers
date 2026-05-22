@@ -1,0 +1,20 @@
+[Unit]
+Description=Database application-consistent dumps (Tier 2 backup, ADR-029)
+Documentation=file:///home/patriark/containers/docs/00-foundation/decisions
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/db-dump.sh
+TimeoutStartSec=1h
+
+# Low priority — do not interfere with interactive use or other I/O
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

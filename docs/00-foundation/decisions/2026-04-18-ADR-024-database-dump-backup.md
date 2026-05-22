@@ -1,7 +1,7 @@
 # ADR-024: Application-Level Database Dump Backup
 
 **Date:** 2026-04-18
-**Status:** Proposed
+**Status:** Superseded by ADR-029 (2026-05-22) — dump backbone implemented there
 **Replaces (part 1 of 2):** ADR-023 (withdrawn)
 **Companion:** ADR-025 (deferred NOCOW migration)
 
