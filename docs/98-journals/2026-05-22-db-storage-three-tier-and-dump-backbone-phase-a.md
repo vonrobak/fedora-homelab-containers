@@ -125,7 +125,23 @@ Secondary: secrets stay inside the container (dump runs via `podman exec`; nothi
    | subvol8 (NOCOW reference) | loki | **1.0** | 10 |
 
    Near-controlled experiment: immich PG (COW) mean 6.3 / max 1,862 vs forgejo PG (NOCOW, same engine) mean 0.9 / max 8. The antipattern is real and material — nextcloud's hottest InnoDB table is in ~11.8k extents on spinning disks. **Phase B is evidence-justified;** only the operational gates (restore-test track record + the defensive tool) remain. Re-run the script post-migration for the before/after brag.
-3. **The defensive tool exists.** Build `scripts/migrate-db-to-subvol8.sh` (dry-run default, `--execute` gate, `rollback` subcommand) BEFORE migrating. Improvised shell is not acceptable here (this is the riskiest moment in the homelab's storage history).
+3. **The defensive tool is built:** `scripts/migrate-db-to-subvol8.sh` — dry-run default, `--execute` + typed-confirm gates, the `-m`→`+C` sequence, ownership-preserving `rsync --numeric-ids` (no ACLs needed; subvol8-db is o+x and the container owns its data dir, like forgejo-db), post-copy NOCOW + no-shared-extents (reflink) verification, **health-gated** source retention (source is only renamed once the migrated service is healthy; otherwise it auto-reverts the quadlet), plus `verify` / `rollback` / `cleanup` subcommands and per-service state for rollback. The manual procedure below is what the tool automates — prefer the tool.
+
+### Execution sequence (in the offline window)
+```
+scripts/update-before-reboot.sh                         # graceful-shutdown: stop containers
+./scripts/migrate-db-to-subvol8.sh list
+# per service, order gathio-db → nextcloud-db → prometheus → postgresql-immich:
+./scripts/migrate-db-to-subvol8.sh preflight <svc>      # read-only (sudo); offline-window + secret + space checks
+./scripts/migrate-db-to-subvol8.sh migrate   <svc>      # DRY RUN — review the plan
+./scripts/migrate-db-to-subvol8.sh migrate   <svc> --execute
+./scripts/migrate-db-to-subvol8.sh verify    <svc>
+# after all four:
+sudo dnf update && sudo reboot && ./scripts/post-reboot-verify.sh
+./scripts/filefrag-baseline.sh                          # the before/after fragmentation delta (the brag)
+# rollback any service:  ./scripts/migrate-db-to-subvol8.sh rollback <svc> --execute
+# finalize after 14 clean days:  ./scripts/migrate-db-to-subvol8.sh cleanup <svc> --execute
+```
 
 ### The window (the key unlock)
 Run `scripts/update-before-reboot.sh` → it calls `graceful-shutdown.sh`, stopping every container cleanly. With the DBs cleanly shut down, the move is a **plain offline `rsync`**, not a live migration — no initdb-in-container, no Prometheus observability-gap choreography. Then `dnf update` + reboot + `post-reboot-verify.sh`.
