@@ -43,8 +43,12 @@ ZSTD_LEVEL="${DB_DUMP_ZSTD_LEVEL:-10}"
 DATE="$(date +%Y-%m-%d)"
 RUN_TS="$(date +%s)"
 
-# Engines handled by this job (service = container name = output subdir)
-ENGINES=(postgresql-immich forgejo-db nextcloud-db gathio-db prometheus loki)
+# Engines handled by this job (service = container name = output subdir).
+# Loki is intentionally NOT here: it is Tier 3 (regenerable; Promtail re-ingests).
+# A nightly dump froze it ~15min on a cold cache (podman pause + cp of 70k files
+# after Prometheus evicts the page cache) — a bad trade for non-source-of-truth
+# log data. See ADR-029.
+ENGINES=(postgresql-immich forgejo-db nextcloud-db gathio-db prometheus vaultwarden)
 
 # --- argument parsing ---------------------------------------------------------
 ONLY_SERVICE=""
@@ -136,25 +140,28 @@ dump_prometheus() {  # args: svc out_dir   (requires --web.enable-admin-api)
     return "$rc"
 }
 
-dump_loki() {  # args: svc out_dir
-    # Loki is distroless (no shell/tar to exec) with 70k+ constantly-rotating
-    # files. Three approaches were measured and rejected: host-side tar/rsync
-    # hits permission-denied on mode-600 WAL checkpoint files and is slow (~140s);
-    # stop-and-copy fails because the quadlet removes the container on stop;
-    # a live `podman cp` races on file rotation under I/O load (rc=125).
-    # `podman pause` (SIGSTOP via the freezer cgroup) makes the filesystem static
-    # without removing the container, so `podman cp` reads a complete, consistent
-    # tree via the namespace in ~40s. Promtail buffers/retries during the freeze;
-    # Loki is regenerable, not a source of truth (ADR-027/029).
-    local out="${2}/${DATE}.tar.zst" rc
-    podman pause loki >/dev/null 2>&1 || { log ERROR "[loki] pause failed"; return 1; }
-    trap 'podman unpause loki >/dev/null 2>&1 || true; trap - RETURN' RETURN
-    podman cp loki:/loki - | zstd -q -f -T0 "-${ZSTD_LEVEL}" -o "${out}.tmp"
-    rc=$?
-    podman unpause loki >/dev/null 2>&1 || log WARNING "[loki] unpause returned non-zero"
-    trap - RETURN
-    [[ $rc -eq 0 ]] || { log ERROR "[loki] podman cp|zstd failed (rc=$rc)"; return 1; }
-    mv "${out}.tmp" "$out"
+# NOTE: Loki has no dump function by design (Tier 3 / discard — see ENGINES above
+# and ADR-029). If loki backup is ever wanted, the only workable method found was
+# `podman pause` + `podman cp` (distroless image; containers are removed on stop;
+# host-side tar hits mode-600 WAL perms; live cp races) — but it freezes loki for
+# the duration, which on a cold cache was ~15min. Prefer a weekly cadence if so.
+
+dump_vaultwarden() {  # args: svc out_dir
+    # Vaultwarden's SQLite is host-owned (uid 1000) with a live WAL, and the host
+    # has sqlite3 — so an online `.backup` (SQLite backup API; safe alongside the
+    # running writer) yields an application-consistent copy without touching the
+    # container. Vaultwarden stays Tier 1 (snapshotted); this dump is an extra
+    # restorable, offsite safety net for the most security-critical store.
+    # PRAGMA integrity_check guards against a torn copy before we keep it.
+    local out="${2}/${DATE}.sqlite3.zst" src="/mnt/btrfs-pool/subvol7-containers/vaultwarden/db.sqlite3" tmp
+    [[ -f "$src" ]] || { log ERROR "[vaultwarden] db.sqlite3 not found at $src"; return 1; }
+    tmp="$(mktemp "${DUMP_ROOT}/.vw.XXXXXX")" || return 1
+    if sqlite3 "$src" ".backup '$tmp'" >/dev/null 2>&1 \
+       && [[ "$(sqlite3 "$tmp" 'PRAGMA integrity_check' 2>/dev/null)" == "ok" ]] \
+       && zstd -q -f -T0 "-${ZSTD_LEVEL}" -o "${out}.tmp" "$tmp"; then
+        mv "${out}.tmp" "$out"; rm -f "$tmp"; return 0
+    fi
+    rm -f "$tmp" "${out}.tmp"; return 1
 }
 
 # --- engine runner ------------------------------------------------------------
@@ -230,7 +237,7 @@ main() {
             nextcloud-db)      run_engine "$svc" dump_mariadb ;;
             gathio-db)         run_engine "$svc" dump_mongo ;;
             prometheus)        run_engine "$svc" dump_prometheus ;;
-            loki)              run_engine "$svc" dump_loki ;;
+            vaultwarden)       run_engine "$svc" dump_vaultwarden ;;
         esac
         prune "$svc"
     done

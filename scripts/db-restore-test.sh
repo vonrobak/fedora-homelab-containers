@@ -125,6 +125,20 @@ test_archive() {  # args: svc   (integrity + structure only — for TSDB tarball
     log SUCCESS "[$svc] archive integrity + structure OK"; return 0
 }
 
+test_sqlite() {  # args: svc   (decompress + integrity_check + table count, host sqlite3)
+    local svc="$1" dump tmp n
+    dump="$(latest_dump "$svc")"; [[ -n "$dump" ]] || { log ERROR "[$svc] no dump found"; return 1; }
+    tmp="$(mktemp)" || return 1
+    zstd -dc "$dump" > "$tmp" 2>/dev/null
+    if [[ "$(sqlite3 "$tmp" 'PRAGMA integrity_check' 2>/dev/null)" != "ok" ]]; then
+        log ERROR "[$svc] integrity_check failed"; rm -f "$tmp"; return 1
+    fi
+    n="$(sqlite3 "$tmp" "SELECT count(*) FROM sqlite_master WHERE type='table'" 2>/dev/null)"
+    rm -f "$tmp"
+    [[ "${n:-0}" -gt 0 ]] && { log SUCCESS "[$svc] integrity ok, ${n} tables"; return 0; }
+    log ERROR "[$svc] 0 tables"; return 1
+}
+
 run_test() {  # run_test <svc> <fn> [args...]
     local svc="$1" fn="$2"; shift 2
     [[ -n "$ONLY_SERVICE" && "$ONLY_SERVICE" != "$svc" ]] && return 0
@@ -163,7 +177,7 @@ main() {
     run_test nextcloud-db      test_mariadb nextcloud
     run_test gathio-db         test_mongo
     run_test prometheus        test_archive
-    run_test loki              test_archive
+    run_test vaultwarden       test_sqlite
     flush_metrics
     local fails=0 total="${#R_OK[@]}"
     for s in "${!R_OK[@]}"; do [[ "${R_OK[$s]}" == "1" ]] || fails=$((fails + 1)); done
