@@ -1,0 +1,20 @@
+[Unit]
+Description=Weekly database restore-test validation (ADR-029)
+Documentation=file:///home/patriark/containers/docs/00-foundation/decisions
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/db-restore-test.sh
+TimeoutStartSec=1h
+
+# Low priority — ephemeral restore containers must not disturb live services
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

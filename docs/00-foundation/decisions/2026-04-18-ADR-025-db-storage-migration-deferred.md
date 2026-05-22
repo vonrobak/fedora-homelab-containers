@@ -1,7 +1,7 @@
 # ADR-025: Database Storage Migration to NOCOW Subvolume (Deferred)
 
 **Date:** 2026-04-18
-**Status:** Deferred (conditional acceptance pending baseline measurements)
+**Status:** Superseded by ADR-029 (2026-05-22) — migration runbook consolidated there as Phase B (still gated)
 **Replaces (part 2 of 2):** ADR-023 (withdrawn)
 **Companion:** ADR-024 (dump-based backup — accepted and shipping first)
 **Earliest review for acceptance:** 2026-06-18 (60 days after ADR-024 begins running)

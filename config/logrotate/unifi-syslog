@@ -8,7 +8,7 @@
 # Testing:
 #   sudo logrotate -d /etc/logrotate.d/unifi-syslog
 
-/mnt/btrfs-pool/subvol8-db/unifi-syslog/*.log {
+/mnt/btrfs-pool/subvol7-containers/unifi-syslog/*.log {
     daily
     rotate 14
     compress

@@ -34,7 +34,11 @@ DUMP_ROOT="/mnt/btrfs-pool/subvol7-containers/db-dumps"
 METRICS_DIR="${HOME}/containers/data/backup-metrics"
 METRICS_FILE="${METRICS_DIR}/db-dumps.prom"
 LOG_DIR="${HOME}/containers/data/backup-logs"
-RETENTION="${DB_DUMP_RETENTION:-14}"        # daily dumps kept per service
+RETENTION="${DB_DUMP_RETENTION:-14}"        # default daily dumps kept per service
+# Per-engine overrides. Prometheus dumps are full TSDB snapshots (~1.5GB each);
+# a shorter local window keeps the footprint sane (the engine itself only
+# retains 15d of data, so old dumps have little marginal value).
+declare -A RETENTION_BY_DB=( [prometheus]=7 )
 ZSTD_LEVEL="${DB_DUMP_ZSTD_LEVEL:-10}"
 DATE="$(date +%Y-%m-%d)"
 RUN_TS="$(date +%s)"
@@ -172,10 +176,10 @@ run_engine() {  # run_engine <service> <fn> [extra args...]
     fi
 }
 
-prune() {  # keep newest $RETENTION dumps per service
-    local dir="${DUMP_ROOT}/$1" f
+prune() {  # keep newest N dumps per service (per-engine override, else default)
+    local dir="${DUMP_ROOT}/$1" keep="${RETENTION_BY_DB[$1]:-$RETENTION}" f
     [[ -d "$dir" ]] || return 0
-    ls -1t "$dir"/*.zst 2>/dev/null | tail -n +"$((RETENTION + 1))" | while read -r f; do
+    ls -1t "$dir"/*.zst 2>/dev/null | tail -n +"$((keep + 1))" | while read -r f; do
         rm -f "$f" && log INFO "[$1] pruned $(basename "$f")"
     done
 }

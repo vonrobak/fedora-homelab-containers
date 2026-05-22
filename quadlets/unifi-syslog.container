@@ -23,7 +23,10 @@ Environment=PGID=0
 Environment=TZ=Europe/Oslo
 
 Volume=%h/containers/config/unifi-syslog/syslog-ng.conf:/config/syslog-ng.conf:ro,Z
-Volume=/mnt/btrfs-pool/subvol8-db/unifi-syslog:/var/log/unifi-syslog:Z
+# Tier 1 (subvol7): snapshotted + sent offsite by Urd. Moved off subvol8-db
+# (ADR-029): append-only forensic logs belong in the snapshot tier, and the
+# COW cost is negligible for append-only writes.
+Volume=/mnt/btrfs-pool/subvol7-containers/unifi-syslog:/var/log/unifi-syslog:Z
 
 DNS=192.168.1.69
 
