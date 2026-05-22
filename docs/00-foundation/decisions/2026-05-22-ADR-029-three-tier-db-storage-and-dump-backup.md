@@ -65,7 +65,7 @@ Backup coverage is observable: `db-dumps.prom` (node_exporter textfile) → `db_
 
 ## Phase B — Offline migration into subvol8-db (DEFERRED / gated)
 
-Move the four engines still in `subvol7` (`postgresql-immich`, `nextcloud-db/data`, `gathio-db`, `prometheus`) into `subvol8-db` (forgejo-db + loki are already there). **Gate:** (a) restore-test track record (the job now exists — let it run a few Sundays); (b) **measurement — DONE 2026-05-22, justifies migration:** subvol7 DBs show heavy COW-in-snapshot fragmentation (nextcloud `oc_filecache.ibd` = 11,777 extents; gathio max 2,362; immich PG mean 6.3 / max 1,862) vs the subvol8 NOCOW reference (forgejo PG mean 0.9 / max 8, loki mean 1.0) — a near-controlled same-engine comparison (immich vs forgejo PostgreSQL). Baseline saved under `data/backup-logs/`, regenerate via `scripts/filefrag-baseline.sh`; (c) build `scripts/migrate-db-to-subvol8.sh` first.
+Move the four engines still in `subvol7` (`postgresql-immich`, `nextcloud-db/data`, `gathio-db`, `prometheus`) into `subvol8-db` (forgejo-db + loki are already there). **Gate:** (a) restore-test track record (the job now exists — let it run a few Sundays); (b) **measurement — DONE 2026-05-22, justifies migration:** subvol7 DBs show heavy COW-in-snapshot fragmentation (nextcloud `oc_filecache.ibd` = 11,777 extents; gathio max 2,362; immich PG mean 6.3 / max 1,862) vs the subvol8 NOCOW reference (forgejo PG mean 0.9 / max 8, loki mean 1.0) — a near-controlled same-engine comparison (immich vs forgejo PostgreSQL). Baseline saved under `data/backup-logs/`, regenerate via `scripts/filefrag-baseline.sh`; (c) the defensive tool `scripts/migrate-db-to-subvol8.sh` is **built** (dry-run default, typed-confirm + `--execute` gates, no-reflink copy with post-copy verification, health-gated source retention, `rollback`/`cleanup`). Remaining gate: a restore-test track record (a) before executing.
 
 **The unlock — the clean offline window:** run `scripts/update-before-reboot.sh`, which calls `graceful-shutdown.sh`. With every container cleanly stopped, on-disk DB state is *cleanly consistent*, so the move is a plain offline `rsync` — not a live migration. This collapses the risk surface of the original ADR-025 plan (no initdb-in-container, no Prometheus observability-gap choreography).
 
@@ -78,7 +78,7 @@ Per service, with all containers stopped:
 6. PostgreSQL: verify checksums with `pg_controldata` (the quadlet sets `--data-checksums`, likely already on); only enable in place if off.
 7. Keep `<svc>.pre-migration-<DATE>` for 14 days. Per-service reversible (revert `Volume=`, restart); worst case restore from the prior night's dump.
 
-A defensive tool (`scripts/migrate-db-to-subvol8.sh`, dry-run default, `--execute` gate, rollback subcommand, hard-enforced no-reflink + post-copy NOCOW assertions) is to be built before Phase B executes.
+The defensive tool `scripts/migrate-db-to-subvol8.sh` is **built** (dry-run default, `--execute` + typed-confirm gates, `rollback`/`verify`/`cleanup` subcommands, hard no-reflink copy with post-copy NOCOW + shared-extent assertions, health-gated source retention). It runs as the user (podman/systemctl native) and uses sudo only for the subuid-owned filesystem ops. Subcommands: `list`, `preflight <svc>`, `migrate <svc> [--execute]`, `verify <svc>`, `rollback <svc> [--execute]`, `cleanup <svc> [--execute]`.
 
 ## subvol8-db tenant table (absorbed from ADR-027)
 
