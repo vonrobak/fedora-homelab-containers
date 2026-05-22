@@ -113,7 +113,18 @@ Secondary: secrets stay inside the container (dump runs via `podman exec`; nothi
 
 ### Gate — do not start until all hold
 1. **Dumps have a track record** of passing weekly restore-tests (they now exist; let `db-restore-test.timer` run a few Sundays and confirm `db_restore_test_success == 1` for all). The dumps are the migration's rollback safety net.
-2. **Measurement justifies it.** Run `sudo bash scripts/filefrag-baseline.sh` and read the latest `data/backup-logs/filefrag-baseline-*.txt`. Per ADR-025/029 criteria, migrate if subvol7 DB files show high/growing extent counts vs the subvol8 reference. If fragmentation is negligible, Phase B can stay deferred indefinitely — that's a legitimate outcome.
+2. **Measurement — DONE 2026-05-22, and it strongly justifies migration.** Baseline (`data/backup-logs/filefrag-baseline-2026-05-22-2245.txt`; regenerate with `sudo bash scripts/filefrag-baseline.sh`):
+
+   | Tier | DB | mean extents/file | max |
+   |------|----|------------------:|----:|
+   | subvol7 (COW-in-snapshot) | nextcloud — `oc_filecache.ibd` | 28.2 | **11,777** |
+   | subvol7 | gathio | 41.0 | 2,362 |
+   | subvol7 | immich PG | 6.3 | 1,862 |
+   | subvol7 | prometheus | 6.6 | 207 |
+   | subvol8 (NOCOW reference) | forgejo PG | **0.9** | 8 |
+   | subvol8 (NOCOW reference) | loki | **1.0** | 10 |
+
+   Near-controlled experiment: immich PG (COW) mean 6.3 / max 1,862 vs forgejo PG (NOCOW, same engine) mean 0.9 / max 8. The antipattern is real and material — nextcloud's hottest InnoDB table is in ~11.8k extents on spinning disks. **Phase B is evidence-justified;** only the operational gates (restore-test track record + the defensive tool) remain. Re-run the script post-migration for the before/after brag.
 3. **The defensive tool exists.** Build `scripts/migrate-db-to-subvol8.sh` (dry-run default, `--execute` gate, `rollback` subcommand) BEFORE migrating. Improvised shell is not acceptable here (this is the riskiest moment in the homelab's storage history).
 
 ### The window (the key unlock)

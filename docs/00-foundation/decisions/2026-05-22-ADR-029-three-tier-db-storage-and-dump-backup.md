@@ -65,7 +65,7 @@ Backup coverage is observable: `db-dumps.prom` (node_exporter textfile) → `db_
 
 ## Phase B — Offline migration into subvol8-db (DEFERRED / gated)
 
-Move the four engines still in `subvol7` (`postgresql-immich`, `nextcloud-db/data`, `gathio-db`, `prometheus`) into `subvol8-db` (forgejo-db + loki are already there). **Gate:** the dump backbone must have a track record of passing restore tests first (it now exists); revisit with a `filefrag` baseline per ADR-025's criteria.
+Move the four engines still in `subvol7` (`postgresql-immich`, `nextcloud-db/data`, `gathio-db`, `prometheus`) into `subvol8-db` (forgejo-db + loki are already there). **Gate:** (a) restore-test track record (the job now exists — let it run a few Sundays); (b) **measurement — DONE 2026-05-22, justifies migration:** subvol7 DBs show heavy COW-in-snapshot fragmentation (nextcloud `oc_filecache.ibd` = 11,777 extents; gathio max 2,362; immich PG mean 6.3 / max 1,862) vs the subvol8 NOCOW reference (forgejo PG mean 0.9 / max 8, loki mean 1.0) — a near-controlled same-engine comparison (immich vs forgejo PostgreSQL). Baseline saved under `data/backup-logs/`, regenerate via `scripts/filefrag-baseline.sh`; (c) build `scripts/migrate-db-to-subvol8.sh` first.
 
 **The unlock — the clean offline window:** run `scripts/update-before-reboot.sh`, which calls `graceful-shutdown.sh`. With every container cleanly stopped, on-disk DB state is *cleanly consistent*, so the move is a plain offline `rsync` — not a live migration. This collapses the risk surface of the original ADR-025 plan (no initdb-in-container, no Prometheus observability-gap choreography).
 
