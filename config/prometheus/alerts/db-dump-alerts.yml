@@ -1,0 +1,66 @@
+groups:
+  - name: db_dump_alerts
+    interval: 60s
+    rules:
+      # Critical: an engine's application-consistent dump failed.
+      # Tier-2 DBs (subvol8-db) are NOT in the snapshot set, so a failed dump
+      # means that engine's offsite backup is stale until fixed.
+      - alert: DbDumpFailed
+        expr: db_dump_success == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: backup
+          component: db-dump
+        annotations:
+          summary: "DB dump failed for {{ $labels.database }}"
+          description: "Last application-consistent dump for {{ $labels.database }} failed. Its Tier-2 offsite backup is stale. Check `journalctl --user -u db-dump.service`."
+
+      # Critical: no successful dump in 2+ days (last_success_timestamp is carried
+      # forward across failed runs, so this ages correctly).
+      - alert: DbDumpStale
+        expr: (time() - db_dump_last_success_timestamp) > (86400 * 2)
+        for: 1h
+        labels:
+          severity: critical
+          category: backup
+          component: db-dump
+        annotations:
+          summary: "DB dump stale for {{ $labels.database }}"
+          description: "No successful dump for {{ $labels.database }} in {{ $value | humanizeDuration }}."
+
+      # Warning: the dump job itself hasn't run (timer stopped / host down).
+      - alert: DbDumpJobNotRunning
+        expr: (time() - db_dump_last_run_timestamp) > (86400 * 2)
+        for: 6h
+        labels:
+          severity: warning
+          category: backup
+          component: db-dump
+        annotations:
+          summary: "db-dump job hasn't run in 2+ days"
+          description: "db-dump.sh last ran {{ $value | humanizeDuration }} ago. Check `systemctl --user status db-dump.timer`."
+
+      # --- The two rules below activate with the restore-test job (Phase A.4). ---
+      # They are inert until db_restore_test_* series exist (absent metric => no fire).
+      - alert: DbRestoreTestFailed
+        expr: db_restore_test_success == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: disaster-recovery
+          component: db-restore-test
+        annotations:
+          summary: "DB restore test failed for {{ $labels.database }}"
+          description: "Ephemeral restore validation failed for {{ $labels.database }} — its dumps may be unrestorable."
+
+      - alert: DbRestoreTestOverdue
+        expr: (time() - db_restore_test_last_timestamp) > (86400 * 10)
+        for: 6h
+        labels:
+          severity: warning
+          category: disaster-recovery
+          component: db-restore-test
+        annotations:
+          summary: "DB restore test overdue for {{ $labels.database }}"
+          description: "No restore test for {{ $labels.database }} in {{ $value | humanizeDuration }} (should run weekly)."
