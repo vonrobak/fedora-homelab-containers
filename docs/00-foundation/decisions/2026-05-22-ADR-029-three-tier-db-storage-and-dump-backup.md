@@ -28,8 +28,8 @@ Every byte lands in a tier whose BTRFS treatment matches how it would actually b
 | Tier | BTRFS treatment | Backup mechanism | Members |
 |------|-----------------|------------------|---------|
 | **1 — Snapshot** | COW, Urd snapshot, sent offsite | btrfs snapshot + `btrfs send` | user data, configs, app state, **SQLite DBs, Redis** (subvol1–7, /home) |
-| **2 — Dump** | **NOCOW, excluded from snapshots** | application-consistent logical dump → lands in Tier 1 → rides Urd offsite | PostgreSQL (immich, forgejo), MariaDB (nextcloud), MongoDB (gathio), Prometheus, Loki (`subvol8-db`) |
-| **3 — Discard** | NOCOW, excluded, no backup | regenerable | *(currently empty)* |
+| **2 — Dump** | **NOCOW, excluded from snapshots** | application-consistent logical dump → lands in Tier 1 → rides Urd offsite | PostgreSQL (immich, forgejo), MariaDB (nextcloud), MongoDB (gathio), Prometheus (`subvol8-db`); SQLite (vaultwarden) dumped but stays Tier 1 |
+| **3 — Discard** | NOCOW, excluded, no backup | regenerable | **Loki** (`subvol8-db`) — see implementation note |
 
 NOCOW only behaves as NOCOW **because Tier 2 is excluded from snapshots** — with no snapshot to share extents, there is no copy-on-first-write, so fragmentation cannot accumulate. Live DB files get write-in-place performance on spinning disks; the *backup artifact* is a small, compressed, application-consistent, version-portable dump that is COW-snapshotted and replicated offsite. Performance and recoverability are decoupled and each is optimal.
 
@@ -50,22 +50,22 @@ NOCOW disables BTRFS data checksums, so it is only safe for engines that carry *
 | Nextcloud | `nextcloud-db` | `mariadb-dump --single-transaction` as the **app user** (root is locked down) |
 | Gathio | `gathio-db` | `mongodump --archive` |
 | Prometheus | `prometheus` | admin-API `tsdb/snapshot` + tar (retention 7, dump ≈1.5 GB) |
-| Loki | `loki` | `podman pause` + `podman cp` + unpause |
+| Vaultwarden | `vaultwarden` | host `sqlite3 .backup` (online) + `PRAGMA integrity_check` (stays Tier 1; dump is a bonus) |
 
 Backup coverage is observable: `db-dumps.prom` (node_exporter textfile) → `db_dump_*` series → `config/prometheus/alerts/db-dump-alerts.yml`. `scripts/db-restore-test.sh` (weekly, Sun 05:00) restores each latest dump into an ephemeral matching-version container and validates object counts (`db_restore_test_*` series).
 
 ### Implementation notes (discovered by testing — the non-obvious bits)
 
 - **Metric label is `database`, not `service`.** The node_exporter scrape job sets a static `service="node_exporter"` target label that clobbers any `service` label on textfile metrics (`honor_labels: false`). Urd uses `subvolume`, dependency-metrics use `homelab_service`, for the same reason. **Any textfile metric must avoid the bare `service` label.**
-- **Loki = `podman pause` + `podman cp`.** Loki is distroless (no shell/tar to exec) with 70k+ constantly-rotating files. Rejected: stop-rsync-start (~17 min downtime + WAL-rotation race), host-side tar (permission-denied on mode-600 WAL checkpoint files + slow), live `podman cp` (races on file rotation under load). Quadlet containers are *removed* on stop, so cp needs the container running or paused. `podman pause` (SIGSTOP) freezes the filesystem → consistent, complete copy in ~40 s; Promtail buffers during the freeze (Loki is regenerable, not a source of truth).
+- **Loki is Tier 3 (not dumped).** It was briefly dumped via `podman pause` + `podman cp` (distroless image → can't exec tar; quadlet containers are *removed* on stop → can't cp a stopped one; host-side tar hits mode-600 WAL perms; live cp races on rotation). But a nightly dump **froze loki ~15 min** on a cold cache — 70k small files read seek-bound from HDD after Prometheus's 1.5 GB dump evicts the page cache (the warm-cache "~40 s" was a fluke). For regenerable log data (Promtail re-ingests; the originating systems are the source of truth) that trade isn't worth it, so loki is excluded from backup. If ever wanted, a weekly cadence would amortize the freeze.
 - **Nextcloud MariaDB root is locked down** (no password, no socket auth). The dump uses the app account `MYSQL_USER`/`MYSQL_PASSWORD`, which has `ALL` on its own database — the entire contents of that instance.
 - **Secrets never leave the container.** Each dump runs *inside* the running container where the engine password already exists as env; nothing is passed as a host process arg or stored in the repo. Robust to the ADR-028 secret-store path split.
 - **`zstd -f` is required** (a failed run leaves an empty `.tmp` that would otherwise block the next run).
-- **Vaultwarden dump deferred.** Its image lacks `sqlite3` and the SQLite file is owned by a container subuid in the rootless namespace; a clean logical dump needs a sidecar-image decision. Vaultwarden is Tier-1 snapshot-protected meanwhile.
+- **Vaultwarden: host `sqlite3 .backup` (no sidecar needed).** Initially assumed to need a sidecar (no `sqlite3` in the image). Ground truth corrected it: the SQLite is host-owned (uid 1000, mode 644) and the host has `sqlite3`, so an online `.backup` (backup API — safe alongside the live writer) + `PRAGMA integrity_check` gives an application-consistent copy with no container involvement. Vaultwarden stays Tier 1 (snapshotted); the dump is an extra offsite, restore-tested safety net for the most security-critical store. *Lesson: re-check the assumption before engineering around it.*
 
 ## Phase B — Offline migration into subvol8-db (DEFERRED / gated)
 
-Move the four engines still in `subvol7` (`postgresql-immich`, `nextcloud-db/data`, `gathio-db`, `prometheus`) into `subvol8-db` (forgejo-db + loki are already there). **Gate:** the dump backbone must have a track record of passing restore tests first (it now exists); revisit with a `filefrag` baseline per ADR-025's criteria.
+Move the four engines still in `subvol7` (`postgresql-immich`, `nextcloud-db/data`, `gathio-db`, `prometheus`) into `subvol8-db` (forgejo-db + loki are already there). **Gate:** (a) restore-test track record (the job now exists — let it run a few Sundays); (b) **measurement — DONE 2026-05-22, justifies migration:** subvol7 DBs show heavy COW-in-snapshot fragmentation (nextcloud `oc_filecache.ibd` = 11,777 extents; gathio max 2,362; immich PG mean 6.3 / max 1,862) vs the subvol8 NOCOW reference (forgejo PG mean 0.9 / max 8, loki mean 1.0) — a near-controlled same-engine comparison (immich vs forgejo PostgreSQL). Baseline saved under `data/backup-logs/`, regenerate via `scripts/filefrag-baseline.sh`; (c) build `scripts/migrate-db-to-subvol8.sh` first.
 
 **The unlock — the clean offline window:** run `scripts/update-before-reboot.sh`, which calls `graceful-shutdown.sh`. With every container cleanly stopped, on-disk DB state is *cleanly consistent*, so the move is a plain offline `rsync` — not a live migration. This collapses the risk surface of the original ADR-025 plan (no initdb-in-container, no Prometheus observability-gap choreography).
 
@@ -85,15 +85,15 @@ A defensive tool (`scripts/migrate-db-to-subvol8.sh`, dry-run default, `--execut
 | Tenant | Workload | NOCOW | Backup |
 |--------|----------|-------|--------|
 | forgejo-db | PostgreSQL | yes | `pg_dump` (Phase A) |
-| loki | TSDB / logs | yes | `podman pause`+`cp` tar (Phase A) |
-| ~~unifi-syslog~~ | append-only syslog | — | **moving to Tier 1** (subvol7, snapshot+offsite) — overrides ADR-027's placement; append-only forensic logs belong in the snapshot tier and the COW cost is negligible |
+| loki | TSDB / logs | yes | **none — Tier 3, regenerable** (nightly dump froze it ~15 min on cold cache; dropped) |
+| ~~unifi-syslog~~ | append-only syslog | — | **moved to Tier 1** (subvol7, snapshot+offsite) — overrides ADR-027's placement; append-only forensic logs belong in the snapshot tier and the COW cost is negligible |
 | *(Phase B)* postgresql-immich, nextcloud-db, gathio-db, prometheus | server engines | yes | dumps (Phase A) + offline migration (Phase B) |
 
 New tenants follow the growth rule; update this table rather than writing a new ADR (unless the tier policy itself changes).
 
 ## Consequences
 
-**Positive:** every database now has an application-consistent, offsite, restore-tested backup; the forgejo-db and loki holes are closed; NOCOW will actually work once Phase B completes; the architecture has a single durable growth rule.
+**Positive:** every database (PostgreSQL, MariaDB, MongoDB, Prometheus, plus vaultwarden SQLite) now has an application-consistent, offsite, restore-tested backup; the forgejo-db hole is closed (loki is reclassified Tier 3 — regenerable, accepted no-backup); NOCOW will actually work once Phase B completes; the architecture has a single durable growth rule.
 
 **Negative / accepted:** Prometheus dumps are full TSDB snapshots (~1.5 GB/night, no dedup) — local retention is shortened to 7 and offsite growth is governed by Urd's subvol7 retention; a future option is dumping Prometheus weekly rather than daily. `--web.enable-admin-api` exposes destructive TSDB endpoints to the unauthenticated monitoring network (accepted; external path is Authelia-fronted; only the snapshot endpoint is used). Live DB files in `subvol8-db` have no filesystem-snapshot rollback — recovery is via dumps, which is the intended model.
 
