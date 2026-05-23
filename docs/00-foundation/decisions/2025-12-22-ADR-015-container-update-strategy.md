@@ -1,6 +1,6 @@
 # ADR-015: Container Update Strategy for State-of-the-Art Homelab
 
-**Status:** Accepted
+**Status:** Superseded by ADR-030 (trust model; this ADR's BTRFS rollback + health-validation mechanisms remain valid)
 **Date:** 2025-12-22
 **Context:** Single-user homelab on Fedora Workstation with robust backup infrastructure
 
