@@ -4,10 +4,11 @@ After=network-online.target monitoring-network.service loki.service
 Wants=loki.service monitoring-network.service network-online.target
 
 [Container]
-Image=docker.io/grafana/promtail:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=docker.io/grafana/promtail@sha256:6cfa64ec432b24a912d640e2edb940eeae2666f61861a66c121d763dd7241381
 ContainerName=promtail
 HostName=promtail
-AutoUpdate=registry
 Network=systemd-monitoring
 
 # Promtail configuration

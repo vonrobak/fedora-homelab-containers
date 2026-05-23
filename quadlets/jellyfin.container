@@ -4,10 +4,11 @@ After=network-online.target reverse_proxy-network.service media_services-network
 Wants=media_services-network.service network-online.target reverse_proxy-network.service
 
 [Container]
-Image=docker.io/jellyfin/jellyfin:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=docker.io/jellyfin/jellyfin@sha256:1694ff069f0c9dafb283c36765175606866769f5d72f2ed56b6a0f1be922fc37
 ContainerName=jellyfin
 HostName=jellyfin
-AutoUpdate=registry
 
 # Networks (reverse_proxy FIRST for internet access)
 # Static IPs assigned to ensure consistent DNS resolution

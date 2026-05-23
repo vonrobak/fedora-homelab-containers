@@ -1,7 +1,7 @@
 # Tier 1 Plan: Digest Pinning + Update De-Automation
 
 **Date Created:** 2026-05-23
-**Status:** Proposed
+**Status:** Implemented (uncommitted) — 2026-05-23
 **Last Updated:** 2026-05-23
 **Implements:** ADR-030 (P1, P2, P3, P4) — Container Supply-Chain Trust Model
 **Reconciles with:** PLAN-1 (Auto-Update Safety Net), `audit-update-paths.sh`
@@ -122,3 +122,52 @@ the conveyor belt by which a poisoned upstream tag reaches execution.
 ## Progress Log
 
 - 2026-05-23 — Plan created from ADR-030; grounded in verified system facts.
+- 2026-05-23 — **Egress trio executed** (first increment, not batched). Resolved the
+  open question first: removing `AutoUpdate=registry` **does** drop a service from
+  `podman auto-update --dry-run` (notify count 17→15), confirming the notify feed
+  loses pinned services. Then, one service at a time with health gating:
+  - `crowdsec` → `@sha256:2f527c9b…` (index digest), `AutoUpdate=registry` removed.
+  - `authelia` → `@sha256:0c824dca…` (index digest); had no AutoUpdate label.
+  - `traefik` → `@sha256:6b9cbca6…` (index digest), `AutoUpdate=registry` removed.
+  For all three the **running image == current `:latest`** (tags had not drifted),
+  so the pin freezes the already-baked image (P3 satisfied inherently); refs were
+  present locally so restarts pulled nothing. All verified `healthy`; full chain
+  serves (`traefik.patriark.org` → 302 → `sso.patriark.org` 200); jellyfin native
+  302; `audit-update-paths.sh` still green. **Timer untouched** (still updates the
+  other 15 labeled services). **Not yet committed.**
+  - **Next:** skopeo digest-diff notify replacement for pinned services; then
+    de-automate the rest of the fleet (don't batch); audit-index generator; egress
+    guard; `update-before-reboot.sh` Phase-3 digest-awareness; timer decision.
+- 2026-05-23 — **Tier 1 COMPLETE (remaining items, uncommitted).** All bullets above done:
+  - **Fleet de-automated + pinned.** 15 auto-updating services pinned to their running
+    `.ImageDigest` (drift-proof "pin what's baked") + `AutoUpdate`/`Pull` removed,
+    **restarted one at a time** with health gating (internal exporters, then egress
+    apps; all healthy). 16 stateful/floating services **arm-pinned** (pinned to running
+    digest, `daemon-reload`, no restart per operator decision — pin matches what's
+    running, takes effect on next natural restart). Result: **34/34 registry images
+    digest-pinned, 0 floating**; 2 localhost builds (alert-discord-relay, proton-bridge)
+    deferred to Tier 2.
+  - **New tooling:** `scripts/pin-container-image.sh` (digest-resolve+apply helper,
+    uses `podman inspect .ImageDigest`), `scripts/generate-image-pin-index.sh`
+    (→ `docs/AUTO-IMAGE-PIN-INDEX.md`, wired into `auto-doc-orchestrator.sh` Phase 5),
+    `scripts/audit-egress-updates.sh` (P4 egress guard — sibling to `audit-update-paths.sh`).
+  - **Notify feed replaced:** `scripts/check-image-updates.sh` rewritten as a skopeo
+    digest-diff (pinned digest vs current tag digest); resolves the open question
+    (de-automation blinds `podman auto-update --dry-run`). First run: up-to-date=20,
+    available=12, local=2, failed=2 (transient GHCR burst-throttle on immich; retry-once
+    + inter-call delay added). Notify timer (Sun 10:00) retained.
+  - **`update-before-reboot.sh` Phase 3** now digest-aware: pull list derived from
+    quadlet `Image=` lines; pinned refs *ensured present* (no re-float), only mutable
+    tags pulled. (Fixed a `tr -d '[:space:]']` newline-collapse bug during build.)
+  - **Timer decision:** `podman-auto-update-weekly.timer` **disabled + stopped** (the
+    unattended 03:00 path is gone); `.service` + pre/post health-check scripts kept for
+    the deliberate-bump path.
+  - **Verification:** both guards green (egress + statefulness); full middleware chain
+    serves post-restart (traefik 302 → sso 200; jellyfin/homepage/grafana/immich/nextcloud
+    OK); 36/36 containers running, 0 unhealthy; no new failed units.
+  - **Open question (resolved):** removing `AutoUpdate=registry` does blind the old
+    `podman auto-update --dry-run` feed — superseded by the skopeo digest-diff feed.
+  - **Residual / next:** Tier 2 (localhost build-input pinning), Tier 3 (policy.json
+    still `insecureAcceptAnything` — signatures), Tier 4 (egress detection). Commit
+    pending (enables the `git revert` rollback path). immich notify-check needs the
+    retry validated under load.

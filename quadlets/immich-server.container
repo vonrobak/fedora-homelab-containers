@@ -5,7 +5,8 @@ Wants=network-online.target photos-network.service
 Requires=postgresql-immich.service redis-immich.service
 
 [Container]
-Image=ghcr.io/immich-app/immich-server:v2.7.5
+# ADR-030 P2: digest-pinned (integrity). tag: v2.7.5, resolved 2026-05-23 (index digest, multi-arch)
+Image=ghcr.io/immich-app/immich-server@sha256:c15bff75068effb03f4355997d03dc7e0fc58720c2b54ad6f7f10d1bc57efaa5
 ContainerName=immich-server
 
 # Run as non-root user (security: ADR-001 Rootless Containers)

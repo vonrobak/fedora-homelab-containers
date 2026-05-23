@@ -4,10 +4,11 @@ After=network-online.target monitoring-network.service
 Wants=monitoring-network.service network-online.target
 
 [Container]
-Image=gcr.io/cadvisor/cadvisor:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=gcr.io/cadvisor/cadvisor@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
 ContainerName=cadvisor
 HostName=cadvisor
-AutoUpdate=registry
 Network=systemd-monitoring
 
 # rshared propagation on / so removable-drive unmounts propagate in — see ADR-023.

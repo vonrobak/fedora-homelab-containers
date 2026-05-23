@@ -4,7 +4,8 @@ After=network-online.target gathio-network.service
 Wants=gathio-network.service network-online.target
 
 [Container]
-Image=docker.io/library/mongo:7
+# ADR-030 P2: digest-pinned (integrity). tag: 7, resolved 2026-05-23 (index digest, multi-arch)
+Image=docker.io/library/mongo@sha256:32979a1189dfdc44da3f5ed40d910495f5ad8f6f7f77556646f890a30b2d3f56
 ContainerName=gathio-db
 HostName=gathio-db
 

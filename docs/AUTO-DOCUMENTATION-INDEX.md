@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-05-23 13:52:23 UTC
-**Total Documents:** 420
+**Generated:** 2026-05-23 15:02:14 UTC
+**Total Documents:** 422
 
 ---
 
@@ -218,7 +218,7 @@
 
 ---
 
-### 98-journals/ (217 documents)
+### 98-journals/ (218 documents)
 
 **Chronological project history (append-only log)**
 
@@ -250,8 +250,10 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-05-18: [2026-05-18-security-audit-and-drift-cleanup-private.md](98-journals/2026-05-18-security-audit-and-drift-cleanup-private.md)
 - 2026-05-21: [2026-05-21-pihole-dns-and-adr018-investigation-handoff.md](98-journals/2026-05-21-pihole-dns-and-adr018-investigation-handoff.md)
 - 2026-05-22: [2026-05-22-db-storage-three-tier-and-dump-backbone-phase-a.md](98-journals/2026-05-22-db-storage-three-tier-and-dump-backbone-phase-a.md)
+- 2026-05-23: [2026-05-23-supply-chain-trust-model-adr030-private.md](98-journals/2026-05-23-supply-chain-trust-model-adr030-private.md)
 - 2026-05-23: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
 - 2026-05-23: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-05-23: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
 - 2026-05-23: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
 - 2026-05-23: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 

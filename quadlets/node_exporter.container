@@ -4,7 +4,9 @@ After=network-online.target monitoring-network.service
 Wants=monitoring-network.service network-online.target
 
 [Container]
-Image=quay.io/prometheus/node-exporter:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=quay.io/prometheus/node-exporter@sha256:0f422f62c15f154af8d8572b23d623aebfb10cec73a5c654d18f911f3f9df241
 ContainerName=node_exporter
 HostName=node_exporter
 Network=systemd-monitoring
@@ -31,7 +33,6 @@ HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9100/metrics
 HealthInterval=30s
 HealthTimeout=5s
 HealthRetries=3
-AutoUpdate=registry
 
 [Service]
 Slice=container.slice

@@ -16,10 +16,11 @@ Wants=network-online.target traefik.service
 # CONTAINER CONFIGURATION
 # ═══════════════════════════════════════════════════════════
 [Container]
-Image=ghcr.io/advplyr/audiobookshelf:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=ghcr.io/advplyr/audiobookshelf@sha256:4143292c530f6ac6700afd13360c04f477e4f1a81c1c97c4224b1c7e4330c5c4
 ContainerName=audiobookshelf
 HostName=audiobookshelf
-AutoUpdate=registry
 
 # Network (single network - standalone service, no inter-service communication)
 Network=systemd-reverse_proxy:ip=10.89.2.74

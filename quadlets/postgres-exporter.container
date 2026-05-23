@@ -5,7 +5,9 @@ Wants=network-online.target photos-network.service monitoring-network.service
 Requires=postgresql-immich.service
 
 [Container]
-Image=quay.io/prometheuscommunity/postgres-exporter:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=quay.io/prometheuscommunity/postgres-exporter@sha256:e96064f876226d94bb6ce48a4c4b3dd76edba91168ec1ab024e5c4b959310b0f
 ContainerName=postgres-exporter
 HostName=postgres-exporter
 
@@ -22,7 +24,6 @@ HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9187/metrics
 HealthInterval=30s
 HealthTimeout=5s
 HealthRetries=3
-AutoUpdate=registry
 
 [Service]
 Slice=container.slice

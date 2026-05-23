@@ -5,7 +5,8 @@ Wants=network-online.target
 Requires=gathio-db.service
 
 [Container]
-Image=ghcr.io/lowercasename/gathio:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+Image=ghcr.io/lowercasename/gathio@sha256:b7e9675d4e22b62e4ad82c495889cfb605a69ae0a2199140c18ccd2772d8b0b5
 ContainerName=gathio
 HostName=gathio
 

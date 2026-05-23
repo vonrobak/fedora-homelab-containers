@@ -6,10 +6,11 @@ Wants=network-online.target reverse_proxy-network.service
 Requires=http.socket https.socket
 
 [Container]
-Image=docker.io/library/traefik:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — highest blast-radius (internet-facing reverse proxy), deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=docker.io/library/traefik@sha256:6b9cbca6fac42ab0075f5437d8dc1685cfd188626d8d515839ea94f8b6271c42
 ContainerName=traefik
 HostName=traefik
-AutoUpdate=registry
 Network=systemd-reverse_proxy:ip=10.89.2.69
 # Ports 80/443 come in via socket activation (see systemd/{http,https}.socket
 # + ADR-022). Do NOT add PublishPort=80/443 — that re-introduces the
