@@ -1,10 +1,24 @@
-FROM registry.fedoraproject.org/fedora:43
+# Base pinned by digest (ADR-030 P5). Tag at pin time: registry.fedoraproject.org/fedora:43
+FROM registry.fedoraproject.org/fedora:43@sha256:747502f9190e7af6d2e1fd32180248f411333549d07f3ea1586420f5017fcc3a
 
-# Install Proton Mail Bridge from local RPM + netcat for healthcheck
-COPY protonmail-bridge-3.23.1-1.x86_64.rpm /tmp/
+# --- Verify the Proton Mail Bridge RPM input (ADR-030 P5/P6) ---
+# The 84MB RPM is gitignored; its provenance is pinned two committed ways:
+#   1. .sha256 sidecar         -> exact-bytes integrity (sha256sum -c)
+#   2. Proton's GPG signing key -> authenticity (rpm --checksig, fails closed)
+# Proton key fpr: D51E64D3 E63EDC3E EF7864CE E2C75D68 E6234B07
+#   bridge@protonmail.ch — https://proton.me/download/bridge/bridge_pubkey.gpg
+COPY protonmail-bridge-3.23.1-1.x86_64.rpm protonmail-bridge-3.23.1-1.x86_64.rpm.sha256 bridge_pubkey.gpg /tmp/
+RUN cd /tmp && \
+    sha256sum -c protonmail-bridge-3.23.1-1.x86_64.rpm.sha256 && \
+    rpm --import bridge_pubkey.gpg && \
+    rpm --checksig protonmail-bridge-3.23.1-1.x86_64.rpm
+
+# Install Proton Mail Bridge from the verified RPM + netcat for healthcheck
 RUN dnf install -y /tmp/protonmail-bridge-3.23.1-1.x86_64.rpm nmap-ncat pass socat && \
     dnf clean all && \
-    rm -f /tmp/protonmail-bridge-3.23.1-1.x86_64.rpm
+    rm -f /tmp/protonmail-bridge-3.23.1-1.x86_64.rpm \
+          /tmp/protonmail-bridge-3.23.1-1.x86_64.rpm.sha256 \
+          /tmp/bridge_pubkey.gpg
 
 # Create home directory for mapped host user (keep-id maps UID 1000)
 RUN mkdir -p /home/bridge && chown 1000:1000 /home/bridge

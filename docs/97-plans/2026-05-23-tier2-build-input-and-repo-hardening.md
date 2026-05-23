@@ -1,7 +1,7 @@
 # Tier 2 Plan: First-Party Build Inputs + Repository Hardening
 
 **Date Created:** 2026-05-23
-**Status:** Proposed
+**Status:** Implemented 2026-05-23 (see Progress Log)
 **Last Updated:** 2026-05-23
 **Implements:** ADR-030 (P5, P8) — Container Supply-Chain Trust Model
 
@@ -103,3 +103,36 @@ images, and protect the repository that defines the infrastructure.
 ## Progress Log
 
 - 2026-05-23 — Plan created from ADR-030; grounded in verified build-file audit.
+- 2026-05-23 — **Executed.** Status: Implemented (uncommitted at time of writing).
+  - **alert-discord-relay (P5):** base pinned `python:3.11-slim@sha256:a3ab0b96…49ac0`;
+    `requirements.lock` generated with `pip-compile --generate-hashes` *inside the pinned
+    base* (full transitive tree: blinker/certifi/charset-normalizer/click/idna/
+    itsdangerous/jinja2/markupsafe/packaging/urllib3/werkzeug + the 3 top-level pins);
+    Dockerfile switched to `pip install --require-hashes -r requirements.lock`; image
+    rebuilt, service restarted, health `healthy` in 5 s, `/health` OK, gunicorn workers
+    booted (webhook secret wired). Rollback image: `d20cf20fa26d`.
+  - **proton-bridge (P5/P6):** base pinned `fedora:43@sha256:747502f9…cc3a`; RPM verified
+    two ways before `dnf install` — committed `.sha256` sidecar (`sha256sum -c`) **and**
+    GPG `rpm --checksig` against committed `bridge_pubkey.gpg`. Proton key fingerprint
+    `D51E64D3 E63EDC3E EF7864CE E2C75D68 E6234B07` confirmed by user; matches the RPM's
+    embedded signature + a fresh TLS fetch from proton.me. Verified fail-closed
+    (exit 1 / "SIGNATURES NOT OK" without key; exit 0 / "signatures OK" with). Hardened
+    Containerfile test-built clean to a throwaway tag; **running `:3.23.1` deliberately
+    NOT rebuilt/restarted** (interactive first-run; running image == same now-verified RPM
+    bytes — validation deferred to next natural rebuild, à la Tier 1 arm-defer). README
+    de-staled (was "Incomplete/not suitable for automated deployment"; unit is `active`).
+  - **Repo hardening (P8):** branch protection on `main` — require PR before merge,
+    0 required approvals (solo-friendly), `enforce_admins=false` (admin escape hatch),
+    force-push + deletion blocked, conversation-resolution required. No deploy keys exist.
+    Token: gh CLI OAuth token carries `delete_repo`, `gist`, `workflow` beyond commit/PR
+    needs → recommended manual `gh auth refresh --scopes repo,read:org` (not auto-run to
+    avoid breaking interactive auth). GitHub is canonical (no Forgejo remote in this clone).
+  - **Audit view:** `generate-image-pin-index.sh` now reports local-build base-pin state
+    (FROM …@sha256) and flags an un-pinned base as a regression; both builds show
+    `🔨 base-pinned`, `local_base_floating=0`, invariant holds.
+  - **Decisions taken:** pip-tools over uv; GPG over SHA-only (both done for proton-bridge);
+    guardrail branch protection over strict-on-admins.
+  - **Deferred / follow-ups:** rebuild+restart proton-bridge into `:3.23.1`; live Discord
+    round-trip test for the relay; `gh auth refresh` to shed over-scoped token bits; wiring
+    `audit-egress-updates.sh` into a pre-commit/CI gate (carried from Tier 1). Tier 3
+    (`policy.json` signatures) and Tier 4 (egress detection) remain.
