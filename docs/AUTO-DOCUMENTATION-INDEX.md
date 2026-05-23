@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-05-21 20:54:10 UTC
-**Total Documents:** 413
+**Generated:** 2026-05-23 13:52:23 UTC
+**Total Documents:** 420
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (24 documents)
+### 00-foundation/ (26 documents)
 
 **Fundamentals and core concepts**
 
@@ -51,6 +51,8 @@
 - ADR-026: [2026-04-21-ADR-026-nextcloud-pinned-major-version](00-foundation/decisions/2026-04-21-ADR-026-nextcloud-pinned-major-version.md)
 - ADR-027: [2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db](00-foundation/decisions/2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md)
 - ADR-028: [2026-04-27-ADR-028-podman-secret-store-path-split](00-foundation/decisions/2026-04-27-ADR-028-podman-secret-store-path-split.md)
+- ADR-029: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
+- ADR-030: [2026-05-23-ADR-030-container-supply-chain-trust-model](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
 - : [README](00-foundation/decisions/fixtures/README.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
@@ -177,7 +179,7 @@
 
 ---
 
-### 97-plans/ (30 documents)
+### 97-plans/ (33 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
@@ -192,6 +194,9 @@
 - 📋 [2026-03-19-fedora-coreos-rebuild-plan.md](97-plans/2026-03-19-fedora-coreos-rebuild-plan.md)
 - 📋 [2026-03-19-nixos-homelab-rebuild-plan.md](97-plans/2026-03-19-nixos-homelab-rebuild-plan.md)
 - 📋 [2026-03-22-urd-btrfs-time-machine-plan.md](97-plans/2026-03-22-urd-btrfs-time-machine-plan.md)
+- 📋 [2026-05-23-tier1-digest-pinning-and-update-deautomation.md](97-plans/2026-05-23-tier1-digest-pinning-and-update-deautomation.md)
+- 📋 [2026-05-23-tier2-build-input-and-repo-hardening.md](97-plans/2026-05-23-tier2-build-input-and-repo-hardening.md)
+- 📋 [2026-05-23-tier3-4-signatures-and-egress-detection-outline.md](97-plans/2026-05-23-tier3-4-signatures-and-egress-detection-outline.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
 - ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
@@ -213,7 +218,7 @@
 
 ---
 
-### 98-journals/ (215 documents)
+### 98-journals/ (217 documents)
 
 **Chronological project history (append-only log)**
 
@@ -231,16 +236,24 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-05-16: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
-- 2026-05-16: [README.md](00-foundation/decisions/fixtures/README.md)
+- 2026-05-23: [2025-12-22-ADR-015-container-update-strategy.md](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
+- 2026-05-22: [2026-04-18-ADR-024-database-dump-backup.md](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
+- 2026-05-22: [2026-04-18-ADR-025-db-storage-migration-deferred.md](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
+- 2026-05-22: [2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md](00-foundation/decisions/2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md)
+- 2026-05-22: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
+- 2026-05-23: [2026-05-23-ADR-030-container-supply-chain-trust-model.md](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
+- 2026-05-23: [2026-05-23-tier1-digest-pinning-and-update-deautomation.md](97-plans/2026-05-23-tier1-digest-pinning-and-update-deautomation.md)
+- 2026-05-23: [2026-05-23-tier2-build-input-and-repo-hardening.md](97-plans/2026-05-23-tier2-build-input-and-repo-hardening.md)
+- 2026-05-23: [2026-05-23-tier3-4-signatures-and-egress-detection-outline.md](97-plans/2026-05-23-tier3-4-signatures-and-egress-detection-outline.md)
 - 2026-05-18: [2026-05-15-audit-backlog-drift-and-observability-deployment.md](98-journals/2026-05-15-audit-backlog-drift-and-observability-deployment.md)
 - 2026-05-18: [2026-05-18-audit-subsystem-hardening-private.md](98-journals/2026-05-18-audit-subsystem-hardening-private.md)
 - 2026-05-18: [2026-05-18-security-audit-and-drift-cleanup-private.md](98-journals/2026-05-18-security-audit-and-drift-cleanup-private.md)
-- 2026-05-15: [security-audit-2026-05-15.md](99-reports/security-audit-2026-05-15.md)
-- 2026-05-21: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-05-21: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-05-21: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-05-21: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-05-21: [2026-05-21-pihole-dns-and-adr018-investigation-handoff.md](98-journals/2026-05-21-pihole-dns-and-adr018-investigation-handoff.md)
+- 2026-05-22: [2026-05-22-db-storage-three-tier-and-dump-backbone-phase-a.md](98-journals/2026-05-22-db-storage-three-tier-and-dump-backbone-phase-a.md)
+- 2026-05-23: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-05-23: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-05-23: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-05-23: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

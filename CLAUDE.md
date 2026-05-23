@@ -87,17 +87,19 @@ Pattern-based deployment available via `homelab-deployment` skill (see `.claude/
 
 ### Update Strategy
 
-Most services use `:latest` tags. **Exceptions (pinned, manual upgrade only):**
+Governed by **ADR-030 (Container Supply-Chain Trust Model):** images move to immutable digest pins (`@sha256:…`) with deliberate, reviewed updates and a cooling-off interval — superseding ADR-015's `:latest`/auto-update trust model. **Migration is phased and currently proposed** (see `docs/97-plans/2026-05-23-tier1-…`); until executed, most services still ride `:latest` and 17 carry `AutoUpdate=registry`.
+
+**Exceptions today (pinned, manual upgrade only):**
 - **Databases:** PostgreSQL, MariaDB (major version migrations required)
 - **Immich:** Pinned to specific version (tight ML + postgres coupling)
 
-Rollback: BTRFS snapshots enable instant recovery if an update breaks a service.
+Rollback: BTRFS snapshots enable instant recovery; once pinned, `git revert` of a digest is a second rollback path.
 
-See ADR-015 for full rationale. Workflow: `scripts/update-before-reboot.sh` before DNF updates.
+See ADR-030 (trust model) and ADR-015 (superseded; its BTRFS rollback + health-validation mechanisms remain valid). Workflow: `scripts/update-before-reboot.sh` before DNF updates.
 
 ### Architecture Decision Records
 
-**20 ADRs documenting architectural decisions** (see `docs/*/decisions/` for full details)
+**Architectural decisions recorded as ADRs — latest is ADR-030** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
 
 **Design-Guiding ADRs (affect future decisions):**
 - **ADR-001:** Rootless Containers — UID 1000, `:Z` SELinux labels on all mounts
@@ -111,6 +113,7 @@ See ADR-015 for full rationale. Workflow: `scripts/update-before-reboot.sh` befo
 - **ADR-018:** Static IP Multi-Network Services — /etc/hosts override for predictable routing
 - **ADR-019:** Filesystem Permission Model — POSIX ACLs for container access
 - **ADR-021:** Urd Backup Tool — Rust-based BTRFS Time Machine replaces shell script (supersedes ADR-020 implementation)
+- **ADR-030:** Container Supply-Chain Trust Model — digest pinning, deliberate (de-automated) updates, cooling-off interval, graduated signature verification (supersedes ADR-015 trust model)
 
 Check if an ADR exists before proposing changes. Reference the ADR and explain what changed if suggesting alternatives. New decisions get new ADRs (don't edit existing ones).
 
