@@ -33,26 +33,39 @@ echo "--- Phase 2: Graceful Shutdown ---"
 "$SCRIPT_DIR/graceful-shutdown.sh" $DRY_RUN
 echo ""
 
-# Phase 3: Pull latest images
+# Phase 3: Ensure quadlet images present (digest-aware, ADR-030)
+# Pull list is derived from quadlet Image= lines, NOT `podman images`. This is
+# the ADR-030 fix: pinned (@sha256:) refs are *ensured present* (a no-op if
+# already local) and never re-floated; only mutable tags are pulled fresh.
+# Digest pins move only via a deliberate edit (scripts/pin-container-image.sh),
+# never via this reboot path.
 if ! $SKIP_PULL && [ -z "$DRY_RUN" ]; then
-    echo "--- Phase 3: Pull Latest Images ---"
-    echo "Pulling latest images..."
-    IMAGES=$(podman images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | sort -u)
-    PULLED=0
-    FAILED=0
-    echo "$IMAGES" | while read -r IMAGE; do
-        echo -n "  $IMAGE... "
-        if podman pull "$IMAGE" >/dev/null 2>&1; then
-            echo "OK"
-            PULLED=$((PULLED + 1))
-        else
-            echo "SKIP (pull failed or unchanged)"
-            FAILED=$((FAILED + 1))
-        fi
-    done
+    echo "--- Phase 3: Ensure Images Present (digest-aware) ---"
+    QUADLET_DIR="${QUADLET_DIR:-$HOME/containers/quadlets}"
+    ENSURED=0; PULLED=0; SKIPPED=0; FAILED=0
+    while IFS= read -r IMAGE; do
+        [ -n "$IMAGE" ] || continue
+        case "$IMAGE" in
+            localhost/*)
+                echo "  $IMAGE... SKIP (local build)"; SKIPPED=$((SKIPPED+1)) ;;
+            *@sha256:*)
+                if podman image exists "$IMAGE"; then
+                    echo "  ${IMAGE%@*}@…${IMAGE##*:}... present (pinned, no float)"; ENSURED=$((ENSURED+1))
+                elif podman pull "$IMAGE" >/dev/null 2>&1; then
+                    echo "  $IMAGE... fetched pinned digest"; ENSURED=$((ENSURED+1))
+                else
+                    echo "  $IMAGE... FAIL (pinned digest unavailable)"; FAILED=$((FAILED+1))
+                fi ;;
+            *)
+                echo -n "  $IMAGE (mutable tag)... "
+                if podman pull "$IMAGE" >/dev/null 2>&1; then echo "pulled"; PULLED=$((PULLED+1));
+                else echo "SKIP (failed/unchanged)"; FAILED=$((FAILED+1)); fi ;;
+        esac
+    done < <(grep -hE '^Image=' "$QUADLET_DIR"/*.container | sed 's/^Image=//; s/[[:space:]]//g' | sort -u)
+    echo "  (pinned ensured: $ENSURED, tags pulled: $PULLED, local skipped: $SKIPPED, failed: $FAILED)"
     echo ""
 else
-    echo "--- Phase 3: Pull Latest Images (skipped) ---"
+    echo "--- Phase 3: Ensure Images Present (skipped) ---"
     echo ""
 fi
 

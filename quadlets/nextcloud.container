@@ -5,7 +5,8 @@ Wants=network-online.target
 
 
 [Container]
-Image=docker.io/library/nextcloud:33
+# ADR-030 P2: digest-pinned (integrity). tag: 33, resolved 2026-05-23 (index digest, multi-arch)
+Image=docker.io/library/nextcloud@sha256:b67959acacd54ed2d110e111c8b28c0a87a20129f9427bf5f721a1dc6121decb
 ContainerName=nextcloud
 
 # Database configuration (using podman secrets)

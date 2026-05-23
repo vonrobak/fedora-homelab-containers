@@ -4,10 +4,11 @@ After=network-online.target reverse_proxy-network.service
 Wants=network-online.target reverse_proxy-network.service
 
 [Container]
-Image=docker.io/linuxserver/qbittorrent:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=docker.io/linuxserver/qbittorrent@sha256:f76c4363cce0834df43b097682928d217f9f0e0fa1d13781c0934848d543e4ab
 ContainerName=qbittorrent
 HostName=qbittorrent
-AutoUpdate=registry
 Network=systemd-reverse_proxy:ip=10.89.2.85
 # No PublishPort - WebUI (port 8085, set via WEBUI_PORT below) accessible only
 # via Traefik reverse proxy. No BT port published - Session\Port=30069 is set

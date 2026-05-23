@@ -5,7 +5,8 @@ Wants=network-online.target
 
 
 [Container]
-Image=docker.io/library/redis:7-alpine
+# ADR-030 P2: digest-pinned (integrity). tag: 7-alpine, resolved 2026-05-23 (index digest, multi-arch)
+Image=docker.io/library/redis@sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99
 ContainerName=nextcloud-redis
 
 # Redis password authentication via REDISCLI_AUTH env (avoids password on argv).

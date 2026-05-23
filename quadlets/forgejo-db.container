@@ -4,7 +4,8 @@ After=network-online.target forgejo-network.service
 Wants=network-online.target forgejo-network.service
 
 [Container]
-Image=docker.io/library/postgres:16-alpine
+# ADR-030 P2: digest-pinned (integrity). tag: 16-alpine, resolved 2026-05-23 (index digest, multi-arch)
+Image=docker.io/library/postgres@sha256:16bc17c64a573ef34162af9298258d1aec548232985b33ed7b1eac33ba35c229
 ContainerName=forgejo-db
 HostName=forgejo-db
 

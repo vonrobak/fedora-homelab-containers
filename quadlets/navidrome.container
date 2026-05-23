@@ -16,10 +16,11 @@ Wants=network-online.target traefik.service
 # CONTAINER CONFIGURATION
 # ═══════════════════════════════════════════════════════════
 [Container]
-Image=docker.io/deluan/navidrome:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=docker.io/deluan/navidrome@sha256:9fa40b3d8dec43ceb2213d1fa551da3dcfef6ac6d19c2e534efb92527c2bafd2
 ContainerName=navidrome
 HostName=navidrome
-AutoUpdate=registry
 
 # Networks (reverse_proxy FIRST for internet access)
 Network=systemd-reverse_proxy:ip=10.89.2.75

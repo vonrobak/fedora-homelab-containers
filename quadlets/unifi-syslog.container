@@ -4,10 +4,11 @@ After=network-online.target syslog-network.service
 Wants=syslog-network.service network-online.target
 
 [Container]
-Image=docker.io/linuxserver/syslog-ng:latest
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=docker.io/linuxserver/syslog-ng@sha256:0d164e438d1f9ee4b610dfd287323bb3cdb0922f04fcaea3106fc9de7eea19d6
 ContainerName=unifi-syslog
 HostName=unifi-syslog
-AutoUpdate=registry
 Network=systemd-syslog:ip=10.89.7.69
 
 # Bind to LAN interface only - NOT 0.0.0.0. Defense in depth alongside firewalld rule.

@@ -5,7 +5,8 @@ Wants=network-online.target
 Requires=forgejo-db.service
 
 [Container]
-Image=codeberg.org/forgejo/forgejo:15
+# ADR-030 P2: digest-pinned (integrity). tag: 15, resolved 2026-05-23 (index digest, multi-arch)
+Image=codeberg.org/forgejo/forgejo@sha256:db04c7114b656f896e206ba3873fe8d3a7adf2daa44907037f0274f4ba653fb9
 ContainerName=forgejo
 HostName=forgejo
 

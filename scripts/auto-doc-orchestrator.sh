@@ -92,6 +92,12 @@ main() {
     fi
     log ""
 
+    # Phase 5: Image Pin Index (ADR-030 supply-chain audit view)
+    if ! run_generator "${SCRIPT_DIR}/generate-image-pin-index.sh" "Image Pin Index"; then
+        ((failures++))
+    fi
+    log ""
+
     # Summary
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
@@ -111,6 +117,7 @@ main() {
         log "  - ${DOCS_DIR}/AUTO-NETWORK-TOPOLOGY.md"
         log "  - ${DOCS_DIR}/AUTO-DEPENDENCY-GRAPH.md"
         log "  - ${DOCS_DIR}/AUTO-DOCUMENTATION-INDEX.md"
+        log "  - ${DOCS_DIR}/AUTO-IMAGE-PIN-INDEX.md"
         log ""
         log "You can view these in GitHub - Mermaid diagrams will render automatically."
         return 0
