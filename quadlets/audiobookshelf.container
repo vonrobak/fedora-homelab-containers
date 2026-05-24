@@ -16,9 +16,9 @@ Wants=network-online.target traefik.service
 # CONTAINER CONFIGURATION
 # ═══════════════════════════════════════════════════════════
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
+# ADR-030 P2: digest-pinned (integrity). tag: 2.35.0, resolved 2026-05-24 (index digest, multi-arch)
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
-Image=ghcr.io/advplyr/audiobookshelf@sha256:4143292c530f6ac6700afd13360c04f477e4f1a81c1c97c4224b1c7e4330c5c4
+Image=ghcr.io/advplyr/audiobookshelf@sha256:89276ff2e0b3d2f07dd334b641f27a34ab7f02e1047c60b7b8a30126cb0813a5
 ContainerName=audiobookshelf
 HostName=audiobookshelf
 
@@ -29,11 +29,9 @@ Network=systemd-reverse_proxy:ip=10.89.2.74
 Environment=TZ=Europe/Oslo
 Environment=PORT=80
 
-# Auth token lifetimes — workaround for upstream bug #4630
-# Default 1h access token forces frequent refresh; rotation has no grace period,
-# so any lost refresh response (mobile network transition, app suspend) permanently
-# breaks the session. Longer access token = fewer refreshes = fewer broken sessions.
-Environment=ACCESS_TOKEN_EXPIRY=86400
+# NOTE: ACCESS_TOKEN_EXPIRY=86400 workaround (PR #185, bug #4630) removed in 2.35.0 bump —
+# upstream access-token refresh grace period (PR #5004) ships in this release. See issue #188.
+# Verify token refresh + Prologue session survival across the access-token boundary post-deploy.
 
 # Config & metadata (exclusive - NOCOW for SQLite)
 Volume=/mnt/btrfs-pool/subvol7-containers/audiobookshelf/config:/config:Z
