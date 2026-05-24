@@ -105,9 +105,13 @@ get_latest_snapshot() {
 
     log DEBUG "Looking for snapshots for $subvol"
 
-    # Strategy 1: Check local snapshots first (most recent, most reliable)
+    # Strategy 1: Check local snapshots first (most recent, most reliable).
+    # Select by the date in the NAME (YYYYMMDD[-HHMM] sorts lexically == chronologically),
+    # NOT by mtime: BTRFS read-only snapshots inherit the source subvolume's root-dir mtime,
+    # so `ls -t` ties across all of them and silently picks the OLDEST snapshot — the test
+    # would then validate a stale backup instead of the latest one.
     if [[ -d "$snapshot_dir" ]]; then
-        found_snapshot=$(ls -1td "$snapshot_dir"/* 2>/dev/null | head -1 || echo "")
+        found_snapshot=$(ls -1d "$snapshot_dir"/* 2>/dev/null | sort -r | head -1 || echo "")
         if [[ -n "$found_snapshot" && -d "$found_snapshot" ]]; then
             source="local"
             log DEBUG "Found local snapshot: $found_snapshot"
@@ -120,7 +124,7 @@ get_latest_snapshot() {
         # Try organized subfolder first
         local external_dir="$EXTERNAL_BACKUP_ROOT/$subvol"
         if [[ -d "$external_dir" ]]; then
-            found_snapshot=$(ls -1td "$external_dir"/* 2>/dev/null | head -1 || echo "")
+            found_snapshot=$(ls -1d "$external_dir"/* 2>/dev/null | sort -r | head -1 || echo "")
             if [[ -n "$found_snapshot" && -d "$found_snapshot" ]]; then
                 source="external"
                 log DEBUG "Found external snapshot (organized): $found_snapshot"
@@ -146,7 +150,7 @@ get_latest_snapshot() {
             esac
 
             if [[ -n "$search_pattern" ]]; then
-                found_snapshot=$(ls -1td "$EXTERNAL_BACKUP_ROOT"/$search_pattern 2>/dev/null | head -1 || echo "")
+                found_snapshot=$(ls -1d "$EXTERNAL_BACKUP_ROOT"/$search_pattern 2>/dev/null | sort -r | head -1 || echo "")
                 if [[ -n "$found_snapshot" && -d "$found_snapshot" ]]; then
                     source="external-scattered"
                     log WARNING "Found scattered external snapshot: $found_snapshot (may be old)"
