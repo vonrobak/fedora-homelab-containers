@@ -113,3 +113,31 @@ Each addition is isolated; `git revert` the alert/rule file. New recording rules
 
 - 2026-05-25 — Plan drafted from deep-dive report. Status: Proposed. Sequence after Plan A (smaller
   TSDB makes burn-rate queries cheaper) but independent of it.
+- 2026-05-25 — **Implemented on branch `feat/slo-alert-coverage`.** Status: Implemented (G1–G4 + docs;
+  #5 needed no change). Live verification (Prometheus had 15d of data) surfaced corrections to the plan's premises:
+  - **G1 (done):** The plan assumed `burn_rate:traefik:availability:*` returned data; it did **not** —
+    a label-match bug (labelled `up{}` ÷ label-less budget) made the series silently empty, so the
+    Traefik dashboard panel was blank and any alert would never fire. Fixed all 7 Traefik burn-rate
+    rules with `scalar()` (in `slo-recording-rules.yml` + `slo-burn-rate-extended.yml`), then added
+    `SLOBurnRateTier1-4_Traefik`. promtool ✅, amtool routing ✅ (Tier1→critical, Tier2-3→warning,
+    Tier4→info).
+  - **G3 (done):** Added Immich-upload SLO recording rules (`slo:`/`error_budget:`/`burn_rate:immich:uploads:*`),
+    `SLOBurnRateTier1/2_ImmichUploads` (warning/info, **not** page — see below), and a dashboard panel.
+    Deviation: severity is warning/info with a `>10 attempts` volume guard, because uploads are very
+    low volume (~few/week) and the SLI counts only 2xx as success (499 client-disconnects would
+    otherwise false-page). Routing verified safe: the handler matches alertnames **exactly**, so
+    `_ImmichUploads` never hits the `_Immich` immich-server-restart playbook (it returns `no_route`).
+  - **G4 (done):** Added `NavidromeSustained5xxLowVolume`. Could not scale the threshold to live
+    traffic (Navidrome was idle — 0 req/7d), so it mirrors `HomeAssistantSustained5xxLowVolume`
+    (>20 5xx in 6h, <0.5 req/s). Documented to revisit once a traffic floor accrues.
+  - **#5 (no action — premise outdated):** `slo_compliance` already runs at `interval: 2m` (since
+    2025-11-28), 0.33s/120s. The deep-dive's "every 30s" was wrong; eval cost is already mitigated.
+  - **G2 (done — re-scoped from evidence):** All three of the plan's proposed latency targets were
+    unbuildable: Authelia is forward-auth (~2 req/7d, no signal); Jellyfin ~1 req/7d; both
+    `fast_ratio` rules also referenced non-existent histogram buckets (`le=0.2`/`le=0.5`; Traefik
+    emits `[0.1,0.3,1.0,3.0,10.0]`); Traefik entrypoint latency is streaming-conflated (p99≈2.6s,
+    ~76% <100ms). Owner chose "Nextcloud alert + fix bucket bugs": (1) fixed the two broken
+    `fast_ratio` bucket refs (`le=0.2`/`0.5` → `0.3`); (2) added `NextcloudLatencySLOBreach`
+    (warning, <95% under 1s for 30m, min-traffic guard) — the only service with clean alertable
+    latency data. Named outside the `SLOBurnRateTier*` convention so it does not hit auto-remediation.
+    See `slo-framework.md` "Latency alerting status".

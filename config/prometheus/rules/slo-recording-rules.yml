@@ -140,10 +140,14 @@ groups:
             sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="jellyfin@file"}[5m])) by (le)
           )
 
-      # Jellyfin - Requests under 500ms target
+      # Jellyfin - Requests under ~500ms target
+      # NOTE (fixed 2026-05-25): was le="0.5", a bucket Traefik does NOT emit
+      # (buckets: 0.1, 0.3, 1.0, 3.0, 10.0), so this rule silently produced no data.
+      # Repointed to le="0.3" — the nearest available bucket to the 500ms SLO target.
+      # If a precise 500ms SLI is needed, add a 0.5 bucket to Traefik's histogram config.
       - record: sli:jellyfin:latency:fast_ratio
         expr: |
-          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="jellyfin@file", le="0.5"}[5m]))
+          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="jellyfin@file", le="0.3"}[5m]))
           /
           sum(rate(traefik_service_request_duration_seconds_count{exported_service="jellyfin@file"}[5m]))
 
@@ -154,10 +158,15 @@ groups:
             sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="authelia@file"}[5m])) by (le)
           )
 
-      # Authelia - Requests under 200ms target
+      # Authelia - Requests under ~200ms target
+      # NOTE (fixed 2026-05-25): was le="0.2", a bucket Traefik does NOT emit
+      # (buckets: 0.1, 0.3, 1.0, 3.0, 10.0), so this rule silently produced no data.
+      # Repointed to le="0.3" — the nearest available bucket to the 200ms SLO target.
+      # (Authelia runs as forward-auth middleware and carries ~no routed traffic, so
+      # this SLI is mostly cosmetic; not alerted.)
       - record: sli:authelia:latency:fast_ratio
         expr: |
-          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="authelia@file", le="0.2"}[5m]))
+          sum(rate(traefik_service_request_duration_seconds_bucket{exported_service="authelia@file", le="0.3"}[5m]))
           /
           sum(rate(traefik_service_request_duration_seconds_count{exported_service="authelia@file"}[5m]))
 
@@ -271,6 +280,31 @@ groups:
       - record: slo:immich:availability:compliant
         expr: |
           slo:immich:availability:actual >= bool slo:immich:availability:target
+
+      # Immich - Upload success SLO (G3, added 2026-05-25). 99.5% of upload
+      # operations (POST/PUT/PATCH) return 2xx over 30 days. Failing photo uploads
+      # are user-data-loss-adjacent and were previously invisible unless a 5xx also
+      # spiked. NaN-safe: when no uploads occurred in the window, actual = 1.0
+      # (no failures), mirroring sli:immich:uploads:success_ratio. NOTE: only 2xx
+      # counts as success here — a client disconnect (499) mid-upload counts as a
+      # failure, which is why the paired alert is a warning, not a page.
+      - record: slo:immich:uploads:target
+        expr: 0.995
+
+      - record: slo:immich:uploads:actual
+        expr: |
+          clamp_max(
+            sum(increase(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH", code=~"2.."}[30d]))
+            /
+            clamp_min(sum(increase(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[30d])), 1)
+            +
+            (sum(increase(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[30d])) < bool 1),
+            1
+          )
+
+      - record: slo:immich:uploads:compliant
+        expr: |
+          slo:immich:uploads:actual >= bool slo:immich:uploads:target
 
       # Authelia - 99.9% availability target over 30 days
       - record: slo:authelia:availability:target
@@ -408,6 +442,21 @@ groups:
       - record: error_budget:immich:availability:budget_remaining
         expr: |
           clamp_max(1 - error_budget:immich:availability:budget_consumed, 1)
+
+      # Immich - Upload error budget (G3, 0.5% allowed upload failure)
+      - record: error_budget:immich:uploads:budget_total
+        expr: 0.005
+
+      - record: error_budget:immich:uploads:budget_consumed
+        expr: |
+          clamp_min(
+            (1 - slo:immich:uploads:actual) / (1 - slo:immich:uploads:target),
+            0
+          )
+
+      - record: error_budget:immich:uploads:budget_remaining
+        expr: |
+          clamp_max(1 - error_budget:immich:uploads:budget_consumed, 1)
 
       # Authelia - Error budget (0.1% = 43 min/month)
       - record: error_budget:authelia:availability:budget_total
@@ -791,22 +840,27 @@ groups:
           / error_budget:audiobookshelf:availability:budget_total
 
       # Traefik - Burn rates (uses up metric, always has data, no NaN risk)
+      # scalar() is REQUIRED: up{job="traefik"} carries {instance,job,service} labels
+      # while error_budget:...:budget_total is label-less. Without scalar() the binary
+      # division finds no matching label set and records an EMPTY series (verified
+      # 2026-05-25 — the un-scalared rules produced no data, so the Traefik SLO panel
+      # and any Traefik burn-rate alert were silently dead). scalar() strips the labels.
       - record: burn_rate:traefik:availability:1h
         expr: |
-          (1 - avg_over_time(up{job="traefik"}[1h]))
+          scalar(1 - avg_over_time(up{job="traefik"}[1h]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:5m
         expr: |
-          (1 - avg_over_time(up{job="traefik"}[5m]))
+          scalar(1 - avg_over_time(up{job="traefik"}[5m]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:6h
         expr: |
-          (1 - avg_over_time(up{job="traefik"}[6h]))
+          scalar(1 - avg_over_time(up{job="traefik"}[6h]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:30m
         expr: |
-          (1 - avg_over_time(up{job="traefik"}[30m]))
+          scalar(1 - avg_over_time(up{job="traefik"}[30m]))
           / error_budget:traefik:availability:budget_total
