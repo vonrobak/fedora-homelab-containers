@@ -1,0 +1,117 @@
+#!/bin/bash
+# verify-image-signature.sh — ADR-030 P6 (Tier 3) deliberate-path authenticity gate.
+#
+# Verifies that a specific image digest was signed by the publisher's known keyless
+# identity, using cosign. This exists because podman 5.8.2's policy.json cannot match
+# a workflow-URI keyless identity (sigstoreSigned.fulcio mandates subjectEmail), so
+# authenticity is enforced here — at the moment of DELIBERATE adoption (P1), after a
+# bake (P3) — not at pull time. See docs/97-plans/2026-05-24-tier3-…-deliberate-path.md.
+#
+# cosign runs as a digest-pinned throwaway container (it is itself a supply-chain input).
+#
+# Usage: verify-image-signature.sh <repo@digest | repo:tag> [--service <name>] [--metric] [--quiet]
+#
+# Exit codes (the load-bearing contract — callers depend on these):
+#   0  verified against a known signer identity
+#   3  no signer entry for this repo  -> unsigned-but-tracked (NOT a failure; P6 graduated)
+#   1  signer entry exists but verification FAILED  -> fail-closed (tamper / wrong identity)
+#   2  tooling / network error (cosign image missing, registry/Rekor unreachable) -> retry, NOT fail-closed
+set -uo pipefail
+
+REPO_ROOT="${REPO_ROOT:-$HOME/containers}"
+SIGNERS_FILE="${SIGNERS_FILE:-$REPO_ROOT/config/supply-chain/signers.yaml}"
+COSIGN_IMAGE="${COSIGN_IMAGE:-ghcr.io/sigstore/cosign/cosign:v3.0.6@sha256:de9c65609e6bde17e6b48de485ee788407c9502fa08b8f4459f595b21f56cd00}"
+METRIC_DIR="${METRIC_DIR:-$REPO_ROOT/data/backup-metrics}"
+METRIC_FILE="$METRIC_DIR/supply-chain-signatures.prom"
+
+ref="${1:?usage: verify-image-signature.sh <repo@digest|repo:tag> [--service <name>] [--metric] [--quiet]}"
+shift || true
+service=""; want_metric=false; quiet=false
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --service) service="${2:?}"; shift 2 ;;
+        --metric)  want_metric=true; shift ;;
+        --quiet)   quiet=true; shift ;;
+        *) echo "verify-image-signature: unknown arg: $1" >&2; exit 2 ;;
+    esac
+done
+
+# repo = ref with any @digest or :tag stripped
+repo="$ref"; repo="${repo%@*}"; case "$repo" in *:*) repo="${repo%:*}";; esac
+[ -n "$service" ] || service="$repo"
+
+log() { $quiet || echo "$*" >&2; }
+
+cosign() { podman run --rm --network=bridge "$COSIGN_IMAGE" "$@"; }
+
+write_metric() {  # $1=value (1 ok / 0 failed)
+    $want_metric || return 0
+    mkdir -p "$METRIC_DIR" || return 0
+    local tmp; tmp="$(mktemp)" || return 0
+    # drop this service's previous lines, preserve others (no stale series)
+    [ -f "$METRIC_FILE" ] && grep -v "service=\"$service\"" "$METRIC_FILE" > "$tmp" 2>/dev/null
+    {
+        echo "# HELP supply_chain_signature_verify ADR-030 P6 deliberate-path signature check (1=verified, 0=FAILED)."
+        echo "# TYPE supply_chain_signature_verify gauge"
+        echo "supply_chain_signature_verify{service=\"$service\",repo=\"$repo\"} $1"
+        echo "supply_chain_signature_last_verify_timestamp{service=\"$service\"} $(date +%s)"
+    } >> "$tmp"
+    mv "$tmp" "$METRIC_FILE" 2>/dev/null || rm -f "$tmp"
+}
+
+# --- look up signer entry (PyYAML) -------------------------------------------
+[ -f "$SIGNERS_FILE" ] || { echo "verify-image-signature: missing $SIGNERS_FILE" >&2; exit 2; }
+entry="$(python3 - "$SIGNERS_FILE" "$repo" <<'PY'
+import sys, yaml
+path, repo = sys.argv[1], sys.argv[2]
+with open(path) as f:
+    doc = yaml.safe_load(f) or {}
+for s in (doc.get("signers") or []):
+    if s.get("repo") == repo:
+        print(s.get("oidc_issuer", "")); print(s.get("identity_regexp", "")); break
+PY
+)" || { echo "verify-image-signature: failed to parse $SIGNERS_FILE" >&2; exit 2; }
+
+if [ -z "$entry" ]; then
+    log "ℹ️  $repo: no signer entry — unsigned-but-tracked (ADR-030 P6)"
+    exit 3
+fi
+issuer="$(printf '%s\n' "$entry" | sed -n 1p)"
+identity="$(printf '%s\n' "$entry" | sed -n 2p)"
+[ -n "$issuer" ] && [ -n "$identity" ] || { echo "verify-image-signature: incomplete signer entry for $repo" >&2; exit 2; }
+
+# --- tooling + connectivity pre-checks (separate network errors from FAILURE) -
+podman image exists "$COSIGN_IMAGE" || {
+    echo "verify-image-signature: cosign image not present ($COSIGN_IMAGE) — run: podman pull $COSIGN_IMAGE" >&2; exit 2; }
+if ! skopeo inspect --raw "docker://$ref" >/dev/null 2>&1; then
+    echo "verify-image-signature: registry unreachable or ref unresolvable: $ref (retry)" >&2; exit 2
+fi
+
+# --- verify ------------------------------------------------------------------
+log "🔎 verifying $ref"
+log "   identity ~ $identity"
+log "   issuer     $issuer"
+out="$(cosign verify \
+        --certificate-identity-regexp "$identity" \
+        --certificate-oidc-issuer "$issuer" \
+        "$ref" 2>&1)"; rc=$?
+
+if [ $rc -eq 0 ]; then
+    log "✅ VERIFIED: $repo signed by expected identity"
+    write_metric 1
+    exit 0
+fi
+
+# Registry was reachable (pre-check passed) → a cosign failure is either a genuine
+# verification failure (fail-closed) or a transparency-log/transient error (retry).
+if printf '%s' "$out" | grep -qiE 'rekor|tlog|transparency|timeout|deadline exceeded|connection refused|no such host|tuf|fetch.*trust'; then
+    echo "verify-image-signature: transient verification error (Rekor/TUF/network), retry:" >&2
+    $quiet || printf '%s\n' "$out" | tail -5 >&2
+    exit 2
+fi
+
+echo "❌ SIGNATURE VERIFICATION FAILED for $ref" >&2
+echo "   expected identity ~ $identity (issuer $issuer)" >&2
+$quiet || printf '%s\n' "$out" | tail -8 >&2
+write_metric 0
+exit 1

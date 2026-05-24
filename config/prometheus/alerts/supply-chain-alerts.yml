@@ -1,0 +1,31 @@
+groups:
+  - name: supply_chain_alerts
+    interval: 60s
+    rules:
+      # Critical: a KNOWN signer's image failed signature verification on the
+      # deliberate-update path (ADR-030 P6). A signer that should verify but does not
+      # is a tamper / wrong-identity signal — the pin was refused; investigate before
+      # any adopt. Inert until the metric exists (absent => no fire).
+      - alert: SupplyChainSignatureFailed
+        expr: supply_chain_signature_verify == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: security
+          component: supply-chain
+        annotations:
+          summary: "Image signature verification FAILED for {{ $labels.service }}"
+          description: "{{ $labels.service }} ({{ $labels.repo }}) failed cosign verification against its known signer identity (ADR-030 P6). Possible tampering or a changed publisher identity. The pin was refused. Do NOT adopt; investigate `scripts/verify-image-signature.sh`."
+
+      # Warning: a signer's pin hasn't been re-verified in 90+ days (P3 drift — a
+      # deliberately-pinned signed image has gone stale and unre-checked).
+      - alert: SupplyChainSignatureStale
+        expr: (time() - supply_chain_signature_last_verify_timestamp) > (86400 * 90)
+        for: 6h
+        labels:
+          severity: warning
+          category: security
+          component: supply-chain
+        annotations:
+          summary: "Signed image not re-verified in 90+ days: {{ $labels.service }}"
+          description: "{{ $labels.service }} last had its signature verified {{ $value | humanizeDuration }} ago. Re-check for an available signed update (`scripts/check-image-updates.sh`) and adopt deliberately if appropriate (ADR-030 P3)."

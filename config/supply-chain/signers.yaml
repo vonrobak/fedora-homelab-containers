@@ -1,0 +1,27 @@
+# ADR-030 P6 — Tier 3 signer registry (deliberate-path authenticity verification).
+#
+# Maps an image repository to the keyless cosign identity that MUST have signed it.
+# `scripts/verify-image-signature.sh` consults this file. A repository NOT listed
+# here is treated as "unsigned-but-tracked" (verifier exit 3) — NOT a failure; that
+# is ADR-030 P6's graduated, per-publisher trust by design. Adding a new signer is a
+# single entry. The verifier verifies with cosign because podman 5.8.2's policy.json
+# cannot express a workflow-URI identity (see the Tier 3 plan).
+#
+# Fields:
+#   repo             exact image repository (no tag, no digest)
+#   oidc_issuer      expected OIDC issuer   -> cosign --certificate-oidc-issuer
+#   identity_regexp  regexp for the cert SAN -> cosign --certificate-identity-regexp
+#   note             human context
+#
+# To add an email-identity signer (e.g. a publisher using user-OAuth keyless), the
+# same shape works — identity_regexp matches the email SAN instead of a workflow URI.
+
+signers:
+  - repo: ghcr.io/home-assistant/home-assistant
+    oidc_issuer: https://token.actions.githubusercontent.com
+    identity_regexp: '^https://github\.com/home-assistant/core/\.github/workflows/builder\.yml@refs/tags/.*$'
+    note: >-
+      Home Assistant Core — keyless GitHub-Actions cosign signature, Rekor-logged.
+      Survey 2026-05-24: the ONLY signed image in the fleet (1/32). Identity is a
+      workflow URI SAN, not an email, so it is NOT expressible in podman 5.8.2
+      policy.json (subjectEmail mandatory) — verified here on the deliberate path.
