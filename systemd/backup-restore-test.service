@@ -10,8 +10,11 @@ StandardOutput=journal
 StandardError=journal
 TimeoutStartSec=2h
 
-# Send alert on failure
-# OnFailure=email-notification@%n.service
+# Failure alerting is via Prometheus, NOT systemd OnFailure: the script emits
+# backup_restore_test_success / _last_run_timestamp to the node_exporter textfile
+# collector, and config/prometheus/alerts/backup-alerts.yml fires a critical alert on
+# backup_restore_test_success==0 plus a 35-day staleness warning → alert-discord-relay.
+# (email-notification@%n.service never existed — do not re-add it.)
 
 [Install]
 WantedBy=default.target
