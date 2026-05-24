@@ -8,16 +8,27 @@
 # be deliberately bumped. It NEVER pulls or changes anything — visibility only,
 # preserving "trust is accepted deliberately" (P1).
 #
-# To adopt an available update: bake (P3), then
-#   scripts/pin-container-image.sh <svc> [--deautomate] --apply
+# To adopt an available update: bake (P3), then (the digest is verified at this step,
+# ADR-030 P6):
+#   scripts/pin-container-image.sh <svc> --adopt <new-digest> --apply
 #   systemctl --user daemon-reload && systemctl --user restart <svc>.service
 #
 # NOTE: no `set -e` — a single image's skopeo failure must not abort the sweep.
 set -uo pipefail
 
 QUADLET_DIR="${QUADLET_DIR:-$HOME/containers/quadlets}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SIGNERS_FILE="${SIGNERS_FILE:-$HOME/containers/config/supply-chain/signers.yaml}"
 REPORT_FILE="$HOME/containers/docs/99-reports/image-updates-$(date +%Y%m%d).txt"
 mkdir -p "$(dirname "$REPORT_FILE")"
+
+# ADR-030 P6 (Tier 3): pre-load repos that have a known signer so we can verify the
+# AVAILABLE digest and front-load the trust signal BEFORE a deliberate adopt (advisory).
+declare -A SIGNER_REPOS=()
+if [ -f "$SIGNERS_FILE" ]; then
+    while IFS= read -r r; do [ -n "$r" ] && SIGNER_REPOS["$r"]=1; done < <(
+        python3 -c "import yaml; d=yaml.safe_load(open('$SIGNERS_FILE')) or {}; [print(s.get('repo','')) for s in (d.get('signers') or [])]" 2>/dev/null)
+fi
 
 updates=(); failed=(); local_builds=(); uptodate=0
 
@@ -45,10 +56,23 @@ for f in "$QUADLET_DIR"/*.container; do
         failed+=("$name (${repo}:${tag})"); continue
     fi
     sleep 0.2  # be gentle on registries between checks
+
+    # ADR-030 P6 advisory: if this repo has a known signer, verify the AVAILABLE digest
+    signote=""
+    if [ -n "${SIGNER_REPOS[$repo]:-}" ]; then
+        "$SCRIPT_DIR/verify-image-signature.sh" "${repo}@${current}" --quiet >/dev/null 2>&1
+        case $? in
+            0) signote="  [✓ signature verified]" ;;
+            1) signote="  [✗ SIGNATURE FAILED — do not adopt]" ;;
+            *) signote="  [⚠ signature check error]" ;;
+        esac
+    fi
+
     if [ "$current" != "$pinned" ]; then
-        updates+=("$name | ${repo}:${tag} | pinned ${pinned:0:19}… → available ${current:0:19}…")
+        updates+=("$name | ${repo}:${tag} | pinned ${pinned:0:19}… → available ${current:0:19}…${signote}")
     else
         uptodate=$((uptodate+1))
+        [ -n "$signote" ] && updates+=("$name | ${repo}:${tag} | up-to-date${signote}")
     fi
 done
 
@@ -78,8 +102,9 @@ done
         echo ""
     fi
     echo "========================================"
-    echo "To adopt an update deliberately (after a bake interval, P3):"
-    echo "  scripts/pin-container-image.sh <svc> [--deautomate] --apply"
+    echo "To adopt an update deliberately (after a bake interval, P3; digest is"
+    echo "signature-verified at adopt time per ADR-030 P6):"
+    echo "  scripts/pin-container-image.sh <svc> --adopt <available-digest> --apply"
     echo "  systemctl --user daemon-reload && systemctl --user restart <svc>.service"
 } > "$REPORT_FILE"
 

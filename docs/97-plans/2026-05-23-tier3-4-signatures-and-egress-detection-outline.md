@@ -14,6 +14,18 @@
 
 ## Tier 3 — Signature / Provenance Enforcement (P6) *(authenticity axis)*
 
+> **⚠️ SUPERSEDED (2026-05-24) by**
+> `2026-05-24-tier3-signature-verification-deliberate-path.md`. The signing survey
+> found only **1/32** images signed (Home Assistant), and podman 5.8.2's `policy.json`
+> keyless `fulcio` block mandates `subjectEmail` — it **cannot express HA's workflow-URI
+> identity**, so pull-time enforceable coverage is **zero**. The approach below
+> (install cosign → write `policy.json` → enforce `sigstoreSigned` per publisher at
+> pull time) is therefore **not achievable** with the installed tooling and is replaced
+> by a **deliberate-path cosign gate** (verify at adopt time in `pin-container-image.sh`,
+> advisory in `check-image-updates.sh`), which is also better aligned with P1/P3. The
+> original outline text is retained below for the record. Tier 4 (next section) remains
+> outline-only.
+
 **Why:** Digest pinning (Tier 1) guarantees *integrity* ("same bytes") but not
 *authenticity* ("right publisher"). Tier 3 is the only verifiable defense against a
 tag/registry account being used to publish a malicious image — short of source
