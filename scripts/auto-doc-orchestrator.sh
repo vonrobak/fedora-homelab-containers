@@ -98,6 +98,12 @@ main() {
     fi
     log ""
 
+    # Phase 6: Egress Baseline Index (ADR-030 P7 Tier 4 egress observatory view)
+    if ! run_generator "${SCRIPT_DIR}/generate-egress-index.sh" "Egress Baseline Index"; then
+        ((failures++))
+    fi
+    log ""
+
     # Summary
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
@@ -118,6 +124,7 @@ main() {
         log "  - ${DOCS_DIR}/AUTO-DEPENDENCY-GRAPH.md"
         log "  - ${DOCS_DIR}/AUTO-DOCUMENTATION-INDEX.md"
         log "  - ${DOCS_DIR}/AUTO-IMAGE-PIN-INDEX.md"
+        log "  - ${DOCS_DIR}/AUTO-EGRESS-BASELINE-INDEX.md"
         log ""
         log "You can view these in GitHub - Mermaid diagrams will render automatically."
         return 0

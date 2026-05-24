@@ -1,0 +1,18 @@
+[Unit]
+# ADR-030 P7 (Tier 4) — egress observatory classifier (oneshot, timer-driven).
+# Classifies the accumulated egress union against the frozen-prefix allow-list and emits
+# the detection signal (metric + JSONL). OFF the boot-critical path.
+Description=ADR-030 Tier 4 egress observatory classifier
+Documentation=file:/home/patriark/containers/docs/97-plans/2026-05-24-tier4-egress-detection.md
+
+[Service]
+Type=oneshot
+# SHADOW during the baseline window (observe-only, builds destinations.tsv, no anomaly
+# metric/JSONL). TO ARM (after seeding egress-baseline.yaml): set EGRESS_MODE empty here
+# (or via `systemctl --user edit egress-detect.service`), `systemctl --user daemon-reload`,
+# and rename config/prometheus/alerts/egress-alerts.yml.disabled → .yml. (shadow-first.)
+Environment=EGRESS_MODE=--shadow
+ExecStart=%h/containers/scripts/detect-egress-anomaly.sh ${EGRESS_MODE}
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=5m

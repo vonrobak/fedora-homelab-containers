@@ -47,15 +47,24 @@ cosign() { podman run --rm --network=bridge "$COSIGN_IMAGE" "$@"; }
 write_metric() {  # $1=value (1 ok / 0 failed)
     $want_metric || return 0
     mkdir -p "$METRIC_DIR" || return 0
-    local tmp; tmp="$(mktemp)" || return 0
-    # drop this service's previous lines, preserve others (no stale series)
-    [ -f "$METRIC_FILE" ] && grep -v "service=\"$service\"" "$METRIC_FILE" > "$tmp" 2>/dev/null
+    # Temp MUST be in-dir: a /tmp temp moved here keeps user_tmp_t → node_exporter (SELinux)
+    # can't read it, silently killing the supply-chain alerts. In-dir inherits container_file_t.
+    local tmp; tmp="$(mktemp -p "$METRIC_DIR")" || return 0
+    # Preserve only OTHER services' DATA lines (not the HELP/TYPE comments — keeping those
+    # and re-appending headers each run produced a "second HELP line" parse error that
+    # node_exporter rejects). Emit the header block exactly ONCE, then all data lines.
+    local prior=""
+    [ -f "$METRIC_FILE" ] && prior="$(grep -E '^supply_chain_signature' "$METRIC_FILE" 2>/dev/null | grep -v "service=\"$service\"")"
     {
         echo "# HELP supply_chain_signature_verify ADR-030 P6 deliberate-path signature check (1=verified, 0=FAILED)."
         echo "# TYPE supply_chain_signature_verify gauge"
+        echo "# HELP supply_chain_signature_last_verify_timestamp Unix time of the last deliberate-path signature check."
+        echo "# TYPE supply_chain_signature_last_verify_timestamp gauge"
+        [ -n "$prior" ] && printf '%s\n' "$prior"
         echo "supply_chain_signature_verify{service=\"$service\",repo=\"$repo\"} $1"
         echo "supply_chain_signature_last_verify_timestamp{service=\"$service\"} $(date +%s)"
-    } >> "$tmp"
+    } > "$tmp"
+    chmod 0644 "$tmp" 2>/dev/null   # node_exporter runs as 'nobody' — needs other-read
     mv "$tmp" "$METRIC_FILE" 2>/dev/null || rm -f "$tmp"
 }
 

@@ -1,0 +1,48 @@
+# egress-baseline.yaml — ADR-030 P7 (Tier 4) frozen-prefix egress allow-list.
+#
+# WHAT: the set of PUBLIC network destinations each egress-tier (reverse_proxy)
+# service is expected to talk to. `scripts/detect-egress-anomaly.sh` classifies every
+# observed public destination against this file; anything outside it is an anomaly.
+#
+# WHY frozen prefixes (operator decision 2026-05-24): a raw socket connection carries
+# no domain/SNI, and CDN IPs rotate, so an IP-exact list false-positives constantly and
+# a domain list is not derivable from the wire. We therefore classify by CIDR/owner
+# prefixes captured at baseline time. This keeps the hot path a pure prefix-membership
+# test — NO DNS/ASN/whois call at runtime, no external account, no boot-path dependency
+# (fits the digital-sovereignty posture). Cost: re-baseline manually when a provider
+# adds ranges (a flagged anomaly is the prompt). Generated/refreshed by
+# `scripts/egress-baseline.sh` from the observed `data/egress/destinations.tsv`; this
+# file is then HUMAN-REVIEWED (the deliberate checkpoint, ADR-030 P1) before arming.
+#
+# Classification for a (service, ip): EXPECTED if ip ∈ any CIDR in
+#   (infrastructure ∪ services[service]); otherwise UNEXPECTED → metric + JSONL + alert.
+
+# --- Peer-swarm services -----------------------------------------------------------
+# Services whose egress is an unbounded peer swarm (P2P): per-destination allow-listing
+# is meaningless (hundreds of random IPs/ports worldwide). The detector tracks only the
+# CONNECTION COUNT for these (a volume anomaly signal), never individual peers.
+peer_swarm_services:
+  - qbittorrent      # BitTorrent: ~130 concurrent peers on random IPs/ports (baseline 2026-05-24)
+
+# --- Shared infrastructure (applies to ALL classify-mode services) -----------------
+# Destinations any service may legitimately reach. Filled from the baseline survey.
+# Each entry: { owner: <label>, cidrs: [ ... ], note: <why> }.
+infrastructure: []
+  # - owner: Cloudflare
+  #   cidrs: [104.16.0.0/13, 172.64.0.0/13]
+  #   note: ACME DNS-01 (Let's Encrypt via Cloudflare API), *.patriark.org
+  # - owner: Fedora / distro mirrors
+  #   cidrs: []
+  #   note: package/CDN mirrors (if a service self-updates)
+
+# --- Per-service allow-list (in addition to infrastructure) ------------------------
+# Keyed by service (quadlet basename). Same entry shape as infrastructure.
+services: {}
+  # home-assistant:
+  #   - owner: Amazon AWS (eu-central-1)
+  #     cidrs: [18.184.0.0/15]
+  #     note: HA cloud / MQTT (observed 18.184.210.208:8883)
+  # proton-bridge:
+  #   - owner: Proton AG
+  #     cidrs: [185.70.40.0/22]
+  #     note: SMTP/IMAP bridge to Proton (observed 185.70.42.41:443)

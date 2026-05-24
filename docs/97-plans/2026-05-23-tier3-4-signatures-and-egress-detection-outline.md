@@ -62,6 +62,17 @@ legitimate image blocked.
 
 ## Tier 4 — Egress Detection (P7) *(containment / detection axis)*
 
+> **⚠️ SUPERSEDED (2026-05-24) by** `2026-05-24-tier4-egress-detection.md` (implemented).
+> The premise survey killed this section's DNS-logging options: **aardvark-dns 1.17.1
+> cannot log queries**, **Pi-hole is on a separate host** (all container DNS NAT'd to .70 →
+> attribution lost + host-browser noise), and **rootless pasta** denies host-level flow
+> attribution / `nsenter -n`. The implemented design instead reads each container's socket
+> table **host-side** via `/proc/<pid>/net/{tcp,tcp6}` (attributable, scratch-safe,
+> DNS-method-agnostic), with a two-tier collector/classifier and a **frozen-prefix**
+> allow-list, shipped **shadow-first**. Per-container egress allow-listing (prevention) was
+> rejected (rootless+pasta has no clean per-container egress firewall). qBittorrent's peer
+> swarm is tracked count-only. Original outline text retained below for the record.
+
 **Why:** The irreducible residual. A **validly-signed but malicious** image from a
 legitimately-compromised maintainer defeats both pinning (Tier 1) and signatures
 (Tier 3). The only remaining controls are containment (already strong) and
