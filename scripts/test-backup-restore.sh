@@ -13,7 +13,16 @@ SCRIPT_NAME="$(basename "$0")"
 
 # Test configuration
 SAMPLE_SIZE=50                    # Number of random files to test per subvolume
-RESTORE_TEST_DIR="/tmp/restore-tests"
+# Scratch MUST live on a real disk, never the /tmp tmpfs (RAM-backed, 16 GB, per-user
+# usrquota). subvol6-tmp is the pool's designated scratch subvolume (~2.9 TB free).
+# Ref: docs/99-reports/2026-05-24-incident-restore-test-tmpfs-exhaustion.md
+RESTORE_TEST_DIR="/mnt/btrfs-pool/subvol6-tmp/restore-tests"
+# Size-aware sampling: a multi-GB media file adds no restore assurance over a small one
+# (identical cp+cmp on the same BTRFS read path) but can exhaust scratch. Skip files
+# above the per-file cap and stop a subvolume once cumulative copied bytes hit the total.
+MAX_FILE_BYTES=$((256 * 1024 * 1024))         # skip individual files larger than 256 MiB
+MAX_TOTAL_BYTES=$((2 * 1024 * 1024 * 1024))   # stop a subvolume after ~2 GiB copied
+MIN_FREE_BYTES=$((MAX_TOTAL_BYTES + 1024 * 1024 * 1024))  # preflight: required free at target
 TEST_LOG_DIR="$HOME/containers/data/backup-logs"
 METRICS_DIR="$HOME/containers/data/backup-metrics"
 METRICS_FILE="$METRICS_DIR/restore-test-metrics.prom"
@@ -146,10 +155,9 @@ get_latest_snapshot() {
         fi
     fi
 
-    # Store source for reporting
-    TEST_SNAPSHOT_SOURCE[$subvol]=$source
-
-    echo "$found_snapshot"
+    # Return BOTH source and path via stdout (this function runs in a command-
+    # substitution subshell, so array writes here would be lost in the parent — D5 fix).
+    printf '%s\t%s\n' "$source" "$found_snapshot"
 }
 
 ################################################################################
@@ -163,17 +171,21 @@ select_random_files() {
 
     log DEBUG "Selecting random files from: $snapshot_path"
 
-    # Find regular files, excluding special paths and hidden files
-    # Use shuf to randomize, limit to sample size
+    # Find regular files under the per-file cap, excluding special paths and hidden files.
+    # `|| true`: shuf/pipefail can return non-zero (and an ENOSPC write to the old tmpfs
+    # scratch silently did, producing a false "0 files" SKIP) — never let that abort under
+    # `set -e`; the count check below is the real guard (D2/D4 fix).
     find "$snapshot_path" -type f \
         ! -path "*/proc/*" \
         ! -path "*/sys/*" \
         ! -path "*/dev/*" \
         ! -name ".*" \
+        -size -"${MAX_FILE_BYTES}c" \
         -print0 2>/dev/null | \
-        shuf -z -n "$sample_size" > "$output_file"
+        shuf -z -n "$sample_size" > "$output_file" || true
 
-    local count=$(tr -cd '\0' < "$output_file" | wc -c)
+    local count
+    count=$(tr -cd '\0' < "$output_file" | wc -c)
     log DEBUG "Selected $count files for testing"
 
     echo "$count"  # Output count to stdout
@@ -191,7 +203,7 @@ validate_file() {
     # Checksum validation (byte-for-byte comparison)
     if ! cmp -s "$original" "$restored" 2>/dev/null; then
         log ERROR "Checksum mismatch: $(basename "$original")"
-        ((errors++))
+        errors=$((errors + 1))
         return $errors
     fi
 
@@ -236,15 +248,19 @@ test_subvolume_restore() {
     log INFO "Testing restore for: $subvol"
     log INFO "========================================="
 
-    # Get latest snapshot
-    local snapshot=$(get_latest_snapshot "$subvol")
+    # Get latest snapshot (source + path returned tab-separated; D5 fix)
+    local _snap_line source snapshot
+    _snap_line=$(get_latest_snapshot "$subvol")
+    source="${_snap_line%%$'\t'*}"
+    snapshot="${_snap_line#*$'\t'}"
+    TEST_SNAPSHOT_SOURCE[$subvol]="$source"
     if [[ -z "$snapshot" ]]; then
         log ERROR "No snapshot found for $subvol"
         TEST_RESULTS[$subvol]="FAIL"
         TEST_ERRORS[$subvol]=999
         TEST_FILES_VALIDATED[$subvol]=0
         TEST_DURATIONS[$subvol]=0
-        return 1
+        return 0  # record FAIL, do not abort the whole run under set -e
     fi
 
     log INFO "Using snapshot: $(basename "$snapshot")"
@@ -261,7 +277,22 @@ test_subvolume_restore() {
         fi
     fi
 
-    # Create restore directory
+    # Preflight: require real headroom at the scratch target (D6 fix). A genuine
+    # "could not test" is reported as FAIL, never as a benign SKIP.
+    local free_bytes
+    free_bytes=$(df -PB1 "$RESTORE_TEST_DIR" 2>/dev/null | awk 'NR==2{print $4}')
+    free_bytes=${free_bytes:-0}
+    if (( free_bytes < MIN_FREE_BYTES )); then
+        log ERROR "Insufficient scratch space at $RESTORE_TEST_DIR for $subvol (free=${free_bytes} B, need >=${MIN_FREE_BYTES} B) — cannot test"
+        TEST_RESULTS[$subvol]="FAIL"
+        TEST_ERRORS[$subvol]=998
+        TEST_FILES_VALIDATED[$subvol]=0
+        TEST_DURATIONS[$subvol]=0
+        return 0
+    fi
+
+    # Create restore directory (removed unconditionally by the EXIT trap in main — never
+    # preserve restore bytes on failure; the log + metrics are the durable record. D3 fix)
     local restore_dir="$RESTORE_TEST_DIR/$subvol-$(date +%Y%m%d%H%M%S)"
     if $DRY_RUN; then
         log INFO "[DRY-RUN] Would create restore directory: $restore_dir"
@@ -270,18 +301,31 @@ test_subvolume_restore() {
         log DEBUG "Created restore directory: $restore_dir"
     fi
 
+    # Does the snapshot contain ANY regular file at all? Distinguishes a genuinely empty
+    # snapshot (benign SKIP) from "has files but none testable / selection failed" (FAIL).
+    local has_any_file
+    has_any_file=$(find "$snapshot" -type f ! -name ".*" -print -quit 2>/dev/null || true)
+
     # Select random files
     log INFO "Selecting $SAMPLE_SIZE random files for testing..."
-    local file_list=$(mktemp)
-    local file_count=$(select_random_files "$snapshot" "$SAMPLE_SIZE" "$file_list")
+    local file_list
+    file_list=$(mktemp)
+    local file_count
+    file_count=$(select_random_files "$snapshot" "$SAMPLE_SIZE" "$file_list")
 
     if [[ $file_count -eq 0 ]]; then
-        log WARNING "No files found in snapshot for $subvol"
-        TEST_RESULTS[$subvol]="SKIP"
-        TEST_ERRORS[$subvol]=0
+        rm -f "$file_list"
+        if [[ -n "$has_any_file" ]]; then
+            log ERROR "Snapshot for $subvol has files but none were selectable (all over ${MAX_FILE_BYTES} B, or selection failed) — could not test"
+            TEST_RESULTS[$subvol]="FAIL"
+            TEST_ERRORS[$subvol]=997
+        else
+            log WARNING "Snapshot genuinely empty for $subvol — nothing to test"
+            TEST_RESULTS[$subvol]="SKIP"
+            TEST_ERRORS[$subvol]=0
+        fi
         TEST_FILES_VALIDATED[$subvol]=0
         TEST_DURATIONS[$subvol]=0
-        rm -f "$file_list"
         return 0
     fi
 
@@ -301,6 +345,7 @@ test_subvolume_restore() {
     local failed=0
     local validated=0
     local processed=0
+    local copied_bytes=0
 
     # Read files into array using mapfile
     local files_array=()
@@ -326,6 +371,16 @@ test_subvolume_restore() {
     log DEBUG "Array contents: ${files_array[*]}"
     for file in "${files_array[@]}"; do
         log DEBUG "Loop iteration started"
+
+        # Total-bytes cap: stop sampling once we've copied enough to prove restorability
+        # without burdening the scratch target (D2 fix). Safe under set -e (if-condition).
+        local fsize
+        fsize=$(stat -c '%s' "$file" 2>/dev/null || echo 0)
+        if (( copied_bytes + fsize > MAX_TOTAL_BYTES )); then
+            log INFO "Reached total-bytes cap (${MAX_TOTAL_BYTES} B) after $processed files; stopping sampling for $subvol"
+            break
+        fi
+
         processed=$((processed + 1))
         log DEBUG "Processing file $processed"
 
@@ -347,6 +402,7 @@ test_subvolume_restore() {
         # Restore file (preserve all attributes)
         log DEBUG "Copying file..."
         if cp -a "$file" "$restore_path" 2>/dev/null; then
+            copied_bytes=$((copied_bytes + fsize))
             log DEBUG "File copied, validating..."
             # Validate
             if validate_file "$file" "$restore_path"; then
@@ -357,7 +413,7 @@ test_subvolume_restore() {
                 log DEBUG "Validation failed"
             fi
         else
-            log ERROR "Failed to copy file"
+            log ERROR "Failed to copy file: $file"
             failed=$((failed + 1))
         fi
     done
@@ -379,14 +435,8 @@ test_subvolume_restore() {
         log ERROR "✗ $subvol: $validated validated, $failed FAILED (${duration}s)"
     fi
 
-    # Cleanup restore directory (keep for debugging if failures)
-    if [[ $failed -eq 0 ]]; then
-        rm -rf "$restore_dir"
-        log DEBUG "Cleaned up restore directory"
-    else
-        log INFO "Restore directory preserved for debugging: $restore_dir"
-    fi
-
+    # Restore directory is removed unconditionally by the EXIT trap in main (D3 fix) — the
+    # log and Prometheus metrics are the durable record of a failure, never the bytes.
     return 0
 }
 
@@ -435,11 +485,11 @@ generate_test_report() {
         local skipped=0
 
         for result in "${TEST_RESULTS[@]}"; do
-            ((total++))
+            total=$((total + 1))
             case $result in
-                PASS) ((passed++)) ;;
-                FAIL) ((failed++)) ;;
-                SKIP|DRY-RUN) ((skipped++)) ;;
+                PASS) passed=$((passed + 1)) ;;
+                FAIL) failed=$((failed + 1)) ;;
+                SKIP|DRY-RUN) skipped=$((skipped + 1)) ;;
             esac
         done
 
@@ -638,6 +688,12 @@ main() {
     # Ensure directories exist
     mkdir -p "$RESTORE_TEST_DIR" "$TEST_LOG_DIR" "$METRICS_DIR"
 
+    # Keep ALL scratch (mktemp file-lists, shuf/sort temp files) on the disk-backed target,
+    # never the /tmp tmpfs. The EXIT trap removes the scratch root on every exit path —
+    # success OR failure — so restore bytes never leak (D1/D3 fix).
+    export TMPDIR="$RESTORE_TEST_DIR"
+    trap 'rm -rf "${RESTORE_TEST_DIR:?}" 2>/dev/null || true' EXIT
+
     # Test subvolumes
     if [[ -n "$SPECIFIC_SUBVOL" ]]; then
         log INFO "Testing specific subvolume: $SPECIFIC_SUBVOL"
@@ -673,8 +729,8 @@ main() {
 
     for result in "${TEST_RESULTS[@]}"; do
         case $result in
-            PASS) ((passed++)) ;;
-            FAIL) ((failed++)) ;;
+            PASS) passed=$((passed + 1)) ;;
+            FAIL) failed=$((failed + 1)) ;;
         esac
     done
 
