@@ -8,7 +8,9 @@ look into it. An incident report written from the *urd* repo
 diagnosed the tmpfs side and listed open items. This journal is the homelab-side resolution
 — and the story of how the reported symptom turned out to be the smaller half of the bug.
 
-Merged as PR #225 (`0fc0f5c`). Self-contained; read it cold.
+Landed across PR #225 (`0fc0f5c`, the fix), this journal (#226), and a follow-up — PR #227
+(`3989dff`) — that resolved a snapshot-*selection* bug surfaced by this journal's own Next
+Steps (see "Follow-up" below). Self-contained; read it cold.
 
 ---
 
@@ -94,6 +96,31 @@ scheduled:
 
 ---
 
+## Follow-up: a manual "fix" that only moved the target (PR #227)
+
+This journal's Next Steps flagged that `subvol3-opptak`'s latest *local* snapshot looked 63
+days old (2026-03-22) — a possible backup gap. It wasn't: the record was healthy, and
+`20260322-opptak` was just a redundant old snapshot, which was deleted. But deleting it didn't
+resolve the symptom — it *shifted* it: the next run then validated `20260329`, the new oldest.
+
+The real cause was in `get_latest_snapshot()`: it chose the snapshot to test with
+`ls -1td | head -1` — sorted by **mtime**. BTRFS read-only snapshots inherit the source
+subvolume's root-dir mtime, so for any subvol whose root dir isn't touched between snapshots,
+**every snapshot shares one identical mtime**; `ls -t`'s tie-break then deterministically
+returns the alphabetically-first name = the **oldest** snapshot. A fleet-wide check found
+**7 of 9 subvolumes were silently validating a stale snapshot** (opptak tested `20260329`
+while `20260524` existed; htpc-home/-root tested `20260514`).
+
+So the restore-test had been proving an *old* backup restorable, not the current one — and the
+">30 days old" staleness warning was watching the wrong snapshot, so it couldn't flag a real
+freshness gap either. Fix (PR #227): select by the date in the snapshot **name**
+(`YYYYMMDD[-HHMM]` sorts lexically == chronologically) via `ls -1d | sort -r | head -1`, at all
+three selection sites. Verified: a full run now selects each subvolume's latest snapshot
+(`Using snapshot:` cross-checked against latest-by-name — all six ✓). The backups themselves
+were healthy throughout; only the *selection* was wrong.
+
+---
+
 ## Lessons learned
 
 1. **The reported symptom was the surface, not the cause.** "Restore-test fills /tmp" was
@@ -139,11 +166,20 @@ scheduled:
    fix made the distinction loud. Any check that can be *prevented* from running must say so
    differently from a check that ran and found nothing.
 
+8. **Deleting the symptom can just move the target — chase the mechanism.** The 63-day-old
+   snapshot wasn't a backup gap; removing it didn't fix anything, it shifted the test onto the
+   next-oldest snapshot. The bug was the *selection rule* (mtime sort on snapshots that all
+   share an mtime), not any single snapshot. When a manual cleanup appears to "resolve" an
+   anomaly, confirm *why* — a deterministic wrong-selection will silently re-acquire a new
+   wrong target. (Also: on BTRFS, "latest snapshot" means latest by the date in the name, never
+   by mtime — see lesson 6's cousin.)
+
 ## Next steps
 
-- **Adjacent finding to chase:** `subvol3-opptak`'s latest *local* snapshot is dated
-  2026-03-22 — 63 days old. Its snapshots may not be running, which would be a genuine DR gap
-  for that subvolume (unrelated to this fix; the test reads whatever local snapshot exists).
+- ~~**Adjacent finding to chase:** `subvol3-opptak`'s latest local snapshot looked 63 days
+  old.~~ **RESOLVED** — false alarm (healthy record; one redundant old snapshot, since
+  deleted), but chasing it uncovered the mtime-selection bug fixed in **PR #227** (see
+  Follow-up). Backups are healthy.
 - The first real green monthly run is **2026-06-28** — confirm it PASSes and that the
   `backup_restore_test_success` series now appears in Prometheus and the alerts evaluate.
 - Optional consistency: point `db-restore-test.sh`'s sqlite scratch (`mktemp`) at the same
