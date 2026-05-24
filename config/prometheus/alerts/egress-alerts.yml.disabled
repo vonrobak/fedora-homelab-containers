@@ -1,0 +1,78 @@
+# ADR-030 P7 (Tier 4) — Egress Observatory alerts.
+#
+# SHIPPED DISABLED (shadow-first). Prometheus loads `alerts/*.yml`, so this `.disabled`
+# file is inert. ARM it AFTER the baseline window has seeded egress-baseline.yaml and the
+# detector is switched to live mode: rename to `egress-alerts.yml`, validate
+# (`podman exec prometheus promtool check rules /etc/prometheus/alerts/egress-alerts.yml`),
+# and Prometheus auto-reloads. Arming before the allow-list is seeded would flood Discord
+# with false positives (every destination is "unexpected" pre-baseline) — see the repo's
+# "don't wire an alert until you've seen it fire on real data" lesson (PR #225/#226).
+groups:
+  - name: egress_alerts
+    interval: 60s
+    rules:
+      # Warning: an egress-tier service connected to a PUBLIC destination not in its
+      # frozen-prefix allow-list (ADR-030 P7). Either a legitimate new destination (a
+      # provider added ranges → re-baseline) or the residual threat this tier exists for:
+      # a compromised image beaconing/exfiltrating. Investigate the JSONL trail.
+      - alert: EgressUnexpectedDestination
+        expr: egress_unexpected_destination_count > 0
+        for: 10m
+        labels:
+          severity: warning
+          category: security
+          component: egress
+        annotations:
+          summary: "Unexpected egress destination from {{ $labels.service }}"
+          description: "{{ $labels.service }} connected to {{ $value }} public destination(s) outside its allow-list (ADR-030 P7). Inspect `data/egress/anomalies.jsonl` (service={{ $labels.service }}). If legitimate, re-baseline: `scripts/egress-baseline.sh` then merge into `config/supply-chain/egress-baseline.yaml`. If not, treat as possible exfiltration from a compromised image."
+
+      # Critical: the unexpected destination has persisted for an hour — far past a
+      # transient/legitimate one-off; escalate.
+      - alert: EgressUnexpectedDestinationPersistent
+        expr: egress_unexpected_destination_count > 0
+        for: 1h
+        labels:
+          severity: critical
+          category: security
+          component: egress
+        annotations:
+          summary: "PERSISTENT unexpected egress from {{ $labels.service }}"
+          description: "{{ $labels.service }} has held egress to {{ $value }} non-allow-listed public destination(s) for 1h+. Beyond a transient legitimate change — investigate `data/egress/anomalies.jsonl` for possible exfiltration before re-baselining."
+
+      # Warning: the collector daemon has stopped sampling (~30s cadence; 5m = ~10 misses).
+      # A dead collector means egress is unobserved — the dead-metric lesson (PR #225).
+      - alert: EgressCollectorStale
+        expr: (time() - egress_collector_last_run_timestamp) > 300
+        for: 10m
+        labels:
+          severity: warning
+          category: security
+          component: egress
+        annotations:
+          summary: "Egress collector not sampling"
+          description: "egress-collector.service last sampled {{ $value | humanizeDuration }} ago (expected ~30s). Egress is unobserved. Check: `systemctl --user status egress-collector.service`."
+
+      # Warning: the classifier timer has not run (~10m cadence; 1h = ~6 misses).
+      - alert: EgressDetectorStale
+        expr: (time() - egress_detector_last_run_timestamp) > 3600
+        for: 30m
+        labels:
+          severity: warning
+          category: security
+          component: egress
+        annotations:
+          summary: "Egress classifier not running"
+          description: "detect-egress-anomaly last ran {{ $value | humanizeDuration }} ago (expected ~10m). Check: `systemctl --user status egress-detect.timer`."
+
+      # Warning: the egress metrics never appeared at all (producer never started /
+      # textfile mount broken). Distinct from "went stale" — catches a never-wired pipe.
+      - alert: EgressObservatoryAbsent
+        expr: absent(egress_collector_last_run_timestamp)
+        for: 30m
+        labels:
+          severity: warning
+          category: security
+          component: egress
+        annotations:
+          summary: "Egress observatory metrics absent"
+          description: "No egress_collector_last_run_timestamp series exists. The collector never wrote a metric or the node_exporter textfile mount is broken (ADR-030 P7). Verify `data/backup-metrics/egress-collector.prom` and the node_exporter textfile collector."

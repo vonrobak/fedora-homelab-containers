@@ -1,0 +1,15 @@
+[Unit]
+# ADR-030 P7 (Tier 4) — runs the egress classifier every ~10 min over the accumulated
+# union. Frequent collection + less-frequent classification (the two-tier design that
+# avoids point-in-time blindness while keeping PTR/classify work bounded).
+Description=ADR-030 Tier 4 egress observatory classifier timer
+Documentation=file:/home/patriark/containers/docs/97-plans/2026-05-24-tier4-egress-detection.md
+Requires=egress-detect.service
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=10min
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

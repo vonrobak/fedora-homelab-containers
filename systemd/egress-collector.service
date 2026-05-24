@@ -1,0 +1,23 @@
+[Unit]
+# ADR-030 P7 (Tier 4) — egress observatory collector (daemon).
+# Samples each reverse_proxy-tier container's /proc/<pid>/net/{tcp,tcp6} ~every 30s and
+# accumulates public destinations for detect-egress-anomaly.sh. OFF the boot-critical
+# path: if it stops, egress still flows; only detection pauses (EgressCollectorStale fires).
+Description=ADR-030 Tier 4 egress observatory collector
+Documentation=file:/home/patriark/containers/docs/97-plans/2026-05-24-tier4-egress-detection.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Daemon: internal ~30s loop keeps the PID→container cache warm (avoids per-cycle inspect).
+ExecStart=%h/containers/scripts/egress-collector.sh
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+# Cheap /proc reads only; cap memory defensively.
+MemoryMax=64M
+
+[Install]
+WantedBy=default.target
