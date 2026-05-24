@@ -45,6 +45,14 @@ scrape_configs:
         labels:
           instance: 'fedora-htpc'
           service: 'grafana'
+    # Metric diet — drop grafana_feature_toggles_info (346 unused series, one per
+    # feature flag). No dashboard/rule consumes any grafana_* metric; operational
+    # series (grafana_http_request_*, grafana_build_info, datasource health) are kept
+    # for ad-hoc debugging. Audited 2026-05-25; see plan / deep-dive report §3.
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'grafana_feature_toggles_info'
+        action: drop
 
   # Traefik monitoring (metrics enabled 2025-11-06)
   - job_name: 'traefik'
@@ -93,6 +101,17 @@ scrape_configs:
         labels:
           instance: 'fedora-htpc'
           service: 'cadvisor'
+    # Metric diet (allowlist) — keep ONLY the container_/machine_ series consumed by a
+    # dashboard or rule. cAdvisor emits ~16.5k series; this retains ~3k and drops ~13.6k
+    # unreferenced series (container_tasks_state, *_memory_failures_total,
+    # *_blkio_device_usage_total, per-device *_fs_reads/writes_total, *_pressure_io_*, …).
+    # Allowlist (not denylist) so future cAdvisor metric additions stay dropped by default.
+    # Keep-list audited 2026-05-25 against all dashboards + alert/recording rules.
+    # See docs/97-plans/2026-05-25-monitoring-metric-diet.md + deep-dive report §3.
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'container_(cpu_usage_seconds_total|memory_usage_bytes|memory_working_set_bytes|spec_memory_limit_bytes|network_receive_bytes_total|network_transmit_bytes_total|fs_reads_bytes_total|fs_writes_bytes_total|last_seen|start_time_seconds)|machine_(memory_bytes|cpu_cores)|cadvisor_version_info|container_scrape_error'
+        action: keep
 
   # Unpoller - UniFi Network metrics exporter
   - job_name: 'unpoller'
@@ -134,6 +153,13 @@ scrape_configs:
         labels:
           instance: 'fedora-htpc'
           service: 'redis-authelia'
+    # Metric diet — drop the unused per-command latency histogram (~632 series:
+    # _bucket/_sum/_count). Dashboards use redis_commands_duration_seconds_total /
+    # redis_command_calls_total, which are kept. Audited 2026-05-25 (plan / report §3).
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'redis_commands_latencies_usec_(bucket|sum|count)'
+        action: drop
 
   # Redis exporter — redis-immich (Valkey, Redis-protocol-compatible)
   - job_name: 'redis-immich'
@@ -142,6 +168,11 @@ scrape_configs:
         labels:
           instance: 'fedora-htpc'
           service: 'redis-immich'
+    # Metric diet — drop the unused per-command latency histogram (see redis-authelia).
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'redis_commands_latencies_usec_(bucket|sum|count)'
+        action: drop
 
   # PostgreSQL exporter — postgresql-immich
   - job_name: 'postgres-immich'

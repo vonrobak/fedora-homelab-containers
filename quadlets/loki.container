@@ -21,8 +21,12 @@ Exec=-config.file=/etc/loki/local-config.yaml
 
 DNS=192.168.1.69
 
-# No container healthcheck possible - Loki uses a scratch/distroless image with no shell or tools
-# External monitoring via Prometheus up{job="loki"} and homelab-intel.sh (verifies via Promtail logs)
+# No in-container healthcheck possible — the grafana/loki image is distroless: no shell,
+# no busybox, no wget/curl, nothing but the loki binary (verified 2026-05-25). Podman
+# HealthCmd runs INSIDE the container, so even promtail's /dev/tcp probe is out — that one
+# only works because promtail is Debian-based and has `bash`. Loki readiness is covered
+# externally instead: the `up{job="loki"} == 0` critical alert (infrastructure-critical.yml)
+# and homelab-intel.sh (verifies via Promtail logs). See metric-diet plan, 2026-05-25.
 
 [Service]
 Slice=container.slice

@@ -4,7 +4,11 @@ After=network-online.target reverse_proxy-network.service monitoring-network.ser
 Wants=monitoring-network.service network-online.target reverse_proxy-network.service
 
 [Container]
-Image=localhost/alert-discord-relay:latest
+# Local build, immutable tag (proton-bridge convention; ADR-030 P5 Tier-2). Tag = build date.
+# Build inputs are pinned in config/alert-discord-relay/Dockerfile (FROM @sha256 + hash-locked
+# requirements.lock). Recorded build digest: sha256:4df80f75b8100aca7eb699533ac72316759f22848a1b623129e9ed3c0f557e31
+# Bump = rebuild, retag with new date, update this line + digest, daemon-reload + restart.
+Image=localhost/alert-discord-relay:2026-05-23
 ContainerName=alert-discord-relay
 HostName=alert-discord-relay
 # reverse_proxy first for default route (Discord API access)

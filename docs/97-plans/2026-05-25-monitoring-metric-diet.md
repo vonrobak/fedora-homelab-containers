@@ -1,7 +1,7 @@
 # Plan A: Monitoring Metric Diet & Stack Hygiene
 
 **Date Created:** 2026-05-25
-**Status:** Proposed
+**Status:** Implemented (2026-05-25) — core metric diet live; postgres trim deferred (see log)
 **Last Updated:** 2026-05-25
 **Implements:** Report [2026-05-25 Monitoring Stack Deep-Dive](../99-reports/2026-05-25-monitoring-stack-deep-dive.md) §3, §7
 **Reconciles with:** ADR-003 (Monitoring Stack), ADR-030 (Supply-Chain Trust Model — `:latest` pin)
@@ -129,3 +129,43 @@ reverts to `:latest` if a bad digest is chosen.
 ## Progress Log
 
 - 2026-05-25 — Plan drafted from deep-dive report. Status: Proposed.
+- 2026-05-25 — **Implemented on branch `chore/monitoring-metric-diet`.** Pre-flight grep re-verified
+  the keep-list (14 cAdvisor names kept / 102 dropped) and zero-consumer drop candidates.
+  - **cAdvisor allowlist** added to `config/prometheus/prometheus.yml`. Per-scrape proof:
+    `scrape_samples_post_metric_relabeling{job="cadvisor"}` **16,130 → 2,879** (−13,251).
+  - **Grafana** drop `grafana_feature_toggles_info`: 2,626 → 2,280 (−346).
+  - **Redis** drop `redis_commands_latencies_usec_*`: redis-immich 1,096 → 612 (−484);
+    redis-authelia emits none of that family (−0, rule harmless).
+  - **Loki** `retention_delete_worker_count` 150 → 20; quadlet healthcheck comment rewritten —
+    see below.
+  - **alert-discord-relay** moved off mutable `:latest` to immutable `:2026-05-23` (build date),
+    matching the proton-bridge local-build convention; build digest recorded in the quadlet.
+    Supply-chain gate stays green. (NB: `audit-egress-updates.sh` *exempts* `localhost/*` from
+    digest-pinning — the relay's integrity is already covered by the Tier-2 base-pin +
+    hash-locked `requirements.lock`, so a version tag, not a `@sha256`, is the correct fix.)
+  - **Dashboards verified:** every metric referenced by container-metrics / service-health /
+    homelab-overview returns data (CPU, memory, `fs_*_bytes_total`=603, last_seen, network,
+    start_time, node_*). No empty panels.
+  - **Plan deviations (verified before acting):**
+    1. **Loki healthcheck NOT added.** Plan said "mirror promtail's `/dev/tcp` probe
+       (distroless-safe, no shell needed)" — but Podman `HealthCmd` runs *inside* the container
+       and the grafana/loki image is genuinely distroless (no `sh`/`ls`/`wget`, only the loki
+       binary). promtail's probe works *only* because promtail is Debian-based and ships `bash`.
+       An in-container probe is therefore impossible. Documented why in `quadlets/loki.container`;
+       readiness stays covered by the existing `up{job="loki"} == 0` critical alert
+       (infrastructure-critical.yml) + homelab-intel.sh. (Owner-confirmed: skip.)
+    2. **Relay pinned by version tag, not `@sha256` digest** (plan's literal wording). A local
+       digest is fragile (breaks systemd start on prune/rebuild, not registry-verifiable) and the
+       repo's own tooling exempts `localhost/*` from digest-pinning. (Owner-confirmed: version tag.)
+    3. **postgres-immich trim DEFERRED.** The cAdvisor cut alone reaches the ~19–20k target; the
+       postgres dashboard consumes only cluster/`pg_stat_database_*`/`pg_settings_*` aggregates
+       (no per-table stats), so a trim is low-yield-for-risk here. Left for a follow-up if needed.
+  - **Operational note (cost me a cycle, worth recording):** `prometheus.yml` and `loki-config.yml`
+    are *single-file* bind mounts. Editing them with an atomic-write tool swaps the file inode,
+    but the bind mount stays pinned to the old inode — so `POST /-/reload` (HTTP 200, success=1)
+    read **stale** config and dropped nothing. Fix is a container **restart** (re-binds the mount
+    to the new inode), which the plan listed as the alternative; here it is *required*, not optional.
+  - **head_series** was still ~34k immediately after (stale series linger in the head until ~5 min
+    staleness + head truncation ~2h); the authoritative immediate signal is the per-scrape
+    `post_metric_relabeling` drop above. TSDB on disk shrinks over the 15-day retention cycle.
+  - **Not yet committed** — changes staged on the branch pending owner review.
