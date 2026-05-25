@@ -66,13 +66,17 @@ Key metrics consumed by homelab alerts (`config/prometheus/alerts/backup-alerts.
 | `backup_success` | gauge | `subvolume` | `BackupFailed` alert (== 0) |
 | `backup_last_success_timestamp` | gauge | `subvolume` | `BackupStale` alert (age > 2d) |
 | `backup_script_last_run_timestamp` | gauge | — | `BackupScriptNotRunning` alert (age > 2d) |
-| `backup_snapshot_count` | gauge | `subvolume`, `location` | `ExternalBackupMissing` alert (external == 0) |
+| `backup_snapshot_count` | gauge | `subvolume`, `location` | `ExternalBackupMissing` alert (external == 0, gated by `backup_external_expected`) |
 | `backup_duration_seconds` | gauge | `subvolume` | `BackupSlowDuration` alert (> 1h) |
 | `backup_send_type` | gauge | `subvolume` | Grafana dashboard |
 | `backup_external_drive_mounted` | gauge | — | Grafana dashboard |
 | `backup_external_free_bytes` | gauge | — | Grafana dashboard |
 | `backup_subvolume_churn_bytes_per_second` | gauge | `subvolume` | `backup-health` Grafana dashboard (added Urd v0.16, [UPI 030](https://github.com/vonrobak/urd/pull/108)) |
 | `backup_subvolume_last_full_send_bytes` | gauge | `subvolume` | `backup-health` Grafana dashboard (added Urd v0.16, [UPI 030](https://github.com/vonrobak/urd/pull/108)) |
+| `backup_external_expected` | gauge | `subvolume` | `ExternalBackupMissing` gate (== 1; line absent = local-only by design). Urd [PR #145](https://github.com/vonrobak/urd/pull/145) |
+| `backup_pool_free_bytes` | gauge | `uuid`, `role`, `label` | `BackupDestinationPoolSpace{Warning,Critical}` numerator (role=destination); pool gauges (UPI 043) |
+| `backup_pool_total_bytes` | gauge | `uuid`, `role`, `label` | `BackupDestinationPoolSpace{Warning,Critical}` denominator (role=destination). Urd [PR #145](https://github.com/vonrobak/urd/pull/145) |
+| `backup_pool_metadata_utilization_ratio` | gauge | `uuid`, `role`, `label` | `BackupPoolMetadataExhaustion` alert (> 0.95) (UPI 043) |
 
 **Drift telemetry (Urd v0.16+).** Urd computes a rolling time-windowed churn rate per
 subvolume from `wire_bytes` of recent successful sends, and emits two gauges:
@@ -174,8 +178,8 @@ unaffected — no alert or dashboard widget currently references these names.
 
 | Metric | Labels | Cadence / shape | Homelab use |
 |--------|--------|-----------------|-------------|
-| `backup_pool_free_bytes` | `uuid`, `role`, `label` | Snapshot per backup run. `role ∈ {source, destination}`. Identity is `uuid`; `label` is informational (drive label for destinations, canonical mountpoint for sources). | Available for a future "BTRFS pool health" Grafana panel. **Not yet consumed.** |
-| `backup_pool_metadata_utilization_ratio` | `uuid`, `role`, `label` | 0.0–1.0 from `/sys/fs/btrfs/<uuid>/allocation/metadata/`. Covers source and destination pools. | Available for the same panel. **Not yet consumed.** |
+| `backup_pool_free_bytes` | `uuid`, `role`, `label` | Snapshot per backup run. `role ∈ {source, destination}`. Identity is `uuid`; `label` is informational (drive label for destinations, canonical mountpoint for sources). | **Consumed since 2026-05-25 (PR #145 amendment, below):** numerator of `BackupDestinationPoolSpace*` (role=destination); also a `backup-health` pool gauge. |
+| `backup_pool_metadata_utilization_ratio` | `uuid`, `role`, `label` | 0.0–1.0 from `/sys/fs/btrfs/<uuid>/allocation/metadata/`. Covers source and destination pools. | **Consumed since 2026-05-25 (PR #145 amendment, below):** `BackupPoolMetadataExhaustion` (> 0.95); also a `backup-health` gauge. |
 | `backup_subvolume_local_snapshot_count` | `subvolume` | Line **absent** when local snapshots are not configured for the subvolume. Coexists with the legacy `backup_snapshot_count{subvolume,location="local"}` — same physical fact, different contract shape (`Option::None`-as-absent vs. always-present). | **Not yet consumed.** Existing dashboards continue to use `backup_snapshot_count{location="local"}`. |
 | `backup_subvolume_estimated_local_pinned_delta_bytes` | `subvolume` | Wire-bytes-derived estimate (mean over in-window incrementals × local snapshot count). Emit policy: `Some(0)` when local snapshots disabled or `local_snapshot_count == 0` (known zero, distinct from unknown); line **absent** in cold-start (`local_snapshot_count > 0` and `mean_incremental_bytes` unknown). | Primarily a UPI 044 input (headroom-aware retention recommendations, downstream Urd work). **Not yet consumed.** |
 
@@ -245,10 +249,52 @@ deciding whether to swap `backup_snapshot_count{location="local"}` for the new
 sit outside the contract change recorded by this amendment. Track as a separate
 follow-up issue.
 
+## Amendment 2026-05-25 (Urd PR #145): expected-external + pool-total metrics, now consumed
+
+Backup-observability Plan C (`docs/97-plans/2026-05-25-backup-observability.md`) needed two
+gaps closed that only Urd can fill. Urd PR #145 (`feat/external-expected-and-pool-total`) adds
+both as additive, ADR-105-safe gauges. This amendment registers them and records that several
+previously-"Not yet consumed" metrics now back live alerts.
+
+### New Prometheus metrics (additive; existing metrics unchanged)
+
+Both arrive in `backup.prom` at the **next `urd backup` run after PR #145 merges** — they do
+not exist until then (alerts that reference them are inert, returning no series, until first
+emission; see deploy-ordering note below).
+
+| Metric | Labels | Cadence / shape | Homelab use |
+|--------|--------|-----------------|-------------|
+| `backup_external_expected` | `subvolume` | `1` iff the subvolume has an external destination configured (`send_enabled` AND ≥1 drive in scope); **line absent otherwise**. Same `subvolume` key as `backup_snapshot_count`. | **Consumed** by `ExternalBackupMissing`, which now gates on `… and on(subvolume) backup_external_expected == 1`. Removes the `subvol6-tmp` false positive (local-only by design, `send_enabled=false`). |
+| `backup_pool_total_bytes` | `uuid`, `role`, `label` | Total capacity (statvfs), same key as `backup_pool_free_bytes`; free+total read in one statvfs pass so they never skew within a run. Snapshot per backup run. | **Consumed** by `BackupDestinationPoolSpace{Warning,Critical}` (`free/total` on `role="destination"`) — node_exporter cannot see the offsite drive (ADR-023), so the total must come from Urd. |
+
+### Consumption status change (UPI-043 metrics)
+
+`backup_pool_metadata_utilization_ratio` is now **consumed** by `BackupPoolMetadataExhaustion`
+(`> 0.95`, all roles). `backup_pool_free_bytes{role="destination"}` is consumed as the numerator
+above. Source-pool free-% (`/`, `/mnt`) is intentionally **not** taken from Urd — node_exporter
+covers those live and continuously, whereas Urd's pool gauges refresh only once per nightly run
+(`urd-sentinel` never writes `backup.prom`). Treat all `backup_pool_*` values as up to ~24h stale.
+
+### Deploy ordering (load-bearing)
+
+`ExternalBackupMissing`'s join is empty until `backup_external_expected` is live, which **fully
+suppresses the alert (real misses included)** in the interim. Deploy the homelab alert changes
+only after PR #145 is merged and one `urd backup` run has emitted the new series. A break-glass
+fallback (`backup_snapshot_count{location="external",subvolume!="subvol6-tmp"} == 0`) is recorded
+inline in `backup-alerts.yml` for shipping earlier.
+
+### Follow-up (not in this amendment)
+
+`backup_external_free_bytes` is legacy, superseded by `backup_pool_free_bytes{role="destination"}`
+(+ total) but still an ADR-105 backward-compat contract — its deprecation is a separate
+coordinated change. Dashboard surfacing (Plan C item 5) remains the deferred UX follow-up noted
+under UPI-043.
+
 ## Related
 - **ADR-020:** Daily external backups (strategy — still valid, implementation superseded)
 - **Urd project:** `~/projects/urd/` — CLAUDE.md, ADRs 100–111, status.md
 - **Urd design plan:** `docs/00-foundation/decisions/2026-03-23-urd-btrfs-time-machine-design.md`
 - **Urd ADR-105 Amendment 2026-05-15 (UPI 043):** canonical pool-observability + heartbeat v4 contract text.
+- **Urd [PR #145](https://github.com/vonrobak/urd/pull/145):** canonical source for `backup_external_expected` + `backup_pool_total_bytes` (Urd CHANGELOG `[Unreleased]`).
 - **Backup alerts:** `config/prometheus/alerts/backup-alerts.yml`
 - **Node exporter integration:** `quadlets/node_exporter.container` (textfile collector mount)

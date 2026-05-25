@@ -69,7 +69,16 @@ groups:
           description: "Restore test hasn't run in {{ $value | humanizeDuration }}. Should run monthly (last Sunday)."
 
       # Warning: Low snapshot count (may indicate cleanup issues)
-      # DISABLED: User monitors this via Grafana dashboard, Discord alerts not needed
+      # DISABLED BY DESIGN (reaffirmed 2026-05-25, Plan C B4): the owner watches
+      # snapshot counts on the `backup-health` Grafana dashboard ("Snapshot Counts
+      # (Local vs External)" + "Snapshot Count Trends Over Time" panels). A Discord
+      # page adds no value over that panel for a slow-moving, eyeballed signal.
+      # Per-subvolume counts are also available as backup_subvolume_local_snapshot_count.
+      # Keep disabled. If ever re-enabled: (1) gate on a long `for:` to avoid prune churn,
+      # and (2) EXCLUDE external-only subvolumes — htpc-root has local_snapshots=false
+      # (Urd config) so its local count is ~0 BY DESIGN and would false-fire. Prefer
+      # backup_subvolume_local_snapshot_count, whose line is ABSENT when local snapshots
+      # aren't configured, over backup_snapshot_count{location="local"} which reports 0.
       # - alert: LowSnapshotCount
       #   expr: backup_snapshot_count{location="local"} < 2
       #   for: 1h
@@ -81,9 +90,23 @@ groups:
       #     summary: "Low snapshot count for {{ $labels.subvolume }}"
       #     description: "Only {{ $value }} local snapshots for {{ $labels.subvolume }}. Expected at least 3-7."
 
-      # Warning: External backup missing
+      # Warning: External backup missing — only for subvolumes SUPPOSED to go offsite.
+      # Gated on Urd's backup_external_expected (=1 only when an external destination is
+      # configured; line absent otherwise). subvol6-tmp is local-only by design
+      # (send_enabled=false) and is correctly excluded — it was the lone live false
+      # positive this gate removes (verified via Urd PR #145, 2026-05-25). htpc-root is
+      # external-only and stays covered (it IS expected-external).
+      #
+      # ⚠️ DEPLOY ORDERING: backup_external_expected exists only after Urd PR #145 is
+      # merged AND one `urd backup` run has emitted it. Until the series is live in
+      # Prometheus the join is empty and this alert is FULLY SUPPRESSED (real misses
+      # included) — deploy these rules only after first emission. Break-glass fallback
+      # if you must ship earlier (functional, hardcodes the single exception):
+      #   expr: backup_snapshot_count{location="external",subvolume!="subvol6-tmp"} == 0
       - alert: ExternalBackupMissing
-        expr: backup_snapshot_count{location="external"} == 0
+        expr: |
+          backup_snapshot_count{location="external"} == 0
+            and on(subvolume) backup_external_expected == 1
         for: 12h
         labels:
           severity: warning
@@ -91,7 +114,7 @@ groups:
           component: btrfs-snapshot-backup
         annotations:
           summary: "No external backups for {{ $labels.subvolume }}"
-          description: "External backup drive may not be mounted or backups failing."
+          description: "{{ $labels.subvolume }} is configured for offsite backup but has 0 external snapshots. External drive may not be mounted or sends are failing."
 
       # Warning: Backup taking too long
       # Auto-resolves after 1h to prevent persistent alerts on weekly/monthly backups
@@ -105,3 +128,56 @@ groups:
         annotations:
           summary: "Backup taking unusually long for {{ $labels.subvolume }}"
           description: "Last backup took {{ $value | humanizeDuration }}. May indicate performance issues. Alert auto-resolves after 1h for weekly/monthly backups."
+
+  # ==========================================================================
+  # Pool-capacity alerts from Urd's btrfs pool metrics (backup_pool_*).
+  # These cover what node_exporter cannot: BTRFS metadata exhaustion (a silent
+  # ENOSPC source even with free data space). The metrics carry {uuid,role,label}
+  # (NOT subvolume) and refresh at backup-run cadence (nightly) — hence the
+  # 5m group eval and long `for:`. Verified present in Prometheus 2026-05-25.
+  # ==========================================================================
+  - name: backup_pool_alerts
+    interval: 5m
+    rules:
+      # Critical: BTRFS can return ENOSPC even with free DATA space when METADATA
+      # is exhausted — a classic silent killer. Readings 2026-05-25: / 0.36,
+      # /mnt 0.86, WD-18TB 0.78 (/mnt is the one to watch). 0.95 leaves headroom
+      # while still firing before metadata blocks snapshots and dumps.
+      - alert: BackupPoolMetadataExhaustion
+        expr: backup_pool_metadata_utilization_ratio > 0.95
+        for: 1h
+        labels:
+          severity: critical
+          category: backup
+          component: btrfs-pool
+        annotations:
+          summary: "BTRFS metadata near exhaustion on {{ $labels.label }} ({{ $labels.role }})"
+          description: "Metadata utilization is {{ $value | humanizePercentage }} on pool {{ $labels.label }}. BTRFS can ENOSPC even with free data space — run a metadata balance before it blocks snapshots and dumps."
+
+      # Offsite destination drive capacity. node_exporter excludes /run/media (ADR-023),
+      # so these MUST come from Urd. backup_pool_total_bytes added in Urd PR #145
+      # (WD-18TB = 18.00 TB; ~16.6% free / 84% used at 2026-05-25 — warning is near).
+      # Source pools (/, /mnt) are instead covered LIVE by node_exporter
+      # (BtrfsPoolSpace{Warning,Critical}); Urd's once-daily snapshot is too coarse there.
+      # Inert until the new series emit (see DEPLOY ORDERING above) — absent total = no series.
+      - alert: BackupDestinationPoolSpaceWarning
+        expr: backup_pool_free_bytes{role="destination"} / backup_pool_total_bytes{role="destination"} < 0.15
+        for: 1h
+        labels:
+          severity: warning
+          category: backup
+          component: btrfs-pool
+        annotations:
+          summary: "Offsite backup drive {{ $labels.label }} low on space"
+          description: "{{ $labels.label }} is {{ $value | humanizePercentage }} free (<15%). Plan retention pruning or a larger drive before external sends start failing."
+
+      - alert: BackupDestinationPoolSpaceCritical
+        expr: backup_pool_free_bytes{role="destination"} / backup_pool_total_bytes{role="destination"} < 0.07
+        for: 1h
+        labels:
+          severity: critical
+          category: backup
+          component: btrfs-pool
+        annotations:
+          summary: "CRITICAL: offsite backup drive {{ $labels.label }} nearly full"
+          description: "{{ $labels.label }} is {{ $value | humanizePercentage }} free (<7%). External sends will fail soon — free space or swap drives now."
