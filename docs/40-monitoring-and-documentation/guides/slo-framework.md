@@ -78,6 +78,13 @@ How fast we're consuming error budget:
 - **Target:** 99.5% of uploads succeed over 7 days
 - **SLI:** `(traefik_service_requests_total{exported_service="immich@file", method="POST|PUT", code=~"2.."} / traefik_service_requests_total{exported_service="immich@file", method="POST|PUT"}) * 100`
 - **Rationale:** Photos must reliably upload or they're lost
+- **Alerting (added 2026-05-25):** `SLOBurnRateTier1_ImmichUploads` (warning) + `Tier2` (info),
+  each gated by a minimum-attempt guard (>10 upload attempts in the window) so a single failed
+  upload at this service's low upload volume cannot trip the alert. Severity is warning/info, not
+  page, because the SLI counts only 2xx as success — a client disconnect (499) mid-upload counts
+  as a failure, so paging would risk false positives on a user's flaky network. Recording rules:
+  `slo:immich:uploads:{target,actual,compliant}`, `error_budget:immich:uploads:*`,
+  `burn_rate:immich:uploads:{5m,30m,1h,6h}`. Visualized on the SLO dashboard ("Immich Upload SLO").
 
 ---
 
@@ -88,6 +95,12 @@ How fast we're consuming error budget:
 - **SLI:** `avg_over_time(up{job="traefik"}[5m])`
 - **Error Budget:** 21 minutes/month
 - **Rationale:** Traefik is the gateway - it affects ALL services
+- **Alerting (added 2026-05-25):** `SLOBurnRateTier1-4_Traefik` (the 4-tier burn-rate pattern;
+  Tier 1 critical → page, Tiers 2-3 warning, Tier 4 info). Previously the only charted SLO with no
+  alert. Adding the alerts also required **fixing the underlying recording rules**: the
+  `burn_rate:traefik:availability:*` series were silently empty because the labelled
+  `up{job="traefik"}` vector could not match the label-less error-budget series in the division
+  (now wrapped in `scalar()`). Without that fix the alerts would never have fired.
 
 **SLO-006: Request Latency**
 - **Target:** 99% of requests <100ms over 24 hours
@@ -308,6 +321,44 @@ Access the SLO dashboard at: `https://grafana.patriark.org/d/slo-dashboard`
 
 **Implementation Date:** 2025-11-27
 **Status:** ✅ Production-ready
+
+### Changelog
+
+**2026-05-25 — SLO & alert coverage (Plan B):**
+- **G1:** Added `SLOBurnRateTier1-4_Traefik` burn-rate alerts and **fixed** the previously-empty
+  `burn_rate:traefik:availability:*` recording rules (label-match bug; now `scalar()`-wrapped).
+  The gateway SLO is now both charted *and* alerted.
+- **G3:** Added the Immich-upload SLO (`slo:immich:uploads:*`, `error_budget:immich:uploads:*`,
+  `burn_rate:immich:uploads:*`), warning/info alerts with a minimum-attempt guard, and a dashboard panel.
+- **G4:** Added `NavidromeSustained5xxLowVolume` (mirrors the HA low-volume compensating alert).
+- **slo_compliance eval cost:** investigated and found **already mitigated** — the group has run at
+  `interval: 2m` since 2025-11-28 (0.33s/120s ≈ 0.3% duty cycle), not the 30s the deep-dive assumed.
+  No change needed.
+- **Latency alerting (G2):** see "Latency alerting status" below.
+
+### Latency alerting status (investigated 2026-05-25)
+
+Latency SLIs (`sli:*:latency:p95`/`p99` and `:fast_ratio`) are **recorded and charted** (dashboard
+panel 5) but **not alerted**. The deep-dive proposed adding latency alerts (Authelia 200ms, Traefik
+p99 100ms, Jellyfin 500ms); live verification found none of those three is currently alertable:
+
+| Candidate | Blocker (verified) |
+|---|---|
+| **Authelia** | Runs as forward-auth middleware, not a routed service — ~2 service-level requests in 7 days. No latency signal to alert on. Also its `fast_ratio` rule uses `le="0.2"`, a bucket Traefik does not emit. |
+| **Jellyfin** | ~1 request/7d. Its `fast_ratio` rule uses `le="0.5"`, also a non-existent bucket. |
+| **Traefik** | Entrypoint latency conflates streaming/WebSocket long-lived connections (p99 ≈ 2.6s; only ~76% of requests <100ms). The documented "99% <100ms" target reads as permanently breached → unusable as a threshold. |
+
+**Traefik histogram buckets are `[0.1, 0.3, 1.0, 3.0, 10.0]`** (+`+Inf`) — so any `fast_ratio` rule
+referencing `le="0.2"` or `le="0.5"` silently produced no data. This was a **latent bug** in
+`sli:authelia:latency:fast_ratio` and `sli:jellyfin:latency:fast_ratio`, **fixed 2026-05-25** by
+repointing both to `le="0.3"` (the nearest available bucket). If precise 200ms/500ms latency SLIs
+are wanted later, add `0.2`/`0.5` buckets to Traefik's histogram config.
+
+**Resolution (2026-05-25):** A latency alert was added for the one service with clean, high-volume,
+correctly-bucketed data — **Nextcloud** (`NextcloudLatencySLOBreach`: warning when <95% of requests
+complete under 1s for 30m, with a minimum-traffic guard; baseline ~99.7% gives ample headroom).
+Authelia/Jellyfin/Immich latency remain dashboard-only (insufficient traffic) and Traefik entrypoint
+latency remains dashboard-only (streaming-conflated; not a clean threshold signal).
 
 ## References
 

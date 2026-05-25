@@ -88,6 +88,55 @@ groups:
           ) / error_budget:immich:availability:budget_total
 
       # ===========================================================================
+      # IMMICH UPLOADS - Burn rate windows (G3, added 2026-05-25)
+      # error = upload (POST/PUT/PATCH) NOT returning 2xx. NaN-safe via clamp_min:
+      # zero uploads in the window -> 0 burn. Paired with a minimum-attempt guard in
+      # the alert (slo-multiwindow-alerts.yml) so a single failed upload at this
+      # service's very low upload volume (~few/week) cannot trip the alert.
+      # Only Tier 1 (1h+5m) and Tier 2 (6h+30m) windows are recorded — uploads are
+      # bursty and low-volume, so the 1d/3d trend tiers add no signal.
+      # ===========================================================================
+      - record: burn_rate:immich:uploads:5m
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[5m]))
+            -
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH", code=~"2.."}[5m]))
+          )
+          / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[5m])), 1e-10)
+          / error_budget:immich:uploads:budget_total
+
+      - record: burn_rate:immich:uploads:30m
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[30m]))
+            -
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH", code=~"2.."}[30m]))
+          )
+          / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[30m])), 1e-10)
+          / error_budget:immich:uploads:budget_total
+
+      - record: burn_rate:immich:uploads:1h
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[1h]))
+            -
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH", code=~"2.."}[1h]))
+          )
+          / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[1h])), 1e-10)
+          / error_budget:immich:uploads:budget_total
+
+      - record: burn_rate:immich:uploads:6h
+        expr: |
+          (
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[6h]))
+            -
+            sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH", code=~"2.."}[6h]))
+          )
+          / clamp_min(sum(rate(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[6h])), 1e-10)
+          / error_budget:immich:uploads:budget_total
+
+      # ===========================================================================
       # HOME ASSISTANT - Extended burn rate windows (denylist: only 5xx = errors)
       # 404s at ~37 req/day via Traefik caused 4x budget overrun with allowlist criteria
       # ===========================================================================
@@ -220,19 +269,22 @@ groups:
       # TRAEFIK - Extended burn rate windows (using up metric)
       # ===========================================================================
 
+      # scalar() REQUIRED — see slo-recording-rules.yml Traefik burn-rate note:
+      # without it the labelled up{} series fails to match the label-less budget
+      # series and records nothing. (verified 2026-05-25)
       - record: burn_rate:traefik:availability:1d
         expr: |
-          (1 - avg_over_time(up{job="traefik"}[1d]))
+          scalar(1 - avg_over_time(up{job="traefik"}[1d]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:2h
         expr: |
-          (1 - avg_over_time(up{job="traefik"}[2h]))
+          scalar(1 - avg_over_time(up{job="traefik"}[2h]))
           / error_budget:traefik:availability:budget_total
 
       - record: burn_rate:traefik:availability:3d
         expr: |
-          (1 - avg_over_time(up{job="traefik"}[3d]))
+          scalar(1 - avg_over_time(up{job="traefik"}[3d]))
           / error_budget:traefik:availability:budget_total
 
       # ===========================================================================

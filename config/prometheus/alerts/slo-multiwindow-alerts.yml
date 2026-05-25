@@ -271,6 +271,92 @@ groups:
           description: "Long-term trend - review in monthly report."
 
   # ===========================================================================
+  # IMMICH UPLOADS - Burn Rate Alerts (G3, added 2026-05-25)
+  # SLO-004: 99.5% of upload (POST/PUT/PATCH) operations succeed. Failing uploads
+  # are user-data-loss-adjacent. Each alert carries a MINIMUM-ATTEMPT GUARD
+  # (>10 upload attempts in the window): at this service's very low upload volume
+  # (~a few/week), a single failed upload would otherwise read as 100% failure and
+  # trip a burn-rate alert. The guard restricts firing to an active upload session
+  # that is genuinely failing.
+  #
+  # Severity is warning/info, NOT critical/page (a deliberate deviation from the
+  # plan's "page"): the upload SLI counts only 2xx as success, so a client-side
+  # disconnect (499) mid-upload counts as a failure. Paging on a user's flaky
+  # network would be false-positive paging. To escalate later, raise Tier 1 to
+  # critical AND add 499 to the success criteria in the recording rules.
+  # ===========================================================================
+  - name: slo_multiwindow_immich_uploads
+    interval: 1m
+    rules:
+      # TIER 1: WARNING - Fast Burn during an active, failing upload session
+      - alert: SLOBurnRateTier1_ImmichUploads
+        expr: |
+          (
+            burn_rate:immich:uploads:1h > 14.4
+            and
+            burn_rate:immich:uploads:5m > 14.4
+          )
+          and
+          sum(increase(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[1h])) > 10
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 5m
+        labels:
+          severity: warning
+          component: slo
+          service: immich
+          slo: uploads
+          tier: "1"
+          burn_rate: "fast"
+        annotations:
+          summary: "⚠️ Immich photo uploads are failing during active use"
+          description: |
+            **Photo uploads are failing right now**
+
+            More than 10 upload attempts in the last hour and the upload error budget
+            is burning at >14.4x. Photos the user is uploading may not be saved.
+
+            - Upload burn rate (1h): {{ $value | humanize }}x normal
+            - Upload burn rate (5m): {{ query "burn_rate:immich:uploads:5m" | first | value | humanize }}x normal
+            - Upload budget remaining: {{ query "error_budget:immich:uploads:budget_remaining * 100" | first | value | humanize }}%
+
+            Note: the upload SLI counts only 2xx as success, so heavy client-side
+            disconnects (499) can also raise this. Confirm server health before assuming data loss.
+
+            Action: systemctl --user status immich.service immich-postgres.service
+                    podman logs immich --tail 100
+                    Check Traefik access logs in Loki:
+                      {container_name="traefik"} |= "immich" | json | method =~ "POST|PUT|PATCH" | status >= 400
+
+      # TIER 2: INFO - Sustained elevated upload failure rate
+      - alert: SLOBurnRateTier2_ImmichUploads
+        expr: |
+          (
+            burn_rate:immich:uploads:6h > 6
+            and
+            burn_rate:immich:uploads:30m > 6
+          )
+          and
+          sum(increase(traefik_service_requests_total{exported_service="immich@file", method=~"POST|PUT|PATCH"}[6h])) > 10
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 30m
+        labels:
+          severity: info
+          component: slo
+          service: immich
+          slo: uploads
+          tier: "2"
+          burn_rate: "medium"
+        annotations:
+          summary: "ℹ️ Immich upload failure rate elevated over several hours"
+          description: |
+            Upload error budget burning at >6x over a 6h window with >10 attempts.
+            Investigate when convenient.
+
+            - Upload budget remaining: {{ query "error_budget:immich:uploads:budget_remaining * 100" | first | value | humanize }}%
+
+  # ===========================================================================
   # AUTHELIA - Multi-Window Burn Rate Alerts (Critical SSO service)
   # ===========================================================================
   - name: slo_multiwindow_authelia
@@ -841,6 +927,177 @@ groups:
           description: "Long-term trend - review in monthly report."
 
   # ===========================================================================
+  # TRAEFIK GATEWAY - Multi-Window Burn Rate Alerts (G1, added 2026-05-25)
+  # The gateway has the tightest SLO (99.95%, 21-min monthly budget) precisely
+  # because a degraded Traefik fails EVERY downstream service — it is the only
+  # single point that breaks all other SLOs at once. Yet until now its burn-rate
+  # series were recorded (and charted) but never alerted, AND the recording rules
+  # were silently empty due to a label-match bug (see slo-recording-rules.yml).
+  # SLI is up{job="traefik"}-based, so there is no NaN/zero-traffic risk.
+  # ===========================================================================
+  - name: slo_multiwindow_traefik
+    interval: 1m
+    rules:
+      # TIER 1: CRITICAL - Fast Burn (Page immediately)
+      - alert: SLOBurnRateTier1_Traefik
+        expr: |
+          (
+            burn_rate:traefik:availability:1h > 14.4
+            and
+            burn_rate:traefik:availability:5m > 14.4
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 3600)
+        for: 2m
+        labels:
+          severity: critical
+          component: slo
+          service: traefik
+          slo: availability
+          tier: "1"
+          burn_rate: "fast"
+        annotations:
+          summary: "🚨 CRITICAL: Traefik gateway error budget burning at 14.4x normal rate"
+          description: |
+            **IMMEDIATE ACTION REQUIRED - THE GATEWAY IS DEGRADING**
+
+            Traefik availability is dropping fast. The gateway fronts every service, so
+            this degrades ALL of them. At this burn rate the 21-min monthly budget
+            (99.95% SLO) exhausts in less than 3 hours.
+
+            **Current State:**
+            - Burn Rate (1h): {{ $value | humanize }}x normal
+            - Burn Rate (5m): {{ query "burn_rate:traefik:availability:5m" | first | value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:traefik:availability:budget_remaining * 100" | first | value | humanize }}%
+
+            **Impact:** Every internet-facing service is affected RIGHT NOW.
+
+            **Action:** Investigate and resolve immediately. Check:
+              systemctl --user status traefik.service
+              podman logs traefik --tail 100
+              ~/containers/scripts/homelab-intel.sh
+
+      # TIER 2: WARNING - Medium Burn (Create ticket)
+      - alert: SLOBurnRateTier2_Traefik
+        expr: |
+          (
+            burn_rate:traefik:availability:6h > 6
+            and
+            burn_rate:traefik:availability:30m > 6
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 21600)
+        for: 15m
+        labels:
+          severity: warning
+          component: slo
+          service: traefik
+          slo: availability
+          tier: "2"
+          burn_rate: "medium"
+        annotations:
+          summary: "⚠️ Traefik gateway error budget burning at 6x normal rate"
+          description: |
+            **Action needed within hours**
+
+            Traefik availability is degrading. At this burn rate the monthly budget
+            exhausts in less than 1 day. The gateway affects all services.
+
+            - Burn Rate (6h): {{ $value | humanize }}x normal
+            - Burn Rate (30m): {{ query "burn_rate:traefik:availability:30m" | first | value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:traefik:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # TIER 3: WARNING - Slow Burn (Plan remediation)
+      - alert: SLOBurnRateTier3_Traefik
+        expr: |
+          (
+            burn_rate:traefik:availability:1d > 3
+            and
+            burn_rate:traefik:availability:2h > 3
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 86400)
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: traefik
+          slo: availability
+          tier: "3"
+          burn_rate: "slow"
+        annotations:
+          summary: "📊 Traefik gateway error budget burning at 3x normal rate"
+          description: |
+            **Trend to monitor**
+
+            Traefik availability is slowly degrading. Budget exhausts in <1 week.
+
+            - Burn Rate (1d): {{ $value | humanize }}x normal
+            - Error Budget Remaining: {{ query "error_budget:traefik:availability:budget_remaining * 100" | first | value | humanize }}%
+
+      # TIER 4: INFO - Very Slow Burn (FYI only)
+      - alert: SLOBurnRateTier4_Traefik
+        expr: |
+          (
+            burn_rate:traefik:availability:3d > 1.5
+            and
+            burn_rate:traefik:availability:1d > 1.5
+          )
+          and
+          (time() - process_start_time_seconds{job="prometheus"} > 259200)
+        for: 6h
+        labels:
+          severity: info
+          component: slo
+          service: traefik
+          slo: availability
+          tier: "4"
+          burn_rate: "minimal"
+        annotations:
+          summary: "ℹ️ Traefik gateway error budget trending above baseline"
+          description: "Long-term trend - review in monthly report."
+
+  # ===========================================================================
+  # NEXTCLOUD LATENCY SLO (G2, added 2026-05-25)
+  # SLO-008: 95% of requests complete within 1s. Nextcloud is the only service with
+  # clean, high-volume, correctly-bucketed latency data (~28.8k req/7d, baseline
+  # ~99.7% under 1s — see slo-framework.md "Latency alerting status" for why the
+  # other candidate latency SLOs are not currently alertable). fast_ratio is NaN
+  # when idle (NaN < 0.95 is false), and a minimum-traffic guard prevents a single
+  # slow request during a lull from tripping the alert. Named outside the
+  # SLOBurnRateTier* convention so it does NOT hit the auto-remediation webhook —
+  # slow file sync warrants a notification, not an automated restart.
+  # ===========================================================================
+  - name: slo_latency_nextcloud
+    interval: 1m
+    rules:
+      - alert: NextcloudLatencySLOBreach
+        expr: |
+          sli:nextcloud:latency:fast_ratio < 0.95
+          and
+          sum(rate(traefik_service_request_duration_seconds_count{exported_service="nextcloud@file"}[5m])) > 0.05
+        for: 30m
+        labels:
+          severity: warning
+          component: slo
+          service: nextcloud
+          slo: latency
+        annotations:
+          summary: "⚠️ Nextcloud latency SLO breached (<95% of requests under 1s for 30m)"
+          description: |
+            Fewer than 95% of Nextcloud requests are completing within the 1s SLO target,
+            sustained for 30 minutes at meaningful traffic. File sync and web UI feel slow.
+
+            - Requests under 1s (5m): {{ $value | humanizePercentage }}
+            - p95 latency: {{ query "sli:nextcloud:latency:p95" | first | value | humanize }}s
+
+            Likely causes: MariaDB slowness, Redis pressure, PHP-FPM saturation, or a
+            large sync/scan. Check:
+              podman logs nextcloud --tail 100
+              podman exec -u www-data nextcloud php occ status
+              ~/containers/scripts/homelab-intel.sh
+
+  # ===========================================================================
   # COMPENSATING 4xx ALERTS for denylist services
   # Home Assistant, Nextcloud, Navidrome, and Audiobookshelf use code!~"5.." for SLO.
   # These alerts catch 4xx spikes that bypass burn rate detection:
@@ -1029,3 +1286,33 @@ groups:
               systemctl --user status home-assistant.service
               podman logs home-assistant --tail 100
               curl -sf -o /dev/null -w '%{http_code}' https://home.patriark.org/
+
+      - alert: NavidromeSustained5xxLowVolume
+        # G4 (added 2026-05-25): closes the last instance of the 2026-04-21
+        # low-volume-5xx incident class. Navidrome is a personal music service that
+        # is frequently idle (0 requests in the trailing 7d at calibration time), so
+        # — like Home Assistant — its multi-window burn-rate alerts are blind to a
+        # stuck-5xx state at low traffic. Threshold mirrors HomeAssistantSustained5xx
+        # LowVolume (>20 5xx in 6h, <0.5 req/s guard); could not be scaled to live
+        # traffic because Navidrome was idle when this was written. Revisit once a
+        # real traffic floor accumulates.
+        expr: |
+          sum(increase(traefik_service_requests_total{exported_service="navidrome@file", code=~"5.."}[6h])) > 20
+          and
+          sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[6h])) < 0.5
+        for: 1h
+        labels:
+          severity: warning
+          component: slo
+          service: navidrome
+        annotations:
+          summary: "Navidrome sustained 5xx at low traffic (>20 5xx in 6h)"
+          description: |
+            Navidrome has returned more than 20 5xx responses over the last 6 hours
+            at low request rate. At this traffic level the standard burn-rate alerts
+            cannot distinguish a stuck-5xx state from normal idle traffic.
+
+            Check:
+              systemctl --user status navidrome.service
+              podman logs navidrome --tail 100
+              curl -sf -o /dev/null -w '%{http_code}' https://navidrome.patriark.org/
