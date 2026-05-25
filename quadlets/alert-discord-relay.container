@@ -11,6 +11,12 @@ HostName=alert-discord-relay
 Network=systemd-reverse_proxy:ip=10.89.2.86
 Network=systemd-monitoring
 
+# ADR-031 Phase 0 (D2): explicit resolvers with an independent fallback (previously inherited
+# reverse_proxy DNS=192.168.1.69 only). A Pi-hole outage must not stop alert delivery.
+# 9.9.9.9 is INTERIM — replace with the keepalived VIP + both node IPs in Phase 3.
+DNS=192.168.1.69
+DNS=9.9.9.9
+
 # Discord webhook URL
 Secret=discord_webhook_url,type=env,target=DISCORD_WEBHOOK_URL
 

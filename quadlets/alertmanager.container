@@ -26,7 +26,10 @@ Secret=smtp_password
 # Command arguments
 Exec=--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=info --web.external-url=https://alertmanager.patriark.org
 
+# ADR-031 Phase 0 (D2): independent fallback so a Pi-hole outage can't silence alerting.
+# 9.9.9.9 is INTERIM — replace with the keepalived VIP + both node IPs in Phase 3.
 DNS=192.168.1.69
+DNS=9.9.9.9
 
 # Health check
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:9093/-/healthy || exit 1
