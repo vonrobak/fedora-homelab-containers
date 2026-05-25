@@ -99,7 +99,7 @@ See ADR-030 (trust model) and ADR-015 (superseded; its BTRFS rollback + health-v
 
 ### Architecture Decision Records
 
-**Architectural decisions recorded as ADRs — latest is ADR-030** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
+**Architectural decisions recorded as ADRs — latest is ADR-031** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
 
 **Design-Guiding ADRs (affect future decisions):**
 - **ADR-001:** Rootless Containers — UID 1000, `:Z` SELinux labels on all mounts
@@ -114,6 +114,7 @@ See ADR-030 (trust model) and ADR-015 (superseded; its BTRFS rollback + health-v
 - **ADR-019:** Filesystem Permission Model — POSIX ACLs for container access
 - **ADR-021:** Urd Backup Tool — Rust-based BTRFS Time Machine replaces shell script (supersedes ADR-020 implementation)
 - **ADR-030:** Container Supply-Chain Trust Model — digest pinning, deliberate (de-automated) updates, cooling-off interval, graduated signature verification (supersedes ADR-015 trust model)
+- **ADR-031:** DNS Resolver First-Class & HA — redundancy-before-monitoring, active/passive keepalived VIP, alert-path resolver must be independent of the monitored resolver, resolver managed-as-code + SSO admin (status: Accepted, implementation phased)
 
 Check if an ADR exists before proposing changes. Reference the ADR and explain what changed if suggesting alternatives. New decisions get new ADRs (don't edit existing ones).
 
