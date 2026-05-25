@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-05-23 15:02:13 UTC
+**Generated:** 2026-05-25 05:00:59 UTC
 **System:** fedora-htpc
 
 ---
