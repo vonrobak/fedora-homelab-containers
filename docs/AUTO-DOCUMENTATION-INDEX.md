@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-05-23 15:02:14 UTC
-**Total Documents:** 422
+**Generated:** 2026-05-25 05:01:00 UTC
+**Total Documents:** 436
 
 ---
 
@@ -179,7 +179,7 @@
 
 ---
 
-### 97-plans/ (33 documents)
+### 97-plans/ (38 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
@@ -197,6 +197,11 @@
 - 📋 [2026-05-23-tier1-digest-pinning-and-update-deautomation.md](97-plans/2026-05-23-tier1-digest-pinning-and-update-deautomation.md)
 - 📋 [2026-05-23-tier2-build-input-and-repo-hardening.md](97-plans/2026-05-23-tier2-build-input-and-repo-hardening.md)
 - 📋 [2026-05-23-tier3-4-signatures-and-egress-detection-outline.md](97-plans/2026-05-23-tier3-4-signatures-and-egress-detection-outline.md)
+- 📋 [2026-05-24-tier3-signature-verification-deliberate-path.md](97-plans/2026-05-24-tier3-signature-verification-deliberate-path.md)
+- 📋 [2026-05-24-tier4-egress-detection.md](97-plans/2026-05-24-tier4-egress-detection.md)
+- 📋 [2026-05-25-backup-observability.md](97-plans/2026-05-25-backup-observability.md)
+- 📋 [2026-05-25-monitoring-metric-diet.md](97-plans/2026-05-25-monitoring-metric-diet.md)
+- 📋 [2026-05-25-slo-alert-coverage.md](97-plans/2026-05-25-slo-alert-coverage.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
 - ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
@@ -218,7 +223,7 @@
 
 ---
 
-### 98-journals/ (218 documents)
+### 98-journals/ (219 documents)
 
 **Chronological project history (append-only log)**
 
@@ -226,7 +231,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (52 documents)
+### 99-reports/ (54 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -242,20 +247,20 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-05-22: [2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md](00-foundation/decisions/2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md)
 - 2026-05-22: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
 - 2026-05-23: [2026-05-23-ADR-030-container-supply-chain-trust-model.md](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
+- 2026-05-25: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
+- 2026-05-23: [2026-05-23-adr030-tier1-execution-lessons-private.md](90-archive/2026-05-23-adr030-tier1-execution-lessons-private.md)
+- 2026-05-24: [2026-05-23-adr030-tier2-execution-private.md](90-archive/2026-05-23-adr030-tier2-execution-private.md)
+- 2026-05-23: [2026-05-23-supply-chain-trust-model-adr030-private.md](90-archive/2026-05-23-supply-chain-trust-model-adr030-private.md)
+- 2026-05-24: [2026-05-24-adr030-tier3-execution-private.md](90-archive/2026-05-24-adr030-tier3-execution-private.md)
+- 2026-05-24: [2026-05-24-restore-test-tmpfs-and-dead-dr-metric.md](90-archive/2026-05-24-restore-test-tmpfs-and-dead-dr-metric.md)
 - 2026-05-23: [2026-05-23-tier1-digest-pinning-and-update-deautomation.md](97-plans/2026-05-23-tier1-digest-pinning-and-update-deautomation.md)
 - 2026-05-23: [2026-05-23-tier2-build-input-and-repo-hardening.md](97-plans/2026-05-23-tier2-build-input-and-repo-hardening.md)
-- 2026-05-23: [2026-05-23-tier3-4-signatures-and-egress-detection-outline.md](97-plans/2026-05-23-tier3-4-signatures-and-egress-detection-outline.md)
-- 2026-05-18: [2026-05-15-audit-backlog-drift-and-observability-deployment.md](98-journals/2026-05-15-audit-backlog-drift-and-observability-deployment.md)
-- 2026-05-18: [2026-05-18-audit-subsystem-hardening-private.md](98-journals/2026-05-18-audit-subsystem-hardening-private.md)
-- 2026-05-18: [2026-05-18-security-audit-and-drift-cleanup-private.md](98-journals/2026-05-18-security-audit-and-drift-cleanup-private.md)
-- 2026-05-21: [2026-05-21-pihole-dns-and-adr018-investigation-handoff.md](98-journals/2026-05-21-pihole-dns-and-adr018-investigation-handoff.md)
-- 2026-05-22: [2026-05-22-db-storage-three-tier-and-dump-backbone-phase-a.md](98-journals/2026-05-22-db-storage-three-tier-and-dump-backbone-phase-a.md)
-- 2026-05-23: [2026-05-23-supply-chain-trust-model-adr030-private.md](98-journals/2026-05-23-supply-chain-trust-model-adr030-private.md)
-- 2026-05-23: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-05-23: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-05-23: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
-- 2026-05-23: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-05-23: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-05-24: [2026-05-23-tier3-4-signatures-and-egress-detection-outline.md](97-plans/2026-05-23-tier3-4-signatures-and-egress-detection-outline.md)
+- 2026-05-24: [2026-05-24-tier3-signature-verification-deliberate-path.md](97-plans/2026-05-24-tier3-signature-verification-deliberate-path.md)
+- 2026-05-24: [2026-05-24-tier4-egress-detection.md](97-plans/2026-05-24-tier4-egress-detection.md)
+- 2026-05-25: [2026-05-25-backup-observability.md](97-plans/2026-05-25-backup-observability.md)
+- 2026-05-25: [2026-05-25-monitoring-metric-diet.md](97-plans/2026-05-25-monitoring-metric-diet.md)
+- 2026-05-25: [2026-05-25-slo-alert-coverage.md](97-plans/2026-05-25-slo-alert-coverage.md)
 
 ---
 

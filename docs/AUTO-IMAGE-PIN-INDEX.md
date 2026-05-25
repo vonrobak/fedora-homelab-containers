@@ -1,6 +1,6 @@
 # Container Image Pin Index (Auto-Generated)
 
-**Generated:** 2026-05-24 11:54:03 UTC
+**Generated:** 2026-05-25 05:01:00 UTC
 **Source:** `/home/patriark/containers/quadlets` — ADR-030 (Container Supply-Chain Trust Model)
 
 Pins live in each quadlet's `Image=` line (where Podman reads them); this is
@@ -32,7 +32,7 @@ For local builds the `Digest` column shows the **base image** pin (FROM …@sha2
 |---------|--------|--------|------------|-----|--------|------|-------------|
 | alert-discord-relay | yes | 🔨 base-pinned | `localhost/alert-discord-relay` | latest | `sha256:a3ab0b966bc4…` | no | n/a (Tier 2) |
 | alertmanager | yes | 🔒 pinned | `quay.io/prometheus/alertmanager` | latest | `sha256:51a825c2a40a…` | no | — unsigned |
-| audiobookshelf | yes | 🔒 pinned | `ghcr.io/advplyr/audiobookshelf` | latest | `sha256:4143292c530f…` | no | — unsigned |
+| audiobookshelf | yes | 🔒 pinned | `ghcr.io/advplyr/audiobookshelf` | 2.35.0 | `sha256:89276ff2e0b3…` | no | — unsigned |
 | authelia | yes | 🔒 pinned | `docker.io/authelia/authelia` | latest | `sha256:0c824dcab1ae…` | no | — unsigned |
 | cadvisor | no | 🔒 pinned | `gcr.io/cadvisor/cadvisor` | latest | `sha256:3de2bd520312…` | no | — unsigned |
 | crowdsec | yes | 🔒 pinned | `docker.io/crowdsecurity/crowdsec` | latest | `sha256:2f527c9bb8b3…` | no | — unsigned |
