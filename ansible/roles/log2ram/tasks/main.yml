@@ -1,0 +1,39 @@
+---
+# log2ram mounts /var/log to a tmpfs and flushes to disk periodically — drastically reduces
+# SD-card write wear (the dominant Pi failure mode). Source: azlux third-party apt repo
+# (external dependency — gated by `log2ram_enabled`, documented in README).
+- name: log2ram (azlux repo + install)
+  when: log2ram_enabled | bool
+  block:
+    - name: Ensure keyrings directory exists
+      ansible.builtin.file:
+        path: /usr/share/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Add azlux apt signing key
+      ansible.builtin.get_url:
+        url: https://azlux.fr/repo.gpg
+        dest: /usr/share/keyrings/azlux-archive-keyring.gpg
+        mode: "0644"
+
+    - name: Add azlux apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ stable main"
+        filename: azlux
+        state: present
+        update_cache: true
+
+    - name: Install log2ram
+      ansible.builtin.apt:
+        name: log2ram
+        state: present
+      when: not ansible_check_mode    # azlux repo isn't really added in --check, so the pkg isn't yet visible
+
+    # Enable only — the /var/log → tmpfs switch applies cleanly on the next reboot,
+    # avoiding moving the live log mount out from under running services mid-run.
+    - name: Enable log2ram (applies on next reboot)
+      ansible.builtin.service:
+        name: log2ram
+        enabled: true
+      when: not ansible_check_mode    # service exists only after the (real) package install

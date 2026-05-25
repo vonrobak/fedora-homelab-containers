@@ -1,0 +1,11 @@
+# Managed by Ansible (ADR-031 D8). Fires before Urd's 04:00 run so the fresh export is snapshotted.
+[Unit]
+Description=Nightly Pi-hole backup
+
+[Timer]
+OnCalendar={{ backup_oncalendar }}
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

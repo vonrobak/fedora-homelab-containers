@@ -79,6 +79,7 @@ access_control:
         - 'home.patriark.org'
         - 'patriark.org'
         - 'torrent.patriark.org'
+        - 'pihole.patriark.org'   # DNS resolver admin (ADR-031 D4) — YubiKey + LAN/WG allowlist
       policy: two_factor
       subject:
         - 'group:admins'

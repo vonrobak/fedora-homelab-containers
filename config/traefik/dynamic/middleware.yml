@@ -153,6 +153,25 @@ http:
           - "Remote-Email"
 
     # ═══════════════════════════════════════════════════════════
+    # IP ALLOWLIST - LAN + WireGuard only (internal admin planes)
+    # ═══════════════════════════════════════════════════════════
+    # Structural "internal-only" gate for admin UIs that must never be
+    # internet-reachable (Pi-hole resolver admin — ADR-031 D4). Sits in front
+    # of Authelia so a non-LAN/non-VPN client is rejected before the auth layer.
+    #
+    # This works ONLY because ADR-022 socket activation preserves the real
+    # client source IP at Traefik (rootlessport SNAT bypassed). Verified
+    # 2026-05-25: the access log shows real LAN/WAN client IPs, not a collapsed
+    # gateway IP. The default IPAllowList matches the direct connection IP, so
+    # no ipStrategy/X-Forwarded-For depth is needed for direct LAN/VPN clients.
+    ip-allowlist:
+      ipAllowList:
+        sourceRange:
+          - 192.168.1.0/24      # patriark-lan (trusted LAN)
+          - 192.168.100.0/24    # WireGuard VPN clients
+          # IoT VLAN (192.168.2.0/24) deliberately excluded — least-trusted segment.
+
+    # ═══════════════════════════════════════════════════════════
     # SECURITY HEADERS - Comprehensive
     # ═══════════════════════════════════════════════════════════
     security-headers:

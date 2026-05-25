@@ -1,0 +1,27 @@
+---
+# Phase 1 INSTALLS keepalived and lays down a (currently inert) config so Phase 3 can activate
+# HA by simply flipping `keepalived_enabled: true` on both nodes. It is NOT started here —
+# a single node holding a VIP buys nothing and a misconfigured VRRP could disrupt the LAN.
+- name: Install keepalived
+  ansible.builtin.apt:
+    name: keepalived
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Lay down keepalived config (inert until Phase 3)
+  ansible.builtin.template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: not ansible_check_mode    # /etc/keepalived exists only after the (real) package install
+  # Deliberately NO restart notify — Phase 1 must not start keepalived.
+
+- name: Keep keepalived stopped + disabled in Phase 1 (Phase 3 sets keepalived_enabled=true)
+  ansible.builtin.service:
+    name: keepalived
+    enabled: "{{ keepalived_enabled | bool }}"
+    state: "{{ 'started' if (keepalived_enabled | bool) else 'stopped' }}"
+  when: not ansible_check_mode    # service exists only after the (real) package install

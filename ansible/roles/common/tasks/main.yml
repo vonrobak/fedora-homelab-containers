@@ -1,0 +1,11 @@
+---
+- name: Base packages (root hints/anchor for unbound, rsync for backups, dig for validation)
+  ansible.builtin.apt:
+    name:
+      - dns-root-data        # root hints + DNSSEC trust anchor, Debian-managed (unbound uses these)
+      - bind9-dnsutils       # provides `dig` (resolution/DNSSEC validation gate)
+      - rsync                # D8 backup push
+      - ca-certificates
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
