@@ -45,6 +45,24 @@ groups:
           description: "System SSD {{ $labels.instance }} has only {{ $value | humanizePercentage }} free space. Immediate cleanup required!"
 
       # ========================================================================
+      # ALERT 2b: BTRFS Data Pool Space Critical (/mnt)
+      # ========================================================================
+      # Added 2026-05-25 (Plan C). SystemDiskSpaceCritical covers "/" (system SSD)
+      # but the /mnt data pool — where all source subvolumes live — had only a
+      # warning (and that was dead until this commit). A full data pool breaks both
+      # snapshots and dumps. Currently ~19.8% free, so <10% leaves real headroom.
+      - alert: BtrfsPoolSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/mnt"} / node_filesystem_size_bytes{mountpoint="/mnt"}) < 0.10
+        for: 5m
+        labels:
+          severity: critical
+          category: capacity
+          component: storage
+        annotations:
+          summary: "CRITICAL: BTRFS data pool (/mnt) space dangerously low"
+          description: "Data pool /mnt on {{ $labels.instance }} has only {{ $value | humanizePercentage }} free. A full pool blocks snapshots AND db dumps — free space immediately."
+
+      # ========================================================================
       # ALERT 3: TLS Certificate Expiring Soon
       # ========================================================================
       # Only check the NEWEST certificate per domain (Traefik keeps old certs in metrics after renewal)

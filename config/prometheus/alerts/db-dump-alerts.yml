@@ -64,3 +64,27 @@ groups:
         annotations:
           summary: "DB restore test overdue for {{ $labels.database }}"
           description: "No restore test for {{ $labels.database }} in {{ $value | humanizeDuration }} (should run weekly)."
+
+      # Warning: a dump ballooned vs its own recent baseline — catches a runaway
+      # table/DB or a misconfigured dump before it pressures the offsite dump set.
+      # Guards against false positives:
+      #   (1) exclude prometheus — its dump tracks TSDB size (addressed by Plan A's
+      #       metric diet), not data health, and it dominates the set at ~1.6 GB;
+      #   (2) absolute floor (50 MiB) so tiny dumps (gathio ~16 KB, forgejo ~47 KB,
+      #       vaultwarden ~180 KB) can't trip on normal variance — only meaningfully
+      #       large dumps matter to the 4.6 GB offsite set.
+      # Baseline = 14-day median; only ~3 days of history exists today (2026-05-25),
+      # which widens automatically. Median (not avg) resists the nightly step shape.
+      - alert: DbDumpSizeAnomaly
+        expr: |
+          db_dump_size_bytes{database!="prometheus"}
+            > 2 * quantile_over_time(0.5, db_dump_size_bytes{database!="prometheus"}[14d])
+          and db_dump_size_bytes{database!="prometheus"} > 50 * 1024 * 1024
+        for: 30m
+        labels:
+          severity: warning
+          category: backup
+          component: db-dump
+        annotations:
+          summary: "DB dump for {{ $labels.database }} doubled vs its 14-day median"
+          description: "Latest {{ $labels.database }} dump is {{ $value | humanize1024 }}B — over 2x its 14-day median. Check for a runaway table or misconfigured dump before it pressures the offsite dump set."

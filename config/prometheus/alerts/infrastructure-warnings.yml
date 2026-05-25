@@ -36,8 +36,15 @@ groups:
       # ========================================================================
       # ALERT 2: BTRFS Pool Space Warning
       # ========================================================================
+      # FIX 2026-05-25 (Plan C): mountpoint was "/mnt/btrfs-pool", which node_exporter
+      # never reports (the data pool is mounted at "/mnt"; "btrfs-pool" is only a path
+      # component). The alert returned 0 series and was a silent DEAD alert. Corrected
+      # to mountpoint="/mnt". Threshold lowered 0.20 -> 0.15 (owner decision 2026-05-25):
+      # the pool sits at ~19.8% free / ~80% used (~3.1 TB absolute), and the dead alert
+      # had masked that. 15% keeps the signal without paging on today's steady state;
+      # BtrfsPoolSpaceCritical (<10%) escalates. Revisit if /mnt usage keeps climbing.
       - alert: BtrfsPoolSpaceWarning
-        expr: (node_filesystem_avail_bytes{mountpoint="/mnt/btrfs-pool"} / node_filesystem_size_bytes{mountpoint="/mnt/btrfs-pool"}) < 0.20
+        expr: (node_filesystem_avail_bytes{mountpoint="/mnt"} / node_filesystem_size_bytes{mountpoint="/mnt"}) < 0.15
         for: 10m
         labels:
           severity: warning

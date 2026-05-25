@@ -114,3 +114,46 @@ podman exec prometheus wget -qO- 'http://localhost:9090/api/v1/query?query=ALERT
 
 - 2026-05-25 — Plan drafted from deep-dive report. Status: Proposed. Item 1 is the only live
   false-positive and should ship first.
+- 2026-05-25 — **Ground-truth verification (branch `feat/backup-observability`).** Several plan
+  assumptions corrected against the live system:
+  - **Producer is Urd, not the shell script.** `scripts/btrfs-snapshot-backup.sh` is disabled
+    (ADR-021, sole backup = Urd since 2026-03-25). The "have the backup script emit a label" path in
+    item 1 / item 2 must target `~/projects/urd`, which writes `data/backup-metrics/backup.prom`
+    (scraped via node_exporter textfile collector).
+  - **Item 2 scrape already works.** `backup_pool_free_bytes` (3), `backup_pool_metadata_utilization_ratio`
+    (3), `db_dump_size_bytes` (6) all confirmed present in Prometheus — no wiring needed. Pool metrics
+    are keyed `{uuid,role,label}` (NOT `subvolume`): source `/`, source `/mnt`, destination `WD-18TB`.
+  - **Dead alert found:** `BtrfsPoolSpaceWarning` queried `mountpoint="/mnt/btrfs-pool"` (0 series) —
+    real mountpoint is `/mnt`. Fixed. **/mnt is at 19.8% free**, so the corrected warning fires on
+    reload (true positive, pool ~80% used / ~3.1 TB free; previously masked).
+  - **subvol6-tmp** is the only subvolume with `external==0` (send_type=2). Item 1 needs the
+    expected-external intent confirmed in Urd before the gate is written.
+  - **db_dump_size_bytes** has only ~3 days of history (14-day median widens over time). A stale
+    `loki` series appears in range queries but not instant (not in current dump).
+  - **Shipped this branch (no Urd dependency, promtool-clean, verified non-false-firing):**
+    fixed `BtrfsPoolSpaceWarning` (/mnt); added `BtrfsPoolSpaceCritical` (/mnt <10%);
+    `BackupPoolMetadataExhaustion` (>0.95, group `backup_pool_alerts`); `DbDumpSizeAnomaly`
+    (2× 14-day median AND >50 MiB, excl. prometheus); reaffirmed `LowSnapshotCount` disabled w/ note.
+  - **Gated on Urd handoff (2026-05-25):** (1) item 1 clean fix needs `backup_external_expected{subvolume}`;
+    (2) destination free-% alert needs `backup_pool_total_bytes` (node_exporter can't see the offsite
+    drive per ADR-023; WD-18TB ~18% free — highest-value gap). Dashboard polish (item 5) staged until
+    the final metric set lands.
+- 2026-05-25 — **Urd handoff received (PR #145, written, not yet run).** Both metrics implemented &
+  additive (ADR-105 safe). Confirmed: subvol6-tmp is local-only by design (`send_enabled=false`);
+  WD-18TB = 18.00 TB, **84% used / 16.6% free**; `backup_pool_*` refresh once per nightly run
+  (sentinel never writes `.prom`); `db_dump_*`/`db_restore_test_*` are homelab-owned (not Urd).
+  - **Implemented item 1 + item 2-destination:** `ExternalBackupMissing` now gates on
+    `and on(subvolume) backup_external_expected == 1`; added `BackupDestinationPoolSpaceWarning` (<15%)
+    + `BackupDestinationPoolSpaceCritical` (<7%). Both inert (return 0) until the new series emit.
+    Break-glass fallback for item 1 recorded inline.
+  - **ADR-021 amended** (2026-05-25, PR #145 section): registers both new series as consumed; records
+    deploy-ordering and the source-pool (node_exporter) vs destination-pool (Urd) split.
+  - ⚠️ **DEPLOY ORDERING:** merge Urd PR #145 + run `urd backup` (emit series) BEFORE deploying/reloading
+    these rules — the `backup_external_expected` join otherwise suppresses ExternalBackupMissing entirely.
+  - **Item 5 dashboard polish DONE:** added pool free-% + metadata gauges, dump-size trend (log scale),
+    and restore-test recency to `backup-health.json`; fixed the "Active Backup Alerts" table to match on
+    `category=~"backup|disaster-recovery"` (was a name regex missing `ExternalBackupMissing`/`DbDump*`).
+  - **Threshold decision (owner, 2026-05-25):** `BtrfsPoolSpaceWarning` set to 15% (not 20%) so it does
+    not page on today's steady 19.8% free; `BtrfsPoolSpaceCritical` (<10%) escalates. Revisit if /mnt
+    usage climbs. All other new alerts verified to return 0 against live data.
+  - **Status: COMPLETE pending Urd PR #145 merge + first run** (then deploy/reload, honoring ordering).
