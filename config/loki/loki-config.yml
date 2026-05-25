@@ -53,7 +53,9 @@ compactor:
   compaction_interval: 10m
   retention_enabled: true
   retention_delete_delay: 2h
-  retention_delete_worker_count: 150
+  # 20 workers is ample for a single-node, 7-day-retention store; 150 spiked CPU
+  # during the 10-min compaction window with no throughput benefit (metric diet, 2026-05-25).
+  retention_delete_worker_count: 20
   delete_request_store: filesystem
 
 # Limits configuration
