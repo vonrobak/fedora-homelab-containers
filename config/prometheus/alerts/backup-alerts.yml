@@ -74,7 +74,11 @@ groups:
       # (Local vs External)" + "Snapshot Count Trends Over Time" panels). A Discord
       # page adds no value over that panel for a slow-moving, eyeballed signal.
       # Per-subvolume counts are also available as backup_subvolume_local_snapshot_count.
-      # Keep disabled; if ever re-enabled, gate on a long `for:` to avoid prune churn.
+      # Keep disabled. If ever re-enabled: (1) gate on a long `for:` to avoid prune churn,
+      # and (2) EXCLUDE external-only subvolumes — htpc-root has local_snapshots=false
+      # (Urd config) so its local count is ~0 BY DESIGN and would false-fire. Prefer
+      # backup_subvolume_local_snapshot_count, whose line is ABSENT when local snapshots
+      # aren't configured, over backup_snapshot_count{location="local"} which reports 0.
       # - alert: LowSnapshotCount
       #   expr: backup_snapshot_count{location="local"} < 2
       #   for: 1h
