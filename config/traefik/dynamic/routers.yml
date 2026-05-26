@@ -314,6 +314,32 @@ http:
       tls:
         certResolver: letsencrypt
 
+    # Pi-hole DNS resolver admin (ADR-031 D4) — INTERNAL ONLY (enforced by ip-allowlist)
+    # Replaces unauthenticated http://192.168.1.69/admin with SSO-gated HTTPS.
+    # NOTE: ADR-031 D4 envisioned "no public DNS record", but a pre-existing wildcard
+    # *.patriark.org -> WAN IP makes pihole.patriark.org publicly RESOLVABLE. So the
+    # enforcing "internal-only" control is the ip-allowlist (LAN+WG), NOT DNS hiding:
+    # a non-LAN/WG client reaches Traefik via the WAN and is 403'd at the allowlist
+    # before Authelia. Pi-hole also has a local DNS record pihole.patriark.org ->
+    # 192.168.1.70 so LAN/VPN clients hit this host directly. Cert via Cloudflare DNS-01.
+    # Requires an Authelia access_control rule (two_factor, group:admins) — added 2026-05-26.
+    # Chain (ADR-031 D4 / ADR-016 — routing here, not labels):
+    #   crowdsec -> rate-limit -> ip-allowlist (LAN+WG) -> authelia SSO -> headers
+    # Phase 3: repoint the `pihole` service at the keepalived VIP (192.168.1.53).
+    pihole-admin:
+      rule: "Host(`pihole.patriark.org`)"
+      service: "pihole"
+      entryPoints:
+        - websecure
+      middlewares:
+        - crowdsec-bouncer@file
+        - rate-limit@file
+        - ip-allowlist@file
+        - authelia@file
+        - security-headers@file
+      tls:
+        certResolver: letsencrypt
+
   services:
     homepage:
       loadBalancer:
@@ -391,6 +417,15 @@ http:
       loadBalancer:
         servers:
           - url: "http://qbittorrent:8085"
+
+    # Pi-hole resolver admin (ADR-031 D4). Literal LAN IP — no /etc/hosts (ADR-018)
+    # entry needed (that's only for podman aardvark-dns ordering of *container*
+    # names). Traefik reaches it via reverse_proxy LAN egress (same path Prometheus
+    # uses to scrape the Pi). Phase 3: change to the keepalived VIP http://192.168.1.53:80.
+    pihole:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.69:80"
 
   middlewares:
     # CalDAV/.well-known redirects for Nextcloud

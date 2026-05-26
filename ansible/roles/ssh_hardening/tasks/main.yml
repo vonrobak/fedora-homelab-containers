@@ -1,0 +1,26 @@
+---
+# Key-only SSH via a drop-in. Safe to apply: Ansible itself connected over pubkey, so disabling
+# password methods cannot lock us out. Recovery if ever needed: the Pi's physical console.
+# Mirrors the all-THREE-no's lesson from docs/99-reports/2026-04-12-udm-pro-yubikey-ssh-hardening.md.
+- name: Ensure sshd_config.d drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Write SSH hardening drop-in
+  ansible.builtin.template:
+    src: 00-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/00-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload ssh
+
+- name: Validate the assembled sshd config (incl. drop-in) BEFORE any reload
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+  # If this fails the play aborts here — the handler never reloads, so the running
+  # sshd keeps its old (working) config and access is preserved.

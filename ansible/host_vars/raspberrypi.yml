@@ -1,0 +1,4 @@
+---
+# Node A (existing resolver). Phase 3 adds node B (192.168.1.68) as BACKUP with lower priority.
+keepalived_state: MASTER
+keepalived_priority: 200
