@@ -181,3 +181,85 @@ scrape_configs:
         labels:
           instance: 'fedora-htpc'
           service: 'postgres-immich'
+
+  # ===========================================================================
+  # ADR-031 Phase 2 — DNS resolver observability
+  # ===========================================================================
+
+  # node_exporter on the Pi-hole resolver (raspberrypi @ 192.168.1.69)
+  # Reachable directly from Prometheus (reverse_proxy network has LAN egress).
+  # ufw on the Pi already allows .70 → 9100 (applied via Ansible role node_exporter).
+  - job_name: 'node-exporter-pi'
+    static_configs:
+      - targets: ['192.168.1.69:9100']
+        labels:
+          instance: 'raspberrypi'
+          service: 'node_exporter'
+          role: 'dns_resolver'
+
+  # Pi-hole exporter — query/block stats from the Pi-hole v6 API.
+  - job_name: 'pihole'
+    static_configs:
+      - targets: ['pihole-exporter:9617']
+        labels:
+          instance: 'raspberrypi'
+          service: 'pihole'
+          role: 'dns_resolver'
+
+  # Blackbox DNS probes — *functional* signal (correctness > liveness).
+  # dns_functional: resolver returns a real A record for patriark.org.
+  # dns_blocked   : resolver sink-holes doubleclick.net to 0.0.0.0 (gravity health).
+  - job_name: 'blackbox-dns-functional'
+    metrics_path: /probe
+    params:
+      module: [dns_functional]
+    static_configs:
+      - targets:
+          - 192.168.1.69  # node A (only resolver today; node B + VIP added in Phase 3)
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: probe
+        replacement: dns_functional
+
+  - job_name: 'blackbox-dns-blocked'
+    metrics_path: /probe
+    params:
+      module: [dns_blocked]
+    static_configs:
+      - targets:
+          - 192.168.1.69
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: probe
+        replacement: dns_blocked
+
+  # GH#164 — Nextcloud maintenance / DB-upgrade stuck-state probe.
+  # Probes nextcloud's reverse_proxy interface (same target Traefik uses).
+  - job_name: 'blackbox-nextcloud-status'
+    metrics_path: /probe
+    params:
+      module: [nextcloud_status]
+    static_configs:
+      - targets:
+          - http://10.89.2.82/status.php
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: service
+        replacement: nextcloud
+      - target_label: probe
+        replacement: nextcloud_status

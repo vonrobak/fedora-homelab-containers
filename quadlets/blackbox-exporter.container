@@ -1,0 +1,43 @@
+[Unit]
+Description=Blackbox Exporter (Prometheus) - HTTP/DNS/ICMP/TCP probes
+Documentation=https://github.com/prometheus/blackbox_exporter
+After=network-online.target reverse_proxy-network.service monitoring-network.service
+Wants=network-online.target reverse_proxy-network.service monitoring-network.service
+
+[Container]
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-27 (multi-arch index digest).
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
+Image=quay.io/prometheus/blackbox-exporter@sha256:e753ff9f3fc458d02cca5eddab5a77e1c175eee484a8925ac7d524f04366c2fc
+ContainerName=blackbox-exporter
+HostName=blackbox-exporter
+
+# reverse_proxy first → default route (reach LAN .69 DNS, .1 ICMP, internet for external probes).
+# monitoring → scraped by Prometheus on :9115.
+Network=systemd-reverse_proxy:ip=10.89.2.90
+Network=systemd-monitoring:ip=10.89.4.95
+
+Volume=%h/containers/config/blackbox-exporter/blackbox.yml:/etc/blackbox_exporter/config.yml:Z,ro
+
+Exec=--config.file=/etc/blackbox_exporter/config.yml
+
+HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9115/-/healthy || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+
+User=1000:1000
+NoNewPrivileges=true
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=60s
+TimeoutStopSec=30s
+
+MemoryMax=128M
+MemoryHigh=115M
+CPUQuota=50%
+
+[Install]
+WantedBy=default.target

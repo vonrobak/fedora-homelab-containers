@@ -1,0 +1,123 @@
+# DNS Resolver Alerts — ADR-031 Phase 2 + GH#164
+#
+# Three layers of signal for the LAN resolver (Pi-hole + unbound @ 192.168.1.69):
+#   1. Liveness  — node_exporter `up` for the Pi host.
+#   2. Liveness  — pihole-exporter `up` for the Pi-hole API.
+#   3. Functional — blackbox DNS probes (the *primary* signal per ADR-031 D5):
+#        - dns_functional : resolver returns a real A record for a known-good name.
+#        - dns_blocked    : resolver still sink-holes a known-bad name to 0.0.0.0.
+# Functional > liveness: the resolver can be UP and yet broken (gravity stale,
+# upstream wedged, DNSSEC failing). The blackbox probes catch those.
+#
+# Plus: NextcloudMaintenanceStuck (GH#164) — fires when /status.php reports
+# `maintenance:true` or `needsDbUpgrade:true` for >10m. Re-uses blackbox-exporter.
+
+groups:
+  - name: dns_resolver
+    interval: 30s
+    rules:
+
+      # --- Liveness ---------------------------------------------------------
+
+      - alert: PiHoleNodeDown
+        expr: up{job="node-exporter-pi"} == 0
+        for: 3m
+        labels:
+          severity: critical
+          category: availability
+          component: dns_resolver
+          service: pihole
+        annotations:
+          summary: "Pi-hole resolver host unreachable (node_exporter down)"
+          description: |
+            node_exporter on the Pi-hole resolver (raspberrypi @ 192.168.1.69) is
+            not responding for >3m. Either the Pi is down, ufw is blocking .70,
+            or node_exporter has crashed. Alert path has DNS=9.9.9.9 fallback
+            (ADR-031 Phase 0) so this notification should still arrive.
+          runbook: "ssh patriark@192.168.1.69 'systemctl status node_exporter ufw'"
+
+      - alert: PiHoleExporterDown
+        expr: up{job="pihole"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          category: availability
+          component: dns_resolver
+          service: pihole
+        annotations:
+          summary: "Pi-hole exporter unreachable — query/block metrics blind"
+          description: |
+            pihole-exporter cannot reach the Pi-hole v6 API for >5m. DNS may still
+            work; we just lose visibility on query/block stats. Common causes:
+            invalid app password (PIHOLE_PASSWORD secret), API disabled, or web UI
+            stopped on the Pi.
+
+      # --- Functional (PRIMARY signal — ADR-031 D5) -------------------------
+
+      - alert: DnsResolverFunctionalFail
+        expr: probe_success{job="blackbox-dns-functional"} == 0
+        for: 3m
+        labels:
+          severity: critical
+          category: availability
+          component: dns_resolver
+          probe: dns_functional
+        annotations:
+          summary: "DNS resolver not returning answers for known-good names"
+          description: |
+            blackbox dns_functional probe failing for {{ $labels.instance }} (>3m).
+            Resolver is either down, returning SERVFAIL/empty, or sink-holing
+            patriark.org. This is the primary correctness signal — every internal
+            service that depends on DNS is affected.
+          runbook: |
+            dig +short patriark.org @{{ $labels.instance }}
+            ssh patriark@{{ $labels.instance }} 'systemctl status pihole-FTL unbound'
+
+      - alert: DnsResolverBlocklistRegression
+        expr: probe_success{job="blackbox-dns-blocked"} == 0
+        for: 10m
+        labels:
+          severity: warning
+          category: security
+          component: dns_resolver
+          probe: dns_blocked
+        annotations:
+          summary: "Pi-hole blocklist regression — known-bad name no longer sink-holed"
+          description: |
+            blackbox dns_blocked probe failing for {{ $labels.instance }} (>10m):
+            doubleclick.net is *not* being rewritten to 0.0.0.0. Detects the
+            class of bug from the 2026-05-21 Pi-hole investigation (gravity
+            stale / blocking disabled / upstream bypass). If DnsResolverFunctionalFail
+            is also firing, treat as full outage; alone = blocking-only regression.
+          runbook: |
+            dig +short doubleclick.net @{{ $labels.instance }}
+            ssh patriark@{{ $labels.instance }} 'pihole -g'   # rebuild gravity
+
+  - name: nextcloud_state
+    interval: 1m
+    rules:
+
+      # --- GH#164 — Nextcloud maintenance / DB-upgrade stuck-state ---------
+
+      - alert: NextcloudMaintenanceStuck
+        # Body-regex failure is the discriminator: any other probe failure (5xx,
+        # network) would not set probe_failed_due_to_regexp=1.
+        expr: probe_success{job="blackbox-nextcloud-status"} == 0
+              and probe_failed_due_to_regexp{job="blackbox-nextcloud-status"} == 1
+        for: 10m
+        labels:
+          severity: critical
+          category: availability
+          component: nextcloud
+          service: nextcloud
+        annotations:
+          summary: "Nextcloud stuck in maintenance / pending DB upgrade for >10m"
+          description: |
+            /status.php reports `maintenance:true` or `needsDbUpgrade:true` for
+            >10m. Planned maintenance windows are normally <10m; this indicates
+            a stuck upgrade or unfinished migration. Closes the gap from the
+            2026-04-21 SLO-collapse postmortem (rate-based alerts missed it).
+          runbook: |
+            podman exec -u www-data nextcloud php occ status
+            podman exec -u www-data nextcloud php occ upgrade
+            podman exec -u www-data nextcloud php occ maintenance:mode --off

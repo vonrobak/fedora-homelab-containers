@@ -1,0 +1,51 @@
+[Unit]
+Description=Pi-hole Exporter (Prometheus) — query/block metrics from the LAN resolver
+Documentation=https://github.com/eko/pihole-exporter
+After=network-online.target reverse_proxy-network.service monitoring-network.service
+Wants=network-online.target reverse_proxy-network.service monitoring-network.service
+
+[Container]
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-27.
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only.
+# Pi-hole v6: uses app-password auth, supplied via Podman secret PIHOLE_PASSWORD.
+Image=docker.io/ekofr/pihole-exporter@sha256:a890cc731a39da719ba19cfd717427d93366cd36307f069d495f37a1373ccffc
+ContainerName=pihole-exporter
+HostName=pihole-exporter
+
+# reverse_proxy first → default route to LAN (the Pi at 192.168.1.69).
+# monitoring → Prometheus scrapes :9617.
+Network=systemd-reverse_proxy:ip=10.89.2.91
+Network=systemd-monitoring:ip=10.89.4.96
+
+Environment=PIHOLE_HOSTNAME=192.168.1.69
+Environment=PIHOLE_PORT=80
+Environment=PIHOLE_PROTOCOL=http
+Environment=PORT=9617
+Environment=INTERVAL=30s
+Environment=TZ=Europe/Oslo
+
+# Pi-hole v6 app password — generate in Pi-hole UI (Settings → Web Interface / API → App passwords).
+# Create secret:  printf '<app-password>' | podman secret create pihole_api_token -
+Secret=pihole_api_token,type=env,target=PIHOLE_PASSWORD
+
+HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9617/metrics || exit 1
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+
+User=1000:1000
+NoNewPrivileges=true
+
+[Service]
+Slice=container.slice
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=60s
+TimeoutStopSec=30s
+
+MemoryMax=64M
+MemoryHigh=56M
+CPUQuota=25%
+
+[Install]
+WantedBy=default.target

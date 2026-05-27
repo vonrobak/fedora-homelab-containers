@@ -1,0 +1,59 @@
+# Blackbox Exporter — Probe Modules
+#
+# Phase 2 of ADR-031 (DNS Resolver First-Class & HA) + closes GH#164 (Nextcloud
+# maintenance state). PR B (closes GH#151) will append http_2xx + icmp_v4 modules.
+#
+# Functional > liveness: dns_functional verifies the resolver returns a non-empty
+# answer for a known-good name; dns_blocked verifies the gravity blocklist still
+# rewrites known-ad domains to 0.0.0.0. Both probes failing = real resolver outage;
+# only dns_blocked failing = gravity regression (Thread A class of bug —
+# see [[project_dns_investigation]]).
+
+modules:
+
+  # ADR-031 D5 — primary correctness signal for the resolver.
+  # Resolves a known-good name and FAILS unless the answer contains a real IPv4.
+  # Go's RE2 has no negative lookahead, so split into two checks:
+  #   1. must contain an A record   (catches NXDOMAIN / empty / SERVFAIL)
+  #   2. must NOT be 0.0.0.0        (catches accidental sink-holing of the apex)
+  dns_functional:
+    prober: dns
+    timeout: 5s
+    dns:
+      query_name: patriark.org
+      query_type: A
+      validate_answer_rrs:
+        fail_if_not_matches_regexp:
+          - 'patriark\.org\.\s+\d+\s+IN\s+A\s+\d+\.\d+\.\d+\.\d+'
+        fail_if_matches_regexp:
+          - 'patriark\.org\.\s+\d+\s+IN\s+A\s+0\.0\.0\.0'
+
+  # ADR-031 D5 — block-list health (gravity regression detector).
+  # Resolves a known-bad name and FAILS unless the answer is 0.0.0.0 (sink-holed).
+  # Detects the exact class of bug from the 2026-05-21 Pi-hole investigation
+  # (DoH-bypass / gravity-stale): blocking would silently stop working.
+  dns_blocked:
+    prober: dns
+    timeout: 5s
+    dns:
+      query_name: doubleclick.net
+      query_type: A
+      validate_answer_rrs:
+        fail_if_not_matches_regexp:
+          - 'doubleclick\.net\.\s+\d+\s+IN\s+A\s+0\.0\.0\.0'
+
+  # GH#164 — Nextcloud maintenance / DB-upgrade stuck-state alert.
+  # Probes /status.php (auth-free) and FAILS if maintenance or needsDbUpgrade is true.
+  # Blackbox cannot natively emit `nextcloud_maintenance{0|1}` gauges (GH#164 option 1
+  # was inaccurate on that point); the alert outcome is equivalent — probe_success=0
+  # + probe_failed_due_to_regexp=1 → NextcloudMaintenanceStuck.
+  nextcloud_status:
+    prober: http
+    timeout: 5s
+    http:
+      method: GET
+      valid_status_codes: [200]
+      preferred_ip_protocol: ip4
+      fail_if_body_matches_regexp:
+        - '"maintenance":true'
+        - '"needsDbUpgrade":true'
