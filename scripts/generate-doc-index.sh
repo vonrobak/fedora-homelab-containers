@@ -348,7 +348,7 @@ EOF
     services=$(podman ps --format '{{.Names}}' 2>/dev/null | sort || true)
 
     # Group services for display (primary services only, skip backing stores)
-    local primary_services="traefik authelia crowdsec jellyfin immich-server nextcloud vaultwarden home-assistant homepage gathio prometheus grafana loki alertmanager"
+    local primary_services="traefik authelia crowdsec jellyfin immich-server nextcloud vaultwarden home-assistant gathio prometheus grafana loki alertmanager"
 
     for service in $primary_services; do
         # Skip if not running

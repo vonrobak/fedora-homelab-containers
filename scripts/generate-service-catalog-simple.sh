@@ -19,7 +19,6 @@ get_group() {
         vaultwarden)                                 echo "5:Vaultwarden" ;;
         home-assistant)                              echo "6:Home Automation" ;;
         gathio|gathio-db)                            echo "7:Gathio" ;;
-        homepage)                                    echo "8:Homepage" ;;
         prometheus|grafana|loki|alertmanager|promtail|node_exporter|cadvisor|unpoller|alert-discord-relay)
                                                      echo "9:Monitoring" ;;
         *)                                           echo "10:Other" ;;
