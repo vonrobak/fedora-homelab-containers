@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-05-25 05:00:59 UTC
+**Generated:** 2026-05-27 18:52:37 UTC
 **System:** fedora-htpc
 
 ---
@@ -28,7 +28,6 @@ graph TB
     subgraph Applications[Applications — Tier 3]
         gathio[Gathio<br/>Events]
         home_assistant[Home Assistant<br/>Automation]
-        homepage[Homepage<br/>Dashboard]
         immich_server[Immich<br/>Photos]
         jellyfin[Jellyfin<br/>Media]
         nextcloud[Nextcloud<br/>Files]
@@ -46,12 +45,14 @@ graph TB
     subgraph Supporting[Supporting — Tier 5]
         alert_discord_relay[alert-discord-relay]
         audiobookshelf[audiobookshelf]
+        blackbox_exporter[blackbox-exporter]
         cadvisor[cadvisor]
         forgejo[forgejo]
         forgejo_db[forgejo-db]
         immich_ml[immich-ml]
         navidrome[navidrome]
         node_exporter[node_exporter]
+        pihole_exporter[pihole-exporter]
         postgres_exporter[postgres-exporter]
         promtail[promtail]
         proton_bridge[proton-bridge]
@@ -77,16 +78,17 @@ graph TB
     traefik -.-> alertmanager
     traefik -.-> audiobookshelf
     traefik -.-> authelia
+    traefik -.-> blackbox_exporter
     traefik -.-> forgejo
     traefik -.-> gathio
     traefik -.-> grafana
     traefik -.-> home_assistant
-    traefik -.-> homepage
     traefik -.-> immich_server
     traefik -.-> jellyfin
     traefik -.-> loki
     traefik -.-> navidrome
     traefik -.-> nextcloud
+    traefik -.-> pihole_exporter
     traefik -.-> prometheus
     traefik -.-> proton_bridge
     traefik -.-> qbittorrent
@@ -94,6 +96,8 @@ graph TB
     traefik -.-> vaultwarden
 
     %% Monitoring (Prometheus scrapes via monitoring network)
+    prometheus -.->|scrapes| blackbox_exporter
+    prometheus -.->|scrapes| pihole_exporter
     prometheus -.->|scrapes| postgres_exporter
     prometheus -.->|scrapes| redis_authelia_exporter
     prometheus -.->|scrapes| redis_immich_exporter
@@ -133,7 +137,6 @@ graph TB
 |---------|-------------------|----------------|
 | **gathio** | gathio-db | 🟢 Event management unavailable |
 | **home-assistant** | — | 🟡 Automations stop, smart home degraded |
-| **homepage** | — | 🟢 Dashboard unavailable |
 | **immich-server** | postgresql-immich,redis-immich | 🟢 Photo management unavailable |
 | **jellyfin** | — | 🟢 Media streaming unavailable |
 | **nextcloud** | — | 🟢 File sync unavailable |
@@ -155,12 +158,14 @@ graph TB
 |---------|-------------------|----------------|
 | **alert-discord-relay** | — | 🟢 Service-specific impact |
 | **audiobookshelf** | — | 🟢 Service-specific impact |
+| **blackbox-exporter** | — | 🟢 Service-specific impact |
 | **cadvisor** | — | 🟢 Service-specific impact |
 | **forgejo** | forgejo-db | 🟢 Service-specific impact |
 | **forgejo-db** | — | 🟢 Service-specific impact |
 | **immich-ml** | — | 🟢 Service-specific impact |
 | **navidrome** | — | 🟢 Service-specific impact |
 | **node_exporter** | — | 🟢 Service-specific impact |
+| **pihole-exporter** | — | 🟢 Service-specific impact |
 | **postgres-exporter** | postgresql-immich | 🟢 Service-specific impact |
 | **promtail** | — | 🟢 Service-specific impact |
 | **proton-bridge** | — | 🟢 Service-specific impact |
@@ -178,11 +183,12 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 
 | Service | Starts After |
 |---------|-------------|
-| alert-discord-relay | (no ordering constraints) |
+| alert-discord-relay | traefik |
 | alertmanager | (no ordering constraints) |
 | audiobookshelf | traefik |
 | authelia | redis-authelia |
-| cadvisor | (no ordering constraints) |
+| blackbox-exporter | traefik |
+| cadvisor | traefik |
 | crowdsec | (no ordering constraints) |
 | forgejo | forgejo-db |
 | forgejo-db | (no ordering constraints) |
@@ -190,7 +196,6 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | gathio-db | (no ordering constraints) |
 | grafana | (no ordering constraints) |
 | home-assistant | (no ordering constraints) |
-| homepage | (no ordering constraints) |
 | immich-ml | (no ordering constraints) |
 | immich-server | postgresql-immich,redis-immich |
 | jellyfin | (no ordering constraints) |
@@ -199,11 +204,12 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | nextcloud | nextcloud-db,nextcloud-redis |
 | nextcloud-db | (no ordering constraints) |
 | nextcloud-redis | (no ordering constraints) |
-| node_exporter | (no ordering constraints) |
+| node_exporter | traefik |
+| pihole-exporter | traefik |
 | postgres-exporter | postgresql-immich |
 | postgresql-immich | (no ordering constraints) |
 | prometheus | node_exporter |
-| promtail | loki |
+| promtail | loki,traefik |
 | proton-bridge | (no ordering constraints) |
 | qbittorrent | (no ordering constraints) |
 | redis-authelia | (no ordering constraints) |
@@ -211,8 +217,8 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | redis-immich | (no ordering constraints) |
 | redis-immich-exporter | redis-immich |
 | traefik | http.socket,https.socket |
-| unifi-syslog | (no ordering constraints) |
-| unpoller | prometheus |
+| unifi-syslog | traefik |
+| unpoller | prometheus,traefik |
 | vaultwarden | traefik |
 
 ---
@@ -233,13 +239,13 @@ Services on the same network can communicate:
 
 **media_services:** jellyfin
 
-**monitoring:** alert-discord-relay,alertmanager,cadvisor,grafana,loki,node_exporter,postgres-exporter,prometheus,promtail,redis-authelia-exporter,redis-immich-exporter,unpoller
+**monitoring:** alert-discord-relay,alertmanager,blackbox-exporter,cadvisor,grafana,loki,node_exporter,pihole-exporter,postgres-exporter,prometheus,promtail,redis-authelia-exporter,redis-immich-exporter,unpoller
 
 **nextcloud:** nextcloud,nextcloud-db,nextcloud-redis
 
 **photos:** immich-ml,immich-server,postgres-exporter,postgresql-immich,redis-immich,redis-immich-exporter
 
-**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,crowdsec,forgejo,gathio,grafana,home-assistant,homepage,immich-server,jellyfin,loki,navidrome,nextcloud,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
+**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,blackbox-exporter,crowdsec,forgejo,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,pihole-exporter,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
 
 **syslog:** unifi-syslog
 
