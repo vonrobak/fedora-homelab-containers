@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-05-25 05:01:00 UTC
-**Total Documents:** 436
+**Generated:** 2026-05-27 18:52:38 UTC
+**Total Documents:** 442
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (26 documents)
+### 00-foundation/ (27 documents)
 
 **Fundamentals and core concepts**
 
@@ -53,12 +53,13 @@
 - ADR-028: [2026-04-27-ADR-028-podman-secret-store-path-split](00-foundation/decisions/2026-04-27-ADR-028-podman-secret-store-path-split.md)
 - ADR-029: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
 - ADR-030: [2026-05-23-ADR-030-container-supply-chain-trust-model](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
+- ADR-031: [2026-05-25-ADR-031-dns-resolver-first-class-and-ha](00-foundation/decisions/2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md)
 - : [README](00-foundation/decisions/fixtures/README.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
 ---
 
-### 10-services/ (28 documents)
+### 10-services/ (27 documents)
 
 **Service-specific documentation and deployment guides**
 
@@ -70,7 +71,6 @@
 - [esp32-plejd-quick-start.md](10-services/guides/esp32-plejd-quick-start.md)
 - [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
 - [home-assistant.md](10-services/guides/home-assistant.md)
-- [homepage-widget-configuration.md](10-services/guides/homepage-widget-configuration.md)
 - [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
 - [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
 - [immich.md](10-services/guides/immich.md)
@@ -179,7 +179,7 @@
 
 ---
 
-### 97-plans/ (38 documents)
+### 97-plans/ (39 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
@@ -201,6 +201,7 @@
 - 📋 [2026-05-24-tier4-egress-detection.md](97-plans/2026-05-24-tier4-egress-detection.md)
 - 📋 [2026-05-25-backup-observability.md](97-plans/2026-05-25-backup-observability.md)
 - 📋 [2026-05-25-monitoring-metric-diet.md](97-plans/2026-05-25-monitoring-metric-diet.md)
+- 📋 [2026-05-25-pihole-resolver-first-class-and-ha.md](97-plans/2026-05-25-pihole-resolver-first-class-and-ha.md)
 - 📋 [2026-05-25-slo-alert-coverage.md](97-plans/2026-05-25-slo-alert-coverage.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
@@ -223,7 +224,7 @@
 
 ---
 
-### 98-journals/ (219 documents)
+### 98-journals/ (221 documents)
 
 **Chronological project history (append-only log)**
 
@@ -231,7 +232,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (54 documents)
+### 99-reports/ (57 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -242,11 +243,13 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 ## Recently Updated (Last 7 Days)
 
 - 2026-05-23: [2025-12-22-ADR-015-container-update-strategy.md](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
+- 2026-05-25: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
 - 2026-05-22: [2026-04-18-ADR-024-database-dump-backup.md](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
 - 2026-05-22: [2026-04-18-ADR-025-db-storage-migration-deferred.md](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
 - 2026-05-22: [2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md](00-foundation/decisions/2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md)
 - 2026-05-22: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
 - 2026-05-23: [2026-05-23-ADR-030-container-supply-chain-trust-model.md](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
+- 2026-05-25: [2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md](00-foundation/decisions/2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md)
 - 2026-05-25: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
 - 2026-05-23: [2026-05-23-adr030-tier1-execution-lessons-private.md](90-archive/2026-05-23-adr030-tier1-execution-lessons-private.md)
 - 2026-05-24: [2026-05-23-adr030-tier2-execution-private.md](90-archive/2026-05-23-adr030-tier2-execution-private.md)
@@ -259,8 +262,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-05-24: [2026-05-24-tier3-signature-verification-deliberate-path.md](97-plans/2026-05-24-tier3-signature-verification-deliberate-path.md)
 - 2026-05-24: [2026-05-24-tier4-egress-detection.md](97-plans/2026-05-24-tier4-egress-detection.md)
 - 2026-05-25: [2026-05-25-backup-observability.md](97-plans/2026-05-25-backup-observability.md)
-- 2026-05-25: [2026-05-25-monitoring-metric-diet.md](97-plans/2026-05-25-monitoring-metric-diet.md)
-- 2026-05-25: [2026-05-25-slo-alert-coverage.md](97-plans/2026-05-25-slo-alert-coverage.md)
 
 ---
 
@@ -314,11 +315,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - Related: [home-assistant.md](10-services/guides/home-assistant.md)
 - Config: `~/containers/config/home-assistant/`
 - Quadlet: `~/.config/containers/systemd/home-assistant.container`
-
-**Homepage:**
-- Related: [homepage-widget-configuration.md](10-services/guides/homepage-widget-configuration.md)
-- Config: `~/containers/config/homepage/`
-- Quadlet: `~/.config/containers/systemd/homepage.container`
 
 **Gathio:**
 - Related: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)

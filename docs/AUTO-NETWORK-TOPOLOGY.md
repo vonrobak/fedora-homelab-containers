@@ -1,7 +1,7 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-05-25 05:00:53 UTC
-**System:** fedora-htpc | **Networks:** 11 | **Containers:** 36
+**Generated:** 2026-05-27 18:52:32 UTC
+**System:** fedora-htpc | **Networks:** 11 | **Containers:** 37
 
 ---
 
@@ -22,7 +22,6 @@ graph TB
     Authelia -->|Proxy| gathio[gathio]
     Authelia -->|Proxy| grafana[grafana]
     Authelia -->|Proxy| home_assistant[home-assistant]
-    Authelia -->|Proxy| homepage[homepage]
     Authelia -->|Proxy| loki[loki]
     Authelia -->|Proxy| prometheus[prometheus]
     Authelia -->|Proxy| qbittorrent[qbittorrent]
@@ -31,11 +30,13 @@ graph TB
     CrowdSec -->|Rate Limit| alert_discord_relay[alert-discord-relay]
     CrowdSec -->|Rate Limit| alertmanager[alertmanager]
     CrowdSec -->|Rate Limit| audiobookshelf[audiobookshelf]
+    CrowdSec -->|Rate Limit| blackbox_exporter[blackbox-exporter]
     CrowdSec -->|Rate Limit| forgejo[forgejo]
     CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
     CrowdSec -->|Rate Limit| navidrome[navidrome]
     CrowdSec -->|Rate Limit| nextcloud[nextcloud]
+    CrowdSec -->|Rate Limit| pihole_exporter[pihole-exporter]
     CrowdSec -->|Rate Limit| proton_bridge[proton-bridge]
     CrowdSec -->|Rate Limit| unpoller[unpoller]
     CrowdSec -->|Rate Limit| vaultwarden[vaultwarden]
@@ -99,10 +100,12 @@ graph TB
         direction LR
         monitoring_alert_discord_relay[alert-discord-relay]
         monitoring_alertmanager[alertmanager]
+        monitoring_blackbox_exporter[blackbox-exporter]
         monitoring_cadvisor[cadvisor]
         monitoring_grafana[grafana]
         monitoring_loki[loki]
         monitoring_node_exporter[node_exporter]
+        monitoring_pihole_exporter[pihole-exporter]
         monitoring_postgres_exporter[postgres-exporter]
         monitoring_prometheus[prometheus]
         monitoring_promtail[promtail]
@@ -134,17 +137,18 @@ graph TB
         reverse_proxy_alertmanager[alertmanager]
         reverse_proxy_audiobookshelf[audiobookshelf]
         reverse_proxy_authelia[authelia]
+        reverse_proxy_blackbox_exporter[blackbox-exporter]
         reverse_proxy_crowdsec[crowdsec]
         reverse_proxy_forgejo[forgejo]
         reverse_proxy_gathio[gathio]
         reverse_proxy_grafana[grafana]
         reverse_proxy_home_assistant[home-assistant]
-        reverse_proxy_homepage[homepage]
         reverse_proxy_immich_server[immich-server]
         reverse_proxy_jellyfin[jellyfin]
         reverse_proxy_loki[loki]
         reverse_proxy_navidrome[navidrome]
         reverse_proxy_nextcloud[nextcloud]
+        reverse_proxy_pihole_exporter[pihole-exporter]
         reverse_proxy_prometheus[prometheus]
         reverse_proxy_proton_bridge[proton-bridge]
         reverse_proxy_qbittorrent[qbittorrent]
@@ -184,14 +188,15 @@ Shows which services belong to which networks. Dynamically generated from runnin
 | **Public Services** |
 | alert-discord-relay | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
 | audiobookshelf | - | - | - | - | - | - | - | - | - | ✅ | - |
+| blackbox-exporter | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
 | forgejo | - | ✅ | - | - | - | - | - | - | - | ✅ | - |
 | gathio | - | - | ✅ | - | - | - | - | - | - | ✅ | - |
 | home-assistant | - | - | - | ✅ | - | - | - | - | - | ✅ | - |
-| homepage | - | - | - | - | - | - | - | - | - | ✅ | - |
 | immich-server | - | - | - | - | - | - | - | - | ✅ | ✅ | - |
 | jellyfin | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
 | navidrome | - | - | - | - | - | - | - | - | - | ✅ | - |
 | nextcloud | - | - | - | - | - | - | - | ✅ | - | ✅ | - |
+| pihole-exporter | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
 | proton-bridge | - | - | - | - | ✅ | - | - | - | - | ✅ | - |
 | qbittorrent | - | - | - | - | - | - | - | - | - | ✅ | - |
 | unpoller | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
@@ -337,15 +342,17 @@ sequenceDiagram
 
 - **Full Name:** `systemd-monitoring`
 - **Subnet:** 10.89.4.0/24
-- **Services:** 12
+- **Services:** 14
 
 **Members:**
 - alert-discord-relay
 - alertmanager
+- blackbox-exporter
 - cadvisor
 - grafana
 - loki
 - node_exporter
+- pihole-exporter
 - postgres-exporter
 - prometheus
 - promtail
@@ -385,24 +392,25 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 21
+- **Services:** 22
 
 **Members:**
 - alert-discord-relay
 - alertmanager
 - audiobookshelf
 - authelia
+- blackbox-exporter
 - crowdsec
 - forgejo
 - gathio
 - grafana
 - home-assistant
-- homepage
 - immich-server
 - jellyfin
 - loki
 - navidrome
 - nextcloud
+- pihole-exporter
 - prometheus
 - proton-bridge
 - qbittorrent
