@@ -1,31 +1,5 @@
 http:
   routers:
-    # Root domain → Homepage Dashboard
-    root-redirect:
-      rule: "Host(`patriark.org`)"
-      service: "homepage"
-      entryPoints:
-        - websecure
-      middlewares:
-        - crowdsec-bouncer@file
-        - rate-limit@file
-        - authelia@file
-      tls:
-        certResolver: letsencrypt
-
-    # Homepage Dashboard (explicit subdomain)
-    homepage-dashboard:
-      rule: "Host(`home.patriark.org`)"
-      service: "homepage"
-      entryPoints:
-        - websecure
-      middlewares:
-        - crowdsec-bouncer@file
-        - rate-limit@file
-        - authelia@file
-      tls:
-        certResolver: letsencrypt
-
     # Authelia SSO Portal (YubiKey-First Authentication)
     # T1.4 attempted to add a rate-limit on this router on 2026-04-27 to clear
     # SA-TRF-04. Both rate-limit-auth (10/min burst 5) and rate-limit (100/min
@@ -341,11 +315,6 @@ http:
         certResolver: letsencrypt
 
   services:
-    homepage:
-      loadBalancer:
-        servers:
-          - url: "http://homepage:3000"
-
     jellyfin:
       loadBalancer:
         servers:

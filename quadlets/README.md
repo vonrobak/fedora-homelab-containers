@@ -246,7 +246,6 @@ Test quadlets with placeholder credentials are **excluded from git**:
 - `redis-immich.container` - Redis for Immich
 - `vaultwarden.container` - Password manager
 - `collabora.container` - Online office suite
-- `homepage.container` - Dashboard/homepage
 
 ### Home Automation (1)
 - `home-assistant.container` - Home automation hub
