@@ -1,7 +1,7 @@
 [Unit]
 Description=Unpoller - UniFi Metrics Exporter for Prometheus
 Documentation=https://unpoller.com/docs/
-After=network-online.target reverse_proxy-network.service prometheus.service
+After=network-online.target reverse_proxy-network.service prometheus.service traefik.service
 Wants=network-online.target reverse_proxy-network.service
 
 [Container]
@@ -56,6 +56,9 @@ Restart=on-failure
 RestartSec=10s
 TimeoutStartSec=60s
 TimeoutStopSec=30s
+# Boot tier C: yield during fan-out; After=traefik.service defers past the storm
+StartupCPUWeight=50
+StartupIOWeight=50
 
 [Install]
 WantedBy=default.target

@@ -45,6 +45,9 @@ RestartSec=30s
 TimeoutStopSec=70s
 TimeoutStartSec=300
 OOMPolicy=kill
+# Boot tier A: elevated priority during default.target assembly (keystone)
+StartupCPUWeight=200
+StartupIOWeight=200
 
 # Resource limits (SSO can be memory intensive with sessions)
 MemoryMax=512M

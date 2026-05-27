@@ -24,6 +24,9 @@ HealthRetries=5
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
+# Boot tier A: elevated priority during default.target assembly (keystone)
+StartupCPUWeight=200
+StartupIOWeight=200
 
 # Resource Limits
 MemoryMax=512M

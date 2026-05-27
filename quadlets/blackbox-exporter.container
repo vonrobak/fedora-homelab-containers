@@ -1,7 +1,7 @@
 [Unit]
 Description=Blackbox Exporter (Prometheus) - HTTP/DNS/ICMP/TCP probes
 Documentation=https://github.com/prometheus/blackbox_exporter
-After=network-online.target reverse_proxy-network.service monitoring-network.service
+After=network-online.target reverse_proxy-network.service monitoring-network.service traefik.service
 Wants=network-online.target reverse_proxy-network.service monitoring-network.service
 
 [Container]
@@ -32,8 +32,14 @@ NoNewPrivileges=true
 Slice=container.slice
 Restart=on-failure
 RestartSec=10s
-TimeoutStartSec=60s
-TimeoutStopSec=30s
+# Boot-storm headroom: 38 containers fan out in parallel after reboot, hitting cold
+# page cache + rootless podman lock contention. Original 60s/30s caused SIGABRT'd
+# ExecStopPost coredumps after a cold-reboot on 2026-05-27.
+TimeoutStartSec=180s
+TimeoutStopSec=60s
+# Boot tier C: yield during fan-out; After=traefik.service defers past the storm
+StartupCPUWeight=50
+StartupIOWeight=50
 
 MemoryMax=128M
 MemoryHigh=115M

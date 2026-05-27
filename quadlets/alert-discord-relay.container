@@ -1,6 +1,6 @@
 [Unit]
 Description=Alert Discord Relay - Alertmanager to Discord Webhook Bridge
-After=network-online.target reverse_proxy-network.service monitoring-network.service
+After=network-online.target reverse_proxy-network.service monitoring-network.service traefik.service
 Wants=monitoring-network.service network-online.target reverse_proxy-network.service
 
 [Container]
@@ -35,6 +35,9 @@ HealthRetries=3
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=60
+# Boot tier C: yield during fan-out; After=traefik.service defers past the storm
+StartupCPUWeight=50
+StartupIOWeight=50
 
 # Resource Limits
 MemoryMax=128M

@@ -1,6 +1,6 @@
 [Unit]
 Description=Promtail - Log Collector for Loki
-After=network-online.target monitoring-network.service loki.service
+After=network-online.target monitoring-network.service loki.service traefik.service
 Wants=loki.service monitoring-network.service network-online.target
 
 [Container]
@@ -41,6 +41,9 @@ HealthTimeout=5s
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=60
+# Boot tier C: yield during fan-out; After=traefik.service defers past the storm
+StartupCPUWeight=50
+StartupIOWeight=50
 
 # Resource Limits
 MemoryMax=256M

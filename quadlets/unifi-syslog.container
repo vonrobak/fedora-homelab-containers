@@ -1,6 +1,6 @@
 [Unit]
 Description=UniFi UDM Pro Syslog Receiver (syslog-ng)
-After=network-online.target syslog-network.service
+After=network-online.target syslog-network.service traefik.service
 Wants=syslog-network.service network-online.target
 
 [Container]
@@ -40,7 +40,13 @@ HealthTimeout=5s
 [Service]
 Slice=container.slice
 Restart=on-failure
-TimeoutStartSec=60
+# Boot-storm headroom: see blackbox-exporter.container for the cold-reboot incident
+# 2026-05-27 where 60s timeout fired mid-startup → ExecStopPost SIGABRT.
+TimeoutStartSec=180
+TimeoutStopSec=60
+# Boot tier C: yield during fan-out; After=traefik.service defers past the storm
+StartupCPUWeight=50
+StartupIOWeight=50
 
 # Resource Limits
 MemoryMax=128M
