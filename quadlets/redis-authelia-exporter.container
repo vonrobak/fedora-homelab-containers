@@ -25,6 +25,9 @@ Environment=REDIS_ADDR=redis://redis-authelia:6379
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=60
+# Boot tier C: yield during fan-out (already gated behind redis-authelia.service)
+StartupCPUWeight=50
+StartupIOWeight=50
 
 MemoryMax=64M
 MemoryHigh=58M

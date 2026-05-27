@@ -29,6 +29,9 @@ HealthRetries=3
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=60
+# Boot tier C: yield during fan-out (already gated behind postgresql-immich.service)
+StartupCPUWeight=50
+StartupIOWeight=50
 
 MemoryMax=128M
 MemoryHigh=115M

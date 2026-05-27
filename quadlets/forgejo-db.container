@@ -32,6 +32,9 @@ Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300
 OOMPolicy=kill
+# Boot tier A: elevated priority during default.target assembly (keystone)
+StartupCPUWeight=200
+StartupIOWeight=200
 
 # Resource Limits
 MemoryHigh=384M
