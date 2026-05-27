@@ -108,7 +108,7 @@ ALL_SERVICES=(
     prometheus grafana loki alertmanager promtail cadvisor node_exporter alert-discord-relay unpoller
     nextcloud nextcloud-db nextcloud-redis
     immich-server immich-ml postgresql-immich redis-immich
-    jellyfin vaultwarden homepage audiobookshelf navidrome qbittorrent
+    jellyfin vaultwarden audiobookshelf navidrome qbittorrent
     home-assistant
     gathio gathio-db
 )

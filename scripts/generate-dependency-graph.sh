@@ -40,7 +40,7 @@ get_tier() {
     case "$1" in
         traefik|authelia|redis-authelia)                         echo "1:Critical" ;;
         prometheus|grafana|loki|alertmanager|crowdsec)           echo "2:Infrastructure" ;;
-        jellyfin|immich-server|nextcloud|vaultwarden|home-assistant|homepage|gathio)
+        jellyfin|immich-server|nextcloud|vaultwarden|home-assistant|gathio)
                                                                  echo "3:Applications" ;;
         nextcloud-db|nextcloud-redis|postgresql-immich|redis-immich|gathio-db)
                                                                  echo "4:Data" ;;
@@ -64,7 +64,6 @@ get_label() {
         nextcloud)         echo "Nextcloud<br/>Files" ;;
         vaultwarden)       echo "Vaultwarden<br/>Passwords" ;;
         home-assistant)    echo "Home Assistant<br/>Automation" ;;
-        homepage)          echo "Homepage<br/>Dashboard" ;;
         gathio)            echo "Gathio<br/>Events" ;;
         nextcloud-db)      echo "MariaDB<br/>Nextcloud DB" ;;
         nextcloud-redis)   echo "Redis<br/>Nextcloud Cache" ;;
@@ -91,7 +90,6 @@ get_impact() {
         nextcloud)         echo "🟢 File sync unavailable" ;;
         vaultwarden)       echo "🟡 Password vault inaccessible (keep local cache)" ;;
         home-assistant)    echo "🟡 Automations stop, smart home degraded" ;;
-        homepage)          echo "🟢 Dashboard unavailable" ;;
         gathio)            echo "🟢 Event management unavailable" ;;
         postgresql-immich) echo "🔴 Immich completely non-functional" ;;
         nextcloud-db)      echo "🔴 Nextcloud completely non-functional" ;;

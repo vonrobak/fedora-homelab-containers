@@ -36,8 +36,7 @@
 # Monitoring & Logging
 10.89.2.83  loki
 
-# Dashboard & Security
-10.89.2.73  homepage
+# Security
 10.89.2.71  vaultwarden
 
 # Downloads & Torrents
