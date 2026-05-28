@@ -209,7 +209,11 @@ scrape_configs:
   # Blackbox DNS probes — *functional* signal (correctness > liveness).
   # dns_functional: resolver returns a real A record for patriark.org.
   # dns_blocked   : resolver sink-holes doubleclick.net to 0.0.0.0 (gravity health).
+  # Cadence: liveness-class probe — outages caught within one alert window (for: 3m).
+  # 30s is fast enough for that; 15s would just dirty Pi-hole's query log without
+  # earlier detection (real outages also show up in pihole-exporter query metrics).
   - job_name: 'blackbox-dns-functional'
+    scrape_interval: 30s
     metrics_path: /probe
     params:
       module: [dns_functional]
@@ -226,7 +230,13 @@ scrape_configs:
       - target_label: probe
         replacement: dns_functional
 
+  # Cadence: config-drift canary — gravity regressions are a slow signal (hours/days).
+  # Alert uses for: 10m, so 5m interval gives 2+ samples per window. Probing faster
+  # adds no detection speed and pollutes Pi-hole's query log (which the operator uses
+  # to investigate genuine network anomalies — see GH#TBD pihole-exporter session
+  # hygiene + 2026-05-28 conversation).
   - job_name: 'blackbox-dns-blocked'
+    scrape_interval: 5m
     metrics_path: /probe
     params:
       module: [dns_blocked]
