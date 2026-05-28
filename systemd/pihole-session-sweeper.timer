@@ -1,0 +1,17 @@
+[Unit]
+Description=Pi-hole session sweeper timer (hourly)
+Documentation=file:/home/patriark/containers/scripts/pihole-session-sweeper.sh
+Requires=pihole-session-sweeper.service
+
+[Timer]
+# Hourly. With session.timeout=86400 (24h), the exporter creates ~1 new
+# session/day, so hourly is overkill in steady state — kept hourly anyway so
+# the pool also recovers within ~1h from any transient burst (e.g. exporter
+# crash-loop, Pi-hole restart, debugging curl spam).
+OnBootSec=5min
+OnUnitActiveSec=1h
+RandomizedDelaySec=2min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
