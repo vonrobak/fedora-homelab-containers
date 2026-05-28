@@ -1,0 +1,47 @@
+# Pi-hole API session-pool alerts (GH#246 — exporter session-leak mitigation).
+#
+# Backing metric: pihole-sessions.prom textfile, emitted by the
+# pihole-session-sweeper.timer (hourly). Watches the only failure mode the
+# sweeper does NOT self-heal: the sweeper itself failing or being unable to
+# keep up with a regression in upstream pihole-exporter behavior.
+
+groups:
+  - name: pihole-sessions
+    rules:
+      - alert: PiHoleSessionPoolNearExhaustion
+        expr: pihole_sessions_active / pihole_sessions_max > 0.75
+        for: 30m
+        labels:
+          severity: warning
+          service: pihole
+          component: exporter
+        annotations:
+          summary: "Pi-hole session pool {{ $value | humanizePercentage }} full"
+          description: |
+            The Pi-hole API session pool is filling faster than the sweeper
+            can drain it (active/max > 75% for 30m). Likely causes: the
+            pihole-session-sweeper.timer is failing, or upstream
+            ekofr/pihole-exporter behavior has changed and is leaking faster
+            than once per session-timeout window.
+
+            Inspect:
+              systemctl --user status pihole-session-sweeper.timer
+              journalctl --user -u pihole-session-sweeper.service --since '6 hours ago'
+              curl -sS -X POST http://192.168.1.69/api/auth -d "..." | jq
+
+            Context: GH#246, eko/pihole-exporter#318.
+
+      - alert: PiHoleSessionSweeperStale
+        expr: time() - pihole_session_sweeper_last_success_timestamp_seconds > 7200
+        for: 15m
+        labels:
+          severity: warning
+          service: pihole
+          component: sweeper
+        annotations:
+          summary: "Pi-hole session sweeper has not succeeded in {{ $value | humanizeDuration }}"
+          description: |
+            pihole-session-sweeper.timer is hourly; no successful run in
+            >2h means the timer is broken or the script is erroring. The
+            session pool will start filling within a few session-timeout
+            cycles. Check journalctl --user -u pihole-session-sweeper.service.

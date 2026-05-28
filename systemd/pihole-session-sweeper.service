@@ -1,0 +1,23 @@
+[Unit]
+# GH#246 — sweep expired Pi-hole API sessions left behind by the leak in
+# ekofr/pihole-exporter (ensureAuth re-auths without DELETE /api/auth).
+# Companion to the Pi-hole webserver.session.timeout bump (1800 → 86400)
+# applied via the admin UI on 2026-05-28.
+Description=Pi-hole session sweeper (GH#246 exporter session-leak mitigation)
+Documentation=file:/home/patriark/containers/scripts/pihole-session-sweeper.sh
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/pihole-session-sweeper.sh
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=60s
+
+# PrivateTmp intentionally NOT set — rootless podman's pause-process needs
+# access to the user's real /tmp namespace (see project_platform_gotchas).
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target
