@@ -176,6 +176,9 @@ quadlets/*.network.bak
 # Host-specific scripts (contain local UIDs, paths, usernames)
 scripts/verify-permissions.sh
 
+# Ansible (resolver IaC — contains LAN topology, usernames, SSH key paths)
+ansible/
+
 # Skill Creator Workspace (eval run artifacts, regenerated per iteration)
 *-workspace/
 
