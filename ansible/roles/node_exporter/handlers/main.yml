@@ -1,6 +1,0 @@
----
-- name: restart node_exporter
-  ansible.builtin.service:
-    name: prometheus-node-exporter
-    state: restarted
-  when: not ansible_check_mode    # service exists only after the real install; flush_handlers would trip --check
