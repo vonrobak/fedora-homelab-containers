@@ -61,9 +61,10 @@ docs/99-reports/
 # but not version-controlled. See docs/CONTRIBUTING.md for archive conventions.
 docs/90-archive/
 
-# Private journal entries — suffix any journal filename with `-private.md`
-# to keep it local (not version-controlled)
-docs/98-journals/*-private.md
+# Private notes — suffix ANY filename with `-private.md` to keep it local
+# (not version-controlled), repo-wide. Originally journal-scoped; generalized
+# so guides/notes holding key handles, emails, or LAN details stay untracked.
+*-private.md
 
 # Active-probe posture script — tuned attack tool for this specific perimeter
 # (curated attack paths, CrowdSec burst logic, Region Block negative test).
