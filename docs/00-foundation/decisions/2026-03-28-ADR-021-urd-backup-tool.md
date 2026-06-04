@@ -290,11 +290,106 @@ inline in `backup-alerts.yml` for shipping earlier.
 coordinated change. Dashboard surfacing (Plan C item 5) remains the deferred UX follow-up noted
 under UPI-043.
 
+## Amendment 2026-06-04 (Urd CLI output contract: documented, not consumed)
+
+Urd's v0.13.0 CHANGELOG (2026-04-21) closes its `notes`-channel entry with *"see the homelab
+ADR-021 update for future JSON-consumer precedent."* That update was drafted on 2026-04-20 but
+never merged; this amendment lands it, **re-verified against the current Urd release (v0.24.0,
+2026-06-03)** rather than the v0.13.0 it was first written for. Like the "On `heartbeat.json`"
+note above, it records a deliberate *non-consumption* boundary — so it is in scope even though
+CLI output is not one of the five "Keeping This ADR Current" triggers. The point is precisely to
+record that the homelab does **not** depend on this surface, and what a future consumer would
+have to do.
+
+### The boundary
+
+The homelab consumes Urd state **exclusively through the Prometheus textfile** (`backup.prom`)
+and the alerts and dashboards built on it. Urd's CLI text output (`urd status` / `urd backup` /
+`urd`) and its machine-readable JSON form are **not parsed by any homelab script or alert, and
+none is planned.** This is also the direction Urd itself points consumers: its reference docs
+classify CLI output as non-contractual and steer monitoring to the heartbeat and Prometheus
+metrics instead (`~/projects/urd/docs/20-reference/cli.md` §Output mode, §Stability classes —
+*"prefer the heartbeat … and metrics … over parsing CLI output"*). Nothing below is a dependency —
+it is precedent for a hypothetical future consumer.
+
+### Output channels (`BackupSummary`)
+
+`urd backup` produces a `BackupSummary` (`~/projects/urd/src/output.rs`) with two parallel
+human-facing string arrays:
+
+| Channel | Type | Meaning |
+|---------|------|---------|
+| `warnings` | `[]string` | Problems the operator may need to act on (pin failures, partial sends, skipped operations that matter). |
+| `notes` | `[]string` | By-design informational outcomes that need no action — e.g. the storage guard deliberately retaining snapshots. Added in Urd v0.13.0; the rationale is **Urd ADR-113 (do-no-harm invariant)** — when the guard holds a planned deletion to avoid storage pressure, that is a success, not a warning. |
+
+Both fields have been stable in shape through v0.24.0 *in practice* (the UPI 053 `PromiseStatus`
+refactor left the serialized form unchanged) — but that is observation, not a guarantee. Urd offers
+**no backward-compatibility contract** on this surface; see **Stability & canonical source** below.
+
+### JSON shape (no `--json` flag on backup/status)
+
+`urd backup` / `urd status` have **no `--json` flag** — they emit JSON only when stdout is **not**
+a TTY (`OutputMode::Daemon`, via `is_terminal()` in `src/output.rs`), at which point `BackupSummary`
+is serialized with serde. (The one literal `--json` flag in Urd is on the separate `urd events`
+command, itself classified non-contractual — so the surface here is genuinely flag-less.) `warnings`
+and `notes` are **always serialized**: neither carries `skip_serializing_if`, so both keys are
+**always present, rendered as `[]` when empty** (unlike the sibling `transitions` field, which *is*
+omitted when empty). A consumer may therefore rely on the *keys* existing as arrays, but **not** on
+their values, ordering, or string content. (The original 2026-04-20 draft claimed a bare `--json`
+flag and empty-omission; both were wrong and are corrected here.)
+
+### v0.13.0 semantic narrowing (UPI 026 "trust-repair")
+
+In v0.13.0 the cleanup outcome moved from `warnings` to `notes`: the old `"Space recovered — N
+skipped deletion(s)"` warning is now the note `"space guard held — N snapshot(s) retained."` A
+future consumer that counts items in `warnings` should treat this narrowing as **already in
+effect** (it shipped 2026-04-21), not as a pending change. No homelab alert is affected — none
+parses this surface.
+
+### Post-upgrade acknowledgment (historical one-shot)
+
+v0.13.0 also prepends a one-time line to `urd status` / `urd backup` / `urd` for returning users
+whose previously-`blocked` subvolumes became `healthy` (marker `trust-repair-v0_13_0`, gated on
+prior run history; fresh installs see nothing). It fires at most once per user. It is **never a
+JSON field**, but — a sharp edge worth recording — the preamble is prepended **unconditionally; it
+is not gated on output mode** (`src/commands/acknowledgment.rs`), so on its single firing in daemon
+(non-TTY) mode it would emit a raw text line *ahead of* the JSON document, making that one output
+non-parseable. On this host it was consumed months ago (inert since), so this is harmless today; it
+is recorded so a future JSON consumer knows the preamble is **not** output-mode-safe. (Urd-side fix
+tracked separately — see the note in the PR thread.)
+
+### Stability & canonical source
+
+**Stability — the decision-critical point.** `warnings` / `notes` ride on Urd's **Daemon (non-TTY)
+JSON output**, which Urd explicitly classifies as *internal, additive-evolution, with **no formal
+backward-compatibility contract*** — the opposite of the ADR-105-grade guarantee the Prometheus
+metrics carry. Urd's reference docs say so directly and steer consumers elsewhere: *"Daemon JSON
+output — Internal … no formal contract. Use heartbeat / metrics for monitoring"* and *"Interactive
+(TTY) text format — Evolving. Do not parse."* (`~/projects/urd/docs/20-reference/cli.md` §Stability
+classes, §Output mode). A future homelab parser **MUST** treat the shape as volatile and **MUST
+NOT** rely on field ordering or string content; it **MAY** rely only on the `warnings` / `notes`
+keys being present as (possibly empty) arrays.
+
+**Canonical source.** The authoritative contract for this surface is Urd's
+**`docs/20-reference/cli.md`** (§Output mode + §Stability classes) — **not** ADR-105 and **not**
+ADR-113. ADR-105 governs only four *on-disk* formats — snapshot names, directory layout, pin files,
+and Prometheus textfile metrics — and **expressly places presentation-layer output out of scope**
+(Urd ADR-105 Amendment 2026-05-15). The metrics this homelab *does* consume ride on that ADR-105
+contract; these CLI channels do not. Provenance and rationale, not stability: UPI 026 (Trust Repair,
+`docs/95-ideas/2026-04-20-design-026-trust-repair.md`) + CHANGELOG `[0.13.0]` **introduced** the
+channels, and **ADR-113 (do-no-harm)** is the **rationale** for routing space-guard retention to
+`notes` rather than `warnings` — none of the three is a contract. (The 2026-04-20 draft cited
+ADR-105 as the contract authority; that was wrong on two counts — ADR-105 doesn't cover this
+surface, *and* the real authority is `cli.md` — both corrected here.) If the homelab ever adds a
+parser for this surface, add an ADR-021 entry recording the schema-tolerance assumptions **first** —
+do not quietly take a dependency on the shape, exactly as stated for `heartbeat.json` above.
+
 ## Related
 - **ADR-020:** Daily external backups (strategy — still valid, implementation superseded)
 - **Urd project:** `~/projects/urd/` — CLAUDE.md, ADRs 100–111, status.md
 - **Urd design plan:** `docs/00-foundation/decisions/2026-03-23-urd-btrfs-time-machine-design.md`
 - **Urd ADR-105 Amendment 2026-05-15 (UPI 043):** canonical pool-observability + heartbeat v4 contract text.
 - **Urd [PR #145](https://github.com/vonrobak/urd/pull/145):** canonical source for `backup_external_expected` + `backup_pool_total_bytes` (Urd CHANGELOG `[Unreleased]`).
+- **Urd `docs/20-reference/cli.md` (§Output mode, §Stability classes):** canonical contract for the `warnings`/`notes` CLI output channels — classified *no formal contract* (Amendment 2026-06-04). UPI 026 design + CHANGELOG `[0.13.0]` = provenance; Urd ADR-113 (do-no-harm) = `notes`-routing rationale.
 - **Backup alerts:** `config/prometheus/alerts/backup-alerts.yml`
 - **Node exporter integration:** `quadlets/node_exporter.container` (textfile collector mount)
