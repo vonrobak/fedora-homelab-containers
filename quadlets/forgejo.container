@@ -18,8 +18,14 @@ Environment=TZ=Europe/Oslo
 Environment=FORGEJO__server__DOMAIN=git.patriark.org
 Environment=FORGEJO__server__ROOT_URL=https://git.patriark.org/
 Environment=FORGEJO__server__HTTP_PORT=3000
-Environment=FORGEJO__server__DISABLE_SSH=true
-Environment=FORGEJO__server__START_SSH_SERVER=false
+# git-over-SSH: built-in server, published to loopback only (127.0.0.1:2222 below) so it's
+# reachable from on-htpc SSH sessions (agent-forwarded keys) with NO LAN/internet exposure.
+# Reverses the earlier "git-over-SSH deferred" decision; HTTPS path is unaffected.
+Environment=FORGEJO__server__DISABLE_SSH=false
+Environment=FORGEJO__server__START_SSH_SERVER=true
+Environment=FORGEJO__server__SSH_LISTEN_PORT=2222
+Environment=FORGEJO__server__SSH_PORT=2222
+Environment=FORGEJO__server__SSH_DOMAIN=localhost
 
 # Database (forgejo-db reached by container name on systemd-forgejo)
 Environment=FORGEJO__database__DB_TYPE=postgres
@@ -40,6 +46,9 @@ Volume=/mnt/btrfs-pool/subvol7-containers/forgejo:/data:Z
 # Networks (reverse_proxy FIRST = default route for internet; static IPs per ADR-018)
 Network=systemd-reverse_proxy:ip=10.89.2.89
 Network=systemd-forgejo:ip=10.89.8.89
+
+# git-over-SSH published to LOOPBACK ONLY — htpc-local; reached via agent-forwarded SSH sessions
+PublishPort=127.0.0.1:2222:2222
 
 DNS=192.168.1.69
 
