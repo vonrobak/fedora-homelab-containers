@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-05-27 18:52:38 UTC
-**Total Documents:** 442
+**Generated:** 2026-06-04 15:10:34 UTC
+**Total Documents:** 446
 
 ---
 
@@ -224,7 +224,7 @@
 
 ---
 
-### 98-journals/ (221 documents)
+### 98-journals/ (222 documents)
 
 **Chronological project history (append-only log)**
 
@@ -232,7 +232,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (57 documents)
+### 99-reports/ (60 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -242,26 +242,16 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-05-23: [2025-12-22-ADR-015-container-update-strategy.md](00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
-- 2026-05-25: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
-- 2026-05-22: [2026-04-18-ADR-024-database-dump-backup.md](00-foundation/decisions/2026-04-18-ADR-024-database-dump-backup.md)
-- 2026-05-22: [2026-04-18-ADR-025-db-storage-migration-deferred.md](00-foundation/decisions/2026-04-18-ADR-025-db-storage-migration-deferred.md)
-- 2026-05-22: [2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md](00-foundation/decisions/2026-04-22-ADR-027-forward-nocow-workloads-subvol8-db.md)
-- 2026-05-22: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
-- 2026-05-23: [2026-05-23-ADR-030-container-supply-chain-trust-model.md](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
-- 2026-05-25: [2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md](00-foundation/decisions/2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md)
-- 2026-05-25: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-- 2026-05-23: [2026-05-23-adr030-tier1-execution-lessons-private.md](90-archive/2026-05-23-adr030-tier1-execution-lessons-private.md)
-- 2026-05-24: [2026-05-23-adr030-tier2-execution-private.md](90-archive/2026-05-23-adr030-tier2-execution-private.md)
-- 2026-05-23: [2026-05-23-supply-chain-trust-model-adr030-private.md](90-archive/2026-05-23-supply-chain-trust-model-adr030-private.md)
-- 2026-05-24: [2026-05-24-adr030-tier3-execution-private.md](90-archive/2026-05-24-adr030-tier3-execution-private.md)
-- 2026-05-24: [2026-05-24-restore-test-tmpfs-and-dead-dr-metric.md](90-archive/2026-05-24-restore-test-tmpfs-and-dead-dr-metric.md)
-- 2026-05-23: [2026-05-23-tier1-digest-pinning-and-update-deautomation.md](97-plans/2026-05-23-tier1-digest-pinning-and-update-deautomation.md)
-- 2026-05-23: [2026-05-23-tier2-build-input-and-repo-hardening.md](97-plans/2026-05-23-tier2-build-input-and-repo-hardening.md)
-- 2026-05-24: [2026-05-23-tier3-4-signatures-and-egress-detection-outline.md](97-plans/2026-05-23-tier3-4-signatures-and-egress-detection-outline.md)
-- 2026-05-24: [2026-05-24-tier3-signature-verification-deliberate-path.md](97-plans/2026-05-24-tier3-signature-verification-deliberate-path.md)
-- 2026-05-24: [2026-05-24-tier4-egress-detection.md](97-plans/2026-05-24-tier4-egress-detection.md)
-- 2026-05-25: [2026-05-25-backup-observability.md](97-plans/2026-05-25-backup-observability.md)
+- 2026-06-04: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
+- 2026-06-01: [2026-06-01-skill-usage-report.md](99-reports/2026-06-01-skill-usage-report.md)
+- 2026-06-01: [remediation-monthly-202605.md](99-reports/remediation-monthly-202605.md)
+- 2026-06-01: [security-audit-2026-06-01.md](99-reports/security-audit-2026-06-01.md)
+- 2026-06-04: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-06-04: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-06-04: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-06-04: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-06-04: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-06-04: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
