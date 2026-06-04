@@ -129,6 +129,32 @@ groups:
           summary: "Backup taking unusually long for {{ $labels.subvolume }}"
           description: "Last backup took {{ $value | humanizeDuration }}. May indicate performance issues. Alert auto-resolves after 1h for weekly/monthly backups."
 
+      # Warning: Anomalous churn spike — a subvolume's changed-data rate jumped far
+      # above its own recent baseline. NOT a failure signal; it's a capacity/anomaly
+      # canary (runaway growth, in-place rewrites, or a mass-rewrite event — doubles as
+      # a weak ransomware canary). churn = time-windowed bytes/sec from wire_bytes of
+      # recent incremental sends; refreshes at nightly backup cadence (hence the long for:).
+      #
+      # Calibration (2026-06-04, fleet at rest): busiest subvolumes churn ~25-30 KiB/s
+      # (htpc-root 27K, subvol7-containers 24K, htpc-home 15K); all others <1 KiB/s.
+      # The 256 KiB/s floor sits ~8x above any normal rate, so the RATIO test (>4x the
+      # 14d baseline, `offset 2d` to exclude the spike itself) provides sensitivity while
+      # the floor suppresses meaningless ratio-noise on near-idle subvolumes (e.g.
+      # subvol1-docs at ~5 B/s). Re-baseline the floor if fleet churn grows materially.
+      - alert: BackupChurnSpike
+        expr: |
+          backup_subvolume_churn_bytes_per_second
+            > 4 * avg_over_time(backup_subvolume_churn_bytes_per_second[14d] offset 2d)
+          and backup_subvolume_churn_bytes_per_second > 262144
+        for: 1h
+        labels:
+          severity: warning
+          category: backup
+          component: btrfs-snapshot-backup
+        annotations:
+          summary: "Anomalous backup churn on {{ $labels.subvolume }}"
+          description: "{{ $labels.subvolume }} is churning {{ $value | humanize }}B/s — over 4x its 14-day baseline and above the 256 KiB/s floor. Expected if you just imported or rewrote a lot of data; otherwise investigate runaway growth or in-place rewrites."
+
   # ==========================================================================
   # Pool-capacity alerts from Urd's btrfs pool metrics (backup_pool_*).
   # These cover what node_exporter cannot: BTRFS metadata exhaustion (a silent

@@ -1174,6 +1174,101 @@
       ],
       "title": "DB Dump Size Trend (per database)",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Estimated local disk space pinned by snapshot retention per subvolume (mean in-window incremental wire_bytes x local snapshot count). A capacity/headroom signal: how much local space each subvolume is holding via retained snapshots. Some(0) when local snapshots are disabled or count is 0; absent in cold-start. Emitted by Urd (UPI 043; a UPI 044 retention-recommendation input). Added 2026-06-04.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "backup_subvolume_estimated_local_pinned_delta_bytes",
+          "legendFormat": "{{subvolume}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Estimated Local Pinned Delta (per subvolume)",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",
@@ -1194,6 +1289,6 @@
   "timezone": "browser",
   "title": "Backup Health Dashboard",
   "uid": "backup-health",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
