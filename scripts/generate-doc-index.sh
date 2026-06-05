@@ -16,13 +16,13 @@ log() {
 
 # Get recently updated files (last 7 days)
 get_recent_files() {
-    find "$DOCS_DIR" -name "*.md" -mtime -7 -type f | sort
+    find "$DOCS_DIR" -name "*.md" ! -name "*-private.md" -mtime -7 -type f | sort
 }
 
 # Count files in directory
 count_files() {
     local dir=$1
-    find "$dir" -name "*.md" -type f 2>/dev/null | wc -l
+    find "$dir" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | wc -l
 }
 
 # Find all documentation related to a service
@@ -79,7 +79,7 @@ generate_index() {
     local timestamp
     timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
     local total_docs
-    total_docs=$(find "$DOCS_DIR" -name "*.md" -type f | wc -l)
+    total_docs=$(find "$DOCS_DIR" -name "*.md" ! -name "*-private.md" -type f | wc -l)
 
     log "Generating documentation index..."
 
@@ -116,7 +116,7 @@ generate_index() {
 EOF
 
     # Foundation guides
-    find "$DOCS_DIR/00-foundation/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/00-foundation/guides" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file")
         local relpath
@@ -129,7 +129,7 @@ EOF
 **Decisions (ADRs):**
 EOF
 
-    find "$DOCS_DIR/00-foundation/decisions" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/00-foundation/decisions" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file" .md)
         local relpath
@@ -150,7 +150,7 @@ EOF
 **Service Guides:**
 EOF
 
-    find "$DOCS_DIR/10-services/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/10-services/guides" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file")
         local relpath
@@ -163,7 +163,7 @@ EOF
 **Service Decisions (ADRs):**
 EOF
 
-    find "$DOCS_DIR/10-services/decisions" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/10-services/decisions" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file" .md)
         local relpath
@@ -184,7 +184,7 @@ EOF
 **Guides:**
 EOF
 
-    find "$DOCS_DIR/20-operations/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/20-operations/guides" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file")
         local relpath
@@ -197,7 +197,7 @@ EOF
 **Runbooks:**
 EOF
 
-    find "$DOCS_DIR/20-operations/runbooks" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/20-operations/runbooks" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file" .md)
         local relpath
@@ -216,7 +216,7 @@ EOF
 **Guides:**
 EOF
 
-    find "$DOCS_DIR/30-security/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/30-security/guides" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file")
         local relpath
@@ -229,7 +229,7 @@ EOF
 **Security ADRs:**
 EOF
 
-    find "$DOCS_DIR/30-security/decisions" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/30-security/decisions" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file" .md)
         local relpath
@@ -244,7 +244,7 @@ EOF
 **Runbooks:**
 EOF
 
-    find "$DOCS_DIR/30-security/runbooks" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/30-security/runbooks" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file" .md)
         local relpath
@@ -263,7 +263,7 @@ EOF
 **Guides:**
 EOF
 
-    find "$DOCS_DIR/40-monitoring-and-documentation/guides" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/40-monitoring-and-documentation/guides" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file")
         local relpath
@@ -280,7 +280,7 @@ EOF
 **Strategic plans and forward-looking projects**
 EOF
 
-    find "$DOCS_DIR/97-plans" -name "*.md" -type f 2>/dev/null | sort | while read -r file; do
+    find "$DOCS_DIR/97-plans" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
         local basename
         basename=$(basename "$file")
         local relpath
