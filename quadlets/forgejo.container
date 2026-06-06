@@ -40,6 +40,31 @@ Environment=FORGEJO__service__DISABLE_REGISTRATION=true
 Environment=FORGEJO__service__REQUIRE_SIGNIN_VIEW=true
 Environment=FORGEJO__session__COOKIE_SECURE=true
 
+# Instance commit signing (ADR-034): the FORGE signs its own server-side merge/
+# squash commits so `main` stays fully verifiable. Authors sign their commits with
+# their FIDO2 YubiKeys (ADR-033); a server can't tap a key, so the instance uses a
+# passphraseless ed25519 SOFTWARE key. This closes the gap where Forgejo-created
+# merge/squash commits (committer <name>@noreply.git.patriark.org) landed UNSIGNED.
+#   - Section [repository.signing]: env escapes the section's dot as _0X2E_.
+#   - SIGNING_KEY points at the PUBLIC key; ssh-keygen derives the private key by
+#     stripping ".pub" (both files mounted below as podman secrets, same dir).
+#   - SIGNING_EMAIL is the signer PRINCIPAL added to allowed_signers on author hosts.
+#   - SIGNING_NAME contains a space -> the whole assignment MUST be double-quoted
+#     (systemd Environment= splits unquoted values on spaces).
+Environment=FORGEJO__repository_0X2E_signing__FORMAT=ssh
+Environment=FORGEJO__repository_0X2E_signing__SIGNING_KEY=/run/secrets/forgejo_signing_key.pub
+Environment="FORGEJO__repository_0X2E_signing__SIGNING_NAME=patriark.org Forgejo"
+Environment=FORGEJO__repository_0X2E_signing__SIGNING_EMAIL=forgejo@git.patriark.org
+Environment=FORGEJO__repository_0X2E_signing__MERGES=always
+
+# Signing keypair as podman secrets, mounted owned by the in-container git user
+# (uid/gid 1000 — gitea runs as uid 1000; podman maps these through the userns).
+# Private key 0600, public 0644. Create the secrets BEFORE (re)starting — see ADR-034:
+#   podman secret create forgejo_signing_key     ~/containers/secrets/forgejo_signing_key
+#   podman secret create forgejo_signing_key_pub ~/containers/secrets/forgejo_signing_key.pub
+Secret=forgejo_signing_key,type=mount,target=/run/secrets/forgejo_signing_key,uid=1000,gid=1000,mode=0600
+Secret=forgejo_signing_key_pub,type=mount,target=/run/secrets/forgejo_signing_key.pub,uid=1000,gid=1000,mode=0644
+
 # Storage (repos/LFS/data on container pool; not a DB, no NOCOW)
 Volume=/mnt/btrfs-pool/subvol7-containers/forgejo:/data:Z
 

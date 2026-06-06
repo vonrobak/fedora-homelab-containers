@@ -99,7 +99,7 @@ See ADR-030 (trust model) and ADR-015 (superseded; its BTRFS rollback + health-v
 
 ### Architecture Decision Records
 
-**Architectural decisions recorded as ADRs — latest is ADR-032** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
+**Architectural decisions recorded as ADRs — latest is ADR-034** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
 
 **Design-Guiding ADRs (affect future decisions):**
 - **ADR-001:** Rootless Containers — UID 1000, `:Z` SELinux labels on all mounts
