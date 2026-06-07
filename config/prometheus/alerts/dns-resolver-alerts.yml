@@ -93,6 +93,59 @@ groups:
             dig +short doubleclick.net @{{ $labels.instance }}
             ssh patriark@{{ $labels.instance }} 'pihole -g'   # rebuild gravity
 
+  # --- Resolver host thermal (added 2026-06-07) ---------------------------
+  # The Pi resolver sits in a stable-ambient server box at near-zero CPU load,
+  # yet runs chronically at 80–86°C and is firmware-throttling its clock to
+  # 600–900 MHz (max 1800). At idle that points to a heat-removal fault (fan not
+  # spinning / heatsink contact / enclosure airflow), NOT compute. Throttling
+  # slows the Pi-hole v6 API and can cause intermittent LAN-wide DNS latency, so
+  # the resolver's temperature is now a first-class signal. NOTE: with the Pi in
+  # its current state these WILL fire on deploy — that is correct; silence only
+  # while actively servicing the cooling issue.
+  - name: dns_resolver_host
+    interval: 1m
+    rules:
+
+      - alert: PiHoleResolverHot
+        expr: node_thermal_zone_temp{job="node-exporter-pi"} > 80
+        for: 15m
+        labels:
+          severity: warning
+          category: capacity
+          component: dns_resolver
+          service: pihole
+        annotations:
+          summary: "Pi resolver running hot ({{ $value | printf \"%.1f\" }}°C) — thermal throttling"
+          description: |
+            node_thermal_zone_temp on the Pi resolver ({{ $labels.instance }}) has
+            been >80°C for >15m. The Pi 4 soft limit is 80°C, so the CPU is being
+            clock-capped. At idle in a stable-ambient enclosure this indicates a
+            cooling fault, not load. Throttling degrades the Pi-hole API and DNS.
+          runbook: |
+            ssh patriark@192.168.1.69 'vcgencmd get_throttled; vcgencmd measure_temp'
+            # 0x0 = healthy; bit3 set = soft-temp-limit active. Check fan/heatsink:
+            ssh patriark@192.168.1.69 'cat /sys/class/thermal/cooling_device*/cur_state'
+            bash scripts/pihole-forensics.sh   # full thermal + cooling capture
+
+      - alert: PiHoleResolverCriticalTemp
+        expr: node_thermal_zone_temp{job="node-exporter-pi"} > 84
+        for: 15m
+        labels:
+          severity: critical
+          category: capacity
+          component: dns_resolver
+          service: pihole
+        annotations:
+          summary: "Pi resolver near hard thermal limit ({{ $value | printf \"%.1f\" }}°C)"
+          description: |
+            Pi resolver ({{ $labels.instance }}) >84°C for >15m — approaching the
+            85°C hard throttle limit. Sustained operation here risks instability
+            and shortened hardware life for the LAN's DNS resolver. Treat the
+            cooling fault as urgent.
+          runbook: |
+            ssh patriark@192.168.1.69 'vcgencmd measure_temp; vcgencmd get_throttled'
+            # Verify active cooling is present and spinning; check enclosure airflow.
+
   - name: nextcloud_state
     interval: 1m
     rules:

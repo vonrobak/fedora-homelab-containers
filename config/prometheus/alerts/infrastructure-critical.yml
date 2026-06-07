@@ -20,8 +20,17 @@ groups:
       # Specific services have dedicated alerts (TraefikDown, PrometheusDown, etc.)
       # This is a safety net to catch anything we might have missed
       # Defense in depth: critical services get specific alerts + this generic one
+      #
+      # EXCLUSION — job="pihole": the pihole-exporter is a metrics SIDECAR, not the
+      # resolver. Its liveness has a dedicated, correctly-scoped signal
+      # (PiHoleExporterDown, warning). A slow/wedged exporter scrape must NOT page
+      # as CRITICAL "Pi-hole is down" — that conflates sidecar liveness with DNS
+      # health and contradicts ADR-031 D5 (functional > liveness; the blackbox
+      # dns_functional probe is the authoritative resolver-down signal). This
+      # exclusion is the fix for the 2026-06-04 false-page incident where a 0.26s→
+      # >10s exporter latency regression tripped the 10s scrape_timeout for 3 days.
       - alert: HostDown
-        expr: up == 0
+        expr: up{job!="pihole"} == 0
         for: 5m
         labels:
           severity: critical

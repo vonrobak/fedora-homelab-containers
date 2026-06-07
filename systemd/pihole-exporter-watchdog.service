@@ -1,0 +1,24 @@
+[Unit]
+# Self-heal a wedged pihole-exporter (2026-06-04 false-page incident). The image
+# is distroless so no in-container HealthCmd is possible; this reads the verdict
+# Prometheus already computes (up + scrape_duration) and restarts the exporter
+# when it is down >5m or degrading toward the scrape_timeout. Restarting a metrics
+# sidecar has zero DNS impact.
+Description=Pi-hole exporter watchdog (restart-on-stall self-heal)
+Documentation=file:/home/patriark/containers/scripts/pihole-exporter-watchdog.sh
+After=network-online.target prometheus.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/pihole-exporter-watchdog.sh
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=60s
+
+# PrivateTmp intentionally NOT set — rootless podman's pause-process needs
+# access to the user's real /tmp namespace (see project_platform_gotchas).
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target
