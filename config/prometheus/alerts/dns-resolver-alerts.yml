@@ -94,14 +94,14 @@ groups:
             ssh patriark@{{ $labels.instance }} 'pihole -g'   # rebuild gravity
 
   # --- Resolver host thermal (added 2026-06-07) ---------------------------
-  # The Pi resolver sits in a stable-ambient server box at near-zero CPU load,
-  # yet runs chronically at 80–86°C and is firmware-throttling its clock to
-  # 600–900 MHz (max 1800). At idle that points to a heat-removal fault (fan not
-  # spinning / heatsink contact / enclosure airflow), NOT compute. Throttling
-  # slows the Pi-hole v6 API and can cause intermittent LAN-wide DNS latency, so
-  # the resolver's temperature is now a first-class signal. NOTE: with the Pi in
-  # its current state these WILL fire on deploy — that is correct; silence only
-  # while actively servicing the cooling issue.
+  # Origin: the Pi was found chronically at 80–86°C with the CPU idle (0.8%) —
+  # not a workload. Physical inspection traced it to a hot ISP modem stacked
+  # directly beneath the Pi in a passively-cooled, dusty 6U wall cabinet with
+  # minimal airflow. Dispersing the units dropped the Pi to ~63°C immediately.
+  # The cabinet still has no active cooling and the Pi has no heatsink, so the
+  # resolver's temperature stays a first-class signal: these alerts are dormant
+  # at healthy temps and serve as early warning if it climbs again (re-stacking,
+  # summer ambient, a fan failure). Throttling degrades the Pi-hole API and DNS.
   - name: dns_resolver_host
     interval: 1m
     rules:
