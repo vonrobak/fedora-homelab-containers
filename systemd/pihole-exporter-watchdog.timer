@@ -1,0 +1,17 @@
+[Unit]
+Description=Pi-hole exporter watchdog timer (every 5m)
+Documentation=file:/home/patriark/containers/scripts/pihole-exporter-watchdog.sh
+Requires=pihole-exporter-watchdog.service
+
+[Timer]
+# Every 5 min. Detection budget for a wedged exporter is therefore ~5–10 min
+# (vs. the 3-day outage this prevents). The script's own 20-min cooldown stops
+# crash-loops when the fault is upstream (real Pi-hole API outage) rather than
+# the exporter itself.
+OnBootSec=6min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

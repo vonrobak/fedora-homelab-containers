@@ -28,10 +28,14 @@ Environment=TZ=Europe/Oslo
 # Create secret:  printf '<app-password>' | podman secret create pihole_api_token -
 Secret=pihole_api_token,type=env,target=PIHOLE_PASSWORD
 
-HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9617/metrics || exit 1
-HealthInterval=30s
-HealthTimeout=5s
-HealthRetries=3
+# NO HealthCmd: this image (ekofr/pihole-exporter) is distroless — it has no
+# wget/curl/sh, so the previous `HealthCmd=wget ...` could NEVER run ("executable
+# file wget not found"). The container therefore reported a PERMANENT false
+# "unhealthy", and because the process never exits, Restart=on-failure could not
+# auto-heal a wedged-but-running exporter. This is exactly how the 2026-06-04
+# latency regression went unrecovered for 3 days. Liveness/self-heal is now
+# enforced externally by pihole-exporter-watchdog.timer (host-side probe of
+# /metrics with restart-on-stall), which does not depend on in-container tooling.
 
 User=1000:1000
 NoNewPrivileges=true

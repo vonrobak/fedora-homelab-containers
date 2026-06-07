@@ -198,7 +198,18 @@ scrape_configs:
           role: 'dns_resolver'
 
   # Pi-hole exporter — query/block stats from the Pi-hole v6 API.
+  # Timeout/interval (2026-06-07): the exporter serves /metrics SYNCHRONOUSLY —
+  # each scrape runs a full Pi-hole v6 login→query cycle. Steady-state latency is
+  # ~0.26s, but a wedged/degraded exporter (or a slow transient) can spike to
+  # 6–14s. The global default scrape_timeout=10s tripped up=0 for 3 days on
+  # 2026-06-04 with a false "down" page. 20s timeout gives huge headroom over
+  # normal so transients never flap `up`; a genuinely stalled exporter (>20s) is
+  # still caught by PiHoleExporterDown (warning, for:5m) + the watchdog timer.
+  # 30s interval matches the exporter's own INTERVAL=30s and reduces Pi-hole API
+  # login churn (also eases the GH#246 session leak). timeout must be ≤ interval.
   - job_name: 'pihole'
+    scrape_interval: 30s
+    scrape_timeout: 20s
     static_configs:
       - targets: ['pihole-exporter:9617']
         labels:
