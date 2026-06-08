@@ -95,7 +95,7 @@ cmd_preflight() {
     info "  quadlet: $q"
 
     [[ -d "$SUBVOL8" ]] || { warn "  subvol8-db missing"; fail=1; }
-    btrfs subvolume show "$SUBVOL8" >/dev/null 2>&1 && ok "  subvol8-db is a subvolume" || { warn "  subvol8-db is NOT a subvolume"; fail=1; }
+    sudo btrfs subvolume show "$SUBVOL8" >/dev/null 2>&1 && ok "  subvol8-db is a subvolume" || { warn "  subvol8-db is NOT a subvolume"; fail=1; }
     sudo test -d "$src" && ok "  source dir exists" || { warn "  source dir missing"; fail=1; }
     if sudo test -e "$dst"; then warn "  target already exists ($dst) — migrate would refuse"; fail=1; else ok "  target does not exist yet"; fi
     [[ -f "$q" ]] && grep -q "^Volume=${src}:" "$q" && ok "  quadlet Volume= line found" || { warn "  quadlet Volume=${src}: line NOT found"; fail=1; }
