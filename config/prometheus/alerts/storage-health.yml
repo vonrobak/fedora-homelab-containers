@@ -79,16 +79,22 @@ groups:
           summary: "NVMe critical warning on {{ $labels.device }}"
           description: "NVMe critical_warning bitfield = {{ $value }} (nonzero) on {{ $labels.device }} — spare exhausted / reliability degraded / read-only / temperature alarm. Investigate now (/home + container metadata live here)."
 
-      - alert: SmartReallocatedSectors
-        expr: smartmon_reallocated_sectors > 0
-        for: 30m
+      # Reallocated sectors: alert on ACTIVE growth, not stable presence. A steady low
+      # count (e.g. sdc's 8) is not actionable and a `> 0` rule would nag forever; the
+      # absolute value stays visible in Grafana. `offset 1w` is exact (no delta/increase
+      # extrapolation), arms after a week of history, and self-clears on drive
+      # replacement or `btrfs dev stats -z` (new count < old). It re-pages only if a drive
+      # is actively remapping more sectors — the real "this disk is degrading now" signal.
+      - alert: SmartReallocatedSectorsIncreasing
+        expr: smartmon_reallocated_sectors > smartmon_reallocated_sectors offset 1w
+        for: 1h
         labels:
           severity: warning
           category: storage
           component: smartmon
         annotations:
-          summary: "SMART reallocated sectors on {{ $labels.device }}"
-          description: "{{ $value }} reallocated sector(s) on {{ $labels.device }} — the drive is remapping bad sectors. Not yet urgent, but a rising trend means a degrading disk; watch it."
+          summary: "SMART reallocated sectors INCREASING on {{ $labels.device }}"
+          description: "{{ $labels.device }} reallocated-sector count rose to {{ $value }} over the past week — the drive is actively remapping bad sectors (degrading). Verify backups and plan replacement. (A stable count does not fire; the absolute value is in Grafana.)"
 
       - alert: SmartDiskTemperatureHigh
         expr: smartmon_temperature_celsius > 55
