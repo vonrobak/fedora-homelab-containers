@@ -1,0 +1,21 @@
+[Unit]
+Description=BTRFS scrub — external backup drives when mounted (storage-health, ADR-029)
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/storage-health-monitoring.md
+
+[Service]
+Type=oneshot
+# Skip cleanly (don't fail) if Urd is sending — two jobs on the WD-18TB send target would
+# both crawl. Urd runs 04:00; this timer fires 14:00, so this is the belt-and-suspenders
+# guard for the edge case where a send is still running.
+ExecCondition=/bin/bash -c '! systemctl --user is-active --quiet urd-backup.service'
+ExecStart=%h/containers/scripts/btrfs-scrub.sh /run/media/patriark/WD-18TB /run/media/patriark/2TB-backup
+TimeoutStartSec=24h
+
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

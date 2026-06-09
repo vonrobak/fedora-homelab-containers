@@ -1,0 +1,13 @@
+[Unit]
+Description=Monthly BTRFS scrub of external backup drives (3rd Sunday)
+
+[Timer]
+# 3rd Sunday, 14:00 — a different week from the internal scrub, clear of Urd's 04:00.
+# The script skips any drive that isn't mounted (removable), so this is a no-op when the
+# backups are disconnected.
+OnCalendar=Sun *-*-15..21 14:00:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

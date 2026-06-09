@@ -1,12 +1,13 @@
 # Storage-health monitoring (ADR-029) — least-privilege root grant
 #
-# Lets the unattended USER systemd collector (scripts/smartmon-collector.sh, run by
-# smartmon.timer as patriark) read SMART data, which requires root. The grant is
-# read-only and exact: only `smartctl -j -H -A -i` (JSON + health + attributes +
-# identity — none of which can write to or reconfigure the device), and only on the
-# fixed internal disks (4 pool members + the NVMe). No wildcards. This extends the
-# pattern already established by the existing /etc/sudoers.d btrfs grant used by the
-# backup system (which holds far more powerful verbs, incl. `btrfs receive`).
+# Lets the unattended USER systemd timers (run as patriark) perform the two root-only
+# storage-health operations: SMART reads (scripts/smartmon-collector.sh) and btrfs scrub
+# (scripts/btrfs-scrub.sh). Both grants are exact and non-destructive: `smartctl -j -H -A
+# -i` is read-only (cannot write/reconfigure the device); `btrfs scrub` reads every block
+# and can repair only from a redundant copy (cannot modify file data). No wildcards; exact
+# devices/mountpoints. This extends the pattern already established by the existing
+# /etc/sudoers.d btrfs grant used by the backup system (which holds far more powerful
+# verbs, incl. `btrfs receive`).
 #
 # Removable LUKS2 backup drives are intentionally NOT here — their letters are not
 # stable; their filesystem-level health is covered (when mounted) by the root-free
@@ -22,8 +23,6 @@
 # with DEVICES[] and the invocation in scripts/smartmon-collector.sh, or sudo will
 # refuse the command (NOPASSWD matches the exact argv).
 #
-# (Part 2 / scrub timer will add `btrfs scrub start|status` lines here.)
-
 Cmnd_Alias HOMELAB_SMARTCTL = \
     /usr/sbin/smartctl -j -H -A -i /dev/sda, \
     /usr/sbin/smartctl -j -H -A -i /dev/sdb, \
@@ -31,4 +30,18 @@ Cmnd_Alias HOMELAB_SMARTCTL = \
     /usr/sbin/smartctl -j -H -A -i /dev/sdd, \
     /usr/sbin/smartctl -j -H -A -i /dev/nvme0
 
-patriark ALL=(root) NOPASSWD: HOMELAB_SMARTCTL
+# btrfs scrub for scripts/btrfs-scrub.sh (btrfs-scrub-*.timer). scrub reads every block and
+# can repair only from a redundant copy (RAID1 metadata) — it cannot modify file data, and
+# these are the only btrfs verbs granted here. Exact mountpoints + exact flags including the
+# --limit value; keep byte-for-byte in sync with LIMIT and the invocation in btrfs-scrub.sh.
+Cmnd_Alias HOMELAB_SCRUB = \
+    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /mnt, \
+    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /home, \
+    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /run/media/patriark/WD-18TB, \
+    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /run/media/patriark/2TB-backup, \
+    /usr/sbin/btrfs scrub status -R /mnt, \
+    /usr/sbin/btrfs scrub status -R /home, \
+    /usr/sbin/btrfs scrub status -R /run/media/patriark/WD-18TB, \
+    /usr/sbin/btrfs scrub status -R /run/media/patriark/2TB-backup
+
+patriark ALL=(root) NOPASSWD: HOMELAB_SMARTCTL, HOMELAB_SCRUB

@@ -128,3 +128,41 @@ groups:
         annotations:
           summary: "SMART collector stale"
           description: "smartmon collector last ran {{ $value | humanizeDuration }} ago (expected hourly). Check `systemctl --user status smartmon.timer` and the /etc/sudoers.d/homelab-storage-health grant."
+
+      # ─────────────────────────────────────────────────────────────────────────
+      # BTRFS scrub (bit-rot detection + metadata repair). On Single data / RAID1
+      # metadata: corrected = the metadata mirror self-healed (a disk whispering);
+      # uncorrectable = data the scrub could not repair (restore from backup).
+      # ─────────────────────────────────────────────────────────────────────────
+      - alert: BtrfsScrubUncorrectableErrors
+        expr: btrfs_scrub_uncorrectable_errors > 0
+        for: 5m
+        labels:
+          severity: critical
+          category: storage
+          component: btrfs-scrub
+        annotations:
+          summary: "BTRFS scrub found UNCORRECTABLE errors on {{ $labels.filesystem }}"
+          description: "The last scrub of {{ $labels.filesystem }} found {{ $value }} uncorrectable error(s) — data the scrub could not repair (no redundant data copy on Single profile). Identify the affected files and restore them from the Urd backups."
+
+      - alert: BtrfsScrubCorrectedErrors
+        expr: btrfs_scrub_corrected_errors > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: storage
+          component: btrfs-scrub
+        annotations:
+          summary: "BTRFS scrub corrected errors on {{ $labels.filesystem }}"
+          description: "The last scrub of {{ $labels.filesystem }} corrected {{ $value }} error(s) from a redundant copy (e.g. the RAID1 metadata mirror). The data is intact, but a disk is whispering — cross-check SMART and btrfs device stats to find the culprit."
+
+      - alert: BtrfsScrubOverdue
+        expr: time() - btrfs_scrub_last_completion_timestamp{filesystem=~"pool|home"} > 86400 * 45
+        for: 1h
+        labels:
+          severity: warning
+          category: storage
+          component: btrfs-scrub
+        annotations:
+          summary: "BTRFS scrub overdue on {{ $labels.filesystem }}"
+          description: "{{ $labels.filesystem }} has not completed a scrub in {{ $value | humanizeDuration }} (monthly cadence + grace). Bit rot could be accumulating undetected. Check `systemctl --user status btrfs-scrub-internal.timer`."

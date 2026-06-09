@@ -1,0 +1,21 @@
+[Unit]
+Description=BTRFS scrub — internal filesystems: pool (/mnt) + /home (storage-health, ADR-029)
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/storage-health-monitoring.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/btrfs-scrub.sh /mnt /home
+# A full Single-profile pool scrub on 3.6T spindles, throttled to 80 MiB/s/device, can
+# run many hours. -B foreground keeps the unit active for the duration.
+TimeoutStartSec=24h
+
+# Throttle hard — this pool serves every service (recall the 2026-06 boot I/O storm).
+# The btrfs --limit 80m cap is in the script; these are belt-and-suspenders.
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

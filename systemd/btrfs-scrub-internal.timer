@@ -1,0 +1,11 @@
+[Unit]
+Description=Monthly BTRFS scrub of internal filesystems (pool + /home), 1st Sunday
+
+[Timer]
+# 1st Sunday of the month, 14:00 — well clear of Urd's 04:00 send window.
+OnCalendar=Sun *-*-01..07 14:00:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target
