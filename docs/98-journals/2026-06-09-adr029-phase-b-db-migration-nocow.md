@@ -23,9 +23,28 @@
 - **PR #258 merged** (preflight `sudo` fix).
 - **User rebooting now** (`dnf update && reboot`) → then `./scripts/post-reboot-verify.sh`.
 
-## Pending (next session, post-reboot)
+## Finalization (2026-06-09)
 
-1. Commit the 4 quadlet `Volume=` repoint changes (config-as-code — currently uncommitted) + this journal.
-2. Update ADR-029 status → **Phase B done** + tenant table; bump [[project_db_storage_architecture]] memory (it still says "GO pending offline window").
-3. Re-run `sudo bash scripts/filefrag-baseline.sh` for the before/after fragmentation delta.
-4. GH#220: post an "executed 2026-06-09" note (the reminder issue was closed; add the outcome).
+1. ✅ Committed the 4 quadlet `Volume=` repoints + this journal (PR #260).
+2. ✅ ADR-029 status → **Phase B executed** + tenant table/consequences updated; `[[project_db_storage_architecture]]` memory bumped.
+3. ✅ Re-ran `filefrag-baseline.sh` (retargeted from the now-absent subvol7 paths to the subvol8 homes, in this change). Before/after below.
+4. ✅ GH#220: "executed 2026-06-09" outcome posted on the closed reminder issue.
+
+Same session, unrelated but surfaced *by* this migration's reboot: a recurring **boot I/O storm** was root-caused and the monitoring data-plane (prometheus/loki/grafana) reclassified to boot tier C — PR #259 / ADR-035.
+
+### Fragmentation delta — the COW-defeated-by-snapshots antipattern, killed
+
+`filefrag` extents/file, before (subvol7, COW-in-snapshot, 2026-05-22) → after (subvol8, NOCOW, 2026-06-09):
+
+| DB | worst file | before | after |
+|----|-----------|--------|-------|
+| postgresql-immich | PG heap | mean 6.3 / max **1,862** | mean 0.9 / max **1** |
+| nextcloud | `oc_filecache.ibd` | **11,777** | **6** |
+| gathio-db | WiredTiger data | max **2,362** | **2** (the lone max-70 is a transient FTDC `diagnostic.data` file) |
+| prometheus | persistent `chunks_head` | — | **4** |
+
+NOCOW references (unchanged): forgejo-db mean 0.9 / max 18; loki mean 1.0.
+
+**Note on prometheus:** its live `wal/00002638–2640` segments show max ~242 extents — expected for an append-heavy WAL actively being written, and truncated on checkpoint. The *persistent* TSDB (`chunks_head` = 4 extents) is flat, which is the durable measure. NOCOW killed the random-overwrite COW fragmentation; append-growth extents on a live WAL are normal and self-limiting.
+
+Raw baselines (gitignored): `data/backup-logs/filefrag-baseline-2026-05-22-2245.txt` (before), `…-2026-06-09-0735.txt` (after).
