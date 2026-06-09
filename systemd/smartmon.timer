@@ -1,0 +1,9 @@
+[Unit]
+Description=Collect SMART disk health hourly
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+
+[Install]
+WantedBy=timers.target
