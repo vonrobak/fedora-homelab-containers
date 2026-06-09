@@ -32,13 +32,17 @@ Cmnd_Alias HOMELAB_SMARTCTL = \
 
 # btrfs scrub for scripts/btrfs-scrub.sh (btrfs-scrub-*.timer). scrub reads every block and
 # can repair only from a redundant copy (RAID1 metadata) — it cannot modify file data, and
-# these are the only btrfs verbs granted here. Exact mountpoints + exact flags including the
-# --limit value; keep byte-for-byte in sync with LIMIT and the invocation in btrfs-scrub.sh.
+# these are the only btrfs verbs granted here. The pool throttle is applied via
+# `scrub limit --all` (scrub start --limit unreliably skips devids on multi-device fs);
+# /home + backups scrub unlimited. Exact mountpoints + exact flags incl. the 30m/0 limit
+# values — keep byte-for-byte in sync with POOL_LIMIT and the invocations in btrfs-scrub.sh.
 Cmnd_Alias HOMELAB_SCRUB = \
-    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /mnt, \
-    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /home, \
-    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /run/media/patriark/WD-18TB, \
-    /usr/sbin/btrfs scrub start -B -d -c 3 --limit 80m /run/media/patriark/2TB-backup, \
+    /usr/sbin/btrfs scrub limit --all --limit 30m /mnt, \
+    /usr/sbin/btrfs scrub limit --all --limit 0 /mnt, \
+    /usr/sbin/btrfs scrub start -B -d -c 3 /mnt, \
+    /usr/sbin/btrfs scrub start -B -d -c 3 /home, \
+    /usr/sbin/btrfs scrub start -B -d -c 3 /run/media/patriark/WD-18TB, \
+    /usr/sbin/btrfs scrub start -B -d -c 3 /run/media/patriark/2TB-backup, \
     /usr/sbin/btrfs scrub status -R /mnt, \
     /usr/sbin/btrfs scrub status -R /home, \
     /usr/sbin/btrfs scrub status -R /run/media/patriark/WD-18TB, \

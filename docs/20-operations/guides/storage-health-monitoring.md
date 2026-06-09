@@ -88,9 +88,13 @@ on the pool it can also **repair metadata** from the RAID1 mirror, but not data)
 **uncorrectable = critical** (data to restore), **corrected = warning** (a disk whispering),
 plus **overdue** (pool/home, >45 d).
 
-**Throttling** (this pool serves every service — see the 2026-06 boot I/O storm):
-`btrfs scrub start -B -d -c 3 --limit 80m` = foreground + per-device + idle ioprio + a hard
-80 MiB/s/device cap (restored after), and the units add `Nice=19` + `IOSchedulingClass=idle`.
+**Throttling** (this pool serves every service — see the 2026-06 boot I/O storm): the pool is
+capped at **30 MiB/s/device via `btrfs scrub limit --all`** *before* `scrub start` — **not**
+`scrub start --limit`, which silently skips some devids on a multi-device fs (it left devid 1
+unlimited and blew the cap to ~407 MiB/s; caught on the 2026-06-09 supervised run). The cap is
+reset to unlimited after. 30 MiB/s/device held `io full` PSI ~6% on the live pool (~24h for a
+full ~11 TiB pass). **/home (SSD) and the idle, separate-spindle backup drives scrub
+unlimited.** Units add `Nice=19` + `IOSchedulingClass=idle`.
 
 **Schedule (staggered, clear of Urd's 04:00):**
 - `btrfs-scrub-internal.timer` — pool `/mnt` + `/home`, **1st Sunday 14:00**
@@ -113,19 +117,24 @@ install -m 0644 ~/containers/systemd/btrfs-scrub-internal.{service,timer} \
                 ~/containers/systemd/btrfs-scrub-backups.{service,timer} ~/.config/systemd/user/
 systemctl --user daemon-reload
 
-# Supervised first run — watch that services stay responsive under the throttled scrub:
+# Supervised first run — watch that io *full* PSI stays low (not "some": a throttled scrub
+# inflates "some" by waiting on its own rate budget — only "full" means services are starved):
 systemctl --user start btrfs-scrub-internal.service &
-# in another pane: watch -n5 'cat /proc/pressure/io; echo; sudo btrfs scrub status /mnt'
-# Jellyfin/Immich/etc. should stay responsive. If I/O pressure spikes, lower --limit in
-# scripts/btrfs-scrub.sh AND the sudoers line (keep them byte-for-byte identical), re-install.
+# in another pane: watch -n5 'grep full /proc/pressure/io; sudo -n btrfs scrub status -R /mnt | grep bytes_scrubbed'
+# Jellyfin/Immich/etc. should stay responsive. To retune: change POOL_LIMIT in
+# scripts/btrfs-scrub.sh AND the matching `scrub limit` values in the sudoers line
+# (byte-for-byte), re-install. You can also adjust a running scrub live:
+#   sudo btrfs scrub limit --all --limit 20m /mnt
 
 # Once comfortable, enable the monthly timers:
 systemctl --user enable --now btrfs-scrub-internal.timer btrfs-scrub-backups.timer
 ```
 
-The pool scrub of ~11 TiB at 80 MiB/s/device runs **several hours** — expected. Watch the
-first completion's `btrfs_scrub_corrected_errors` (sdc has 8 reallocated sectors and is the
-likeliest source of a corrected/metadata blip).
+The pool scrub of ~11 TiB at 30 MiB/s/device (120 MiB/s total) runs **~24h** — expected and
+fine; it's a low-priority background integrity pass, not time-critical (finishes well within
+the monthly cadence). Watch the first completion's `btrfs_scrub_corrected_errors` (sdc has 8
+reallocated sectors and is the likeliest source of a corrected/metadata blip).
 
-> **Note:** `--limit` is fixed at `80m` in both the script and the sudoers line because sudo
-> matches the exact argv. To change the cap, edit *both* in lockstep.
+> **Note:** the pool cap (`30m`) and reset (`0`) are fixed in both the script (`POOL_LIMIT`)
+> and the sudoers `scrub limit` lines because sudo matches the exact argv. To change the cap,
+> edit *both* in lockstep. `/home` and the backups carry no cap.

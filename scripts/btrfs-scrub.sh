@@ -8,14 +8,18 @@
 # metadata mirror doing its job (a disk whispering). The point on Single data is
 # DETECTION: learn a file rotted while a good copy still exists in Urd.
 #
-# Throttling (this pool serves all services — see the 2026-06 boot I/O storm):
-#   btrfs scrub start -B -d -c 3 --limit 80m
-#     -B  foreground (the unit stays active for the scrub's duration -> coherent metrics)
-#     -d  per-device stats
-#     -c 3  idle ioprio class (bfq honours it)
-#     --limit 80m  hard 80 MiB/s/device cap, restored afterwards
-#   + unit-level Nice=19 / IOSchedulingClass=idle (belt-and-suspenders).
-# The --limit value here MUST match /etc/sudoers.d/homelab-storage-health byte-for-byte.
+# Throttling (the pool serves all services — see the 2026-06 boot I/O storm). The POOL is
+# capped via `btrfs scrub limit --all` BEFORE start, NOT `scrub start --limit`: the latter
+# silently skips some devids on a multi-device fs (verified 2026-06-09 — it left devid 1
+# unlimited, blowing the cap to ~407 MiB/s). /home (SSD) and the idle, separate-spindle
+# backup drives scrub unlimited (no service impact; per-device caps would also make the
+# single-device backups absurdly slow).
+#   btrfs scrub limit --all --limit 30m /mnt   # cap EVERY pool device (reliable)
+#   btrfs scrub start  -B -d -c 3 /mnt          # -B foreground, -d per-device, -c 3 idle ioprio
+#   btrfs scrub limit --all --limit 0  /mnt     # reset to unlimited afterwards (hygiene)
+#   + unit-level Nice=19 / IOSchedulingClass=idle.
+# 30 MiB/s/device held `io full` PSI ~6% on the live pool (supervised run 2026-06-09);
+# ~24h for a full ~11 TiB pass. These exact commands/values MUST match the sudoers grant.
 #
 # Usage:  btrfs-scrub.sh <mountpoint> [<mountpoint> ...]
 #   Each arg is scrubbed if it is a mounted btrfs (removable backups are skipped cleanly
@@ -26,7 +30,7 @@ set -uo pipefail
 export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 
 BTRFS="/usr/sbin/btrfs"
-LIMIT="80m"                              # keep in sync with sudoers
+POOL_LIMIT="30m"                         # MiB/s per pool device; keep in sync with sudoers
 TEXTFILE_DIR="${HOME}/containers/data/backup-metrics"
 STATE_DIR="${TEXTFILE_DIR}/.scrub-state"
 OUT="${TEXTFILE_DIR}/btrfs-scrub.prom"
@@ -43,18 +47,33 @@ label_for() {  # mountpoint -> friendly filesystem label
     esac
 }
 
+limit_for() {  # MiB/s per device, or "" for unlimited. Only the pool is throttled.
+    case "$1" in
+        /mnt) echo "$POOL_LIMIT" ;;
+        *)    echo "" ;;
+    esac
+}
+
 scrub_one() {
-    local mnt="$1" label start end dur status corrected uncorrectable rc
+    local mnt="$1" label start end dur status corrected uncorrectable rc limit
     label="$(label_for "$mnt")"
     if ! mountpoint -q "$mnt" 2>/dev/null; then
         log "[$label] $mnt not mounted — skipping (removable/absent)"
         return 0
     fi
-    log "[$label] scrub starting on $mnt (idle ioprio, --limit ${LIMIT})"
+    limit="$(limit_for "$mnt")"
+    if [[ -n "$limit" ]]; then
+        log "[$label] capping every device at ${limit} via 'scrub limit --all' (pool serves services)"
+        sudo -n "$BTRFS" scrub limit --all --limit "$limit" "$mnt" >/dev/null 2>&1 \
+            || log "[$label] WARN: could not set scrub limit — scrub may run unthrottled"
+    fi
+    log "[$label] scrub starting on $mnt (idle ioprio${limit:+, ${limit}/device})"
     start="$(date +%s)"
-    sudo -n "$BTRFS" scrub start -B -d -c 3 --limit "$LIMIT" "$mnt" >/dev/null 2>&1
+    sudo -n "$BTRFS" scrub start -B -d -c 3 "$mnt" >/dev/null 2>&1
     rc=$?
     end="$(date +%s)"; dur=$((end - start))
+    # Reset the device cap so a future MANUAL full-speed scrub isn't silently throttled.
+    [[ -n "$limit" ]] && sudo -n "$BTRFS" scrub limit --all --limit 0 "$mnt" >/dev/null 2>&1 || true
     # btrfs scrub -B returns 0 (clean) or 3 (completed, found uncorrectable errors) when it
     # actually RAN; anything else means it failed to start/complete (sudo denied, drive gone,
     # already running). Do NOT record a completion in that case, or last_completion_timestamp
