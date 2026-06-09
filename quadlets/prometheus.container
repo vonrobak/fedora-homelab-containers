@@ -16,7 +16,7 @@ Network=systemd-monitoring:ip=10.89.4.79
 Volume=%h/containers/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
 Volume=%h/containers/config/prometheus/alerts:/etc/prometheus/alerts:ro,Z
 Volume=%h/containers/config/prometheus/rules:/etc/prometheus/rules:ro,Z
-Volume=/mnt/btrfs-pool/subvol7-containers/prometheus:/prometheus:Z
+Volume=/mnt/btrfs-pool/subvol8-db/prometheus:/prometheus:Z
 
 # Podman secrets for authentication
 Secret=ha-prometheus-token,type=mount,target=/run/secrets/ha-prometheus-token
