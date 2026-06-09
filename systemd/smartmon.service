@@ -1,0 +1,18 @@
+[Unit]
+Description=SMART disk health -> node_exporter textfile (storage-health, ADR-029)
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/storage-health-monitoring.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/smartmon-collector.sh
+TimeoutStartSec=2m
+
+# smartctl reads are light; stay polite
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,124 @@
+groups:
+  - name: storage_health
+    interval: 60s
+    rules:
+      # ─────────────────────────────────────────────────────────────────────────
+      # BTRFS per-device error counters (btrfs device stats) — the continuous,
+      # root-free early-warning signal. On a Single-data-profile pool with no live
+      # redundancy these are the first sign a disk is failing, caught the instant the
+      # kernel hits an error during normal I/O (not waiting for the monthly scrub).
+      # Counters are persistent; any nonzero value is abnormal for healthy hardware.
+      # ─────────────────────────────────────────────────────────────────────────
+      - alert: BtrfsDeviceErrors
+        expr: btrfs_device_errors > 0
+        for: 15m
+        labels:
+          severity: critical
+          category: storage
+          component: btrfs-dev-stats
+        annotations:
+          summary: "BTRFS {{ $labels.type }} errors on {{ $labels.device }} ({{ $labels.filesystem }})"
+          description: "btrfs device stats reports {{ $value }} {{ $labels.type }} error(s) on {{ $labels.device }} ({{ $labels.filesystem }}). On the Single-profile pool this is an early disk-failure/bit-rot signal — check SMART, run a scrub to scope damage, verify backups, plan replacement. Counters are persistent; zero with `sudo btrfs dev stats -z <mnt>` after remediation."
+
+      - alert: BtrfsDeviceStatsStale
+        expr: time() - btrfs_device_stats_last_run_timestamp > 3600
+        for: 10m
+        labels:
+          severity: warning
+          category: storage
+          component: btrfs-dev-stats
+        annotations:
+          summary: "BTRFS dev-stats collector stale"
+          description: "btrfs-dev-stats collector last ran {{ $value | humanizeDuration }} ago (expected every 15m). Check `systemctl --user status btrfs-dev-stats.timer`."
+
+      # ─────────────────────────────────────────────────────────────────────────
+      # SMART (drive-firmware view) — complements dev-stats. The two disagreeing is
+      # itself diagnostic.
+      # ─────────────────────────────────────────────────────────────────────────
+      - alert: SmartDeviceHealthFailed
+        expr: smartmon_device_smart_healthy == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "SMART health FAILED on {{ $labels.device }} ({{ $labels.model }})"
+          description: "smartctl overall-health self-assessment FAILED on {{ $labels.device }} (model {{ $labels.model }}, serial {{ $labels.serial }}). The drive is reporting itself as failing — verify backups and replace it."
+
+      - alert: SmartCurrentPendingSectors
+        expr: smartmon_current_pending_sectors > 0
+        for: 15m
+        labels:
+          severity: critical
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "SMART pending sectors on {{ $labels.device }}"
+          description: "{{ $value }} current-pending (unreadable) sector(s) on {{ $labels.device }} — imminent uncorrectable read errors. Run a scrub to surface affected files; plan replacement."
+
+      - alert: SmartOfflineUncorrectable
+        expr: smartmon_offline_uncorrectable > 0
+        for: 15m
+        labels:
+          severity: critical
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "SMART offline-uncorrectable sectors on {{ $labels.device }}"
+          description: "{{ $value }} offline-uncorrectable sector(s) on {{ $labels.device }} — the drive cannot read these. On Single-profile data, affected files restore from backup. Plan replacement."
+
+      - alert: SmartNvmeCriticalWarning
+        expr: smartmon_nvme_critical_warning > 0
+        for: 5m
+        labels:
+          severity: critical
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "NVMe critical warning on {{ $labels.device }}"
+          description: "NVMe critical_warning bitfield = {{ $value }} (nonzero) on {{ $labels.device }} — spare exhausted / reliability degraded / read-only / temperature alarm. Investigate now (/home + container metadata live here)."
+
+      - alert: SmartReallocatedSectors
+        expr: smartmon_reallocated_sectors > 0
+        for: 30m
+        labels:
+          severity: warning
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "SMART reallocated sectors on {{ $labels.device }}"
+          description: "{{ $value }} reallocated sector(s) on {{ $labels.device }} — the drive is remapping bad sectors. Not yet urgent, but a rising trend means a degrading disk; watch it."
+
+      - alert: SmartDiskTemperatureHigh
+        expr: smartmon_temperature_celsius > 55
+        for: 30m
+        labels:
+          severity: warning
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "Disk {{ $labels.device }} running hot ({{ $value }}°C)"
+          description: "{{ $labels.device }} sustained {{ $value }}°C (>55°C for 30m). Check cabinet airflow/cooling (see the active-cooling fan plan)."
+
+      - alert: SmartNvmeWearHigh
+        expr: smartmon_nvme_percentage_used > 85
+        for: 1h
+        labels:
+          severity: warning
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "NVMe {{ $labels.device }} endurance at {{ $value }}%"
+          description: "NVMe endurance used {{ $value }}% (>85% of rated write life). Plan SSD replacement; /home, container metadata, and Grafana live here."
+
+      - alert: SmartCollectorStale
+        expr: time() - smartmon_collector_last_run_timestamp > 10800
+        for: 10m
+        labels:
+          severity: warning
+          category: storage
+          component: smartmon
+        annotations:
+          summary: "SMART collector stale"
+          description: "smartmon collector last ran {{ $value | humanizeDuration }} ago (expected hourly). Check `systemctl --user status smartmon.timer` and the /etc/sudoers.d/homelab-storage-health grant."

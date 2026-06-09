@@ -1,0 +1,18 @@
+[Unit]
+Description=BTRFS per-device error counters -> node_exporter textfile (storage-health, ADR-029)
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/storage-health-monitoring.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/btrfs-dev-stats-collector.sh
+TimeoutStartSec=2m
+
+# Root-free, trivial I/O — but stay polite anyway
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

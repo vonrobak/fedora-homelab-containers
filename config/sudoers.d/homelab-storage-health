@@ -1,0 +1,34 @@
+# Storage-health monitoring (ADR-029) — least-privilege root grant
+#
+# Lets the unattended USER systemd collector (scripts/smartmon-collector.sh, run by
+# smartmon.timer as patriark) read SMART data, which requires root. The grant is
+# read-only and exact: only `smartctl -j -H -A -i` (JSON + health + attributes +
+# identity — none of which can write to or reconfigure the device), and only on the
+# fixed internal disks (4 pool members + the NVMe). No wildcards. This extends the
+# pattern already established by the existing /etc/sudoers.d btrfs grant used by the
+# backup system (which holds far more powerful verbs, incl. `btrfs receive`).
+#
+# Removable LUKS2 backup drives are intentionally NOT here — their letters are not
+# stable; their filesystem-level health is covered (when mounted) by the root-free
+# btrfs-dev-stats collector. by-id SMART for them can be added later.
+#
+# INSTALL (one-time, by the owner):
+#   sudo install -m 0440 -o root -g root \
+#       ~/containers/config/sudoers.d/homelab-storage-health \
+#       /etc/sudoers.d/homelab-storage-health
+#   sudo visudo -c                 # must report: /etc/sudoers.d/homelab-storage-health: parsed OK
+#
+# NOTE: the device list and the smartctl flags below must stay byte-for-byte in sync
+# with DEVICES[] and the invocation in scripts/smartmon-collector.sh, or sudo will
+# refuse the command (NOPASSWD matches the exact argv).
+#
+# (Part 2 / scrub timer will add `btrfs scrub start|status` lines here.)
+
+Cmnd_Alias HOMELAB_SMARTCTL = \
+    /usr/sbin/smartctl -j -H -A -i /dev/sda, \
+    /usr/sbin/smartctl -j -H -A -i /dev/sdb, \
+    /usr/sbin/smartctl -j -H -A -i /dev/sdc, \
+    /usr/sbin/smartctl -j -H -A -i /dev/sdd, \
+    /usr/sbin/smartctl -j -H -A -i /dev/nvme0
+
+patriark ALL=(root) NOPASSWD: HOMELAB_SMARTCTL
