@@ -18,7 +18,7 @@ Secret=postgres-password,type=env,target=POSTGRES_PASSWORD
 Environment=POSTGRES_INITDB_ARGS=--data-checksums
 
 # Storage (BTRFS pool with NOCOW)
-Volume=/mnt/btrfs-pool/subvol7-containers/postgresql-immich:/var/lib/postgresql/data:Z
+Volume=/mnt/btrfs-pool/subvol8-db/postgresql-immich:/var/lib/postgresql/data:Z
 
 PodmanArgs=--shm-size=128m
 

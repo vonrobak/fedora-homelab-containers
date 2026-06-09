@@ -14,7 +14,7 @@ Secret=gathio_mongodb_password,type=env,target=MONGO_INITDB_ROOT_PASSWORD
 Environment=MONGO_INITDB_ROOT_USERNAME=gathio
 
 # Storage (will set NOCOW attribute)
-Volume=/mnt/btrfs-pool/subvol7-containers/gathio-db:/data/db:Z
+Volume=/mnt/btrfs-pool/subvol8-db/gathio-db:/data/db:Z
 
 # Network (dedicated Gathio network)
 Network=systemd-gathio

@@ -18,7 +18,7 @@ Environment=MYSQL_INNODB_FLUSH_METHOD=O_DIRECT
 Environment=MYSQL_INNODB_FILE_PER_TABLE=1
 
 # Storage (BTRFS with NOCOW)
-Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud-db/data:/var/lib/mysql:Z
+Volume=/mnt/btrfs-pool/subvol8-db/nextcloud-db:/var/lib/mysql:Z
 
 # Networks
 Network=systemd-nextcloud

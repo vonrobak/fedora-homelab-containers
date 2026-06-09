@@ -1,6 +1,6 @@
 # Egress Observatory — Baseline Index (Auto-Generated)
 
-**Generated:** 2026-06-04 15:10:35 UTC
+**Generated:** 2026-06-09 00:01:13 UTC
 **Implements:** ADR-030 P7 (Tier 4) — egress detection. **Mode:** shadow (observe-only)
 
 Host-side `/proc/<pid>/net/{tcp,tcp6}` sampling of reverse_proxy-tier containers (attributable, rootless, scratch-safe, DNS-method-agnostic). Detection, not prevention. See `config/supply-chain/known-egress.md` for method and residual/evasion scope.
@@ -9,35 +9,35 @@ Host-side `/proc/<pid>/net/{tcp,tcp6}` sampling of reverse_proxy-tier containers
 
 | Component | Last run | Detail |
 |---|---|---|
-| Collector (`egress-collector.service`) | 19s ago | 22 services sampled |
-| Classifier (`egress-detect.timer`) | 10m ago | mode=shadow (observe-only); last window 7 dest(s) |
+| Collector (`egress-collector.service`) | 23s ago | 22 services sampled |
+| Classifier (`egress-detect.timer`) | 8m ago | mode=shadow (observe-only); last window 9 dest(s) |
 
 ## Per-service egress
 
 | Service | Mode | Public dests | Unexpected | Peers (swarm) |
 |---|---|---|---|---|
-| alert-discord-relay | classify | 4 | 4 (unarmed) | — |
+| alert-discord-relay | classify | 5 | 5 (unarmed) | — |
 | alertmanager | classify | 2 | 2 (unarmed) | — |
 | audiobookshelf | classify | — | — | — |
 | authelia | classify | — | — | — |
 | blackbox-exporter | classify | — | — | — |
-| crowdsec | classify | 21 | 21 (unarmed) | — |
+| crowdsec | classify | 30 | 30 (unarmed) | — |
 | forgejo | classify | — | — | — |
-| gathio | classify | 1 | 1 (unarmed) | — |
+| gathio | classify | 2 | 2 (unarmed) | — |
 | grafana | classify | 3 | 3 (unarmed) | — |
-| home-assistant | classify | 29 | 29 (unarmed) | — |
+| home-assistant | classify | 41 | 41 (unarmed) | — |
 | immich-server | classify | 2 | 2 (unarmed) | — |
-| jellyfin | classify | 14 | 14 (unarmed) | — |
+| jellyfin | classify | 15 | 15 (unarmed) | — |
 | loki | classify | 1 | 1 (unarmed) | — |
-| navidrome | classify | 7 | 7 (unarmed) | — |
+| navidrome | classify | 8 | 8 (unarmed) | — |
 | nextcloud | classify | 4 | 4 (unarmed) | — |
 | pihole-exporter | classify | — | — | — |
 | prometheus | classify | — | — | — |
 | proton-bridge | classify | 2 | 2 (unarmed) | — |
-| qbittorrent | peer-swarm (count-only) | — | — | 360 |
-| traefik | classify | 7 | 7 (unarmed) | — |
+| qbittorrent | peer-swarm (count-only) | — | — | 127 |
+| traefik | classify | 8 | 8 (unarmed) | — |
 | unpoller | classify | — | — | — |
-| vaultwarden | classify | 55 | 55 (unarmed) | — |
+| vaultwarden | classify | 79 | 79 (unarmed) | — |
 
 ## Zero-egress candidates — blast-radius reduction (REPORT ONLY)
 
@@ -51,223 +51,273 @@ Egress-tier services with **no observed public destination** over the window. Ea
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `162.159.128.233` | 443 | ⚠️ unexpected | 8d ago | 3d ago | 8 |
-| `162.159.135.232` | 443 | ⚠️ unexpected | 10d ago | 10d ago | 6 |
-| `162.159.136.232` | 443 | ⚠️ unexpected | 3d ago | 2d ago | 4 |
-| `162.159.138.232` | 443 | ⚠️ unexpected | 10d ago | 2d ago | 8 |
+| `162.159.128.233` | 443 | ⚠️ unexpected | 12d ago | 62m ago | 32 |
+| `162.159.135.232` | 443 | ⚠️ unexpected | 15d ago | 62m ago | 41 |
+| `162.159.136.232` | 443 | ⚠️ unexpected | 7d ago | 62m ago | 37 |
+| `162.159.137.232` | 443 | ⚠️ unexpected | 4d ago | 62m ago | 40 |
+| `162.159.138.232` | 443 | ⚠️ unexpected | 14d ago | 72m ago | 44 |
 
 ### alertmanager
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `162.159.135.232` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 2 |
-| `162.159.138.232` | 80 | ⚠️ unexpected | 9d ago | 9d ago | 2 |
+| `162.159.135.232` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 2 |
+| `162.159.138.232` | 80 | ⚠️ unexpected | 14d ago | 14d ago | 2 |
 
 ### crowdsec
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `108.128.137.208` | 443 | ⚠️ unexpected | 6d ago | 71m ago | 371 |
-| `108.128.190.179` | 443 | ⚠️ unexpected | 7d ago | 40m ago | 416 |
-| `108.128.222.234` | 443 | ⚠️ unexpected | 10d ago | 3d ago | 472 |
-| `108.132.165.136` | 443 | ⚠️ unexpected | 2d ago | 2h ago | 108 |
-| `18.200.183.204` | 443 | ⚠️ unexpected | 11d ago | 4d ago | 362 |
-| `34.240.98.252` | 443 | ⚠️ unexpected | 8h ago | 50m ago | 24 |
-| `34.242.194.148` | 443 | ⚠️ unexpected | 4d ago | 30m ago | 313 |
-| `34.249.149.68` | 443 | ⚠️ unexpected | 31h ago | 12h ago | 55 |
-| `34.250.77.39` | 443 | ⚠️ unexpected | 10d ago | 22h ago | 582 |
-| `34.255.59.56` | 443 | ⚠️ unexpected | 10d ago | 34h ago | 512 |
-| `52.17.58.50` | 443 | ⚠️ unexpected | 10d ago | 8d ago | 181 |
-| `52.18.68.74` | 443 | ⚠️ unexpected | 8d ago | 27h ago | 458 |
-| `52.210.229.63` | 443 | ⚠️ unexpected | 2d ago | 61m ago | 144 |
-| `52.30.5.78` | 443 | ⚠️ unexpected | 10d ago | 7d ago | 157 |
-| `54.246.207.199` | 443 | ⚠️ unexpected | 27h ago | 10m ago | 109 |
-| `54.76.192.134` | 443 | ⚠️ unexpected | 3d ago | 3h ago | 239 |
-| `54.77.8.107` | 443 | ⚠️ unexpected | 10d ago | 2d ago | 533 |
-| `63.34.141.128` | 443 | ⚠️ unexpected | 10d ago | 6d ago | 196 |
-| `63.35.22.155` | 443 | ⚠️ unexpected | 11d ago | 10d ago | 15 |
-| `79.125.15.38` | 443 | ⚠️ unexpected | 10d ago | 6d ago | 232 |
-| `99.80.129.27` | 443 | ⚠️ unexpected | 6d ago | 2d ago | 263 |
+| `108.128.137.208` | 443 | ⚠️ unexpected | 10d ago | 2d ago | 486 |
+| `108.128.190.179` | 443 | ⚠️ unexpected | 12d ago | 3d ago | 515 |
+| `108.128.222.234` | 443 | ⚠️ unexpected | 15d ago | 7d ago | 472 |
+| `108.132.135.16` | 443 | ⚠️ unexpected | 17h ago | 3h ago | 63 |
+| `108.132.165.136` | 443 | ⚠️ unexpected | 6d ago | 37h ago | 237 |
+| `18.200.183.204` | 443 | ⚠️ unexpected | 15d ago | 9d ago | 362 |
+| `34.240.98.252` | 443 | ⚠️ unexpected | 4d ago | 19h ago | 252 |
+| `34.242.194.148` | 443 | ⚠️ unexpected | 9d ago | 2d ago | 406 |
+| `34.249.149.68` | 443 | ⚠️ unexpected | 5d ago | 8h ago | 277 |
+| `34.250.39.237` | 443 | ⚠️ unexpected | 2d ago | 3h ago | 124 |
+| `34.250.77.39` | 443 | ⚠️ unexpected | 15d ago | 5d ago | 582 |
+| `34.254.73.132` | 443 | ⚠️ unexpected | 2d ago | 40m ago | 168 |
+| `34.255.59.56` | 443 | ⚠️ unexpected | 15d ago | 5d ago | 512 |
+| `52.17.58.50` | 443 | ⚠️ unexpected | 14d ago | 12d ago | 181 |
+| `52.18.68.74` | 443 | ⚠️ unexpected | 12d ago | 5d ago | 458 |
+| `52.19.64.236` | 443 | ⚠️ unexpected | 35h ago | 8m ago | 60 |
+| `52.210.229.63` | 443 | ⚠️ unexpected | 6d ago | 19h ago | 370 |
+| `52.213.228.152` | 443 | ⚠️ unexpected | 15h ago | 3h ago | 40 |
+| `52.30.5.78` | 443 | ⚠️ unexpected | 15d ago | 12d ago | 157 |
+| `52.48.23.149` | 443 | ⚠️ unexpected | 3d ago | 4h ago | 232 |
+| `52.48.238.219` | 443 | ⚠️ unexpected | 3h ago | 8m ago | 15 |
+| `54.195.186.68` | 443 | ⚠️ unexpected | 4d ago | 11h ago | 249 |
+| `54.246.207.199` | 443 | ⚠️ unexpected | 5d ago | 4d ago | 113 |
+| `54.76.192.134` | 443 | ⚠️ unexpected | 7d ago | 2d ago | 337 |
+| `54.77.8.107` | 443 | ⚠️ unexpected | 15d ago | 7d ago | 533 |
+| `63.34.141.128` | 443 | ⚠️ unexpected | 15d ago | 11d ago | 196 |
+| `63.35.170.229` | 443 | ⚠️ unexpected | 2d ago | 2h ago | 144 |
+| `63.35.22.155` | 443 | ⚠️ unexpected | 15d ago | 15d ago | 15 |
+| `79.125.15.38` | 443 | ⚠️ unexpected | 15d ago | 10d ago | 232 |
+| `99.80.129.27` | 443 | ⚠️ unexpected | 11d ago | 6d ago | 263 |
 
 ### gathio
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `104.16.4.34` | 443 | ⚠️ unexpected | 7d ago | 7d ago | 9 |
+| `104.16.4.34` | 443 | ⚠️ unexpected | 12d ago | 12d ago | 9 |
+| `104.16.7.34` | 443 | ⚠️ unexpected | 72m ago | 72m ago | 4 |
 
 ### grafana
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `192.0.73.2` | 443 | ⚠️ unexpected | 9d ago | 7d ago | 4 |
-| `34.120.177.193` | 443 | ⚠️ unexpected | 11d ago | 10m ago | 7859 |
-| `34.96.126.106` | 443 | ⚠️ unexpected | 10d ago | 5h ago | 53 |
+| `192.0.73.2` | 443 | ⚠️ unexpected | 14d ago | 2d ago | 8 |
+| `34.120.177.193` | 443 | ⚠️ unexpected | 15d ago | 8m ago | 10953 |
+| `34.96.126.106` | 443 | ⚠️ unexpected | 14d ago | 13h ago | 72 |
 
 ### home-assistant
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `104.26.4.238` | 443 | ⚠️ unexpected | 10d ago | 16h ago | 14 |
-| `104.26.5.238` | 443 | ⚠️ unexpected | 11d ago | 4h ago | 23 |
-| `151.101.1.195` | 443 | ⚠️ unexpected | 10d ago | 18h ago | 15 |
-| `151.101.65.195` | 443 | ⚠️ unexpected | 8d ago | 42h ago | 8 |
-| `157.249.81.141` | 443 | ⚠️ unexpected | 10d ago | 82m ago | 136 |
-| `172.67.68.90` | 443 | ⚠️ unexpected | 10d ago | 114m ago | 23 |
-| `18.158.22.138` | 8883 | ⚠️ unexpected | 8d ago | 7d ago | 1702 |
-| `18.158.224.141` | 8883 | ⚠️ unexpected | 37h ago | 10m ago | 4389 |
-| `18.159.79.242` | 8883 | ⚠️ unexpected | 3d ago | 2d ago | 2777 |
-| `18.184.210.208` | 8883 | ⚠️ unexpected | 11d ago | 10d ago | 1297 |
-| `18.194.113.141` | 8883 | ⚠️ unexpected | 6d ago | 6d ago | 356 |
-| `18.196.104.106` | 8883 | ⚠️ unexpected | 4d ago | 3d ago | 2729 |
-| `18.198.195.194` | 8883 | ⚠️ unexpected | 10d ago | 8d ago | 5585 |
-| `3.120.216.195` | 443 | ⚠️ unexpected | 7d ago | 10m ago | 677 |
-| `3.120.53.2` | 8883 | ⚠️ unexpected | 7d ago | 6d ago | 3923 |
-| `3.121.10.31` | 8883 | ⚠️ unexpected | 6d ago | 6d ago | 759 |
-| `3.121.111.53` | 443 | ⚠️ unexpected | 2d ago | 20m ago | 249 |
-| `3.121.169.115` | 8883 | ⚠️ unexpected | 6d ago | 4d ago | 4472 |
-| `3.122.171.67` | 443 | ⚠️ unexpected | 6d ago | 10m ago | 586 |
-| `3.122.70.209` | 8883 | ⚠️ unexpected | 2d ago | 37h ago | 2815 |
-| `3.124.29.182` | 443 | ⚠️ unexpected | 11d ago | 2d ago | 810 |
-| `3.125.66.145` | 443 | ⚠️ unexpected | 11d ago | 6d ago | 491 |
-| `3.67.142.130` | 443 | ⚠️ unexpected | 11d ago | 28h ago | 907 |
-| `35.156.5.143` | 443 | ⚠️ unexpected | 27h ago | 10m ago | 94 |
-| `35.158.64.12` | 443 | ⚠️ unexpected | 25h ago | 20m ago | 79 |
-| `52.29.210.73` | 443 | ⚠️ unexpected | 11d ago | 25h ago | 926 |
-| `52.57.174.242` | 443 | ⚠️ unexpected | 11d ago | 7d ago | 429 |
-| `52.58.153.107` | 443 | ⚠️ unexpected | 2d ago | 30m ago | 247 |
-| `63.181.74.73` | 443 | ⚠️ unexpected | 11d ago | 2d ago | 789 |
+| `104.26.4.238` | 443 | ⚠️ unexpected | 15d ago | 16h ago | 22 |
+| `104.26.5.238` | 443 | ⚠️ unexpected | 15d ago | 10h ago | 32 |
+| `151.101.1.195` | 443 | ⚠️ unexpected | 15d ago | 3h ago | 20 |
+| `151.101.65.195` | 443 | ⚠️ unexpected | 13d ago | 3d ago | 13 |
+| `157.249.81.141` | 443 | ⚠️ unexpected | 15d ago | 3h ago | 193 |
+| `172.67.68.90` | 443 | ⚠️ unexpected | 14d ago | 4h ago | 32 |
+| `18.156.89.194` | 443 | ⚠️ unexpected | 2d ago | 8m ago | 334 |
+| `18.158.217.49` | 8883 | ⚠️ unexpected | 45h ago | 22h ago | 2668 |
+| `18.158.22.138` | 8883 | ⚠️ unexpected | 12d ago | 12d ago | 1702 |
+| `18.158.224.141` | 8883 | ⚠️ unexpected | 5d ago | 3d ago | 5641 |
+| `18.159.77.159` | 8883 | ⚠️ unexpected | 3d ago | 3d ago | 755 |
+| `18.159.79.242` | 8883 | ⚠️ unexpected | 7d ago | 6d ago | 2777 |
+| `18.184.210.208` | 8883 | ⚠️ unexpected | 15d ago | 14d ago | 1297 |
+| `18.184.241.150` | 8883 | ⚠️ unexpected | 46h ago | 45h ago | 58 |
+| `18.194.113.141` | 8883 | ⚠️ unexpected | 10d ago | 10d ago | 356 |
+| `18.194.166.209` | 8883 | ⚠️ unexpected | 72m ago | 8m ago | 133 |
+| `18.196.104.106` | 8883 | ⚠️ unexpected | 8d ago | 7d ago | 2729 |
+| `18.198.195.194` | 8883 | ⚠️ unexpected | 14d ago | 12d ago | 5585 |
+| `3.120.211.84` | 8883 | ⚠️ unexpected | 3d ago | 46h ago | 4832 |
+| `3.120.216.195` | 443 | ⚠️ unexpected | 12d ago | 2d ago | 800 |
+| `3.120.53.2` | 8883 | ⚠️ unexpected | 12d ago | 10d ago | 3923 |
+| `3.121.10.31` | 8883 | ⚠️ unexpected | 10d ago | 10d ago | 759 |
+| `3.121.101.237` | 8883 | ⚠️ unexpected | 22h ago | 118m ago | 2420 |
+| `3.121.111.53` | 443 | ⚠️ unexpected | 7d ago | 23h ago | 599 |
+| `3.121.169.115` | 8883 | ⚠️ unexpected | 10d ago | 8d ago | 4472 |
+| `3.122.171.67` | 443 | ⚠️ unexpected | 10d ago | 2d ago | 708 |
+| `3.122.70.209` | 8883 | ⚠️ unexpected | 6d ago | 5d ago | 2815 |
+| `3.124.29.182` | 443 | ⚠️ unexpected | 15d ago | 7d ago | 810 |
+| `3.125.16.42` | 443 | ⚠️ unexpected | 2d ago | 10h ago | 239 |
+| `3.125.66.145` | 443 | ⚠️ unexpected | 15d ago | 10d ago | 491 |
+| `3.67.142.130` | 443 | ⚠️ unexpected | 15d ago | 5d ago | 907 |
+| `35.156.5.143` | 443 | ⚠️ unexpected | 5d ago | 2d ago | 254 |
+| `35.158.64.12` | 443 | ⚠️ unexpected | 5d ago | 8m ago | 546 |
+| `52.28.32.0` | 443 | ⚠️ unexpected | 28h ago | 30m ago | 118 |
+| `52.29.1.243` | 443 | ⚠️ unexpected | 9h ago | 8m ago | 55 |
+| `52.29.210.73` | 443 | ⚠️ unexpected | 15d ago | 5d ago | 926 |
+| `52.57.174.242` | 443 | ⚠️ unexpected | 15d ago | 12d ago | 429 |
+| `52.58.153.107` | 443 | ⚠️ unexpected | 7d ago | 28h ago | 542 |
+| `52.58.33.43` | 443 | ⚠️ unexpected | 23h ago | 8m ago | 122 |
+| `63.181.21.188` | 443 | ⚠️ unexpected | 2d ago | 19m ago | 313 |
+| `63.181.74.73` | 443 | ⚠️ unexpected | 15d ago | 7d ago | 789 |
 
 ### immich-server
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `104.21.71.92` | 443 | ⚠️ unexpected | 10d ago | 50m ago | 302 |
-| `172.67.170.79` | 443 | ⚠️ unexpected | 11d ago | 4h ago | 259 |
+| `104.21.71.92` | 443 | ⚠️ unexpected | 15d ago | 2h ago | 406 |
+| `172.67.170.79` | 443 | ⚠️ unexpected | 15d ago | 30m ago | 378 |
 
 ### jellyfin
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `104.17.207.5` | 443 | ⚠️ unexpected | 11d ago | 11d ago | 5 |
-| `104.17.208.5` | 443 | ⚠️ unexpected | 10d ago | 2d ago | 14 |
-| `139.59.139.28` | 443 | ⚠️ unexpected | 8d ago | 2d ago | 9 |
-| `146.190.237.6` | 443 | ⚠️ unexpected | 5d ago | 22h ago | 14 |
-| `151.101.1.229` | 443 | ⚠️ unexpected | 5d ago | 3d ago | 6 |
-| `151.101.129.229` | 443 | ⚠️ unexpected | 4d ago | 22h ago | 7 |
-| `151.101.193.229` | 443 | ⚠️ unexpected | 9d ago | 8d ago | 4 |
-| `157.245.38.19` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 5 |
-| `161.35.245.42` | 443 | ⚠️ unexpected | 4d ago | 2d ago | 5 |
-| `165.227.169.147` | 443 | ⚠️ unexpected | 11d ago | 46h ago | 18 |
-| `165.227.244.161` | 443 | ⚠️ unexpected | 10d ago | 46h ago | 14 |
-| `178.105.98.131` | 443 | ⚠️ unexpected | 11d ago | 22h ago | 10 |
-| `206.189.97.173` | 443 | ⚠️ unexpected | 3d ago | 3d ago | 5 |
-| `68.183.204.194` | 443 | ⚠️ unexpected | 11d ago | 3d ago | 7 |
+| `104.17.207.5` | 443 | ⚠️ unexpected | 15d ago | 7h ago | 9 |
+| `104.17.208.5` | 443 | ⚠️ unexpected | 14d ago | 2d ago | 18 |
+| `139.59.139.28` | 443 | ⚠️ unexpected | 12d ago | 7d ago | 9 |
+| `146.190.237.6` | 443 | ⚠️ unexpected | 10d ago | 3d ago | 18 |
+| `151.101.1.229` | 443 | ⚠️ unexpected | 10d ago | 31h ago | 10 |
+| `151.101.129.229` | 443 | ⚠️ unexpected | 9d ago | 5d ago | 7 |
+| `151.101.193.229` | 443 | ⚠️ unexpected | 13d ago | 4d ago | 6 |
+| `151.101.65.229` | 443 | ⚠️ unexpected | 72m ago | 72m ago | 1 |
+| `157.245.38.19` | 443 | ⚠️ unexpected | 11d ago | 11d ago | 5 |
+| `161.35.245.42` | 443 | ⚠️ unexpected | 9d ago | 4d ago | 7 |
+| `165.227.169.147` | 443 | ⚠️ unexpected | 15d ago | 72m ago | 32 |
+| `165.227.244.161` | 443 | ⚠️ unexpected | 14d ago | 72m ago | 19 |
+| `178.105.98.131` | 443 | ⚠️ unexpected | 15d ago | 31h ago | 14 |
+| `206.189.97.173` | 443 | ⚠️ unexpected | 8d ago | 7h ago | 9 |
+| `68.183.204.194` | 443 | ⚠️ unexpected | 15d ago | 72m ago | 9 |
 
 ### loki
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `34.96.126.106` | 443 | ⚠️ unexpected | 11d ago | 40m ago | 330 |
+| `34.96.126.106` | 443 | ⚠️ unexpected | 15d ago | 5h ago | 451 |
 
 ### navidrome
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `130.211.19.189` | 443 | ⚠️ unexpected | 10d ago | 6d ago | 13 |
-| `151.101.237.188` | 443 | ⚠️ unexpected | 10d ago | 6d ago | 7 |
-| `151.101.238.53` | 443 | ⚠️ unexpected | 10d ago | 6d ago | 6 |
-| `151.101.238.79` | 443 | ⚠️ unexpected | 10d ago | 6d ago | 6 |
-| `2.22.225.107` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
-| `2.22.225.83` | 443 | ⚠️ unexpected | 10d ago | 10d ago | 4 |
-| `209.141.42.198` | 443 | ⚠️ unexpected | 10d ago | 22h ago | 35 |
+| `104.21.43.229` | 443 | ⚠️ unexpected | 72m ago | 72m ago | 1 |
+| `130.211.19.189` | 443 | ⚠️ unexpected | 14d ago | 11d ago | 13 |
+| `151.101.237.188` | 443 | ⚠️ unexpected | 14d ago | 11d ago | 7 |
+| `151.101.238.53` | 443 | ⚠️ unexpected | 14d ago | 11d ago | 6 |
+| `151.101.238.79` | 443 | ⚠️ unexpected | 14d ago | 11d ago | 6 |
+| `2.22.225.107` | 443 | ⚠️ unexpected | 11d ago | 11d ago | 3 |
+| `2.22.225.83` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 4 |
+| `209.141.42.198` | 443 | ⚠️ unexpected | 15d ago | 40m ago | 52 |
 
 ### nextcloud
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `65.108.197.113` | 443 | ⚠️ unexpected | 8d ago | 2d ago | 8 |
-| `65.109.114.179` | 443 | ⚠️ unexpected | 10d ago | 7h ago | 8 |
-| `65.21.231.50` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
-| `95.217.53.153` | 443 | ⚠️ unexpected | 9d ago | 31h ago | 12 |
+| `65.108.197.113` | 443 | ⚠️ unexpected | 12d ago | 6d ago | 8 |
+| `65.109.114.179` | 443 | ⚠️ unexpected | 14d ago | 15h ago | 14 |
+| `65.21.231.50` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 2 |
+| `95.217.53.153` | 443 | ⚠️ unexpected | 13d ago | 28h ago | 14 |
 
 ### proton-bridge
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `185.70.42.41` | 443 | ⚠️ unexpected | 11d ago | 10m ago | 8875 |
-| `185.70.42.45` | 443 | ⚠️ unexpected | 10d ago | 61m ago | 281 |
+| `185.70.42.41` | 443 | ⚠️ unexpected | 15d ago | 8m ago | 12366 |
+| `185.70.42.45` | 443 | ⚠️ unexpected | 15d ago | 108m ago | 405 |
 
 ### traefik
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `104.19.192.29` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 5 |
-| `104.19.193.29` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 6 |
-| `104.26.3.101` | 443 | ⚠️ unexpected | 9d ago | 7d ago | 15 |
-| `13.39.208.199` | 443 | ⚠️ unexpected | 11d ago | 23h ago | 35 |
-| `140.82.121.5` | 443 | ⚠️ unexpected | 9d ago | 23h ago | 7 |
-| `140.82.121.6` | 443 | ⚠️ unexpected | 11d ago | 46h ago | 6 |
-| `172.65.32.248` | 443 | ⚠️ unexpected | 9d ago | 6d ago | 25 |
+| `104.19.192.29` | 443 | ⚠️ unexpected | 11d ago | 11d ago | 5 |
+| `104.19.193.29` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 6 |
+| `104.26.3.101` | 443 | ⚠️ unexpected | 14d ago | 12d ago | 15 |
+| `13.39.208.199` | 443 | ⚠️ unexpected | 15d ago | 62m ago | 56 |
+| `140.82.121.5` | 443 | ⚠️ unexpected | 14d ago | 7h ago | 12 |
+| `140.82.121.6` | 443 | ⚠️ unexpected | 15d ago | 72m ago | 10 |
+| `172.65.32.248` | 443 | ⚠️ unexpected | 14d ago | 11d ago | 25 |
+| `172.67.75.8` | 443 | ⚠️ unexpected | 108m ago | 108m ago | 5 |
 
 ### vaultwarden
 
 | Destination | Port | Class | First seen | Last seen | Obs |
 |---|---|---|---|---|---|
-| `104.16.123.96` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `104.16.132.229` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `104.16.99.29` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `104.17.17.78` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 2 |
-| `104.17.17.78` | 80 | ⚠️ unexpected | 4d ago | 4d ago | 2 |
-| `104.18.14.13` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `104.18.161.117` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `104.18.179.120` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
-| `104.18.193.106` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 2 |
-| `104.18.27.69` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `104.18.35.237` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `104.20.7.63` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
-| `104.26.1.18` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 2 |
-| `151.101.129.91` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 1 |
-| `151.101.237.91` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 1 |
-| `151.101.239.52` | 443 | ⚠️ unexpected | 3d ago | 45h ago | 2 |
-| `151.101.67.52` | 443 | ⚠️ unexpected | 3d ago | 3d ago | 1 |
-| `162.125.248.18` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 1 |
-| `162.125.71.18` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 1 |
-| `162.159.137.232` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `172.67.74.138` | 443 | ⚠️ unexpected | 44h ago | 44h ago | 3 |
-| `18.195.2.2` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
-| `185.31.213.113` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
-| `193.212.190.216` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 1 |
-| `194.132.66.34` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 2 |
-| `217.114.94.2` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `3.167.1.165` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
-| `3.167.2.39` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 2 |
-| `3.167.2.44` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `3.167.2.45` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `3.167.2.93` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 2 |
-| `3.167.2.97` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `3.33.186.135` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `34.110.155.89` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `35.186.224.24` | 443 | ⚠️ unexpected | 47h ago | 47h ago | 2 |
-| `52.195.100.115` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 2 |
-| `52.198.57.38` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 1 |
-| `52.222.187.52` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
-| `52.84.50.103` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 2 |
-| `52.84.50.125` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `52.84.50.126` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `52.84.50.128` | 443 | ⚠️ unexpected | 47h ago | 47h ago | 2 |
-| `52.84.50.128` | 80 | ⚠️ unexpected | 47h ago | 47h ago | 2 |
-| `52.84.50.14` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 2 |
-| `52.84.50.16` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `52.84.50.22` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `52.84.50.4` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 2 |
-| `52.84.50.61` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 3 |
-| `62.249.184.112` | 443 | ⚠️ unexpected | 44h ago | 44h ago | 1 |
-| `66.33.60.34` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
-| `76.76.21.21` | 443 | ⚠️ unexpected | 9d ago | 4d ago | 5 |
-| `76.76.21.22` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 2 |
-| `95.101.10.146` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 1 |
-| `95.101.10.154` | 443 | ⚠️ unexpected | 45h ago | 45h ago | 1 |
-| `98.82.155.134` | 443 | ⚠️ unexpected | 9d ago | 9d ago | 3 |
+| `104.16.123.96` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `104.16.132.229` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `104.16.99.29` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `104.17.17.78` | 443 | ⚠️ unexpected | 8d ago | 2d ago | 5 |
+| `104.17.17.78` | 80 | ⚠️ unexpected | 8d ago | 2d ago | 5 |
+| `104.18.14.13` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `104.18.161.117` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `104.18.179.120` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
+| `104.18.193.106` | 443 | ⚠️ unexpected | 8d ago | 2d ago | 5 |
+| `104.18.27.69` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `104.18.35.237` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `104.19.171.101` | 80 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `104.19.171.101` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `104.19.172.101` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `104.19.172.101` | 80 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `104.20.7.63` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
+| `104.26.1.18` | 443 | ⚠️ unexpected | 8d ago | 8d ago | 2 |
+| `13.107.6.156` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `135.181.128.221` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `138.199.37.230` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `150.171.109.200` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `151.101.129.91` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 1 |
+| `151.101.237.91` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 1 |
+| `151.101.239.52` | 443 | ⚠️ unexpected | 8d ago | 6d ago | 2 |
+| `151.101.67.52` | 443 | ⚠️ unexpected | 8d ago | 8d ago | 1 |
+| `162.125.248.18` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 1 |
+| `162.125.71.18` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 1 |
+| `162.159.137.232` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `172.66.137.109` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `172.67.74.138` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `18.195.2.2` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
+| `18.224.126.143` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `185.109.198.109` | 80 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `185.31.213.113` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
+| `193.212.190.216` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 1 |
+| `194.132.66.34` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 2 |
+| `194.242.11.186` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `198.252.206.1` | 80 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `198.252.206.1` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `20.190.147.4` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `20.190.177.20` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 3 |
+| `217.114.94.2` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `3.167.1.165` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
+| `3.167.2.39` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 2 |
+| `3.167.2.44` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `3.167.2.45` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `3.167.2.93` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 2 |
+| `3.167.2.97` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `3.33.186.135` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `34.110.155.89` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `34.95.108.49` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `35.186.224.24` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 2 |
+| `35.231.208.158` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `52.195.100.115` | 443 | ⚠️ unexpected | 8d ago | 8d ago | 2 |
+| `52.196.64.126` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 3 |
+| `52.198.57.38` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 1 |
+| `52.222.187.52` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
+| `52.84.50.103` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 2 |
+| `52.84.50.115` | 443 | ⚠️ unexpected | 4d ago | 4d ago | 3 |
+| `52.84.50.125` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `52.84.50.126` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `52.84.50.128` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 2 |
+| `52.84.50.128` | 80 | ⚠️ unexpected | 6d ago | 6d ago | 2 |
+| `52.84.50.14` | 443 | ⚠️ unexpected | 8d ago | 8d ago | 2 |
+| `52.84.50.16` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `52.84.50.2` | 443 | ⚠️ unexpected | 33h ago | 33h ago | 2 |
+| `52.84.50.22` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `52.84.50.4` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 2 |
+| `52.84.50.61` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 3 |
+| `54.240.174.10` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `54.240.174.91` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 2 |
+| `62.249.184.112` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 1 |
+| `66.33.60.34` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
+| `76.76.21.21` | 443 | ⚠️ unexpected | 14d ago | 8d ago | 5 |
+| `76.76.21.22` | 443 | ⚠️ unexpected | 8d ago | 8d ago | 2 |
+| `95.101.10.146` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 1 |
+| `95.101.10.154` | 443 | ⚠️ unexpected | 6d ago | 6d ago | 1 |
+| `95.101.10.97` | 443 | ⚠️ unexpected | 2d ago | 2d ago | 1 |
+| `98.82.155.134` | 443 | ⚠️ unexpected | 14d ago | 14d ago | 3 |
 
 ---
 

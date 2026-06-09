@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-06-04 23:38:27 UTC
-**Total Documents:** 431
+**Generated:** 2026-06-09 00:01:12 UTC
+**Total Documents:** 434
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (28 documents)
+### 00-foundation/ (29 documents)
 
 **Fundamentals and core concepts**
 
@@ -55,6 +55,7 @@
 - ADR-030: [2026-05-23-ADR-030-container-supply-chain-trust-model](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
 - ADR-031: [2026-05-25-ADR-031-dns-resolver-first-class-and-ha](00-foundation/decisions/2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md)
 - ADR-032: [2026-06-05-ADR-032-forgejo-git-over-ssh-loopback](00-foundation/decisions/2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md)
+- ADR-034: [2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh](00-foundation/decisions/2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md)
 - : [README](00-foundation/decisions/fixtures/README.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
@@ -180,7 +181,7 @@
 
 ---
 
-### 97-plans/ (39 documents)
+### 97-plans/ (40 documents)
 
 **Strategic plans and forward-looking projects**
 - 📋 [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
@@ -204,6 +205,7 @@
 - 📋 [2026-05-25-monitoring-metric-diet.md](97-plans/2026-05-25-monitoring-metric-diet.md)
 - 📋 [2026-05-25-pihole-resolver-first-class-and-ha.md](97-plans/2026-05-25-pihole-resolver-first-class-and-ha.md)
 - 📋 [2026-05-25-slo-alert-coverage.md](97-plans/2026-05-25-slo-alert-coverage.md)
+- 📋 [2026-06-07-cabinet-cooling-fan-controller-SKETCH.md](97-plans/2026-06-07-cabinet-cooling-fan-controller-SKETCH.md)
 - 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
 - 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
 - ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
@@ -225,7 +227,7 @@
 
 ---
 
-### 98-journals/ (212 documents)
+### 98-journals/ (213 documents)
 
 **Chronological project history (append-only log)**
 
@@ -244,17 +246,19 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 ## Recently Updated (Last 7 Days)
 
 - 2026-06-04: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
-- 2026-06-05: [2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md](00-foundation/decisions/2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md)
+- 2026-06-09: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
+- 2026-06-06: [2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md](00-foundation/decisions/2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md)
+- 2026-06-06: [2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md](00-foundation/decisions/2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md)
+- 2026-06-07: [2026-06-07-cabinet-cooling-fan-controller-SKETCH.md](97-plans/2026-06-07-cabinet-cooling-fan-controller-SKETCH.md)
 - 2026-06-04: [2026-06-04-branch-hygiene-adr021-cross-repo-and-churn-alert.md](98-journals/2026-06-04-branch-hygiene-adr021-cross-repo-and-churn-alert.md)
-- 2026-06-01: [2026-06-01-skill-usage-report.md](99-reports/2026-06-01-skill-usage-report.md)
-- 2026-06-01: [remediation-monthly-202605.md](99-reports/remediation-monthly-202605.md)
-- 2026-06-01: [security-audit-2026-06-01.md](99-reports/security-audit-2026-06-01.md)
-- 2026-06-05: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-06-05: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-06-05: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
-- 2026-06-05: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
-- 2026-06-05: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-06-05: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-06-09: [2026-06-09-adr029-phase-b-db-migration-nocow.md](98-journals/2026-06-09-adr029-phase-b-db-migration-nocow.md)
+- 2026-06-09: [remediation-monthly-202605.md](99-reports/remediation-monthly-202605.md)
+- 2026-06-09: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-06-09: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-06-09: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-06-09: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-06-09: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-06-09: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
