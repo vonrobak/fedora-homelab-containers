@@ -4,8 +4,9 @@ After=network-online.target photos-network.service
 Wants=network-online.target photos-network.service
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
-Image=docker.io/valkey/valkey@sha256:8436e10bc65c94886a91d4415b6a6dfa9cb5a306fb3b996e5bb67cd2b4854193
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-06-10 (index digest, multi-arch)
+# ADR-030 P6: no publisher signature (tracked unsigned)
+Image=docker.io/valkey/valkey@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9
 ContainerName=redis-immich
 
 # Network
