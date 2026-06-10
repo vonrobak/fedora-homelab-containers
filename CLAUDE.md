@@ -87,15 +87,19 @@ Pattern-based deployment available via `homelab-deployment` skill (see `.claude/
 
 ### Update Strategy
 
-Governed by **ADR-030 (Container Supply-Chain Trust Model):** images move to immutable digest pins (`@sha256:…`) with deliberate, reviewed updates and a cooling-off interval — superseding ADR-015's `:latest`/auto-update trust model. **Migration is phased and currently proposed** (see `docs/97-plans/2026-05-23-tier1-…`); until executed, most services still ride `:latest` and 17 carry `AutoUpdate=registry`.
+Governed by **ADR-030 (Container Supply-Chain Trust Model):** **fully implemented (Tier 1 + Tier 2)** — every registry image is digest-pinned (`tag@sha256:…`, tag = discovery handle, digest = execution contract), all `AutoUpdate=registry` lines are stripped, and the 2 local builds pin their `FROM` bases by digest. Nothing updates automatically; superseded ADR-015's `:latest`/auto-update trust model. A pre-commit hook enforces the invariants (egress tier pinned + de-automated, local bases pinned, no signature failures); `docs/AUTO-IMAGE-PIN-INDEX.md` is the daily audit view.
 
-**Exceptions today (pinned, manual upgrade only):**
-- **Databases:** PostgreSQL, MariaDB (major version migrations required)
-- **Immich:** Pinned to specific version (tight ML + postgres coupling)
+**Deliberate update loop:**
+1. **Discover:** `scripts/check-image-updates.sh` — skopeo digest-diff against registry tags, notify-only, never pulls
+2. **Adopt (after cooling-off):** `scripts/pin-container-image.sh <svc> --adopt <digest> --apply` — P6 signature gate verifies known signers fail-closed (`config/supply-chain/signers.yaml`)
+3. **Restart:** `systemctl --user daemon-reload && systemctl --user restart <svc>.service`
 
-Rollback: BTRFS snapshots enable instant recovery; once pinned, `git revert` of a digest is a second rollback path.
+**Class-specific rules:**
+- **Databases:** PostgreSQL, MariaDB, MongoDB pinned to major-version tags; major upgrades are explicit migration projects (ADR-029 dump backbone), never casual bumps
+- **Immich:** server + ML + postgres version-locked as a set (tight coupling)
+- **Local builds** (proton-bridge, alert-discord-relay): Tier 2 — built locally from digest-pinned bases, no registry trust
 
-See ADR-030 (trust model) and ADR-015 (superseded; its BTRFS rollback + health-validation mechanisms remain valid). Workflow: `scripts/update-before-reboot.sh` before DNF updates.
+Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second path. Remaining ADR-030 work: Tier 3/4 (broader signature coverage). Workflow: `scripts/update-before-reboot.sh` before DNF updates (ensures pinned digests present, never re-floats them).
 
 ### Architecture Decision Records
 
