@@ -5,9 +5,10 @@ Wants=auth_services-network.service network-online.target reverse_proxy-network.
 Requires=redis-authelia.service
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
-# ADR-030 P1/P4: egress-tier, deliberate updates only (already carried no AutoUpdate). Bump = resolve new digest, bake, edit, restart.
-Image=docker.io/authelia/authelia@sha256:0c824dcab1ae97c56bf673c5e77fe8cc6bcd400564555140cc8002a12c6b6463
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-06-10 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = adopt new digest (pin-container-image.sh --adopt), bake, restart.
+# ADR-030 P6: no publisher signature (tracked unsigned)
+Image=docker.io/authelia/authelia@sha256:1b363e9279e742397966333f364e0876ae02bf5c876de73e83af6d48c57ff51b
 ContainerName=authelia
 
 # Multi-network: Serves SSO portal + handles auth verification
