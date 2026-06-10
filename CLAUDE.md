@@ -89,10 +89,11 @@ Pattern-based deployment available via `homelab-deployment` skill (see `.claude/
 
 Governed by **ADR-030 (Container Supply-Chain Trust Model):** **fully implemented (Tier 1 + Tier 2)** — every registry image is digest-pinned (`tag@sha256:…`, tag = discovery handle, digest = execution contract), all `AutoUpdate=registry` lines are stripped, and the 2 local builds pin their `FROM` bases by digest. Nothing updates automatically; superseded ADR-015's `:latest`/auto-update trust model. A pre-commit hook enforces the invariants (egress tier pinned + de-automated, local bases pinned, no signature failures); `docs/AUTO-IMAGE-PIN-INDEX.md` is the daily audit view.
 
-**Deliberate update loop:**
-1. **Discover:** `scripts/check-image-updates.sh` — skopeo digest-diff against registry tags, notify-only, never pulls
-2. **Adopt (after cooling-off):** `scripts/pin-container-image.sh <svc> --adopt <digest> --apply` — P6 signature gate verifies known signers fail-closed (`config/supply-chain/signers.yaml`)
-3. **Restart:** `systemctl --user daemon-reload && systemctl --user restart <svc>.service`
+**Deliberate update loop (ADR-036):**
+1. **Discover:** `scripts/check-image-updates.sh` — skopeo digest-diff, notify-only; annotates each candidate BAKED/TOO-YOUNG against the P3 bake policy (`config/supply-chain/bake-policy.yml`: egress 7d, internal 3d) and writes machine-readable JSON
+2. **Adopt:** `scripts/adopt-baked.sh [--dry-run]` — wave-ordered batch (plumbing → apps → core → DBs + dependent restarts), per-service health + HTTP verification, halt-on-failure; P6 signature gate applies via `pin-container-image.sh`
+3. **Exception lane:** a release fixing a known-exploited CVE in an egress-tier service may skip the bake via `--allow-young <svc>` — commit message must name the CVE
+4. **Single-service path:** `scripts/pin-container-image.sh <svc> --adopt <digest> --apply` + daemon-reload + restart
 
 **Class-specific rules:**
 - **Databases:** PostgreSQL, MariaDB, MongoDB pinned to major-version tags; major upgrades are explicit migration projects (ADR-029 dump backbone), never casual bumps
@@ -103,7 +104,7 @@ Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second p
 
 ### Architecture Decision Records
 
-**Architectural decisions recorded as ADRs — latest is ADR-034** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
+**Architectural decisions recorded as ADRs — latest is ADR-036** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
 
 **Design-Guiding ADRs (affect future decisions):**
 - **ADR-001:** Rootless Containers — UID 1000, `:Z` SELinux labels on all mounts
@@ -119,6 +120,7 @@ Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second p
 - **ADR-021:** Urd Backup Tool — Rust-based BTRFS Time Machine replaces shell script (supersedes ADR-020 implementation)
 - **ADR-030:** Container Supply-Chain Trust Model — digest pinning, deliberate (de-automated) updates, cooling-off interval, graduated signature verification (supersedes ADR-015 trust model)
 - **ADR-031:** DNS Resolver First-Class & HA — redundancy-before-monitoring, active/passive keepalived VIP, alert-path resolver must be independent of the monitored resolver, resolver managed-as-code + SSO admin (status: Accepted, implementation phased)
+- **ADR-036:** Bake Policy & Exception Lane (amends ADR-030) — P3 cooling-off codified (egress 7d / internal 3d in `bake-policy.yml`), wave-ordered batch adoption via `adopt-baked.sh`, security-release CVE override with `--allow-young`
 
 Check if an ADR exists before proposing changes. Reference the ADR and explain what changed if suggesting alternatives. New decisions get new ADRs (don't edit existing ones).
 
