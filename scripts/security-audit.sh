@@ -279,11 +279,17 @@ run_auth_checks() {
     fi
 
     # SA-AUTH-02 (L1): Authelia health endpoint responds
+    # Reads the container's own healthcheck (probes /api/health every 10s) via
+    # inspect instead of podman exec — exec startup alone takes ~4s and races
+    # the timeout under audit load, causing false L1 failures.
     if should_run 1 auth; then
-        if timeout 5 podman exec authelia wget -q -O- http://localhost:9091/api/health 2>/dev/null | grep -q "OK" 2>/dev/null; then
+        authelia_health=$(timeout 10 podman inspect authelia --format '{{.State.Health.Status}}' 2>/dev/null)
+        if [[ "$authelia_health" == "healthy" ]]; then
             record_check "SA-AUTH-02" 1 auth "PASS" "Authelia health endpoint OK"
+        elif [[ "$authelia_health" == "starting" ]] && timeout 15 podman exec authelia wget -q -O- http://localhost:9091/api/health 2>/dev/null | grep -q "OK" 2>/dev/null; then
+            record_check "SA-AUTH-02" 1 auth "PASS" "Authelia health endpoint OK (healthcheck still starting)"
         else
-            record_check "SA-AUTH-02" 1 auth "FAIL" "Authelia health endpoint not responding"
+            record_check "SA-AUTH-02" 1 auth "FAIL" "Authelia health endpoint not responding (health status: ${authelia_health:-unknown})"
         fi
     fi
 
