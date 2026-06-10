@@ -1,0 +1,12 @@
+# ADR-036 — P3 bake intervals (cooling-off before deliberate adoption).
+# Consumed by scripts/check-image-updates.sh (verdict annotation) and
+# scripts/adopt-baked.sh (adoption gate).
+#
+# Tier is derived per service from its quadlet: a container on the
+# reverse_proxy network (Network=systemd-reverse_proxy…) is egress-tier.
+#
+# Exception lane (ADR-036): a release fixing a known-exploited CVE in an
+# egress-tier service MAY be adopted before the bake interval elapses —
+# adopt-baked.sh --allow-young <svc>, and note the skip in the commit message.
+egress_days: 7
+internal_days: 3
