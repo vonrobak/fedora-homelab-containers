@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-06-09 00:01:11 UTC
+**Generated:** 2026-06-10 05:04:34 UTC
 **System:** fedora-htpc
 
 ---
@@ -194,12 +194,12 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | forgejo-db | (no ordering constraints) |
 | gathio | gathio-db |
 | gathio-db | (no ordering constraints) |
-| grafana | (no ordering constraints) |
+| grafana | traefik |
 | home-assistant | (no ordering constraints) |
 | immich-ml | (no ordering constraints) |
 | immich-server | postgresql-immich,redis-immich |
 | jellyfin | (no ordering constraints) |
-| loki | (no ordering constraints) |
+| loki | traefik |
 | navidrome | traefik |
 | nextcloud | nextcloud-db,nextcloud-redis |
 | nextcloud-db | (no ordering constraints) |
@@ -208,7 +208,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 | pihole-exporter | traefik |
 | postgres-exporter | postgresql-immich |
 | postgresql-immich | (no ordering constraints) |
-| prometheus | node_exporter |
+| prometheus | node_exporter,traefik |
 | promtail | loki,traefik |
 | proton-bridge | (no ordering constraints) |
 | qbittorrent | (no ordering constraints) |

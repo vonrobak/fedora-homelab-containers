@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-06-09 00:01:12 UTC
-**Total Documents:** 434
+**Generated:** 2026-06-10 05:04:34 UTC
+**Total Documents:** 438
 
 ---
 
@@ -98,7 +98,7 @@
 
 ---
 
-### 20-operations/ (26 documents)
+### 20-operations/ (28 documents)
 
 **Operational procedures, runbooks, and architecture**
 
@@ -118,6 +118,7 @@
 - [permission-optimization-nextcloud.md](20-operations/guides/permission-optimization-nextcloud.md)
 - [remediation-chains.md](20-operations/guides/remediation-chains.md)
 - [resource-limits-configuration.md](20-operations/guides/resource-limits-configuration.md)
+- [storage-health-monitoring.md](20-operations/guides/storage-health-monitoring.md)
 - [storage-layout.md](20-operations/guides/storage-layout.md)
 - [tier3-initial-backup.md](20-operations/guides/tier3-initial-backup.md)
 - [unpoller-metrics-guide.md](20-operations/guides/unpoller-metrics-guide.md)
@@ -227,7 +228,7 @@
 
 ---
 
-### 98-journals/ (213 documents)
+### 98-journals/ (215 documents)
 
 **Chronological project history (append-only log)**
 
@@ -249,16 +250,20 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-06-09: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
 - 2026-06-06: [2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md](00-foundation/decisions/2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md)
 - 2026-06-06: [2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md](00-foundation/decisions/2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md)
+- 2026-06-09: [2026-06-09-ADR-035-boot-time-io-tiering.md](20-operations/decisions/2026-06-09-ADR-035-boot-time-io-tiering.md)
+- 2026-06-09: [storage-health-monitoring.md](20-operations/guides/storage-health-monitoring.md)
 - 2026-06-07: [2026-06-07-cabinet-cooling-fan-controller-SKETCH.md](97-plans/2026-06-07-cabinet-cooling-fan-controller-SKETCH.md)
 - 2026-06-04: [2026-06-04-branch-hygiene-adr021-cross-repo-and-churn-alert.md](98-journals/2026-06-04-branch-hygiene-adr021-cross-repo-and-churn-alert.md)
 - 2026-06-09: [2026-06-09-adr029-phase-b-db-migration-nocow.md](98-journals/2026-06-09-adr029-phase-b-db-migration-nocow.md)
+- 2026-06-09: [2026-06-09-reboot-io-storm-not-podman-deathloop.md](98-journals/2026-06-09-reboot-io-storm-not-podman-deathloop.md)
+- 2026-06-09: [2026-06-09-storage-health-monitoring.md](98-journals/2026-06-09-storage-health-monitoring.md)
 - 2026-06-09: [remediation-monthly-202605.md](99-reports/remediation-monthly-202605.md)
-- 2026-06-09: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-06-09: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-06-09: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
-- 2026-06-09: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
-- 2026-06-09: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-06-09: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-06-10: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-06-10: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-06-10: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-06-10: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-06-10: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-06-10: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
