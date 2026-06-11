@@ -73,6 +73,9 @@ providers:
 
 global:
   sendAnonymousUsage: false
+  # Version discovery happens via check-image-updates.sh (ADR-036), not traefik
+  # phoning update.traefik.io — keeps the gateway's egress baseline minimal (Tier 4).
+  checkNewVersion: false
 
 experimental:
   plugins:

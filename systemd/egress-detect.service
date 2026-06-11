@@ -11,7 +11,7 @@ Type=oneshot
 # metric/JSONL). TO ARM (after seeding egress-baseline.yaml): set EGRESS_MODE empty here
 # (or via `systemctl --user edit egress-detect.service`), `systemctl --user daemon-reload`,
 # and rename config/prometheus/alerts/egress-alerts.yml.disabled → .yml. (shadow-first.)
-Environment=EGRESS_MODE=--shadow
+Environment=EGRESS_MODE=
 ExecStart=%h/containers/scripts/detect-egress-anomaly.sh ${EGRESS_MODE}
 StandardOutput=journal
 StandardError=journal
