@@ -16,33 +16,146 @@
 #
 # Classification for a (service, ip): EXPECTED if ip ∈ any CIDR in
 #   (infrastructure ∪ services[service]); otherwise UNEXPECTED → metric + JSONL + alert.
+#
+# SEEDED 2026-06-11 from the 2026-05-24 → 2026-06-11 shadow window (18 days, 216
+# observed destinations, 3 Sundays of weekly-cadence egress). Reviewed entry-by-entry
+# before arming; vaultwarden moved to peer_swarm (see note). Re-baseline:
+# scripts/egress-baseline.sh --write, review the .proposed.yaml, merge here.
 
 # --- Peer-swarm services -----------------------------------------------------------
-# Services whose egress is an unbounded peer swarm (P2P): per-destination allow-listing
-# is meaningless (hundreds of random IPs/ports worldwide). The detector tracks only the
-# CONNECTION COUNT for these (a volume anomaly signal), never individual peers.
+# Services whose LEGITIMATE egress is unbounded: per-destination allow-listing is
+# meaningless. The detector tracks only the CONNECTION COUNT for these (a volume
+# anomaly signal), never individual peers.
 peer_swarm_services:
   - qbittorrent      # BitTorrent: ~130 concurrent peers on random IPs/ports (baseline 2026-05-24)
+  - vaultwarden      # Favicon downloads: the server fetches icons DIRECTLY from every
+                     # site in the vault (75 IPs / 19 owners in the baseline window,
+                     # grows with the vault — EXPECTED behavior, user decision 2026-06-11:
+                     # direct fetch keeps the domain list private vs leaking it to a
+                     # central icon service; icons matter for managing a large vault).
+                     # RESIDUAL RISK (accepted, documented): one quiet exfil connection
+                     # is indistinguishable from an icon fetch at the socket level —
+                     # only volume anomalies are detectable for this service.
+                     # Compensating: vault E2E-encrypted at rest, YubiKey 2FA,
+                     # CrowdSec + rate-limit in front.
 
 # --- Shared infrastructure (applies to ALL classify-mode services) -----------------
-# Destinations any service may legitimately reach. Filled from the baseline survey.
-# Each entry: { owner: <label>, cidrs: [ ... ], note: <why> }.
+# Deliberately EMPTY (review decision 2026-06-11): promoting broad CDN ranges
+# (Cloudflare/Fastly) here would let ANY compromised service hide behind "everyone may
+# reach any CDN" — much C2 infrastructure sits behind Cloudflare. Per-service entries
+# below keep each allowance scoped to the service that demonstrated the need.
 infrastructure: []
-  # - owner: Cloudflare
-  #   cidrs: [104.16.0.0/13, 172.64.0.0/13]
-  #   note: ACME DNS-01 (Let's Encrypt via Cloudflare API), *.patriark.org
-  # - owner: Fedora / distro mirrors
-  #   cidrs: []
-  #   note: package/CDN mirrors (if a service self-updates)
 
 # --- Per-service allow-list (in addition to infrastructure) ------------------------
-# Keyed by service (quadlet basename). Same entry shape as infrastructure.
-services: {}
-  # home-assistant:
-  #   - owner: Amazon AWS (eu-central-1)
-  #     cidrs: [18.184.0.0/15]
-  #     note: HA cloud / MQTT (observed 18.184.210.208:8883)
-  # proton-bridge:
-  #   - owner: Proton AG
-  #     cidrs: [185.70.40.0/22]
-  #     note: SMTP/IMAP bridge to Proton (observed 185.70.42.41:443)
+# Keyed by service (quadlet basename). Each entry: { owner, cidrs: [...], note }.
+# All entries observed during the clean 18d shadow window, reviewed 2026-06-11.
+services:
+  alert-discord-relay:
+    - owner: Cloudflare, Inc.
+      cidrs: [162.158.0.0/15]
+      note: Discord webhook API (observed 162.159.128-138.x)
+  alertmanager:
+    - owner: Cloudflare, Inc.
+      cidrs: [162.158.0.0/15]
+      note: Discord webhook API (observed 162.159.135.232, 162.159.138.232)
+  crowdsec:
+    - owner: Amazon Data Services Ireland Ltd
+      cidrs: [79.125.0.0/18]
+      note: CrowdSec CAPI/blocklists, AWS eu-west (observed 79.125.15.38)
+    - owner: Amazon Technologies Inc.
+      cidrs: [18.128.0.0/9, 34.192.0.0/10, 52.0.0.0/10, 52.208.0.0/13, 52.220.0.0/15, 52.223.128.0/18, 52.64.0.0/12, 54.160.0.0/11, 54.208.0.0/13, 54.224.0.0/11, 54.64.0.0/11]
+      note: CrowdSec CAPI/blocklist mirrors (observed 18.200.183.204, 34.240.98.252, 52.213.228.152, 54.170.104.57, …)
+    - owner: Amazon.com, Inc.
+      cidrs: [108.128.0.0/13, 108.136.0.0/14, 63.32.0.0/14, 99.78.128.0/17, 99.80.0.0/15, 99.82.128.0/18]
+      note: CrowdSec CAPI/blocklist mirrors (observed 108.128.137.208, 63.34.141.128, 99.81.12.92, …)
+  gathio:
+    - owner: Cloudflare, Inc.
+      cidrs: [104.16.0.0/12]
+      note: observed 104.16.4.34, 104.16.7.34
+  grafana:
+    - owner: Automattic, Inc
+      cidrs: [192.0.64.0/18]
+      note: Gravatar avatars (observed 192.0.73.2)
+    - owner: Google LLC
+      cidrs: [34.64.0.0/10]
+      note: grafana.com update/plugin checks behind GCLB (observed 34.120.177.193, 34.96.126.106)
+  home-assistant:
+    - owner: Amazon Technologies Inc.
+      cidrs: [18.128.0.0/9, 18.32.0.0/11, 18.64.0.0/10, 3.0.0.0/9, 35.152.0.0/13, 35.176.0.0/13, 52.0.0.0/10, 52.64.0.0/12]
+      note: HA cloud / integrations on AWS (observed 18.156.89.194 …; incl. MQTT 18.184.x:8883 pre-baseline)
+    - owner: Amazon.com, Inc.
+      cidrs: [63.176.0.0/12]
+      note: observed 63.181.21.188, 63.181.74.73, 63.182.123.150
+    - owner: Cloudflare, Inc.
+      cidrs: [104.16.0.0/12, 172.64.0.0/13]
+      note: observed 104.26.4.238, 104.26.5.238, 172.67.68.90
+    - owner: Fastly, Inc.
+      cidrs: [151.101.0.0/16]
+      note: PyPI/CDN (observed 151.101.1.195, 151.101.65.195)
+    - owner: Telenor (RIPE)
+      cidrs: [157.249.0.0/16]
+      note: Norwegian endpoint, likely met.no/yr weather integration (observed 157.249.81.141)
+  immich-server:
+    - owner: CLOUDFLARENET-EU
+      cidrs: [188.114.97.0/24]
+      note: observed 188.114.97.4
+    - owner: Cloudflare, Inc.
+      cidrs: [104.16.0.0/12, 172.64.0.0/13]
+      note: map tiles / geocoding (observed 104.21.71.92, 172.67.170.79)
+  jellyfin:
+    - owner: Asia Pacific Network Information Centre
+      cidrs: [139.59.0.0/16]
+      note: DigitalOcean-allocated APNIC range, metadata provider (observed 139.59.139.28)
+    - owner: Cloudflare, Inc.
+      cidrs: [104.16.0.0/12]
+      note: observed 104.17.207.5, 104.17.208.5
+    - owner: DigitalOcean, LLC
+      cidrs: [146.190.0.0/16, 157.245.0.0/16, 161.35.0.0/16, 165.227.0.0/16, 206.189.0.0/16, 68.183.0.0/16]
+      note: jellyfin.org repo/metadata infra (observed 146.190.237.6, 157.245.38.19, …)
+    - owner: Fastly, Inc.
+      cidrs: [151.101.0.0/16]
+      note: observed 151.101.1.229, 151.101.129.229, …
+    - owner: Hetzner Online GmbH
+      cidrs: [178.104.0.0/15]
+      note: observed 178.105.98.131
+  loki:
+    - owner: Google LLC
+      cidrs: [34.64.0.0/10]
+      note: Grafana Labs usage reporting behind GCLB (observed 34.96.126.106)
+  navidrome:
+    - owner: AKAMAI-PA
+      cidrs: [2.22.225.0/24]
+      note: last.fm scrobbling (observed 2.22.225.107, 2.22.225.83)
+    - owner: Cloudflare, Inc.
+      cidrs: [104.16.0.0/12]
+      note: observed 104.21.43.229
+    - owner: Fastly, Inc.
+      cidrs: [151.101.0.0/16]
+      note: observed 151.101.237.188, 151.101.238.53, …
+    - owner: FranTech Solutions
+      cidrs: [209.141.32.0/19]
+      note: observed 209.141.42.198 (cover-art/scrobble adjacent; single IP — watch)
+    - owner: Google LLC
+      cidrs: [130.211.0.0/16]
+      note: observed 130.211.19.189
+  nextcloud:
+    - owner: Hetzner Online GmbH
+      cidrs: [95.217.0.0/16]
+      note: Nextcloud appstore/updates (observed 95.217.53.153)
+    - owner: Hetzner FI (RIPE)
+      cidrs: [65.108.0.0/15, 65.21.0.0/16]
+      note: Nextcloud appstore/updates (observed 65.108.197.113, 65.109.114.179, 65.21.231.50)
+  proton-bridge:
+    - owner: Proton AG
+      cidrs: [185.70.42.0/24]
+      note: Proton Mail API (observed 185.70.42.41, 185.70.42.45)
+  traefik:
+    # NOTE: the 13.39.208.199 (AWS) destination observed in the baseline window was
+    # identified 2026-06-11 as update.traefik.io (version phone-home) and DISABLED
+    # via checkNewVersion: false in traefik.yml instead of allow-listed.
+    - owner: Cloudflare, Inc.
+      cidrs: [104.16.0.0/12, 172.64.0.0/13]
+      note: ACME DNS-01 Cloudflare API for *.patriark.org (observed 104.19.192.29, 172.65.32.248, …)
+    - owner: GitHub, Inc.
+      cidrs: [140.82.112.0/20]
+      note: plugin/version checks (observed 140.82.121.5, 140.82.121.6)
