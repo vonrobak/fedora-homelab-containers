@@ -1,0 +1,40 @@
+# ADR-036 layer 1 — the system tells the human when the monthly update ritual
+# is worth running; adoption itself stays behind a human keystroke (ADR-030 P1).
+# Metric source: scripts/check-image-updates.sh (weekly timer, Sun 10:00) →
+# data/backup-metrics/image-updates.prom → node_exporter textfile collector.
+# Alertmanager routes ImageUpdatesBaked.* with repeat_interval 168h (weekly
+# reminder, not 4-hourly noise).
+groups:
+  - name: image_updates
+    rules:
+      - alert: ImageUpdatesBakedReady
+        expr: image_updates_baked_count >= 5
+        for: 24h
+        labels:
+          severity: info
+        annotations:
+          summary: "{{ $value }} container updates baked and ready to adopt"
+          description: "{{ $value }} image updates have passed their ADR-036 bake interval. Run: scripts/monthly-update.sh (or adopt-baked.sh --dry-run to review the plan)."
+
+      # Even a small number of baked updates shouldn't sit forever — nudge
+      # monthly if anything adoptable has been waiting.
+      - alert: ImageUpdatesBakedStale
+        expr: image_updates_baked_count >= 1
+        for: 720h
+        labels:
+          severity: info
+        annotations:
+          summary: "Baked image updates waiting >30d"
+          description: "{{ $value }} baked update(s) have been adoptable for over 30 days. Run: scripts/monthly-update.sh"
+
+      # The nudge path is only trustworthy if the feed itself runs — alert if
+      # the weekly sweep hasn't completed in >8 days (timer broken or script
+      # failing; this metric family has a history of dying silently).
+      - alert: ImageUpdateFeedStale
+        expr: time() - image_updates_last_run_timestamp_seconds > 8 * 86400
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Image update feed has not run in >8 days"
+          description: "check-image-updates.timer (Sun 10:00) appears broken — the ADR-036 update nudge is blind. Check: systemctl --user status check-image-updates.{timer,service}"
