@@ -31,7 +31,15 @@ scrape_configs:
           service: 'prometheus'
 
   # Node Exporter (system metrics)
+  # honor_labels: textfile metrics (egress, supply-chain signatures) carry their own
+  # per-service `service` label; without this the static target label below clobbers
+  # it to service="node_exporter" (demoting the real one to exported_service), which
+  # mislabels every Discord alert and collides in the service/instance inhibit rule.
+  # node_* metrics expose no service/instance labels, so they still get the target
+  # labels. Do NOT copy this to the traefik job — the SLO rules consume its
+  # exported_service on purpose.
   - job_name: 'node_exporter'
+    honor_labels: true
     static_configs:
       - targets: ['node_exporter:9100']
         labels:

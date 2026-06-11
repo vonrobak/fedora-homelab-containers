@@ -23,6 +23,8 @@ groups:
           category: security
           component: egress
         annotations:
+          # $labels.service is the real per-service textfile label — preserved by
+          # honor_labels: true on the node_exporter scrape job (see prometheus.yml).
           summary: "Unexpected egress destination from {{ $labels.service }}"
           description: "{{ $labels.service }} connected to {{ $value }} public destination(s) outside its allow-list (ADR-030 P7). Inspect `data/egress/anomalies.jsonl` (service={{ $labels.service }}). If legitimate, re-baseline: `scripts/egress-baseline.sh` then merge into `config/supply-chain/egress-baseline.yaml`. If not, treat as possible exfiltration from a compromised image."
 
