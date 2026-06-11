@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-06-10 05:04:34 UTC
-**Total Documents:** 438
+**Generated:** 2026-06-11 05:00:35 UTC
+**Total Documents:** 439
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (29 documents)
+### 00-foundation/ (30 documents)
 
 **Fundamentals and core concepts**
 
@@ -56,6 +56,7 @@
 - ADR-031: [2026-05-25-ADR-031-dns-resolver-first-class-and-ha](00-foundation/decisions/2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md)
 - ADR-032: [2026-06-05-ADR-032-forgejo-git-over-ssh-loopback](00-foundation/decisions/2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md)
 - ADR-034: [2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh](00-foundation/decisions/2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md)
+- ADR-036: [2026-06-10-ADR-036-bake-policy-and-exception-lane](00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md)
 - : [README](00-foundation/decisions/fixtures/README.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
@@ -250,6 +251,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-06-09: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
 - 2026-06-06: [2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md](00-foundation/decisions/2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md)
 - 2026-06-06: [2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md](00-foundation/decisions/2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md)
+- 2026-06-11: [2026-06-10-ADR-036-bake-policy-and-exception-lane.md](00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md)
 - 2026-06-09: [2026-06-09-ADR-035-boot-time-io-tiering.md](20-operations/decisions/2026-06-09-ADR-035-boot-time-io-tiering.md)
 - 2026-06-09: [storage-health-monitoring.md](20-operations/guides/storage-health-monitoring.md)
 - 2026-06-07: [2026-06-07-cabinet-cooling-fan-controller-SKETCH.md](97-plans/2026-06-07-cabinet-cooling-fan-controller-SKETCH.md)
@@ -258,12 +260,12 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-06-09: [2026-06-09-reboot-io-storm-not-podman-deathloop.md](98-journals/2026-06-09-reboot-io-storm-not-podman-deathloop.md)
 - 2026-06-09: [2026-06-09-storage-health-monitoring.md](98-journals/2026-06-09-storage-health-monitoring.md)
 - 2026-06-09: [remediation-monthly-202605.md](99-reports/remediation-monthly-202605.md)
-- 2026-06-10: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-06-10: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-06-10: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
-- 2026-06-10: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
-- 2026-06-10: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-06-10: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-06-11: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-06-11: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-06-11: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-06-11: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-06-11: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-06-11: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 

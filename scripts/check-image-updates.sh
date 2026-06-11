@@ -127,6 +127,30 @@ for f in "$QUADLET_DIR"/*.container; do
     fi
 done
 
+# Textfile metrics → node_exporter → Prometheus → ImageUpdatesBaked* alerts
+# (ADR-036 layer 1: the system nudges the human; nothing adopts automatically).
+# Temp MUST be in-dir (a /tmp temp keeps user_tmp_t, unreadable to node_exporter)
+# and 0644 (node_exporter runs unprivileged).
+METRIC_DIR="${METRIC_DIR:-$HOME/containers/data/backup-metrics}"
+if mkdir -p "$METRIC_DIR" 2>/dev/null && tmp_metric="$(mktemp -p "$METRIC_DIR" 2>/dev/null)"; then
+    {
+        echo "# HELP image_updates_baked_count Available image updates past their ADR-036 bake interval (adoptable now)."
+        echo "# TYPE image_updates_baked_count gauge"
+        echo "image_updates_baked_count ${baked_count}"
+        echo "# HELP image_updates_young_count Available image updates still inside their bake interval."
+        echo "# TYPE image_updates_young_count gauge"
+        echo "image_updates_young_count ${young_count}"
+        echo "# HELP image_updates_check_failed_count Images whose registry check failed this sweep."
+        echo "# TYPE image_updates_check_failed_count gauge"
+        echo "image_updates_check_failed_count ${#failed[@]}"
+        echo "# HELP image_updates_last_run_timestamp_seconds Unix time of the last completed update sweep."
+        echo "# TYPE image_updates_last_run_timestamp_seconds gauge"
+        echo "image_updates_last_run_timestamp_seconds $(date +%s)"
+    } > "$tmp_metric"
+    chmod 0644 "$tmp_metric"
+    mv "$tmp_metric" "$METRIC_DIR/image-updates.prom"
+fi
+
 # Machine-readable companion — the input contract for adopt-baked.sh.
 printf '%s\n' "${json_rows[@]:-}" | python3 -c "
 import sys, json

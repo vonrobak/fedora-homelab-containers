@@ -89,7 +89,7 @@ Pattern-based deployment available via `homelab-deployment` skill (see `.claude/
 
 Governed by **ADR-030 (Container Supply-Chain Trust Model):** **fully implemented (Tier 1 + Tier 2)** — every registry image is digest-pinned (`tag@sha256:…`, tag = discovery handle, digest = execution contract), all `AutoUpdate=registry` lines are stripped, and the 2 local builds pin their `FROM` bases by digest. Nothing updates automatically; superseded ADR-015's `:latest`/auto-update trust model. A pre-commit hook enforces the invariants (egress tier pinned + de-automated, local bases pinned, no signature failures); `docs/AUTO-IMAGE-PIN-INDEX.md` is the daily audit view.
 
-**Deliberate update loop (ADR-036):**
+**Deliberate update loop (ADR-036)** — single entry point: `scripts/monthly-update.sh` (chains all steps below interactively; Discord nudges via `ImageUpdatesBaked*` alerts when ≥5 updates are baked):
 1. **Discover:** `scripts/check-image-updates.sh` — skopeo digest-diff, notify-only; annotates each candidate BAKED/TOO-YOUNG against the P3 bake policy (`config/supply-chain/bake-policy.yml`: egress 7d, internal 3d) and writes machine-readable JSON
 2. **Adopt:** `scripts/adopt-baked.sh [--dry-run]` — wave-ordered batch (plumbing → apps → core → DBs + dependent restarts), per-service health + HTTP verification, halt-on-failure; P6 signature gate applies via `pin-container-image.sh`
 3. **Exception lane:** a release fixing a known-exploited CVE in an egress-tier service may skip the bake via `--allow-young <svc>` — commit message must name the CVE
