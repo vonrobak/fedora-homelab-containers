@@ -60,11 +60,15 @@ services:
       note: Discord webhook API (observed 162.159.135.232, 162.159.138.232)
   crowdsec:
     - owner: Amazon Data Services Ireland Ltd
-      cidrs: [79.125.0.0/18]
-      note: CrowdSec CAPI/blocklists, AWS eu-west (observed 79.125.15.38)
+      cidrs: [79.125.0.0/18, 176.34.0.0/16]
+      note: CrowdSec CAPI/blocklists, AWS eu-west (observed 79.125.15.38; 176.34.92.0
+        added 2026-06-12 after first live alert — served valid api.crowdsec.net cert,
+        CAPI ELB rotated into this range)
     - owner: Amazon Technologies Inc.
-      cidrs: [18.128.0.0/9, 34.192.0.0/10, 52.0.0.0/10, 52.208.0.0/13, 52.220.0.0/15, 52.223.128.0/18, 52.64.0.0/12, 54.160.0.0/11, 54.208.0.0/13, 54.224.0.0/11, 54.64.0.0/11]
-      note: CrowdSec CAPI/blocklist mirrors (observed 18.200.183.204, 34.240.98.252, 52.213.228.152, 54.170.104.57, …)
+      cidrs: [18.128.0.0/9, 34.192.0.0/10, 52.0.0.0/10, 52.208.0.0/13, 52.220.0.0/15, 52.223.128.0/18, 52.64.0.0/12, 54.160.0.0/11, 54.192.0.0/12, 54.208.0.0/13, 54.224.0.0/11, 54.64.0.0/11]
+      note: CrowdSec CAPI/blocklist mirrors (observed 18.200.183.204, 34.240.98.252,
+        52.213.228.152, 54.170.104.57, …; 54.192.0.0/12 added 2026-06-12 for
+        54.195.186.68, shadow-window CAPI dest with valid api.crowdsec.net cert)
     - owner: Amazon.com, Inc.
       cidrs: [108.128.0.0/13, 108.136.0.0/14, 63.32.0.0/14, 99.78.128.0/17, 99.80.0.0/15, 99.82.128.0/18]
       note: CrowdSec CAPI/blocklist mirrors (observed 108.128.137.208, 63.34.141.128, 99.81.12.92, …)
