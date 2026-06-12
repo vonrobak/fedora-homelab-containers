@@ -187,7 +187,7 @@ Full script catalog: `docs/20-operations/guides/automation-reference.md`
 
 | Category | Location |
 |----------|----------|
-| Lessons learned | `docs/96-project-supervisor/lessons.md` (L-NNN, incl. superseded) |
+| Lessons learned | `docs/96-project-supervisor/lessons.md` (L-NNN, incl. superseded; local-only, gitignored) |
 | Service catalog | `AUTO-SERVICE-CATALOG.md` (updated daily) |
 | Network topology | `AUTO-NETWORK-TOPOLOGY.md` (diagrams, 8 networks) |
 | Dependency graph | `AUTO-DEPENDENCY-GRAPH.md` (4-tier, critical paths) |

@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-06-12 06:38:53 UTC
-**Total Documents:** 441
+**Generated:** 2026-06-12 07:16:44 UTC
+**Total Documents:** 443
 
 ---
 
@@ -183,14 +183,6 @@
 
 ---
 
-### 96-project-supervisor/ (2 documents)
-
-**Situational awareness: distilled lessons and project orientation (curated, living documents)**
-- [lessons.md](96-project-supervisor/lessons.md)
-- [README.md](96-project-supervisor/README.md)
-
----
-
 ### 97-plans/ (40 documents)
 
 **Strategic plans and forward-looking projects**
@@ -261,8 +253,6 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-06-11: [2026-06-10-ADR-036-bake-policy-and-exception-lane.md](00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md)
 - 2026-06-09: [2026-06-09-ADR-035-boot-time-io-tiering.md](20-operations/decisions/2026-06-09-ADR-035-boot-time-io-tiering.md)
 - 2026-06-09: [storage-health-monitoring.md](20-operations/guides/storage-health-monitoring.md)
-- 2026-06-12: [lessons.md](96-project-supervisor/lessons.md)
-- 2026-06-12: [README.md](96-project-supervisor/README.md)
 - 2026-06-07: [2026-06-07-cabinet-cooling-fan-controller-SKETCH.md](97-plans/2026-06-07-cabinet-cooling-fan-controller-SKETCH.md)
 - 2026-06-09: [2026-06-09-adr029-phase-b-db-migration-nocow.md](98-journals/2026-06-09-adr029-phase-b-db-migration-nocow.md)
 - 2026-06-09: [2026-06-09-reboot-io-storm-not-podman-deathloop.md](98-journals/2026-06-09-reboot-io-storm-not-podman-deathloop.md)
@@ -275,6 +265,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 - 2026-06-12: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
 - 2026-06-12: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 - 2026-06-12: [CONTRIBUTING.md](CONTRIBUTING.md)
+- 2026-06-12: [README.md](README.md)
 
 ---
 

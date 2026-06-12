@@ -43,7 +43,7 @@ This guide covers when, where, and how to write documentation. It does not repea
 | Operational procedures, DR runbooks | `20-operations/` |
 | Security, incident response | `30-security/` |
 | Monitoring, SLOs, documentation meta | `40-monitoring-and-documentation/` |
-| Distilled lessons, situational awareness | `96-project-supervisor/` |
+| Distilled lessons, situational awareness | `96-project-supervisor/` (local-only, gitignored) |
 | Strategic plans, roadmaps | `97-plans/` |
 | Chronological logs, session notes | `98-journals/` |
 | Automated reports (JSON, snapshots) | `99-reports/` |
@@ -154,7 +154,11 @@ Machine-generated or rare authoritative snapshots. Do not create reports for con
 
 ### Supervisor Document (situational awareness)
 
-**Location:** `96-project-supervisor/<topic>.md` | **No date prefix**
+**Location:** `96-project-supervisor/<topic>.md` | **No date prefix** | **Local-only (gitignored)**
+
+The whole directory is gitignored — like `*-private.md` files, it aggregates operational
+detail that doesn't belong in the public repo. It exists on the host (and in local backups),
+not on GitHub.
 
 Curated, living synthesis documents that orient humans and LLMs: `lessons.md` (distilled
 lessons with stable `L-NNN` IDs), plus planned `roadmap.md`, `status.md`, `registry.md`.
@@ -204,7 +208,7 @@ When a journal entry or report yields a durable, generalizable lesson, promote i
 | Plan | Yes | `97-plans/` | `2025-11-22-disaster-recovery.md` |
 | ADR | Yes | `*/decisions/` | `2025-11-07-decision-001-title.md` |
 | Report | N/A | `99-reports/` | `intel-*.json` |
-| Supervisor doc | No | `96-project-supervisor/` | `lessons.md` |
+| Supervisor doc | No | `96-project-supervisor/` (gitignored) | `lessons.md` |
 | Runbook (DR) | Yes | `20-operations/runbooks/` | `DR-001-system-ssd-failure.md` |
 | Runbook (IR) | Yes | `30-security/runbooks/` | `IR-005-network-security-event.md` |
 | Incident | Yes | `30-security/incidents/` | `2025-11-23-incident-data-loss.md` |
