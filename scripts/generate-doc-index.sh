@@ -275,6 +275,23 @@ EOF
 
 ---
 
+### 96-project-supervisor/ ($(count_files "$DOCS_DIR/96-project-supervisor") documents)
+
+**Situational awareness: distilled lessons and project orientation (curated, living documents)**
+EOF
+
+    find "$DOCS_DIR/96-project-supervisor" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
+        local basename
+        basename=$(basename "$file")
+        local relpath
+        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
+        echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
+    done
+
+    cat >> "$OUTPUT_FILE" <<EOF
+
+---
+
 ### 97-plans/ ($(count_files "$DOCS_DIR/97-plans") documents)
 
 **Strategic plans and forward-looking projects**
