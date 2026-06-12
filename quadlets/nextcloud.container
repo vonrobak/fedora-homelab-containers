@@ -71,6 +71,7 @@ Label=prometheus.port=80
 Label=prometheus.path=/ocs/v2.php/apps/serverinfo/api/v1/info
 
 [Service]
+# Tier B (default 100) — ADR-035 boot tier: application class, deliberate default weight
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=300

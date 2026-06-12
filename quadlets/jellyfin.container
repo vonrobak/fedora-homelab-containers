@@ -48,6 +48,7 @@ HealthRetries=3
 HealthStartPeriod=60s
 
 [Service]
+# Tier B (default 100) — ADR-035 boot tier: application class, deliberate default weight
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=900
