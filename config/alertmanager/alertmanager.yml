@@ -178,3 +178,13 @@ inhibit_rules:
     target_matchers:
       - alertname =~ ".*(Down|Unhealthy|Unavailable).*"
     equal: ['instance']
+
+  # cAdvisor down ⇒ every container_last_seen series goes stale ~10m later and
+  # the cadvisor-derived alerts storm for all 37 services at once. CadvisorDown
+  # (for: 5m) names the cause first; suppress exactly its derivatives, nothing
+  # else (precise matchers by design — see GH#277 on over-broad inhibits).
+  # No `equal:` — single host, the blindness is global.
+  - source_matchers:
+      - alertname = "CadvisorDown"
+    target_matchers:
+      - alertname =~ "ContainerNotRunning|ContainerMemoryPressure|ContainerRestarting"

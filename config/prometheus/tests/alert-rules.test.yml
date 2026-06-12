@@ -8,6 +8,7 @@ rule_files:
   - ../alerts/immich-alerts.yml
   - ../alerts/service-health.yml
   - ../alerts/infrastructure-warnings.yml
+  - ../alerts/infrastructure-critical.yml
   - ../alerts/db-dump-alerts.yml
   - ../alerts/supply-chain-alerts.yml
 
@@ -212,3 +213,81 @@ tests:
             exp_annotations:
               summary: "Memory pressure high"
               description: "System memory usage is 95%. May cause OOM kills."
+
+  # --- 2026-06-12 sidecar-coverage review: metrics-path blindness canaries ----
+  # CadvisorDown: fires after 5m of up==0; not before.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="cadvisor", instance="cadvisor:8080"}'
+        values: '1x10 0x10'
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: CadvisorDown
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: CadvisorDown
+        exp_alerts:
+          - exp_labels:
+              job: cadvisor
+              instance: cadvisor:8080
+              severity: critical
+              category: monitoring
+            exp_annotations:
+              runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+              summary: "cAdvisor is down — container observability blind"
+              description: "cAdvisor has been unreachable for more than 5 minutes. All container-level alerts (liveness, memory pressure, restarts) are blind until it returns. Check: systemctl --user status cadvisor.service"
+
+  # RedisMetricsDown: wedged exporter (up==0) fires after 10m; healthy peer does not.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="redis-authelia", instance="redis-authelia-exporter:9121"}'
+        values: '1x5 0x15'
+      - series: 'up{job="redis-immich", instance="redis-immich-exporter:9121"}'
+        values: '1x21'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: RedisMetricsDown
+        exp_alerts:
+          - exp_labels:
+              job: redis-authelia
+              instance: redis-authelia-exporter:9121
+              severity: warning
+              category: monitoring
+              component: container
+            exp_annotations:
+              summary: "Redis exporter redis-authelia not serving metrics"
+              description: "The redis-authelia exporter scrape has failed for >10m. Redis itself is likely fine (its consumers would page otherwise) — this is the metrics path. Check the exporter container first: systemctl --user status redis-authelia-exporter.service"
+
+  # BlackboxProbeLayerDown: fires only when ALL blackbox jobs are unscrapable —
+  # one failing job (partial outage) must NOT fire it.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="blackbox-dns-functional", instance="192.168.1.69"}'
+        values: '1x5 0x15'
+      - series: 'up{job="blackbox-dns-blocked", instance="192.168.1.69"}'
+        values: '1x5 0x15'
+      - series: 'up{job="blackbox-nextcloud-status", instance="nextcloud"}'
+        values: '1x21'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: BlackboxProbeLayerDown
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'up{job="blackbox-dns-functional", instance="192.168.1.69"}'
+        values: '1x5 0x15'
+      - series: 'up{job="blackbox-dns-blocked", instance="192.168.1.69"}'
+        values: '1x5 0x15'
+      - series: 'up{job="blackbox-nextcloud-status", instance="nextcloud"}'
+        values: '1x5 0x15'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: BlackboxProbeLayerDown
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              category: monitoring
+              component: container
+            exp_annotations:
+              summary: "Blackbox exporter unreachable — probe layer dark"
+              description: "No blackbox-* job has been scrapable for >10m. DNS functional/blocked probes and the Nextcloud maintenance probe are all blind (their probe_success alerts cannot fire on absent series). Check: systemctl --user status blackbox-exporter.service"
