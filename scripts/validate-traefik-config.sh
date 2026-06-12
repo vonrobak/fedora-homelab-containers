@@ -18,8 +18,14 @@
 
 set -euo pipefail
 
-CONFIG_DIR="$HOME/containers/config/traefik/dynamic"
-BACKUP_DIR="$HOME/containers/config/traefik/.backups"
+# Worktree-aware root: pre-commit hooks run with cwd = the committing
+# worktree's toplevel, so prefer the enclosing repo — validate the tree being
+# committed, not the live one. REPO_ROOT env overrides; fall back to the live
+# tree for ad-hoc runs outside any repo.
+REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || true)}"
+REPO_ROOT="${REPO_ROOT:-$HOME/containers}"
+CONFIG_DIR="$REPO_ROOT/config/traefik/dynamic"
+BACKUP_DIR="$REPO_ROOT/config/traefik/.backups"
 CREATE_BACKUP=true
 
 # Parse arguments
