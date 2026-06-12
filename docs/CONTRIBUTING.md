@@ -154,21 +154,30 @@ Machine-generated or rare authoritative snapshots. Do not create reports for con
 
 ### Supervisor Document (situational awareness)
 
-**Location:** `96-project-supervisor/<topic>.md` | **No date prefix** | **Local-only (gitignored)**
+**Location:** `96-project-supervisor/` | **Local-only (gitignored)**
 
 The whole directory is gitignored — like `*-private.md` files, it aggregates operational
 detail that doesn't belong in the public repo. It exists on the host (and in local backups),
-not on GitHub.
+not on GitHub. Consequence: work tracked only here has no public trace — file GitHub
+issues for anything that needs one.
 
-Curated, living synthesis documents that orient humans and LLMs: `lessons.md` (distilled
-lessons with stable `L-NNN` IDs), plus planned `roadmap.md`, `status.md`, `registry.md`.
-Each document defines its own update protocol in its header — follow it. Do not create new
-documents here casually; the directory's value is its small, stable surface. Lessons are
-never deleted: superseded ones move to the Superseded section of `lessons.md` with a note
-naming what replaced them (mirrors ADR supersession).
+Two document kinds live here:
 
-When a journal entry or report yields a durable, generalizable lesson, promote it to
-`96-project-supervisor/lessons.md` per its "How to add a lesson" protocol.
+- **Core documents (no date prefix, living):** `lessons.md` (distilled lessons with stable
+  `L-NNN` IDs), `status.md` (arc state + standing caveats), `roadmap.md` (strategy,
+  sequencing, horizon). Each defines its own update protocol in its header — follow it.
+  Do not add new core documents casually; the directory's value is its small, stable
+  surface. (A `registry.md` was considered and dropped — git history and the decisions
+  directories already cover it.)
+- **Handoffs (dated, transient):** `YYYY-MM-DD-<description>-handoff.md` — orientation
+  for a future session on a bounded effort. A handoff is *done* when its definition-of-done
+  is met; then remove its pointer from `status.md` "Waiting on" and delete or archive it
+  (it is not history — journals are).
+
+Lessons are never deleted: superseded ones move to the Superseded section of `lessons.md`
+with a note naming what replaced them (mirrors ADR supersession). When a journal entry or
+report yields a durable, generalizable lesson, promote it to `lessons.md` per its
+"How to add a lesson" protocol. When an arc changes state, update `status.md`.
 
 ### Incident Post-Mortem
 
@@ -208,7 +217,8 @@ When a journal entry or report yields a durable, generalizable lesson, promote i
 | Plan | Yes | `97-plans/` | `2025-11-22-disaster-recovery.md` |
 | ADR | Yes | `*/decisions/` | `2025-11-07-decision-001-title.md` |
 | Report | N/A | `99-reports/` | `intel-*.json` |
-| Supervisor doc | No | `96-project-supervisor/` (gitignored) | `lessons.md` |
+| Supervisor doc (core) | No | `96-project-supervisor/` (gitignored) | `lessons.md` |
+| Supervisor handoff | Yes | `96-project-supervisor/` (gitignored) | `2026-06-12-lessons-loose-threads-handoff.md` |
 | Runbook (DR) | Yes | `20-operations/runbooks/` | `DR-001-system-ssd-failure.md` |
 | Runbook (IR) | Yes | `30-security/runbooks/` | `IR-005-network-security-event.md` |
 | Incident | Yes | `30-security/incidents/` | `2025-11-23-incident-data-loss.md` |
