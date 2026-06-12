@@ -11,6 +11,7 @@ groups:
           category: backup
           component: btrfs-snapshot-backup
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "Backup failed for {{ $labels.subvolume }}"
           description: "Last backup attempt for {{ $labels.subvolume }} failed. Check backup logs immediately."
 
@@ -29,6 +30,7 @@ groups:
           category: backup
           component: btrfs-snapshot-backup
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "Backup stale for {{ $labels.subvolume }}"
           description: "No successful backup for {{ $labels.subvolume }} in {{ $value | humanizeDuration }}. Last backup: {{ $labels.subvolume }}."
 
@@ -41,6 +43,7 @@ groups:
           category: backup
           component: btrfs-snapshot-backup
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "Backup script hasn't run in 2+ days"
           description: "Backup script last ran {{ $value | humanizeDuration }} ago. Check systemd timers."
 
@@ -53,6 +56,7 @@ groups:
           category: disaster-recovery
           component: backup-restore-test
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/runbooks/DR-003-accidental-deletion.md"
           summary: "Restore test failed for {{ $labels.subvolume }}"
           description: "Backup restore test validation failed for {{ $labels.subvolume }}. Backups may be corrupted!"
 
@@ -65,6 +69,7 @@ groups:
           category: disaster-recovery
           component: backup-restore-test
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/runbooks/DR-003-accidental-deletion.md"
           summary: "Restore test overdue"
           description: "Restore test hasn't run in {{ $value | humanizeDuration }}. Should run monthly (last Sunday)."
 
@@ -113,6 +118,7 @@ groups:
           category: backup
           component: btrfs-snapshot-backup
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "No external backups for {{ $labels.subvolume }}"
           description: "{{ $labels.subvolume }} is configured for offsite backup but has 0 external snapshots. External drive may not be mounted or sends are failing."
 
@@ -126,6 +132,7 @@ groups:
           category: backup
           component: btrfs-snapshot-backup
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "Backup taking unusually long for {{ $labels.subvolume }}"
           description: "Last backup took {{ $value | humanizeDuration }}. May indicate performance issues. Alert auto-resolves after 1h for weekly/monthly backups."
 
@@ -152,6 +159,7 @@ groups:
           category: backup
           component: btrfs-snapshot-backup
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "Anomalous backup churn on {{ $labels.subvolume }}"
           description: "{{ $labels.subvolume }} is churning {{ $value | humanize }}B/s — over 4x its 14-day baseline and above the 256 KiB/s floor. Expected if you just imported or rewrote a lot of data; otherwise investigate runaway growth or in-place rewrites."
 
@@ -177,6 +185,7 @@ groups:
           category: backup
           component: btrfs-pool
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "BTRFS metadata near exhaustion on {{ $labels.label }} ({{ $labels.role }})"
           description: "Metadata utilization is {{ $value | humanizePercentage }} on pool {{ $labels.label }}. BTRFS can ENOSPC even with free data space — run a metadata balance before it blocks snapshots and dumps."
 
@@ -194,6 +203,7 @@ groups:
           category: backup
           component: btrfs-pool
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "Offsite backup drive {{ $labels.label }} low on space"
           description: "{{ $labels.label }} is {{ $value | humanizePercentage }} free (<15%). Plan retention pruning or a larger drive before external sends start failing."
 
@@ -205,5 +215,6 @@ groups:
           category: backup
           component: btrfs-pool
         annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/backup-strategy.md"
           summary: "CRITICAL: offsite backup drive {{ $labels.label }} nearly full"
           description: "{{ $labels.label }} is {{ $value | humanizePercentage }} free (<7%). External sends will fail soon — free space or swap drives now."

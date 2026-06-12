@@ -43,7 +43,7 @@ groups:
             Action: Investigate dependency health immediately to prevent service impact.
               systemctl --user status {{ $labels.dependency }}.service
               podman ps --filter name={{ $labels.dependency }}
-          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/AUTO-DEPENDENCY-GRAPH.md"
 
       # Alert when a routing target is unhealthy (informational, not critical)
       # Routing dependencies (e.g., Traefik -> Immich) don't affect the router's functionality
@@ -97,7 +97,7 @@ groups:
             Potentially affected services should be checked for cascading failures.
 
             Action: Restart service immediately and assess impact on dependents.
-          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/AUTO-DEPENDENCY-GRAPH.md"
 
       # Alert when dependency graph becomes stale
       - alert: DependencyGraphStale
@@ -123,7 +123,7 @@ groups:
             Action: Check dependency-discovery.timer status and logs:
               systemctl --user status dependency-discovery.timer
               journalctl --user -u dependency-discovery.service -n 50
-          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/AUTO-DEPENDENCY-GRAPH.md"
 
       # Alert when a medium blast radius service goes down (warning level)
       - alert: MediumBlastRadiusServiceDown
@@ -179,7 +179,7 @@ groups:
 
             Action: Review drift report and reconcile configuration:
               ~/containers/.claude/skills/homelab-deployment/scripts/check-drift.sh {{ $labels.homelab_service }}
-          runbook_url: "https://github.com/patriark/homelab/docs/20-operations/runbooks/DR-001-dependency-failure.md"
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/AUTO-DEPENDENCY-GRAPH.md"
 
   - name: dependency_capacity
     interval: 60s
