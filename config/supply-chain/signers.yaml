@@ -11,6 +11,10 @@
 #   repo             exact image repository (no tag, no digest)
 #   oidc_issuer      expected OIDC issuer   -> cosign --certificate-oidc-issuer
 #   identity_regexp  regexp for the cert SAN -> cosign --certificate-identity-regexp
+#   mechanism        optional; default `signature` (tag-scheme cosign .sig ->
+#                    `cosign verify`). `attestation` = referrer-attached sigstore
+#                    bundle with SLSA provenance (GitHub Artifact Attestations) ->
+#                    `cosign verify-attestation --new-bundle-format --type slsaprovenance1`.
 #   note             human context
 #
 # To add an email-identity signer (e.g. a publisher using user-OAuth keyless), the
@@ -25,3 +29,13 @@ signers:
       Survey 2026-05-24: the ONLY signed image in the fleet (1/32). Identity is a
       workflow URI SAN, not an email, so it is NOT expressible in podman 5.8.2
       policy.json (subjectEmail mandatory) — verified here on the deliberate path.
+
+  - repo: docker.io/vaultwarden/server
+    oidc_issuer: https://token.actions.githubusercontent.com
+    identity_regexp: '^https://github\.com/dani-garcia/vaultwarden/\.github/workflows/release\.yml@refs/tags/.*$'
+    mechanism: attestation
+    note: >-
+      Vaultwarden — GitHub Artifact Attestation (SLSA provenance v1, referrer-attached
+      sigstore bundle, Rekor-logged). Appeared between the 2026-05-24 survey and the
+      2026-06-13 re-survey (first present on the 1.36.0 release). Not a tag-scheme
+      .sig, so verified via cosign verify-attestation --new-bundle-format.

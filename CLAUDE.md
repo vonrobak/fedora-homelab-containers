@@ -89,7 +89,7 @@ Pattern-based deployment available via `homelab-deployment` skill (see `.claude/
 
 ### Update Strategy
 
-Governed by **ADR-030 (Container Supply-Chain Trust Model):** **fully implemented (Tier 1 + Tier 2)** — every registry image is digest-pinned (`tag@sha256:…`, tag = discovery handle, digest = execution contract), all `AutoUpdate=registry` lines are stripped, and the 2 local builds pin their `FROM` bases by digest. Nothing updates automatically; superseded ADR-015's `:latest`/auto-update trust model. A pre-commit hook enforces the invariants (egress tier pinned + de-automated, local bases pinned, no signature failures); `docs/AUTO-IMAGE-PIN-INDEX.md` is the daily audit view.
+Governed by **ADR-030 (Container Supply-Chain Trust Model):** **all four tiers implemented** (Tier 3 deliberate-path signature verification merged 2026-05-24 PR #224; Tier 4 egress observatory PR #229) — every registry image is digest-pinned (`tag@sha256:…`, tag = discovery handle, digest = execution contract), all `AutoUpdate=registry` lines are stripped, and the 2 local builds pin their `FROM` bases by digest. Nothing updates automatically; superseded ADR-015's `:latest`/auto-update trust model. A pre-commit hook enforces the invariants (egress tier pinned + de-automated, local bases pinned, no signature failures); `docs/AUTO-IMAGE-PIN-INDEX.md` is the daily audit view.
 
 **Deliberate update loop (ADR-036)** — single entry point: `scripts/monthly-update.sh` (chains all steps below interactively; Discord nudges via `ImageUpdatesBaked*` alerts when ≥5 updates are baked):
 1. **Discover:** `scripts/check-image-updates.sh` — skopeo digest-diff, notify-only; annotates each candidate BAKED/TOO-YOUNG against the P3 bake policy (`config/supply-chain/bake-policy.yml`: egress 7d, internal 3d) and writes machine-readable JSON
@@ -102,7 +102,7 @@ Governed by **ADR-030 (Container Supply-Chain Trust Model):** **fully implemente
 - **Immich:** server + ML + postgres version-locked as a set (tight coupling)
 - **Local builds** (proton-bridge, alert-discord-relay): Tier 2 — built locally from digest-pinned bases, no registry trust
 
-Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second path. Remaining ADR-030 work: Tier 3/4 (broader signature coverage). Workflow: `scripts/update-before-reboot.sh` before DNF updates (ensures pinned digests present, never re-floats them).
+Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second path. Remaining ADR-030 work: signer-coverage growth — periodically re-survey publishers (`config/supply-chain/known-unsigned.md` has the procedure; 2/33 verified as of 2026-06-13: home-assistant, vaultwarden). Workflow: `scripts/update-before-reboot.sh` before DNF updates (ensures pinned digests present, never re-floats them).
 
 ### Git & PR Workflow (merge commits — decided 2026-06-12)
 

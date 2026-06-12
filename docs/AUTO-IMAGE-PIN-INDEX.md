@@ -1,6 +1,6 @@
 # Container Image Pin Index (Auto-Generated)
 
-**Generated:** 2026-06-12 05:03:56 UTC
+**Generated:** 2026-06-12 22:09:21 UTC
 **Source:** `/home/patriark/containers/quadlets` — ADR-030 (Container Supply-Chain Trust Model)
 
 Pins live in each quadlet's `Image=` line (where Podman reads them); this is
@@ -19,7 +19,7 @@ For local builds the `Digest` column shows the **base image** pin (FROM …@sha2
 | 🔨 Local builds with FLOATING base | 0 |
 | Egress-tier still floating | 0 |
 | Egress-tier still auto-updating | 0 |
-| 🔏 P6 signers (authenticity-verified on adopt) | 1 |
+| 🔏 P6 signers (authenticity-verified on adopt) | 2 |
 | ✗ P6 signature FAILED | 0 |
 
 > ✅ **Supply-chain invariant holds:** no reverse_proxy-tier service is floating
@@ -66,7 +66,7 @@ For local builds the `Digest` column shows the **base image** pin (FROM …@sha2
 | traefik | yes | 🔒 pinned | `docker.io/library/traefik` | latest | `sha256:6b9cbca6fac4…` | no | — unsigned |
 | unifi-syslog | no | 🔒 pinned | `docker.io/linuxserver/syslog-ng` | latest | `sha256:b77c32d93b9e…` | no | — unsigned |
 | unpoller | yes | 🔒 pinned | `ghcr.io/unpoller/unpoller` | latest | `sha256:bf7bdcc59fcd…` | no | — unsigned |
-| vaultwarden | yes | 🔒 pinned | `docker.io/vaultwarden/server` | latest | `sha256:d626d04934cd…` | no | — unsigned |
+| vaultwarden | yes | 🔒 pinned | `docker.io/vaultwarden/server` | latest | `sha256:d626d04934cd…` | no | ✓ verified |
 
 ---
 
