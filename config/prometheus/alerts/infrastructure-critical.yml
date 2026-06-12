@@ -171,6 +171,28 @@ groups:
           description: "System metrics collection has stopped. Node Exporter has been down for more than 5 minutes."
 
       # ========================================================================
+      # ALERT 9b: cAdvisor Down (added 2026-06-12, sidecar-coverage review)
+      # ========================================================================
+      # cAdvisor feeds ALL container-level alerting (ContainerNotRunning,
+      # ContainerMemoryPressure, ContainerRestarting in service-health.yml).
+      # When it dies, two things happen: (1) the container-liveness layer goes
+      # blind, and (2) ~10m later every container_last_seen series goes stale
+      # and ContainerNotRunning fires for all 37 services at once — a storm
+      # that buries the cause. This alert names the cause first (for: 5m beats
+      # the storm's 10m+5m) and an alertmanager inhibit rule suppresses the
+      # cadvisor-derived alerts while it fires.
+      - alert: CadvisorDown
+        expr: up{job="cadvisor"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          summary: "cAdvisor is down — container observability blind"
+          description: "cAdvisor has been unreachable for more than 5 minutes. All container-level alerts (liveness, memory pressure, restarts) are blind until it returns. Check: systemctl --user status cadvisor.service"
+
+      # ========================================================================
       # ALERT 10: CrowdSec Down
       # ========================================================================
       - alert: CrowdSecDown

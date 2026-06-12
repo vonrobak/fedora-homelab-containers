@@ -94,3 +94,54 @@ groups:
         annotations:
           summary: "Container {{ $labels.container }} not running"
           description: "{{ $labels.container }} has not been seen by cAdvisor for over 10 minutes. It may have crashed or been stopped. Check: systemctl --user status {{ $labels.container }}.service"
+
+      # ========================================================================
+      # ALERT 4 + 5: metrics-path blindness canaries (2026-06-12 sidecar review)
+      # ========================================================================
+      # COVERAGE MODEL (the "15 unalerted sidecars" finding from the 2026-06-12
+      # audit, resolved): every one of the 37 quadlet services is covered for
+      # crash/stop by ContainerNotRunning above (verified live: the cgroup expr
+      # tracks all 37). Functional coverage is per-service (SLO burn rates,
+      # blackbox probes, up{} alerts, db-dump/restore alerts). The remaining
+      # class was WEDGED-BUT-RUNNING metrics components, where the container
+      # lives but its scrape dies silently — the 2026-06-04 pihole-exporter
+      # incident shape. These two close that class for the exporters that had
+      # no up{} alert. DELIBERATE WAIVERS (no bespoke per-sidecar alerts, by
+      # design): nextcloud-db/-redis, gathio-db, forgejo-db, immich-ml,
+      # proton-bridge, qbittorrent, unifi-syslog, alert-discord-relay — each is
+      # covered by ContainerNotRunning for death plus a loud parent signal for
+      # dysfunction (Nextcloud maintenance probe + SLO, Gathio/Forgejo HTTP,
+      # Immich SLO + job queue, Discord delivery failures in alertmanager
+      # notifications, db-dump backbone alerts for all DBs). Adding per-sidecar
+      # liveness alerts would duplicate ContainerNotRunning at higher noise.
+
+      # Redis exporters: redis-authelia + redis-immich are scraped but had no
+      # up{} alert — a wedged exporter (running, not serving) was invisible.
+      # Redis DEATH is loud elsewhere (authelia/immich break, ContainerNotRunning
+      # fires); this is only about the metrics path, hence warning + 10m.
+      - alert: RedisMetricsDown
+        expr: up{job=~"redis-authelia|redis-immich"} == 0
+        for: 10m
+        labels:
+          severity: warning
+          category: monitoring
+          component: container
+        annotations:
+          summary: "Redis exporter {{ $labels.job }} not serving metrics"
+          description: "The {{ $labels.job }} exporter scrape has failed for >10m. Redis itself is likely fine (its consumers would page otherwise) — this is the metrics path. Check the exporter container first: systemctl --user status {{ $labels.job }}-exporter.service"
+
+      # Blackbox exporter wedged => ALL probe-based alerting (DNS functional/
+      # blocked, Nextcloud maintenance) goes dark without firing anything:
+      # probe_success==0 alerts can't fire on ABSENT series. max() over the
+      # blackbox jobs collapses to one signal that fires only when no blackbox
+      # job is scrapable (= the exporter itself, not an individual probe).
+      - alert: BlackboxProbeLayerDown
+        expr: max(up{job=~"blackbox-.*"}) == 0
+        for: 10m
+        labels:
+          severity: warning
+          category: monitoring
+          component: container
+        annotations:
+          summary: "Blackbox exporter unreachable — probe layer dark"
+          description: "No blackbox-* job has been scrapable for >10m. DNS functional/blocked probes and the Nextcloud maintenance probe are all blind (their probe_success alerts cannot fire on absent series). Check: systemctl --user status blackbox-exporter.service"
