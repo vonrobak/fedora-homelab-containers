@@ -72,13 +72,17 @@ services:
         52.84.0.0/15 added 2026-06-12 evening — hub-cdn.crowdsec.net via CloudFront,
         TLS-verified against 52.84.50.42, first seen on hardening-wave restart)
     - owner: Cloudflare, Inc.
-      cidrs: [104.16.0.0/12]
-      note: version.crowdsec.net startup version check (TLS-verified against
-        104.20.41.3, 2026-06-12 — first seen on hardening-wave restart; the
-        baseline's 18-day shadow window never included a crowdsec restart).
-        NOT added — 172.66.154.109 (Cloudflare dedicated-IP space), seen same
-        restart, count=2, no SNI identified (api/blocklists/smoke/app/version/
-        hub candidates all fail). Watch for recurrence before allow-listing.
+      cidrs: [104.16.0.0/12, 172.64.0.0/13]
+      note: crowdsec.net startup destinations behind Cloudflare, each TLS-verified
+        against the exact observed IP — version.crowdsec.net version check
+        (104.20.41.3, 2026-06-12) and hub-data.crowdsec.net (172.66.154.109,
+        2026-06-13, resolves watch item). The container entrypoint's "hub
+        update/upgrade" downloads whitelist data files (cloudflare_ips/ip6s,
+        seo-bot lists) from hub-data at every start; count=2 matched the
+        multi-file fetch. The 2026-06-12 SNI guesses missed because the host is
+        hub-DATA, not hub; identified from journalctl startup lines, confirmed
+        with curl --resolve TLS proof. hub-data also serves A 104.20.41.3 —
+        same anycast pair as version.crowdsec.net.
     - owner: Amazon.com, Inc.
       cidrs: [108.128.0.0/13, 108.136.0.0/14, 63.32.0.0/14, 99.78.128.0/17, 99.80.0.0/15, 99.82.128.0/18]
       note: CrowdSec CAPI/blocklist mirrors (observed 108.128.137.208, 63.34.141.128, 99.81.12.92, …)
