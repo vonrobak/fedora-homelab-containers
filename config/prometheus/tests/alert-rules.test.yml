@@ -8,6 +8,7 @@ rule_files:
   - ../alerts/immich-alerts.yml
   - ../alerts/service-health.yml
   - ../alerts/infrastructure-warnings.yml
+  - ../alerts/db-dump-alerts.yml
 
 evaluation_interval: 1m
 
@@ -131,6 +132,25 @@ tests:
             exp_annotations:
               summary: "Container gathio not running"
               description: "gathio has not been seen by cAdvisor for over 10 minutes. It may have crashed or been stopped. Check: systemctl --user status gathio.service"
+
+  # --- L-019: dump-coverage gap (WP2) -----------------------------------------
+  - interval: 1m
+    input_series:
+      - series: 'db_dump_coverage_gap{database="forgejo-db",origin="subvol8-db"}'
+        values: '1x20'
+    alert_rule_test:
+      - eval_time: 16m
+        alertname: DbDumpCoverageGap
+        exp_alerts:
+          - exp_labels:
+              database: forgejo-db
+              origin: subvol8-db
+              severity: warning
+              category: backup
+              component: db-dump
+            exp_annotations:
+              summary: "DB dump coverage gap: forgejo-db is not backed up"
+              description: "forgejo-db (found via subvol8-db) is a DB-like service with no dump coverage. Add it to ENGINES in db-dump.sh + db-restore-test.sh, or record a decided exception in audit-dump-coverage.sh."
 
   # --- regression: MemoryPressureHigh can fire again post-hysteresis-removal -
   - interval: 1m

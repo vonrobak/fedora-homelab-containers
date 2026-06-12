@@ -65,6 +65,34 @@ groups:
           summary: "DB restore test overdue for {{ $labels.database }}"
           description: "No restore test for {{ $labels.database }} in {{ $value | humanizeDuration }} (should run weekly)."
 
+      # Warning: a DB-like service/data dir is not in db-dump.sh's ENGINES array
+      # and not a recorded exception — it is getting ZERO backup with zero other
+      # warning (the forgejo-db gap class that motivated ADR-029 / L-019).
+      # Emitted by scripts/audit-dump-coverage.sh after each nightly dump run.
+      - alert: DbDumpCoverageGap
+        expr: db_dump_coverage_gap == 1
+        for: 15m
+        labels:
+          severity: warning
+          category: backup
+          component: db-dump
+        annotations:
+          summary: "DB dump coverage gap: {{ $labels.database }} is not backed up"
+          description: "{{ $labels.database }} (found via {{ $labels.origin }}) is a DB-like service with no dump coverage. Add it to ENGINES in db-dump.sh + db-restore-test.sh, or record a decided exception in audit-dump-coverage.sh."
+
+      # Warning: the coverage audit itself stopped running (guards the guard).
+      # It runs as ExecStartPost of the nightly db-dump.service.
+      - alert: DbDumpCoverageAuditStale
+        expr: (time() - db_dump_coverage_audit_timestamp) > (86400 * 2)
+        for: 6h
+        labels:
+          severity: warning
+          category: backup
+          component: db-dump
+        annotations:
+          summary: "Dump-coverage audit hasn't run in 2+ days"
+          description: "audit-dump-coverage.sh last ran {{ $value | humanizeDuration }} ago — new uncovered databases would go unnoticed. Check db-dump.service ExecStartPost wiring."
+
       # Warning: a dump ballooned vs its own recent baseline — catches a runaway
       # table/DB or a misconfigured dump before it pressures the offsite dump set.
       # Guards against false positives:
