@@ -215,6 +215,16 @@ scrape_configs:
           service: 'node_exporter'
           role: 'dns_resolver'
 
+  # STAGED — ADR-031 Phase 3 (GH#292): uncomment at build evening when node B
+  # (raspberrypi-b @ 192.168.1.169) exists. Uncommenting earlier pages PiHoleNodeDown.
+  # - job_name: 'node-exporter-pi-b'
+  #   static_configs:
+  #     - targets: ['192.168.1.169:9100']
+  #       labels:
+  #         instance: 'raspberrypi-b'
+  #         service: 'node_exporter'
+  #         role: 'dns_resolver'
+
   # Pi-hole exporter — query/block stats from the Pi-hole v6 API.
   # Timeout/interval (2026-06-07): the exporter serves /metrics SYNCHRONOUSLY —
   # each scrape runs a full Pi-hole v6 login→query cycle. Steady-state latency is
@@ -252,7 +262,11 @@ scrape_configs:
       module: [dns_functional]
     static_configs:
       - targets:
-          - 192.168.1.69  # node A (only resolver today; node B + VIP added in Phase 3)
+          - 192.168.1.69  # node A
+          # STAGED — ADR-031 Phase 3 (GH#292): uncomment at build evening (probing
+          # a nonexistent VIP/node would page DnsResolutionBroken).
+          # - 192.168.1.169  # node B (raspberrypi-b)
+          # - 192.168.1.72   # VIP — THE primary signal post-cutover
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -278,6 +292,9 @@ scrape_configs:
     static_configs:
       - targets:
           - 192.168.1.69
+          # STAGED — ADR-031 Phase 3 (GH#292): uncomment at build evening.
+          # - 192.168.1.169  # node B — gravity parity check (nebula-sync verification)
+          # - 192.168.1.72   # VIP
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

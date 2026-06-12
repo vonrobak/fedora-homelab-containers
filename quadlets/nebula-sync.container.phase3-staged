@@ -1,0 +1,61 @@
+# STAGED — ADR-031 Phase 3 (GH#292). NOT ACTIVE: the .phase3-staged extension keeps the
+# quadlet generator from picking this up. Activation = build evening, after node B exists:
+#   1. Resolve + pin the image:  ./scripts/pin-container-image.sh nebula-sync --adopt <digest> --apply
+#      (image: ghcr.io/lovelaze/nebula-sync — pin per ADR-030 before first start)
+#   2. Create the secret (see below), rename to nebula-sync.container, daemon-reload, start.
+#
+# Purpose: Pi-hole config replication node A (192.168.1.69) → node B (192.168.1.169) via the
+# v6 Teleporter API (design D-6). Schedule: every 6h + manual `systemctl --user start` before
+# drills.
+#
+# ⚠ CREDENTIAL LANDMINE (discovered Phase 2, see project memory / 2026-05-28): Pi-hole v6
+# app-password sessions CANNOT modify config (api.app_sudo=false default) — Teleporter IMPORT
+# on the replica is a config write. The replica credential must be either the full admin
+# password or an app password with app_sudo=true enabled on node B only (preferred: node B is
+# the only writable target, node A keeps app_sudo off). Decide at build evening; the read from
+# node A works with a plain app password.
+
+[Unit]
+Description=Nebula-Sync — Pi-hole A→B config replication (ADR-031 D-6)
+Documentation=https://github.com/lovelaze/nebula-sync
+After=network-online.target reverse_proxy-network.service
+Wants=network-online.target reverse_proxy-network.service
+
+[Container]
+# ADR-030: digest-pin at activation (tag: latest → @sha256:... via pin-container-image.sh)
+Image=ghcr.io/lovelaze/nebula-sync:latest
+ContainerName=nebula-sync
+NoNewPrivileges=true
+
+# reverse_proxy first → default route to LAN (both resolvers are LAN hosts).
+Network=systemd-reverse_proxy
+
+# Connection strings carry credentials → both live in one Podman secret, format:
+#   SYNC_PRIMARY=http://192.168.1.69|<node-A-app-password>
+#   SYNC_REPLICAS=http://192.168.1.169|<node-B-admin-or-sudo-app-password>
+# Create:  podman secret create nebula-sync-env <file-with-both-lines>
+# (delivered as env file — nebula-sync reads SYNC_PRIMARY / SYNC_REPLICAS from env)
+Secret=nebula-sync-primary,type=env,target=SYNC_PRIMARY
+Secret=nebula-sync-replicas,type=env,target=SYNC_REPLICAS
+
+Environment=FULL_SYNC=true
+Environment=RUN_GRAVITY=true
+# Every 6h (design D-6); container stays resident and runs its own cron.
+Environment=CRON=0 */6 * * *
+Environment=TZ=Europe/Oslo
+
+[Service]
+# Tier C: replication is never boot-critical
+Slice=container.slice
+Restart=on-failure
+RestartSec=30s
+TimeoutStartSec=120s
+StartupCPUWeight=50
+StartupIOWeight=50
+
+MemoryMax=128M
+MemoryHigh=112M
+CPUQuota=50%
+
+[Install]
+WantedBy=default.target
