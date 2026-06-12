@@ -20,6 +20,11 @@ Secret=postgres-exporter-password,type=env,target=DATA_SOURCE_PASS
 Environment=DATA_SOURCE_URI=postgresql-immich:5432/immich?sslmode=disable
 Environment=DATA_SOURCE_USER=prometheus_exporter
 
+# L-018: custom query exposing immich_active_assets (mass-deletion canary).
+# Grant requirements + rationale documented in the queries file itself.
+Volume=%h/containers/config/postgres-exporter/queries.yml:/etc/postgres-exporter/queries.yml:ro,Z
+Environment=PG_EXPORTER_EXTEND_QUERY_PATH=/etc/postgres-exporter/queries.yml
+
 HealthCmd=wget --no-verbose --tries=1 -O /dev/null http://localhost:9187/metrics || exit 1
 HealthInterval=30s
 HealthTimeout=5s

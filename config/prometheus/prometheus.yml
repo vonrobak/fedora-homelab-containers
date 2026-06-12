@@ -122,7 +122,11 @@ scrape_configs:
         action: keep
 
   # Unpoller - UniFi Network metrics exporter
+  # Timeout (L-034 sweep 2026-06-12): measured p95 16ms / 7d-max 1.3s — the
+  # exporter polls the UDM Pro synchronously, so a slow controller can stretch
+  # a scrape. 10s explicit (was implicit default) gives >7x worst-case headroom.
   - job_name: 'unpoller'
+    scrape_timeout: 10s
     static_configs:
       - targets: ['unpoller:9130']
         labels:
@@ -183,7 +187,13 @@ scrape_configs:
         action: drop
 
   # PostgreSQL exporter — postgresql-immich
+  # Timeout (L-034 sweep 2026-06-12): steady-state p95 39ms, but the 7d max hit
+  # the old implicit 10s ceiling — boot I/O storms (ADR-035 class) stall postgres
+  # long enough to time scrapes out and flap `up`. 12s (must stay ≤ the 15s
+  # interval) rides out storm transients; a genuinely down exporter is still
+  # caught by the service-health alerts.
   - job_name: 'postgres-immich'
+    scrape_timeout: 12s
     static_configs:
       - targets: ['10.89.4.94:9187']
         labels:
@@ -231,8 +241,12 @@ scrape_configs:
   # Cadence: liveness-class probe — outages caught within one alert window (for: 3m).
   # 30s is fast enough for that; 15s would just dirty Pi-hole's query log without
   # earlier detection (real outages also show up in pihole-exporter query metrics).
+  # Timeout (L-034 sweep 2026-06-12): the dns_functional module has its own 5s
+  # probe timeout, so the exporter always answers within ~5s; 10s explicit keeps
+  # the invariant module_timeout < scrape_timeout visible (7d max 5.1s).
   - job_name: 'blackbox-dns-functional'
     scrape_interval: 30s
+    scrape_timeout: 10s
     metrics_path: /probe
     params:
       module: [dns_functional]
@@ -254,8 +268,10 @@ scrape_configs:
   # adds no detection speed and pollutes Pi-hole's query log (which the operator uses
   # to investigate genuine network anomalies — see GH#TBD pihole-exporter session
   # hygiene + 2026-05-28 conversation).
+  # Timeout (L-034): same shape as dns-functional — 5s module timeout, 10s scrape.
   - job_name: 'blackbox-dns-blocked'
     scrape_interval: 5m
+    scrape_timeout: 10s
     metrics_path: /probe
     params:
       module: [dns_blocked]
@@ -274,7 +290,10 @@ scrape_configs:
 
   # GH#164 — Nextcloud maintenance / DB-upgrade stuck-state probe.
   # Probes nextcloud's reverse_proxy interface (same target Traefik uses).
+  # Timeout (L-034): 5s module timeout; 7d max 5.5s (probe timeout + handling
+  # overhead), so 10s scrape timeout gives ~2x worst-case headroom.
   - job_name: 'blackbox-nextcloud-status'
+    scrape_timeout: 10s
     metrics_path: /probe
     params:
       module: [nextcloud_status]

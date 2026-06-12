@@ -2,6 +2,15 @@
 # Created: 2026-01-17 (Phase 4 - Alert Consolidation)
 # Purpose: Performance degradation, capacity warnings - proactive monitoring
 # Severity: warning - Discord during waking hours only (7am-11pm)
+#
+# FIX 2026-06-12 (WP1): the `and ALERTS{alertname="X"} != 1` hysteresis pattern
+# made 5 alerts here structurally DEAD. ALERTS series always have value 1 while
+# pending/firing and don't exist otherwise, so `!= 1` matches nothing — the
+# fire-branch was always empty and the alerts could never even go pending
+# (verified 2026-06-12; same dead-alert class as the BtrfsPoolSpaceWarning
+# mountpoint bug fixed 2026-05-25 — which notably dropped its hysteresis).
+# Anti-flap intent preserved with keep_firing_for instead: once firing, the
+# alert holds for N minutes after the condition clears.
 
 groups:
   - name: infrastructure_warnings
@@ -10,21 +19,11 @@ groups:
       # ========================================================================
       # ALERT 1: System Disk Space Warning
       # ========================================================================
-      # With hysteresis to prevent flapping: fire <25%, resolve >30%
+      # Anti-flap: keep_firing_for holds the alert 30m after free space recovers
       - alert: SystemDiskSpaceWarning
-        expr: |
-          (
-            (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.25
-            and
-            ALERTS{alertname="SystemDiskSpaceWarning"} != 1
-          )
-          or
-          (
-            (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.30
-            and
-            ALERTS{alertname="SystemDiskSpaceWarning"} == 1
-          )
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.25
         for: 5m
+        keep_firing_for: 30m
         labels:
           severity: warning
           category: capacity
@@ -74,22 +73,11 @@ groups:
       # ========================================================================
       # ALERT 4: High CPU Usage
       # ========================================================================
-      # Hysteresis: Fire >90%, resolve <85% (prevents flapping)
       # Note: Jellyfin transcoding legitimately uses 50-80% CPU (per CLAUDE.md)
       - alert: HighCPUUsage
-        expr: |
-          (
-            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
-            and
-            ALERTS{alertname="HighCPUUsage"} != 1
-          )
-          or
-          (
-            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
-            and
-            ALERTS{alertname="HighCPUUsage"} == 1
-          )
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
         for: 20m
+        keep_firing_for: 15m
         labels:
           severity: warning
           category: performance
@@ -121,21 +109,10 @@ groups:
       # ========================================================================
       # ALERT 6: Memory Pressure High
       # ========================================================================
-      # With hysteresis: fire >90%, resolve <85%
       - alert: MemoryPressureHigh
-        expr: |
-          (
-            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.90
-            and
-            ALERTS{alertname="MemoryPressureHigh"} != 1
-          )
-          or
-          (
-            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
-            and
-            ALERTS{alertname="MemoryPressureHigh"} == 1
-          )
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.90
         for: 5m
+        keep_firing_for: 15m
         labels:
           severity: warning
           category: performance
@@ -150,7 +127,6 @@ groups:
       # Calibrated for zram (compressed in-memory swap):
       # - Baseline zram activity: ~230 pages/sec (normal)
       # - Alert threshold: 1000 pages/sec (indicates actual problem)
-      # - Hysteresis: Fire at 1000, resolve at 600 (prevents flapping)
       # - Requires system impact: High load OR memory pressure to confirm degradation
       #
       # Note: zram swap I/O is CPU-bound compression, NOT disk I/O.
@@ -158,33 +134,16 @@ groups:
       - alert: SwapThrashing
         expr: |
           (
-            (
-              rate(node_vmstat_pswpin[5m]) > 1000 or rate(node_vmstat_pswpout[5m]) > 1000
-            )
-            and
-            (
-              node_load5 / count(node_cpu_seconds_total{mode="idle"}) > 0.7
-              or
-              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.15
-            )
-            and
-            ALERTS{alertname="SwapThrashing"} != 1
+            rate(node_vmstat_pswpin[5m]) > 1000 or rate(node_vmstat_pswpout[5m]) > 1000
           )
-          or
+          and
           (
-            (
-              rate(node_vmstat_pswpin[5m]) > 600 or rate(node_vmstat_pswpout[5m]) > 600
-            )
-            and
-            (
-              node_load5 / count(node_cpu_seconds_total{mode="idle"}) > 0.5
-              or
-              node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.20
-            )
-            and
-            ALERTS{alertname="SwapThrashing"} == 1
+            node_load5 / count(node_cpu_seconds_total{mode="idle"}) > 0.7
+            or
+            node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.15
           )
         for: 10m
+        keep_firing_for: 15m
         labels:
           severity: warning
           category: performance
@@ -196,21 +155,10 @@ groups:
       # ========================================================================
       # ALERT 8: High System Load
       # ========================================================================
-      # Hysteresis: Fire >1.5x, resolve <1.3x (prevents flapping)
       - alert: HighSystemLoad
-        expr: |
-          (
-            node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.5
-            and
-            ALERTS{alertname="HighSystemLoad"} != 1
-          )
-          or
-          (
-            node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.3
-            and
-            ALERTS{alertname="HighSystemLoad"} == 1
-          )
+        expr: node_load15 / count(node_cpu_seconds_total{mode="idle"}) > 1.5
         for: 15m
+        keep_firing_for: 15m
         labels:
           severity: warning
           category: performance

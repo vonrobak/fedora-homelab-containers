@@ -1,0 +1,62 @@
+# Immich Data-Integrity Alerts
+# Created: 2026-06-12 (WP1 — closes the L-018 gap)
+# Context: Nov 2025 mass-deletion incident — assets soft-deleted, recovery relied
+# on a human noticing an empty library ~8h later. Soft-deletes mean detection
+# latency is what matters. Metric source: immich_active_assets, a postgres-exporter
+# custom query (config/postgres-exporter/queries.yml) scraped every 15s.
+
+groups:
+  - name: immich_data_integrity
+    interval: 1m
+    rules:
+      # ========================================================================
+      # ALERT 1: Asset count dropping (warning — possible bulk deletion)
+      # ========================================================================
+      # >200 assets gone within 1h (~1.4% of the 14.8k library as of 2026-06-12).
+      # Deliberate owner cleanups of this size are rare; a Discord ping during
+      # waking hours is acceptable signal for them. The drop stays visible to the
+      # expression for the full 1h offset window, so for: 10m cannot miss it.
+      - alert: ImmichAssetCountDrop
+        expr: (immich_active_assets offset 1h) - immich_active_assets > 200
+        for: 10m
+        labels:
+          severity: warning
+          category: data-integrity
+          component: immich
+        annotations:
+          summary: "Immich asset count dropped by {{ $value | humanize }} in 1h"
+          description: "Active (non-soft-deleted) Immich assets fell by {{ $value | humanize }} over the last hour. If this was not a deliberate cleanup, check Immich trash (soft-deleted assets are recoverable until emptied) and recent API activity."
+
+      # ========================================================================
+      # ALERT 2: Mass deletion (critical — the L-018 incident shape)
+      # ========================================================================
+      # >20% of the library gone within 1h. This is the empty-library scenario;
+      # pages immediately so trash can be restored before it is emptied.
+      - alert: ImmichMassDeletion
+        expr: immich_active_assets < 0.80 * (immich_active_assets offset 1h)
+        for: 10m
+        labels:
+          severity: critical
+          category: data-integrity
+          component: immich
+        annotations:
+          summary: "Immich lost >20% of its assets in 1h"
+          description: "Active Immich asset count is {{ $value | humanize }}, more than 20% below one hour ago. Likely mass deletion. Restore from Immich trash NOW (before it is emptied), then investigate: recent sessions/API keys, mobile app sync state."
+
+      # ========================================================================
+      # ALERT 3: Canary metric absent (guards the guard)
+      # ========================================================================
+      # If the SELECT grant rots (e.g. an Immich migration recreates the asset
+      # table) or the custom-query mount breaks, the metric silently disappears
+      # and alerts 1-2 can never fire. up{job="postgres-immich"} stays 1 in that
+      # case, so this needs its own absence check.
+      - alert: ImmichAssetMetricAbsent
+        expr: absent(immich_active_assets) and on() up{job="postgres-immich"} == 1
+        for: 30m
+        labels:
+          severity: warning
+          category: monitoring
+          component: immich
+        annotations:
+          summary: "Immich asset-count canary metric is absent"
+          description: "immich_active_assets has been absent for 30m while postgres-exporter itself is up. The L-018 mass-deletion canary is blind. Check: exporter logs (podman logs postgres-exporter), SELECT grant on the asset table for prometheus_exporter, and the queries.yml mount."
