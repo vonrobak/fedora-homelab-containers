@@ -17,6 +17,38 @@ groups:
           summary: "Image signature verification FAILED for {{ $labels.service }}"
           description: "{{ $labels.service }} ({{ $labels.repo }}) failed cosign verification against its known signer identity (ADR-030 P6). Possible tampering or a changed publisher identity. The pin was refused. Do NOT adopt; investigate `scripts/verify-image-signature.sh`."
 
+      # Warning: the Forgejo ledger mirror run FAILED. This is either Forgejo
+      # being down (benign) or one of the mirror's integrity gates firing:
+      # non-fast-forward origin/main (history rewrite upstream = tamper canary)
+      # or an unsigned/bad-signature commit in the delta. Check the journal —
+      # journalctl --user -u forgejo-mirror.service — BEFORE any manual push;
+      # never --force the ledger.
+      - alert: ForgejoMirrorFailed
+        expr: forgejo_mirror_success == 0
+        for: 15m
+        labels:
+          severity: warning
+          category: security
+          component: forgejo-mirror
+        annotations:
+          summary: "Forgejo ledger mirror failed"
+          description: "The push-mirror to the private Forgejo ledger failed or was gate-blocked. If the journal shows TAMPER CANARY or a signature-gate refusal, treat as a security event (ADR-030 ethos), not a sync problem. journalctl --user -u forgejo-mirror.service -n 30"
+
+      # Warning: no successful mirror in 26h (hourly timer → this means the
+      # timer itself died or failures persisted past ForgejoMirrorFailed).
+      # The manual-push era drifted 18 commits in 3 days with zero signal —
+      # this alert is why that cannot recur (L-031: alert on absence of success).
+      - alert: ForgejoMirrorStale
+        expr: (time() - forgejo_mirror_last_success_timestamp) > (26 * 3600)
+        for: 1h
+        labels:
+          severity: warning
+          category: security
+          component: forgejo-mirror
+        annotations:
+          summary: "Forgejo ledger has not mirrored successfully in 26h+"
+          description: "Last successful ledger mirror was {{ $value | humanizeDuration }} ago. Check forgejo-mirror.timer and forgejo.service."
+
       # Warning: a signer's pin hasn't been re-verified in 90+ days (P3 drift — a
       # deliberately-pinned signed image has gone stale and unre-checked).
       - alert: SupplyChainSignatureStale

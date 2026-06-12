@@ -1,0 +1,20 @@
+[Unit]
+Description=Mirror main to the private Forgejo sovereignty ledger
+Documentation=file:///home/patriark/containers/scripts/mirror-to-forgejo.sh
+After=network-online.target forgejo.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/mirror-to-forgejo.sh
+TimeoutStartSec=2min
+
+# Background plumbing — never compete with interactive use
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

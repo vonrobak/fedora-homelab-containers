@@ -9,6 +9,7 @@ rule_files:
   - ../alerts/service-health.yml
   - ../alerts/infrastructure-warnings.yml
   - ../alerts/db-dump-alerts.yml
+  - ../alerts/supply-chain-alerts.yml
 
 evaluation_interval: 1m
 
@@ -151,6 +152,46 @@ tests:
             exp_annotations:
               summary: "DB dump coverage gap: forgejo-db is not backed up"
               description: "forgejo-db (found via subvol8-db) is a DB-like service with no dump coverage. Add it to ENGINES in db-dump.sh + db-restore-test.sh, or record a decided exception in audit-dump-coverage.sh."
+
+  # --- Forgejo ledger mirror: failure + staleness (guards the guard) --------
+  - interval: 1m
+    input_series:
+      - series: 'forgejo_mirror_success{repo="containers"}'
+        values: '0x20'
+    alert_rule_test:
+      - eval_time: 16m
+        alertname: ForgejoMirrorFailed
+        exp_alerts:
+          - exp_labels:
+              repo: containers
+              severity: warning
+              category: security
+              component: forgejo-mirror
+            exp_annotations:
+              summary: "Forgejo ledger mirror failed"
+              description: "The push-mirror to the private Forgejo ledger failed or was gate-blocked. If the journal shows TAMPER CANARY or a signature-gate refusal, treat as a security event (ADR-030 ethos), not a sync problem. journalctl --user -u forgejo-mirror.service -n 30"
+
+  # 1m cadence: the textfile metric is scraped every 15s; hourly synthetic
+  # samples would go stale between points and defeat `for:`.
+  - interval: 1m
+    input_series:
+      - series: 'forgejo_mirror_last_success_timestamp{repo="containers"}'
+        values: '0x1700'
+    alert_rule_test:
+      - eval_time: 28h
+        alertname: ForgejoMirrorStale
+        exp_alerts:
+          - exp_labels:
+              repo: containers
+              severity: warning
+              category: security
+              component: forgejo-mirror
+            exp_annotations:
+              summary: "Forgejo ledger has not mirrored successfully in 26h+"
+              description: "Last successful ledger mirror was 1d 4h 0m 0s ago. Check forgejo-mirror.timer and forgejo.service."
+      - eval_time: 20h
+        alertname: ForgejoMirrorStale
+        exp_alerts: []
 
   # --- regression: MemoryPressureHigh can fire again post-hysteresis-removal -
   - interval: 1m
