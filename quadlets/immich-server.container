@@ -8,11 +8,16 @@ Requires=postgresql-immich.service redis-immich.service
 # ADR-030 P2: digest-pinned (integrity). tag: v2.7.5, resolved 2026-05-23 (index digest, multi-arch)
 Image=ghcr.io/immich-app/immich-server@sha256:c15bff75068effb03f4355997d03dc7e0fc58720c2b54ad6f7f10d1bc57efaa5
 ContainerName=immich-server
+NoNewPrivileges=true
 
-# Run as non-root user (security: ADR-001 Rootless Containers)
-# NOTE: User=1000:1000 removed due to Immich folder integrity check incompatibility
-# Security provided by rootless Podman (UID 0 inside → UID 1000 outside) + Traefik layers
-# TODO: Revisit after consulting Immich community or upstream fix
+# Run as non-root user (security: ADR-001 Rootless Containers, GH#140)
+# keep-id maps host uid/gid 1000 <-> container 1000 so the upload library
+# (host-owned 1000:1000) stays readable; the old failure was the default
+# rootless mapping handing container-1000 a subuid the files didn't match.
+# keep-groups preserves the render group for /dev/dri VAAPI transcoding.
+User=1000:1000
+UserNS=keep-id:uid=1000,gid=1000
+GroupAdd=keep-groups
 
 # Networks (multiple - order matters for default route)
 # Static IPs assigned to ensure consistent DNS resolution
