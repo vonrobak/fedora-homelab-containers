@@ -16,7 +16,8 @@ log() {
 
 # Get recently updated files (last 7 days)
 get_recent_files() {
-    find "$DOCS_DIR" -name "*.md" ! -name "*-private.md" -mtime -7 -type f | sort
+    # 96-project-supervisor/ excluded: gitignored (local-only), index is public
+    find "$DOCS_DIR" -name "*.md" ! -name "*-private.md" ! -path "*/96-project-supervisor/*" -mtime -7 -type f | sort
 }
 
 # Count files in directory
@@ -271,22 +272,8 @@ EOF
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
-    cat >> "$OUTPUT_FILE" <<EOF
-
----
-
-### 96-project-supervisor/ ($(count_files "$DOCS_DIR/96-project-supervisor") documents)
-
-**Situational awareness: distilled lessons and project orientation (curated, living documents)**
-EOF
-
-    find "$DOCS_DIR/96-project-supervisor" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename
-        basename=$(basename "$file")
-        local relpath
-        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
-        echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
-    done
+    # 96-project-supervisor/ is deliberately NOT indexed: the directory is
+    # gitignored (local-only situational awareness), and this index is public.
 
     cat >> "$OUTPUT_FILE" <<EOF
 

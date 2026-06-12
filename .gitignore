@@ -66,6 +66,11 @@ docs/90-archive/
 # so guides/notes holding key handles, emails, or LAN details stay untracked.
 *-private.md
 
+# Project supervisor docs — situational-awareness synthesis (lessons, status,
+# roadmap) stays local: it aggregates operational detail that doesn't belong
+# in a public repo. (lessons.md briefly existed on GitHub via PR #278.)
+docs/96-project-supervisor/
+
 # Active-probe posture script — tuned attack tool for this specific perimeter
 # (curated attack paths, CrowdSec burst logic, Region Block negative test).
 # Low reconstruction cost but publishing it hands adversaries a pre-built

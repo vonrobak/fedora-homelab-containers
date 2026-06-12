@@ -32,15 +32,16 @@ This documentation uses a **clear separation of concerns**:
 1. **Forward-looking** (`97-plans/`) - Strategic plans and roadmaps
 2. **Historical** (`98-journals/`) - Chronological project timeline
 3. **Current state** (`*/guides/`) - Living reference documentation
-4. **Synthesis** (`96-project-supervisor/`) - Distilled lessons and situational awareness
+4. **Synthesis** (`96-project-supervisor/`) - Distilled lessons and situational awareness (local-only, gitignored)
 
 ### Directory Overview
 
 ```
 docs/
-├── 96-project-supervisor/              # Situational awareness (curated synthesis)
+├── 96-project-supervisor/              # Situational awareness (curated synthesis; LOCAL-ONLY, gitignored)
 │   ├── lessons.md                      # Distilled lessons (L-NNN, incl. superseded)
-│   └── README.md                       # Directory role + planned roadmap/status/registry
+│   ├── roadmap.md / status.md          # Strategy & arc state
+│   └── README.md                       # Directory role and conventions
 │
 ├── 97-plans/                           # Strategic planning documents
 │   ├── PROJECT-A-DISASTER-RECOVERY-PLAN.md
