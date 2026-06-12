@@ -11,13 +11,20 @@
 #
 # Wired into the local pre-commit chain (.git/hooks/pre-commit, which is not
 # version-controlled — re-add a call to this script if the hook is rebuilt):
-#   if ! ~/containers/scripts/check-boot-tier.sh; then CHECK_FAILED=1; fi
+#   if ! "$REPO_ROOT/scripts/check-boot-tier.sh"; then CHECK_FAILED=1; fi
 #
 # Exit: 0 = all quadlets compliant, 1 = violations listed on stdout.
 
 set -euo pipefail
 
-QUADLET_DIR="${HOME}/containers/quadlets"
+# Worktree-aware root: pre-commit hooks run with cwd = the committing
+# worktree's toplevel, so prefer the enclosing repo — validate the tree being
+# committed, not the live one. REPO_ROOT env overrides; fall back to the live
+# tree for ad-hoc runs outside any repo.
+REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || true)}"
+REPO_ROOT="${REPO_ROOT:-$HOME/containers}"
+QUADLET_DIR="$REPO_ROOT/quadlets"
+[[ -d "$QUADLET_DIR" ]] || { echo "ERROR: quadlet dir not found: $QUADLET_DIR" >&2; exit 2; }
 FAIL=0
 
 for f in "$QUADLET_DIR"/*.container; do

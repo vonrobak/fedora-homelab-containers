@@ -13,9 +13,16 @@
 # Exit: 0 all invariants hold, 1 one or more violated.
 set -uo pipefail
 
+# Worktree-aware root: pre-commit hooks run with cwd = the committing
+# worktree's toplevel, so prefer the enclosing repo — validate the tree being
+# committed, not the live one. REPO_ROOT env overrides; fall back to the live
+# tree for ad-hoc runs outside any repo.
+REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || true)}"
 REPO_ROOT="${REPO_ROOT:-$HOME/containers}"
 QUADLET_DIR="${QUADLET_DIR:-$REPO_ROOT/quadlets}"
-METRIC_FILE="${METRIC_FILE:-$REPO_ROOT/data/backup-metrics/supply-chain-signatures.prom}"
+# Runtime state, NOT tree content: data/ is gitignored (absent in worktrees),
+# and the latest signature verdict is a property of the live system either way.
+METRIC_FILE="${METRIC_FILE:-$HOME/containers/data/backup-metrics/supply-chain-signatures.prom}"
 fail=0
 
 # (P4) egress integrity + de-automation — reuse the existing guard verbatim.
