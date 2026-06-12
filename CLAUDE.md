@@ -135,6 +135,8 @@ Check if an ADR exists before proposing changes. Reference the ADR and explain w
 7. **Defense in depth** — IP reputation, rate limiting, authentication, headers, scanning
 8. **Observable system** — natural language queries, comprehensive metrics, audit trails
 
+**Lesson capture:** When a session produces a durable, generalizable lesson (incident, postmortem, surprising root cause), append it to `docs/96-project-supervisor/lessons.md` following its "How to add a lesson" protocol. Consult that file before redesigning alerting, storage, security layers, or debugging strategy — it includes superseded approaches not to repeat.
+
 ## Common Gotchas
 
 **SELinux `:Z` label required** on all bind mounts in quadlets (rootless + SELinux enforcing). Without it: `permission denied`.
@@ -185,6 +187,7 @@ Full script catalog: `docs/20-operations/guides/automation-reference.md`
 
 | Category | Location |
 |----------|----------|
+| Lessons learned | `docs/96-project-supervisor/lessons.md` (L-NNN, incl. superseded) |
 | Service catalog | `AUTO-SERVICE-CATALOG.md` (updated daily) |
 | Network topology | `AUTO-NETWORK-TOPOLOGY.md` (diagrams, 8 networks) |
 | Dependency graph | `AUTO-DEPENDENCY-GRAPH.md` (4-tier, critical paths) |

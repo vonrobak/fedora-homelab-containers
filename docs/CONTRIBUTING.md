@@ -43,6 +43,7 @@ This guide covers when, where, and how to write documentation. It does not repea
 | Operational procedures, DR runbooks | `20-operations/` |
 | Security, incident response | `30-security/` |
 | Monitoring, SLOs, documentation meta | `40-monitoring-and-documentation/` |
+| Distilled lessons, situational awareness | `96-project-supervisor/` |
 | Strategic plans, roadmaps | `97-plans/` |
 | Chronological logs, session notes | `98-journals/` |
 | Automated reports (JSON, snapshots) | `99-reports/` |
@@ -151,6 +152,20 @@ Immutable once written. New decisions get new ADRs; never edit existing ones. Ch
 
 Machine-generated or rare authoritative snapshots. Do not create reports for content that belongs in journals.
 
+### Supervisor Document (situational awareness)
+
+**Location:** `96-project-supervisor/<topic>.md` | **No date prefix**
+
+Curated, living synthesis documents that orient humans and LLMs: `lessons.md` (distilled
+lessons with stable `L-NNN` IDs), plus planned `roadmap.md`, `status.md`, `registry.md`.
+Each document defines its own update protocol in its header — follow it. Do not create new
+documents here casually; the directory's value is its small, stable surface. Lessons are
+never deleted: superseded ones move to the Superseded section of `lessons.md` with a note
+naming what replaced them (mirrors ADR supersession).
+
+When a journal entry or report yields a durable, generalizable lesson, promote it to
+`96-project-supervisor/lessons.md` per its "How to add a lesson" protocol.
+
 ### Incident Post-Mortem
 
 **Location:** `30-security/incidents/YYYY-MM-DD-incident-<description>.md`
@@ -189,6 +204,7 @@ Machine-generated or rare authoritative snapshots. Do not create reports for con
 | Plan | Yes | `97-plans/` | `2025-11-22-disaster-recovery.md` |
 | ADR | Yes | `*/decisions/` | `2025-11-07-decision-001-title.md` |
 | Report | N/A | `99-reports/` | `intel-*.json` |
+| Supervisor doc | No | `96-project-supervisor/` | `lessons.md` |
 | Runbook (DR) | Yes | `20-operations/runbooks/` | `DR-001-system-ssd-failure.md` |
 | Runbook (IR) | Yes | `30-security/runbooks/` | `IR-005-network-security-event.md` |
 | Incident | Yes | `30-security/incidents/` | `2025-11-23-incident-data-loss.md` |
