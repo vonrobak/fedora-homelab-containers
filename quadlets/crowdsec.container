@@ -8,6 +8,7 @@ Wants=network-online.target
 # ADR-030 P1/P4: AutoUpdate removed — egress-tier, deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=docker.io/crowdsecurity/crowdsec@sha256:2f527c9bb8b367120eb08b82890aa912ce96bfa1ada93dda0721700e4b4e0dde
 ContainerName=crowdsec
+NoNewPrivileges=true
 Network=systemd-reverse_proxy:ip=10.89.2.70
 
 # Volumes
@@ -36,6 +37,7 @@ TimeoutStartSec=900
 # Resource Limits
 MemoryMax=512M
 MemoryHigh=460M
+CPUQuota=200%
 
 [Install]
 WantedBy=default.target

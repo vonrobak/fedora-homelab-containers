@@ -8,6 +8,7 @@ Requires=forgejo-db.service
 # ADR-030 P2: digest-pinned (integrity). tag: 15, resolved 2026-05-23 (index digest, multi-arch)
 Image=codeberg.org/forgejo/forgejo@sha256:db04c7114b656f896e206ba3873fe8d3a7adf2daa44907037f0274f4ba653fb9
 ContainerName=forgejo
+NoNewPrivileges=true
 HostName=forgejo
 
 Environment=USER_UID=1000
@@ -93,6 +94,7 @@ TimeoutStartSec=300
 # Resource Limits
 MemoryHigh=1G
 MemoryMax=1536M
+CPUQuota=200%
 
 [Install]
 WantedBy=default.target

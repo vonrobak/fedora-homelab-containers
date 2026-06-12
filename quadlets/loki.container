@@ -7,6 +7,7 @@ Wants=monitoring-network.service network-online.target
 # ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
 Image=docker.io/grafana/loki@sha256:191d4fdfb7264f16989f0a57f320872620a5a7c2ceeec6229212c4190ec49b86
 ContainerName=loki
+NoNewPrivileges=true
 HostName=loki
 # Static IPs assigned to ensure consistent DNS resolution
 Network=systemd-reverse_proxy:ip=10.89.2.83

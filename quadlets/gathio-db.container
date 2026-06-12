@@ -8,6 +8,7 @@ Wants=gathio-network.service network-online.target
 # ADR-030 P6: no publisher signature (tracked unsigned)
 Image=docker.io/library/mongo@sha256:c1a84ab5d0c17deed1e0dba1d24bd7c76e5c7b281145fe536911939b1551754c
 ContainerName=gathio-db
+NoNewPrivileges=true
 HostName=gathio-db
 
 # Database configuration (using podman secrets - Pattern 2: type=env)

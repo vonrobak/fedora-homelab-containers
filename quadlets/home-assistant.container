@@ -7,6 +7,7 @@ Wants=home_automation-network.service network-online.target reverse_proxy-networ
 # ADR-030 P2: digest-pinned (integrity). tag: stable, resolved 2026-05-23 (index digest, multi-arch)
 Image=ghcr.io/home-assistant/home-assistant@sha256:d4fbec16196d5c8bedf32647f0ca7165f654d92a2e81f35a373508d3226cb867
 ContainerName=home-assistant
+NoNewPrivileges=true
 HostName=home-assistant
 
 # Networks (reverse_proxy FIRST for internet access)
@@ -45,6 +46,7 @@ TimeoutStartSec=300
 MemoryMax=2G
 MemoryHigh=1800M
 MemorySwapMax=512M
+CPUQuota=400%
 
 [Install]
 WantedBy=default.target

@@ -10,6 +10,7 @@ Requires=redis-authelia.service
 # ADR-030 P6: no publisher signature (tracked unsigned)
 Image=quay.io/oliver006/redis_exporter@sha256:2e9795be900db073e9475fdb9c5124db309b07a3e4e75a1770705cb03be1a1c8
 ContainerName=redis-authelia-exporter
+NoNewPrivileges=true
 HostName=redis-authelia-exporter
 
 # Reach redis-authelia on auth_services; expose metrics on monitoring (static IPs per ADR-018).

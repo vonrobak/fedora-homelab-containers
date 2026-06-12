@@ -6,6 +6,7 @@ Wants=network-online.target reverse_proxy-network.service mail-network.service
 [Container]
 Image=localhost/proton-bridge:3.23.1
 ContainerName=proton-bridge
+NoNewPrivileges=true
 
 # Map host UID into container (ADR-001: rootless containers)
 UserNS=keep-id

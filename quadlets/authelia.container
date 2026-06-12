@@ -10,6 +10,7 @@ Requires=redis-authelia.service
 # ADR-030 P6: no publisher signature (tracked unsigned)
 Image=docker.io/authelia/authelia@sha256:1b363e9279e742397966333f364e0876ae02bf5c876de73e83af6d48c57ff51b
 ContainerName=authelia
+NoNewPrivileges=true
 
 # Multi-network: Serves SSO portal + handles auth verification
 # Static IPs assigned to ensure consistent DNS resolution

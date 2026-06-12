@@ -9,6 +9,7 @@ Requires=postgresql-immich.service
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=quay.io/prometheuscommunity/postgres-exporter@sha256:e96064f876226d94bb6ce48a4c4b3dd76edba91168ec1ab024e5c4b959310b0f
 ContainerName=postgres-exporter
+NoNewPrivileges=true
 HostName=postgres-exporter
 
 # Reach postgresql-immich on photos; expose metrics on monitoring.

@@ -9,6 +9,7 @@ Requires=gathio-db.service
 # ADR-030 P6: no publisher signature (tracked unsigned)
 Image=ghcr.io/lowercasename/gathio@sha256:ff66a8d2cc522568c8a8e2772e969e56f90e2089fb33602d27979134dc8bfe8b
 ContainerName=gathio
+NoNewPrivileges=true
 HostName=gathio
 
 # MongoDB connection (password mounted as file at /run/secrets/mongodb_password)
@@ -55,6 +56,7 @@ TimeoutStartSec=300
 # MemoryMax: hard limit (768M) - OOM kill protection
 MemoryHigh=512M
 MemoryMax=768M
+CPUQuota=100%
 
 [Install]
 WantedBy=default.target

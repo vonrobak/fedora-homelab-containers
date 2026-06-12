@@ -10,6 +10,7 @@ Wants=monitoring-network.service network-online.target reverse_proxy-network.ser
 # Bump = rebuild, retag with new date, update this line + digest, daemon-reload + restart.
 Image=localhost/alert-discord-relay:2026-05-23
 ContainerName=alert-discord-relay
+NoNewPrivileges=true
 HostName=alert-discord-relay
 # reverse_proxy first for default route (Discord API access)
 Network=systemd-reverse_proxy:ip=10.89.2.86

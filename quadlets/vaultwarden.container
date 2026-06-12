@@ -19,6 +19,7 @@ Wants=network-online.target traefik.service
 # ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
 Image=docker.io/vaultwarden/server@sha256:d626d04934cd1192ad8ced1adb975099fca78cec33ab467d2d3c923cde7f3b0c
 ContainerName=vaultwarden
+NoNewPrivileges=true
 # User directive removed - Vaultwarden image uses vaultwarden user (UID 1000) internally
 
 # Networks
@@ -71,6 +72,7 @@ RestartSec=10s
 # Vaultwarden is critical infrastructure - prevent OOM conditions
 MemoryMax=1G
 MemoryHigh=800M
+CPUQuota=200%
 
 # ═══════════════════════════════════════════════════════════
 # INSTALLATION
