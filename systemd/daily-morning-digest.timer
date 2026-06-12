@@ -1,0 +1,13 @@
+[Unit]
+Description=Consolidated Daily Morning Digest Timer
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/automation-reference.md
+
+[Timer]
+# Run at 07:30 daily (after all morning scripts: drift 06:00, forecast 06:05,
+# autonomous 06:30, error-digest 07:00 + RandomizedDelaySec margin)
+OnCalendar=*-*-* 07:30:00
+Persistent=true
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

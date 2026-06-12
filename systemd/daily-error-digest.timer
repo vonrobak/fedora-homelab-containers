@@ -1,0 +1,17 @@
+[Unit]
+Description=Daily Error Digest Timer
+Documentation=https://github.com/vonrobak/fedora-homelab-containers
+
+[Timer]
+# Run daily at 07:00
+OnCalendar=daily
+OnCalendar=*-*-* 07:00:00
+
+# Persistent (run on next boot if missed)
+Persistent=true
+
+# Randomize start time by up to 5 minutes to avoid thundering herd
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

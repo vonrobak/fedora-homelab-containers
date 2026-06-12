@@ -1,0 +1,9 @@
+[Unit]
+Description=Check for container image updates
+Documentation=file:/home/patriark/containers/docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/check-image-updates.sh
+StandardOutput=journal
+StandardError=journal

@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh query cache for homelab natural language queries
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/automation-reference.md
+
+[Timer]
+# Run daily at 07:05 (after auto-doc-update at 07:00 when fresh data is available)
+OnCalendar=*-*-* 07:05:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

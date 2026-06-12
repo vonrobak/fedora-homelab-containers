@@ -1,0 +1,6 @@
+[Unit]
+Description=Rotate journal export log file
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/rotate-journal-export.sh

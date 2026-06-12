@@ -1,0 +1,19 @@
+[Unit]
+Description=Dependency Metrics Export Timer (Every 15 minutes)
+Documentation=file:///home/patriark/.claude/plans/snoopy-hatching-pumpkin.md
+
+[Timer]
+# Run every 15 minutes (dependency graph changes ~monthly, 5min was excessive)
+OnCalendar=*:0/15
+
+# Run 1 minute after boot
+OnBootSec=1min
+
+# Persist timer across reboots
+Persistent=true
+
+# Randomize start time by up to 30 seconds to avoid load spikes
+RandomizedDelaySec=30s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,22 @@
+[Unit]
+Description=Consolidated Daily Morning Digest
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/automation-reference.md
+
+# Run after all morning scripts
+After=daily-drift-check.service
+After=daily-resource-forecast.service
+After=autonomous-operations.service
+After=daily-error-digest.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/patriark/containers
+ExecStart=/home/patriark/containers/scripts/daily-morning-digest.sh
+Environment=HOME=/home/patriark
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

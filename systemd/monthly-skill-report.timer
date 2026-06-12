@@ -1,0 +1,11 @@
+[Unit]
+Description=Monthly Skill Usage Report Timer
+Documentation=file:///home/patriark/containers/docs/10-services/guides/skill-recommendation.md
+
+[Timer]
+# Run on the 1st of each month at 10:30 AM (after monthly SLO report)
+OnCalendar=*-*-01 10:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

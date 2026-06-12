@@ -1,0 +1,31 @@
+[Unit]
+Description=Nextcloud Background Jobs (Cron)
+Documentation=https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/background_jobs_configuration.html
+After=nextcloud
+Requires=nextcloud
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/patriark/containers
+
+# Execute Nextcloud cron.php (processes 1 job per run - designed for frequent execution)
+ExecStart=/usr/bin/podman exec --user www-data nextcloud php -f /var/www/html/cron.php
+
+# Environment
+Environment=HOME=/home/patriark
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nextcloud-cron
+
+# Timeouts (generous for first runs and occasional heavy jobs)
+TimeoutStartSec=300
+
+# Resource limits (lightweight operation)
+CPUQuota=10%
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

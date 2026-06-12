@@ -1,0 +1,18 @@
+[Unit]
+Description=Export Dependency Metrics to Prometheus
+Documentation=file:///home/patriark/.claude/plans/snoopy-hatching-pumpkin.md
+After=podman.socket
+
+[Service]
+Type=oneshot
+ExecStart=/home/patriark/containers/scripts/export-dependency-metrics.sh
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="SUPPRESS_BOLTDB_WARNING=1"
+
+# Resource limits
+MemoryMax=50M
+CPUQuota=25%

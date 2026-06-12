@@ -1,0 +1,6 @@
+[Unit]
+Description=Cloudflare Dynamic DNS Update
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/cloudflare-ddns.sh

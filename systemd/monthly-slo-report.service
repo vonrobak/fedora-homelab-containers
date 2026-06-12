@@ -1,0 +1,12 @@
+[Unit]
+Description=Monthly SLO Report to Discord
+Documentation=file:///home/patriark/containers/scripts/monthly-slo-report.sh
+
+[Service]
+Type=oneshot
+ExecStart=/home/patriark/containers/scripts/monthly-slo-report.sh
+StandardOutput=journal
+StandardError=journal
+
+# Don't restart on failure (it's a one-shot report)
+Restart=no

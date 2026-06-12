@@ -1,0 +1,20 @@
+[Unit]
+Description=Daily Dependency Discovery Timer
+Documentation=file:///home/patriark/containers/.claude/plans/snoopy-hatching-pumpkin.md
+
+[Timer]
+# Run daily at 06:00
+OnCalendar=daily
+OnCalendar=*-*-* 06:00:00
+
+# Run 5 minutes after boot (for development/testing)
+OnBootSec=5min
+
+# Persist timer across reboots
+Persistent=true
+
+# Randomize start time by up to 10 minutes to avoid load spikes
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

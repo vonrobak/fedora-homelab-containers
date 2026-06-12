@@ -1,0 +1,23 @@
+[Unit]
+Description=Urd BTRFS backup
+
+[Service]
+Type=oneshot
+ExecStart=%h/.cargo/bin/urd backup --auto --confirm-retention-change
+Environment=RUST_LOG=info
+
+# Allow long backup runs (large btrfs sends can take hours)
+TimeoutStartSec=6h
+# Allow 5 minutes for graceful shutdown (cleanup partial snapshots)
+TimeoutStopSec=300
+
+# Low priority — don't interfere with interactive use
+Nice=19
+IOSchedulingClass=idle
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

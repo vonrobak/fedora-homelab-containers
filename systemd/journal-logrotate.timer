@@ -1,0 +1,10 @@
+[Unit]
+Description=Rotate journal export logs when over 100MB
+
+[Timer]
+# Check every hour
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

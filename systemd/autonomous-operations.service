@@ -1,0 +1,30 @@
+[Unit]
+Description=Autonomous Operations Check and Execute
+Documentation=file:///home/patriark/containers/.claude/skills/autonomous-operations/SKILL.md
+After=network-online.target
+Wants=network-online.target
+
+# Run after daily backups and resource forecast
+After=btrfs-daily-backup.service
+After=daily-resource-forecast.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/patriark/containers
+
+# Run check, then execute approved actions
+ExecStart=/home/patriark/containers/scripts/autonomous-execute.sh --from-check
+
+# Environment
+Environment=HOME=/home/patriark
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Timeouts
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

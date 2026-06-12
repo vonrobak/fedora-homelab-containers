@@ -1,0 +1,12 @@
+[Unit]
+Description=Monthly Skill Usage Report
+Documentation=file:///home/patriark/containers/docs/10-services/guides/skill-recommendation.md
+
+[Service]
+Type=oneshot
+ExecStart=/home/patriark/containers/scripts/analyze-skill-usage.sh --monthly-report
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

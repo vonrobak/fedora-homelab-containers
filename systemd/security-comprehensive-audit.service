@@ -1,0 +1,8 @@
+[Unit]
+Description=Biweekly Comprehensive Security Audit
+After=autonomous-execute.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/security-audit.sh --level 3 --json --report
+WorkingDirectory=%h/containers

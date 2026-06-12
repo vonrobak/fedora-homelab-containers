@@ -1,0 +1,17 @@
+[Unit]
+Description=Dependency Discovery (Service Dependency Mapping)
+Documentation=file:///home/patriark/containers/.claude/plans/snoopy-hatching-pumpkin.md
+After=podman.socket
+
+[Service]
+Type=oneshot
+ExecStart=/home/patriark/containers/scripts/discover-dependencies.sh
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+# Resource limits
+MemoryMax=100M
+CPUQuota=50%

@@ -7,10 +7,19 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=%h/containers/.claude/remediation/scripts
+
+# Load secrets from environment file (secure: not committed to Git)
+# File location: ~/.config/remediation-webhook.env
+# Contains: WEBHOOK_AUTH_TOKEN=<secret>
+EnvironmentFile=%h/.config/remediation-webhook.env
+
+# Bind: LAN IP, not loopback — rootless containers cannot reach host 127.0.0.1,
+# and Alertmanager (the only caller) reaches the host via host.containers.internal.
+# Exposure accepted 2026-06-12 (owner decision): token auth + UDM perimeter firewall.
 ExecStart=/usr/bin/python3 %h/containers/.claude/remediation/scripts/remediation-webhook-handler.py \
     --config %h/containers/.claude/remediation/webhook-routing.yml \
     --port 9096 \
-    --bind 127.0.0.1 \
+    --bind 192.168.1.70 \
     --log-level INFO
 
 # Restart policy
