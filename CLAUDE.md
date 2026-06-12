@@ -113,6 +113,7 @@ Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second p
 - **Branch discipline:** 1–2 clean, SSH-signed commits per branch (no fixup litter — it lands on main forever); branch + PR per work package; stacked branches merge in order with no rebasing needed
 - **Trivia lane:** journals, comment fixes, and doc-only commits may be pushed directly to main (signed) — PR ceremony adds nothing there. Substantive work always gets a PR (the PR body is the owner's review surface)
 - **Live-config rule stands:** never return the worktree to main or rebase across applied-but-unmerged changes — running services read this tree
+- **Forgejo ledger (automated — do NOT push manually):** `forgejo-mirror.timer` (hourly) push-mirrors main to the private Forgejo (`patriark/homelab`) via `scripts/mirror-to-forgejo.sh`. The mirror is append-only with integrity gates: non-fast-forward upstream or unsigned/bad-signature commits in the delta BLOCK the mirror and fire `ForgejoMirrorFailed` — treat that as a tamper canary, never `--force` the ledger
 
 ### Architecture Decision Records
 

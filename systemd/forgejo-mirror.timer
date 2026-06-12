@@ -1,0 +1,14 @@
+[Unit]
+Description=Hourly push-mirror of main to the Forgejo ledger
+
+[Timer]
+# Hourly: local push over loopback SSH, subsecond when up to date. The old
+# manual-push "mirror" drifted 18 commits behind in 3 days unnoticed — the
+# cadence here is about bounding ledger lag, not load (negligible).
+OnBootSec=10min
+OnUnitActiveSec=1h
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
