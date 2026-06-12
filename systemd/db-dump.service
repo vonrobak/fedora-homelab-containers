@@ -7,6 +7,10 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 ExecStart=%h/containers/scripts/db-dump.sh
+# WP2 (L-019): coverage audit after each dump run — flags DB-like services
+# missing from the ENGINES array via db_dump_coverage_gap metrics. "-" prefix:
+# a gap alerts through Prometheus, it must not mark the dump run failed.
+ExecStartPost=-%h/containers/scripts/audit-dump-coverage.sh
 TimeoutStartSec=1h
 
 # Low priority — do not interfere with interactive use or other I/O

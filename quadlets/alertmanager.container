@@ -44,6 +44,12 @@ HealthRetries=3
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=120
+# Boot tier A (200): the alerting path must not be starved during the boot
+# I/O storm — ADR-035 keeps Alertmanager early and un-deferred so paging works
+# while everything else is still thrashing. Promoted explicitly 2026-06-12
+# (was implicit default 100, the only alert-path unit without a weight).
+StartupCPUWeight=200
+StartupIOWeight=200
 
 # Resource Limits
 MemoryMax=256M

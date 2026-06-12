@@ -1,6 +1,6 @@
 [Unit]
 Description=Alert Discord Relay - Alertmanager to Discord Webhook Bridge
-After=network-online.target reverse_proxy-network.service monitoring-network.service traefik.service
+After=network-online.target reverse_proxy-network.service monitoring-network.service
 Wants=monitoring-network.service network-online.target reverse_proxy-network.service
 
 [Container]
@@ -35,7 +35,10 @@ HealthRetries=3
 Slice=container.slice
 Restart=on-failure
 TimeoutStartSec=60
-# Boot tier C: yield during fan-out; After=traefik.service defers past the storm
+# Boot tier C weights (yield disk during fan-out), but UN-deferred: ADR-035 D2
+# says the alerting path (Alertmanager + relay) stays early so paging is not
+# blinded post-reboot. The After=traefik.service deferral from PR #242 predated
+# that decision and contradicted it — removed 2026-06-12.
 StartupCPUWeight=50
 StartupIOWeight=50
 
