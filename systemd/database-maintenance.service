@@ -1,0 +1,22 @@
+[Unit]
+Description=Database Maintenance - PostgreSQL VACUUM and Redis Analysis
+Documentation=file:///home/patriark/containers/.claude/remediation/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/containers/.claude/remediation/scripts
+ExecStart=%h/containers/.claude/remediation/scripts/apply-remediation.sh --playbook database-maintenance
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=50%
+
+# Timeout (database maintenance can take 2-10 minutes)
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Daily Configuration Drift Check Timer
+Documentation=file:///home/patriark/containers/docs/20-operations/guides/automation-reference.md
+
+[Timer]
+# Run daily at 06:00
+OnCalendar=*-*-* 06:00:00
+
+# If system was off, run on next boot
+Persistent=true
+
+# Randomize by up to 10 minutes
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

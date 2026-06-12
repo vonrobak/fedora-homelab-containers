@@ -8,6 +8,7 @@ Wants=loki.service monitoring-network.service network-online.target
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=docker.io/grafana/promtail@sha256:6cfa64ec432b24a912d640e2edb940eeae2666f61861a66c121d763dd7241381
 ContainerName=promtail
+NoNewPrivileges=true
 HostName=promtail
 Network=systemd-monitoring
 

@@ -1,0 +1,31 @@
+[Unit]
+Description=Daily Error Digest from Loki
+Documentation=https://github.com/vonrobak/fedora-homelab-containers
+After=loki.service grafana.service
+Requires=loki.service grafana.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/patriark/containers
+
+# Execute daily error digest script
+ExecStart=/home/patriark/containers/scripts/daily-error-digest.sh
+
+# Environment
+Environment=HOME=/home/patriark
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=daily-error-digest
+
+# Timeouts (generous for Loki queries)
+TimeoutStartSec=120
+
+# Resource limits (lightweight operation)
+CPUQuota=10%
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

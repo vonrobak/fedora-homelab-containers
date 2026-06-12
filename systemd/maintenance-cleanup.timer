@@ -1,0 +1,16 @@
+[Unit]
+Description=Weekly Homelab Maintenance Cleanup Timer
+Documentation=file:///home/patriark/containers/scripts/maintenance-cleanup.sh
+
+[Timer]
+# Run every Sunday at 3:00 AM
+OnCalendar=Sun *-*-* 03:00:00
+
+# If system was off, run 1 hour after boot
+Persistent=true
+
+# Randomize execution by up to 30 minutes to avoid precise timing
+RandomizedDelaySec=30min
+
+[Install]
+WantedBy=timers.target

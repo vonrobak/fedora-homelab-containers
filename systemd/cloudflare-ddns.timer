@@ -1,0 +1,10 @@
+[Unit]
+Description=Cloudflare DDNS Update Timer
+Requires=cloudflare-ddns.service
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+
+[Install]
+WantedBy=timers.target

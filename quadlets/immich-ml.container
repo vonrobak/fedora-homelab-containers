@@ -7,6 +7,7 @@ Wants=network-online.target photos-network.service
 # ADR-030 P2: digest-pinned (integrity). tag: v2.7.5, resolved 2026-05-23 (index digest, multi-arch)
 Image=ghcr.io/immich-app/immich-machine-learning@sha256:a2501141440f10516d329fdfba2c68082e19eb9ba6016c061ac80d23beadf7f3
 ContainerName=immich-ml
+NoNewPrivileges=true
 
 # Network (isolated - only on photos network)
 Network=systemd-photos

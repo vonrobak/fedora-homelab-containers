@@ -8,6 +8,7 @@ Wants=monitoring-network.service network-online.target
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=gcr.io/cadvisor/cadvisor@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
 ContainerName=cadvisor
+NoNewPrivileges=true
 HostName=cadvisor
 Network=systemd-monitoring
 

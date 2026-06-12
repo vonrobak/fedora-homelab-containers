@@ -1,0 +1,17 @@
+[Unit]
+Description=Weekly Homelab Intelligence Report
+Documentation=file:///home/patriark/containers/scripts/weekly-intelligence-report.sh
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/patriark/containers/scripts/weekly-intelligence-report.sh
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

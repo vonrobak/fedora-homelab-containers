@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly container image update check
+Documentation=file:/home/patriark/containers/docs/00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md
+
+[Timer]
+# Run every Sunday at 10:00 AM
+OnCalendar=Sun *-*-* 10:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

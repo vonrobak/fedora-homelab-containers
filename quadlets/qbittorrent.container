@@ -8,6 +8,7 @@ Wants=network-online.target reverse_proxy-network.service
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=docker.io/linuxserver/qbittorrent@sha256:f76c4363cce0834df43b097682928d217f9f0e0fa1d13781c0934848d543e4ab
 ContainerName=qbittorrent
+NoNewPrivileges=true
 HostName=qbittorrent
 Network=systemd-reverse_proxy:ip=10.89.2.85
 # No PublishPort - WebUI (port 8085, set via WEBUI_PORT below) accessible only

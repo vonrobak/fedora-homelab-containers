@@ -1,0 +1,16 @@
+[Unit]
+Description=Monthly SLO Report Timer
+Documentation=file:///home/patriark/containers/scripts/monthly-slo-report.sh
+
+[Timer]
+# Run on the 1st of every month at 10:00 AM
+OnCalendar=*-*-01 10:00:00
+
+# If system was off, run on next boot
+Persistent=true
+
+# Randomize by up to 5 minutes
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

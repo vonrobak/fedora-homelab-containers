@@ -1,0 +1,15 @@
+[Unit]
+Description=Refresh Query Cache
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/precompute-queries.sh
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=10m
+
+# Low priority, don't impact system
+Nice=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

@@ -8,12 +8,15 @@ Wants=monitoring-network.service network-online.target
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=quay.io/prometheus/alertmanager@sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286
 ContainerName=alertmanager
+NoNewPrivileges=true
 HostName=alertmanager
 Network=systemd-reverse_proxy:ip=10.89.2.72
 Network=systemd-monitoring:ip=10.89.4.72
 
 # Configuration and data
-Volume=%h/containers/config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro,Z
+# Directory mount (GH#276 pattern): avoids the single-file bind inode trap and
+# brings remediation-url.secret (gitignored) in alongside alertmanager.yml.
+Volume=%h/containers/config/alertmanager:/etc/alertmanager:ro,Z
 Volume=%h/containers/data/alertmanager:/alertmanager:Z
 
 # SMTP password for email notifications

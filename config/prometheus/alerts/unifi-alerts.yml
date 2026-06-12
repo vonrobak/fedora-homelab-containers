@@ -17,7 +17,6 @@ groups:
         annotations:
           summary: "UDM Pro is unreachable"
           description: "Unpoller cannot scrape metrics from UDM Pro at {{ $labels.source }}. Network gateway may be offline. CRITICAL: All internet access lost."
-          runbook_url: "https://github.com/patriark/containers/blob/main/docs/30-security/runbooks/IR-001-network-outage.md"
 
       # Alert: Unpoller scrape failures
       - alert: UnpollerScrapeFailed

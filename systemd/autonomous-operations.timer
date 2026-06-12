@@ -1,0 +1,16 @@
+[Unit]
+Description=Daily Autonomous Operations Check
+Documentation=file:///home/patriark/containers/.claude/skills/autonomous-operations/SKILL.md
+
+[Timer]
+# Run at 06:30 daily (after backups at 05:00 and forecast at 06:00)
+OnCalendar=*-*-* 06:30:00
+
+# Random delay up to 5 minutes to avoid thundering herd
+RandomizedDelaySec=300
+
+# Run immediately if we missed the scheduled time
+Persistent=true
+
+[Install]
+WantedBy=timers.target

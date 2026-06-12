@@ -1,0 +1,17 @@
+[Unit]
+Description=Daily SLO Performance Snapshot
+Documentation=file:///home/patriark/containers/docs/40-monitoring-and-documentation/guides/slo-framework.md
+After=prometheus.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/containers
+ExecStart=%h/containers/scripts/daily-slo-snapshot.sh
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=daily-slo-snapshot
+
+[Install]
+WantedBy=default.target

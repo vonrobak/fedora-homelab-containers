@@ -1,0 +1,16 @@
+[Unit]
+Description=Weekly Database Maintenance Timer
+Documentation=file:///home/patriark/containers/.claude/remediation/README.md
+
+[Timer]
+# Run every Sunday at 03:00 (low-traffic window)
+OnCalendar=Sun *-*-* 03:00:00
+
+# If the system was off during scheduled time, run on next boot
+Persistent=true
+
+# Randomize start time by up to 5 minutes to avoid thundering herd
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

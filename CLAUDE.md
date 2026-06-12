@@ -14,7 +14,7 @@ This is a digital sovereignty project — self-hosted infrastructure built for i
 
 A learning-focused homelab building production-ready, self-hosted infrastructure using Podman containers managed through systemd quadlets. Platform: Fedora Workstation 43.
 
-**Current Services (29 containers, 16 service groups):**
+**Current Services (37 containers, 17 service groups):**
 - **Core Infrastructure:** Traefik (reverse proxy), CrowdSec (threat intel), Authelia + Redis (SSO + YubiKey MFA)
 - **Applications:** Nextcloud + MariaDB + Redis (file sync), Vaultwarden (passwords), Jellyfin (media), Immich + PostgreSQL + Redis + ML (photos), Gathio + MongoDB (events), Homepage (dashboard)
 - **Audio:** Audiobookshelf (audiobooks/podcasts), Navidrome (music streaming)

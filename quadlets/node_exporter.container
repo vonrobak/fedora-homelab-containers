@@ -8,6 +8,7 @@ Wants=monitoring-network.service network-online.target
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=quay.io/prometheus/node-exporter@sha256:0f422f62c15f154af8d8572b23d623aebfb10cec73a5c654d18f911f3f9df241
 ContainerName=node_exporter
+NoNewPrivileges=true
 HostName=node_exporter
 Network=systemd-monitoring
 

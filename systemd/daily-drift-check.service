@@ -1,0 +1,17 @@
+[Unit]
+Description=Daily Configuration Drift Check
+Documentation=file:///home/patriark/containers/scripts/daily-drift-check.sh
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/patriark/containers/scripts/daily-drift-check.sh
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

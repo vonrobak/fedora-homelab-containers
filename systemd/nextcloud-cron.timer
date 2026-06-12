@@ -1,0 +1,20 @@
+[Unit]
+Description=Nextcloud Background Jobs Timer (Every 5 Minutes)
+Documentation=https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/background_jobs_configuration.html
+
+[Timer]
+# Run every 5 minutes (Nextcloud recommended interval)
+# OnCalendar format: *-*-* *:00/5:00 means every 5 minutes starting at :00
+OnCalendar=*-*-* *:00/5:00
+
+# Add small random delay to avoid exact-minute load spikes
+RandomizedDelaySec=30
+
+# If system was off, run on next boot (catch up missed jobs)
+Persistent=true
+
+# High precision not needed for background jobs
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target

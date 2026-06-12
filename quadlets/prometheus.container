@@ -8,15 +8,17 @@ Wants=monitoring-network.service network-online.target node_exporter.service
 # ADR-030 P6: no publisher signature (tracked unsigned)
 Image=quay.io/prometheus/prometheus@sha256:69f5241418838263316593f7274a304b095c40bcf22e57272865da91bd60a8ac
 ContainerName=prometheus
+NoNewPrivileges=true
 HostName=prometheus
 # Static IPs assigned to ensure consistent DNS resolution
 Network=systemd-reverse_proxy:ip=10.89.2.79
 Network=systemd-monitoring:ip=10.89.4.79
 
 # Prometheus configuration and data
-Volume=%h/containers/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
-Volume=%h/containers/config/prometheus/alerts:/etc/prometheus/alerts:ro,Z
-Volume=%h/containers/config/prometheus/rules:/etc/prometheus/rules:ro,Z
+# Directory mount (GH#276): single-file binds pin the host inode at start, so
+# atomic-replace writes (editor save, sed -i, git checkout) silently orphan the
+# bind and /-/reload applies nothing. Bit 4 times; directory mounts don't.
+Volume=%h/containers/config/prometheus:/etc/prometheus:ro,Z
 Volume=/mnt/btrfs-pool/subvol8-db/prometheus:/prometheus:Z
 
 # Podman secrets for authentication

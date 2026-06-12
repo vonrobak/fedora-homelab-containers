@@ -1,0 +1,17 @@
+[Unit]
+Description=Homelab Maintenance Cleanup
+Documentation=file:///home/patriark/containers/scripts/maintenance-cleanup.sh
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/patriark/containers/scripts/maintenance-cleanup.sh
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

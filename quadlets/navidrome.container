@@ -20,6 +20,7 @@ Wants=network-online.target traefik.service
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
 Image=docker.io/deluan/navidrome@sha256:9fa40b3d8dec43ceb2213d1fa551da3dcfef6ac6d19c2e534efb92527c2bafd2
 ContainerName=navidrome
+NoNewPrivileges=true
 HostName=navidrome
 
 # Networks (reverse_proxy FIRST for internet access)
@@ -65,6 +66,7 @@ RestartSec=10s
 MemoryMax=1G
 MemoryHigh=800M
 MemorySwapMax=512M
+CPUQuota=200%
 
 # ═══════════════════════════════════════════════════════════
 # INSTALLATION
