@@ -77,7 +77,8 @@ with open(path) as f:
     doc = yaml.safe_load(f) or {}
 for s in (doc.get("signers") or []):
     if s.get("repo") == repo:
-        print(s.get("oidc_issuer", "")); print(s.get("identity_regexp", "")); break
+        print(s.get("oidc_issuer", "")); print(s.get("identity_regexp", ""))
+        print(s.get("mechanism", "signature")); break
 PY
 )" || { echo "verify-image-signature: failed to parse $SIGNERS_FILE" >&2; exit 2; }
 
@@ -87,7 +88,12 @@ if [ -z "$entry" ]; then
 fi
 issuer="$(printf '%s\n' "$entry" | sed -n 1p)"
 identity="$(printf '%s\n' "$entry" | sed -n 2p)"
+mechanism="$(printf '%s\n' "$entry" | sed -n 3p)"
 [ -n "$issuer" ] && [ -n "$identity" ] || { echo "verify-image-signature: incomplete signer entry for $repo" >&2; exit 2; }
+case "$mechanism" in
+    signature|attestation) ;;
+    *) echo "verify-image-signature: unknown mechanism '$mechanism' for $repo" >&2; exit 2 ;;
+esac
 
 # --- tooling + connectivity pre-checks (separate network errors from FAILURE) -
 podman image exists "$COSIGN_IMAGE" || {
@@ -97,13 +103,23 @@ if ! skopeo inspect --raw "docker://$ref" >/dev/null 2>&1; then
 fi
 
 # --- verify ------------------------------------------------------------------
-log "🔎 verifying $ref"
+log "🔎 verifying $ref ($mechanism)"
 log "   identity ~ $identity"
 log "   issuer     $issuer"
-out="$(cosign verify \
-        --certificate-identity-regexp "$identity" \
-        --certificate-oidc-issuer "$issuer" \
-        "$ref" 2>&1)"; rc=$?
+if [ "$mechanism" = "attestation" ]; then
+    # Referrer-attached sigstore bundle (GitHub Artifact Attestations): the SLSA
+    # provenance statement's subject digest is checked against $ref by cosign.
+    out="$(cosign verify-attestation --new-bundle-format \
+            --type slsaprovenance1 \
+            --certificate-identity-regexp "$identity" \
+            --certificate-oidc-issuer "$issuer" \
+            "$ref" 2>&1)"; rc=$?
+else
+    out="$(cosign verify \
+            --certificate-identity-regexp "$identity" \
+            --certificate-oidc-issuer "$issuer" \
+            "$ref" 2>&1)"; rc=$?
+fi
 
 if [ $rc -eq 0 ]; then
     log "✅ VERIFIED: $repo signed by expected identity"
