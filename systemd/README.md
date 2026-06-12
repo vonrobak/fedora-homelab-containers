@@ -52,31 +52,15 @@ systemctl --user start auto-doc-update.service
 Uncomment the `ExecStartPost` line in `auto-doc-update.service` to automatically
 commit documentation changes to git after generation.
 
-### predictive-maintenance-check.timer / predictive-maintenance-check.service
+### predictive-maintenance-check (RETIRED 2026-06-12)
 
-**Purpose:** Daily predictive analytics check for resource exhaustion forecasting
-
-**Schedule:** Daily at 06:00 (before autonomous-operations at 06:30, with 2-minute random delay)
-
-**What it runs:** `~/containers/.claude/remediation/scripts/apply-remediation.sh --playbook predictive-maintenance`
-
-**Actions:**
-- Runs predictive analytics for disk, memory, swap resources
-- Forecasts resource exhaustion 7-14 days in advance
-- Logs predictions for trending analysis
-- Triggers preemptive cleanup if critical thresholds predicted
-
-**Metrics collected:**
-- Execution count and success rate
-- Prediction accuracy over time
-- Forecast confidence scores
-
-**Check status:**
-```bash
-systemctl --user list-timers predictive-maintenance-check.timer
-systemctl --user status predictive-maintenance-check.service
-journalctl --user -u predictive-maintenance-check.service -f
-```
+Daily predictive-analytics check, retired by owner decision
+([GH#285](https://github.com/vonrobak/fedora-homelab-containers/issues/285)):
+predictions stale since Nov 2025, daily runs erroring, accuracy never measured,
+zero demonstrated pull (L-061/L-062). Timer + service removed from
+`~/.config/systemd/user/` (they were never committed here); scripts archived in
+`scripts/archived/predictive-analytics/`. The companion
+`daily-resource-forecast.timer` was retired in the same pass.
 
 ### database-maintenance.timer / database-maintenance.service
 

@@ -47,7 +47,6 @@ The `autonomous-operations.timer` runs at **06:30 daily**:
 | service-restart | Low | 5 min | Restart unhealthy services |
 | drift-reconciliation | Medium | 15 min | Reload systemd, restart drifted services |
 | resource-pressure | Medium | 30 min | Clear caches, mitigate memory/swap pressure |
-| predictive-maintenance | Low | 6 hours | Proactive cleanup based on forecasts |
 | self-healing-restart | Low | 10 min | Smart restart with root cause detection |
 | database-maintenance | Medium | 7 days | PostgreSQL VACUUM, Redis analysis |
 
@@ -218,7 +217,6 @@ execute_disk_cleanup() {
 | service-restart | Low | ✅ Yes |
 | drift-reconciliation | Medium | ✅ Yes |
 | resource-pressure | Medium | ✅ Yes |
-| predictive-maintenance | Low | ✅ Yes (via scheduled checks) |
 | self-healing-restart | Low | ✅ Yes (for failed services) |
 | database-maintenance | Medium | 🔧 Manual/scheduled only |
 
