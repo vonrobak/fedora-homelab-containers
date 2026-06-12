@@ -11,6 +11,22 @@ Scripts are archived (not deleted) when:
 
 ## Contents
 
+### predictive-analytics/ + daily-resource-forecast.sh
+
+**Archived:** 2026-06-12
+**Reason:** Retired by owner decision (GH#285, L-061/L-062) — predictions cache
+stale since 2025-11-18, the daily forecast run errored every day, accuracy was
+never measured, and no consumer demonstrated pull. Validation loop deemed not
+worth building for a feature nobody used.
+**Original location:** `scripts/predictive-analytics/`, `scripts/daily-resource-forecast.sh`
+**Decommissioned wiring:** `predictive-maintenance-check.timer` and
+`daily-resource-forecast.timer` (user units, never in git) disabled and removed;
+`predictive-maintenance` playbook moved to `.claude/remediation/playbooks/retired/`
+(local-only); dropped from `write-remediation-metrics.sh` ALL_PLAYBOOKS.
+`autonomous-check.sh` / `autonomous-execute.sh` self-neutralize on the scripts'
+absence by design (empty predictions / stale-log fallback) and were left intact.
+
+
 ### intelligence-2025-11/
 
 **Archived:** 2025-11-28

@@ -77,7 +77,8 @@ jq --argjson exec "$EXECUTION_RECORD" \
     mv "${METRICS_HISTORY}.tmp" "$METRICS_HISTORY"
 
 # Read all historical data to compute aggregated metrics
-ALL_PLAYBOOKS=("disk-cleanup" "drift-reconciliation" "service-restart" "resource-pressure" "predictive-maintenance" "self-healing-restart" "database-maintenance")
+# predictive-maintenance removed 2026-06-12 — playbook retired (GH#285)
+ALL_PLAYBOOKS=("disk-cleanup" "drift-reconciliation" "service-restart" "resource-pressure" "self-healing-restart" "database-maintenance")
 
 # Start building metrics file
 cat > "$METRICS_FILE" << 'EOF'
