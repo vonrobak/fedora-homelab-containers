@@ -104,6 +104,16 @@ Governed by **ADR-030 (Container Supply-Chain Trust Model):** **fully implemente
 
 Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second path. Remaining ADR-030 work: Tier 3/4 (broader signature coverage). Workflow: `scripts/update-before-reboot.sh` before DNF updates (ensures pinned digests present, never re-floats them).
 
+### Git & PR Workflow (merge commits — decided 2026-06-12)
+
+**Merge strategy: merge commits ONLY.** Squash and rebase merge are disabled repo-side. Why: (1) squash replaced owner SSH signatures with GitHub's web-flow key — main's provenance must attest to the owner's key, not GitHub's (ADR-030 ethos); (2) squash broke stacked PRs (ancestry breaks → rebase dance → force-pushes → **live-config flicker**, since this worktree IS the running config; one child PR was irrecoverably closed). Full incident analysis: `docs/98-journals/2026-06-12-lessons-handoff-execution-and-stacked-pr-gotchas.md`.
+
+- **PR-level history view:** `git log --first-parent --oneline` (equivalent to the old squash view)
+- **Revert a merged PR:** `git revert -m 1 <merge-sha>`; individual substance commits revert normally
+- **Branch discipline:** 1–2 clean, SSH-signed commits per branch (no fixup litter — it lands on main forever); branch + PR per work package; stacked branches merge in order with no rebasing needed
+- **Trivia lane:** journals, comment fixes, and doc-only commits may be pushed directly to main (signed) — PR ceremony adds nothing there. Substantive work always gets a PR (the PR body is the owner's review surface)
+- **Live-config rule stands:** never return the worktree to main or rebase across applied-but-unmerged changes — running services read this tree
+
 ### Architecture Decision Records
 
 **Architectural decisions recorded as ADRs — latest is ADR-036** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
