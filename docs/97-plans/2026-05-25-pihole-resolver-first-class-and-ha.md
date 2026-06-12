@@ -26,6 +26,10 @@ first** and **redundancy lands before** the work that depends on it.
 - DHCP is on the **UDM Pro**, not Pi-hole → resolvers can be DNS-only; HA stays simple.
 - IP plan: node A `192.168.1.69` (existing), node B `192.168.1.68` (new reservation),
   **VIP `192.168.1.53`** (mnemonic: port 53). Adjust to taste.
+  > **Adjusted 2026-06-12 (Phase 3 design session):** `.53`/`.68` sit in DHCP/reserved space
+  > (usable static range is `.69–.254`). Final: **node B `192.168.1.169`, VIP `192.168.1.72`**,
+  > VRID 53 keeps the mnemonic. Phase 3 IPs in this doc are superseded by
+  > [the design doc](2026-06-12-adr031-phase3-design-node-b-vip.md) — follow that at build evening.
 
 ---
 

@@ -30,7 +30,8 @@ Secret=smtp_password
 Exec=--config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=info --web.external-url=https://alertmanager.patriark.org
 
 # ADR-031 Phase 0 (D2): independent fallback so a Pi-hole outage can't silence alerting.
-# 9.9.9.9 is INTERIM — replace with the keepalived VIP + both node IPs in Phase 3.
+# 9.9.9.9 is INTERIM — Phase 3 cutover (GH#292, design D-7) replaces these with:
+#   DNS=192.168.1.72   (VIP)  /  DNS=192.168.1.69  /  DNS=192.168.1.169
 DNS=192.168.1.69
 DNS=9.9.9.9
 

@@ -174,3 +174,45 @@ groups:
             podman exec -u www-data nextcloud php occ status
             podman exec -u www-data nextcloud php occ upgrade
             podman exec -u www-data nextcloud php occ maintenance:mode --off
+
+      # --- STAGED: ADR-031 Phase 3 (GH#292) — uncomment at build evening ------
+      # The VIP (192.168.1.72) and node B (raspberrypi-b @ 192.168.1.169) do not
+      # exist yet; activating these now would page immediately. The VIP probe is
+      # the post-cutover PRIMARY availability signal (clients resolve via the VIP);
+      # single-node failures become warnings once redundancy exists (ADR-031 D1).
+      # Failover *events* are logged by the keepalived notify hook to syslog on the
+      # nodes — surfacing those via the Loki syslog path is plan step "log
+      # centralisation (D6)", not a Prometheus alert.
+      #
+      # - alert: DnsVipResolutionBroken
+      #   expr: probe_success{job="blackbox-dns-functional", instance="192.168.1.72"} == 0
+      #   for: 3m
+      #   labels:
+      #     severity: critical
+      #     category: availability
+      #     component: dns_resolver
+      #     service: pihole
+      #   annotations:
+      #     summary: "DNS VIP not resolving — both resolvers or VRRP failed"
+      #     description: |
+      #       The keepalived VIP (192.168.1.72) is not answering functional DNS
+      #       probes for >3m. Under HA this means BOTH nodes are broken or VRRP
+      #       holds the VIP nowhere. Check per-node probes (.69 / .169) to see
+      #       which side survives; alert-path containers fall back to node IPs.
+      #     runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/97-plans/2026-06-12-adr031-phase3-design-node-b-vip.md"
+      #
+      # - alert: PiHoleNodeBDown
+      #   expr: up{job="node-exporter-pi-b"} == 0
+      #   for: 5m
+      #   labels:
+      #     severity: warning
+      #     category: availability
+      #     component: dns_resolver
+      #     service: pihole
+      #   annotations:
+      #     summary: "Resolver node B (raspberrypi-b) unreachable"
+      #     description: |
+      #       node_exporter on raspberrypi-b (192.168.1.169) not responding >5m.
+      #       Redundancy degraded: node A + VIP still serving (else
+      #       DnsVipResolutionBroken fires). Warning severity by design — single
+      #       node loss under HA is not an outage (ADR-031 D1).

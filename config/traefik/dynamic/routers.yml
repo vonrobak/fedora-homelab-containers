@@ -299,7 +299,7 @@ http:
     # Requires an Authelia access_control rule (two_factor, group:admins) — added 2026-05-26.
     # Chain (ADR-031 D4 / ADR-016 — routing here, not labels):
     #   crowdsec -> rate-limit -> ip-allowlist (LAN+WG) -> authelia SSO -> headers
-    # Phase 3: repoint the `pihole` service at the keepalived VIP (192.168.1.53).
+    # Phase 3: repoint the `pihole` service at the keepalived VIP (192.168.1.72; re-addressed 2026-06-12).
     pihole-admin:
       rule: "Host(`pihole.patriark.org`)"
       service: "pihole"
@@ -390,7 +390,8 @@ http:
     # Pi-hole resolver admin (ADR-031 D4). Literal LAN IP — no /etc/hosts (ADR-018)
     # entry needed (that's only for podman aardvark-dns ordering of *container*
     # names). Traefik reaches it via reverse_proxy LAN egress (same path Prometheus
-    # uses to scrape the Pi). Phase 3: change to the keepalived VIP http://192.168.1.53:80.
+    # uses to scrape the Pi). Phase 3 cutover (GH#292): change to the keepalived VIP
+    # http://192.168.1.72:80 (VIP re-addressed 2026-06-12: .53 sat in DHCP space).
     pihole:
       loadBalancer:
         servers:
