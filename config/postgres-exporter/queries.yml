@@ -1,0 +1,27 @@
+# Custom queries for postgres-exporter (postgresql-immich)
+# Mounted via PG_EXPORTER_EXTEND_QUERY_PATH (quadlets/postgres-exporter.container).
+#
+# L-018 mass-deletion canary: the Nov 2025 incident relied on a human noticing an
+# empty library hours later. This exposes the live asset count every scrape (15s)
+# so ImmichAssetCountDrop (alerts/immich-alerts.yml) can fire within minutes.
+#
+# Requires (applied out-of-band, like the prometheus_exporter role itself):
+#   GRANT SELECT ON asset TO prometheus_exporter;
+#   ALTER DEFAULT PRIVILEGES FOR ROLE immich IN SCHEMA public
+#     GRANT SELECT ON TABLES TO prometheus_exporter;
+# The default-privileges line survives Immich migrations that recreate the table.
+# If the grant rots anyway, the query fails, the metric goes absent, and
+# ImmichAssetMetricAbsent fires (guards against silent regression).
+#
+# Table is `asset` (singular) — Immich renamed tables from plural in 2025.
+# `--extend.query-path` is deprecated upstream but fully functional in v0.19.x;
+# revisit if a postgres-exporter bump drops it (alternative: sql_exporter).
+
+immich:
+  query: |
+    SELECT count(*) AS active_assets FROM asset WHERE "deletedAt" IS NULL
+  master: true
+  metrics:
+    - active_assets:
+        usage: "GAUGE"
+        description: "Immich assets not soft-deleted (L-018 mass-deletion canary)"

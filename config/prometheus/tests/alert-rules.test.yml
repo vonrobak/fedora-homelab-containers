@@ -1,0 +1,153 @@
+# promtool unit tests — kill-tests for the WP1 alert work (2026-06-12).
+# Run (alerts/ is a directory mount but prometheus.yml is single-file, so test
+# against a fresh copy inside the container):
+#   podman cp ~/containers/config/prometheus prometheus:/tmp/promtest
+#   podman exec prometheus promtool test rules /tmp/promtest/tests/alert-rules.test.yml
+#   podman exec prometheus rm -rf /tmp/promtest
+rule_files:
+  - ../alerts/immich-alerts.yml
+  - ../alerts/service-health.yml
+  - ../alerts/infrastructure-warnings.yml
+
+evaluation_interval: 1m
+
+tests:
+  # --- L-018: bulk deletion (warning tier) -----------------------------------
+  - interval: 1m
+    input_series:
+      - series: 'immich_active_assets{job="postgres-immich"}'
+        values: '14783x60 14000x29'
+    alert_rule_test:
+      - eval_time: 75m
+        alertname: ImmichAssetCountDrop
+        exp_alerts:
+          - exp_labels:
+              job: postgres-immich
+              severity: warning
+              category: data-integrity
+              component: immich
+            exp_annotations:
+              summary: "Immich asset count dropped by 783 in 1h"
+              description: "Active (non-soft-deleted) Immich assets fell by 783 over the last hour. If this was not a deliberate cleanup, check Immich trash (soft-deleted assets are recoverable until emptied) and recent API activity."
+      # before the drop: must NOT fire
+      - eval_time: 50m
+        alertname: ImmichAssetCountDrop
+        exp_alerts: []
+
+  # --- L-018: mass deletion (critical tier, the Nov 2025 incident shape) -----
+  - interval: 1m
+    input_series:
+      - series: 'immich_active_assets{job="postgres-immich"}'
+        values: '14783x60 2000x29'
+    alert_rule_test:
+      - eval_time: 75m
+        alertname: ImmichMassDeletion
+        exp_alerts:
+          - exp_labels:
+              job: postgres-immich
+              severity: critical
+              category: data-integrity
+              component: immich
+            exp_annotations:
+              summary: "Immich lost >20% of its assets in 1h"
+              description: "Active Immich asset count is 2k, more than 20% below one hour ago. Likely mass deletion. Restore from Immich trash NOW (before it is emptied), then investigate: recent sessions/API keys, mobile app sync state."
+
+  # --- L-018: canary metric absent while exporter up (guards the guard) ------
+  - interval: 1m
+    input_series:
+      - series: 'up{job="postgres-immich"}'
+        values: '1x40'
+    alert_rule_test:
+      - eval_time: 35m
+        alertname: ImmichAssetMetricAbsent
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              category: monitoring
+              component: immich
+            exp_annotations:
+              summary: "Immich asset-count canary metric is absent"
+              description: "immich_active_assets has been absent for 30m while postgres-exporter itself is up. The L-018 mass-deletion canary is blind. Check: exporter logs (podman logs postgres-exporter), SELECT grant on the asset table for prometheus_exporter, and the queries.yml mount."
+
+  # --- L-002: container memory pressure at the service-cgroup level ----------
+  # 0.9 ratio sustained -> fires after for: 30m, with container name extracted.
+  - interval: 1m
+    input_series:
+      - series: 'container_memory_working_set_bytes{id="/user.slice/user-1000.slice/user@1000.service/container.slice/loki.service"}'
+        values: '900000000x40'
+      - series: 'container_spec_memory_limit_bytes{id="/user.slice/user-1000.slice/user@1000.service/container.slice/loki.service"}'
+        values: '1000000000x40'
+    alert_rule_test:
+      - eval_time: 35m
+        alertname: ContainerMemoryPressure
+        exp_alerts:
+          - exp_labels:
+              id: /user.slice/user-1000.slice/user@1000.service/container.slice/loki.service
+              container: loki
+              severity: warning
+              category: performance
+              component: container
+            exp_annotations:
+              summary: "Container loki memory pressure high"
+              description: "loki is using 90% of its MemoryMax limit (sustained 30m). At risk of OOM kill / kernel reclaim spiral. Check for a leak or raise the limit in its quadlet."
+      - eval_time: 20m
+        alertname: ContainerMemoryPressure
+        exp_alerts: []
+
+  # --- crash loop: 3 starts within 30m trips it, steady state does not -------
+  - interval: 1m
+    input_series:
+      - series: 'container_start_time_seconds{id="/user.slice/user-1000.slice/user@1000.service/container.slice/jellyfin.service"}'
+        values: '100x9 200x9 300x9 400x9'
+    alert_rule_test:
+      - eval_time: 35m
+        alertname: ContainerRestarting
+        exp_alerts:
+          - exp_labels:
+              id: /user.slice/user-1000.slice/user@1000.service/container.slice/jellyfin.service
+              container: jellyfin
+              severity: warning
+              category: reliability
+              component: container
+            exp_annotations:
+              summary: "Container jellyfin is crash-looping"
+              description: "jellyfin started 3 times in the last 30 minutes. Check: journalctl --user -u jellyfin.service -n 50"
+
+  # --- container stopped: survives cAdvisor staleness via max_over_time ------
+  - interval: 1m
+    input_series:
+      - series: 'container_last_seen{id="/user.slice/user-1000.slice/user@1000.service/container.slice/gathio.service"}'
+        values: '0+60x30 stale'
+    alert_rule_test:
+      - eval_time: 46m
+        alertname: ContainerNotRunning
+        exp_alerts:
+          - exp_labels:
+              id: /user.slice/user-1000.slice/user@1000.service/container.slice/gathio.service
+              container: gathio
+              severity: warning
+              category: availability
+              component: container
+            exp_annotations:
+              summary: "Container gathio not running"
+              description: "gathio has not been seen by cAdvisor for over 10 minutes. It may have crashed or been stopped. Check: systemctl --user status gathio.service"
+
+  # --- regression: MemoryPressureHigh can fire again post-hysteresis-removal -
+  - interval: 1m
+    input_series:
+      - series: 'node_memory_MemAvailable_bytes{instance="fedora-htpc"}'
+        values: '500000000x20'
+      - series: 'node_memory_MemTotal_bytes{instance="fedora-htpc"}'
+        values: '10000000000x20'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: MemoryPressureHigh
+        exp_alerts:
+          - exp_labels:
+              instance: fedora-htpc
+              severity: warning
+              category: performance
+              component: system
+            exp_annotations:
+              summary: "Memory pressure high"
+              description: "System memory usage is 95%. May cause OOM kills."

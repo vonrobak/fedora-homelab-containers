@@ -2,78 +2,95 @@
 # Created: 2026-01-17 (Phase 4 - Alert Consolidation)
 # Purpose: Service-specific health checks for containers
 # Severity: warning - Indicates service degradation, not total outage
+#
+# REWRITE 2026-06-12 (WP1, closes the L-002 gap): all three original alerts were
+# structurally DEAD:
+#   1. ContainerMemoryPressure used the `and ALERTS{...} != 1` hysteresis pattern.
+#      ALERTS series always have value 1 while active and don't exist otherwise,
+#      so the fire-branch matched nothing, ever. It also filtered on a `name`
+#      label this cAdvisor deployment does not emit (rootless podman: cgroup
+#      hierarchy only, no container-runtime integration — verified 2026-06-12:
+#      zero cadvisor series carry name!="").
+#   2. ContainerRestarting watched container_restarts_total — a kube-state metric
+#      that cAdvisor has never emitted (and which the cadvisor job's keep-list
+#      wouldn't pass anyway). Zero series since creation.
+#   3. ContainerNotRunning compared time()-container_last_seen > 300 with an
+#      instant selector: the series goes STALE 5m after the container stops,
+#      i.e. exactly when the condition would become true. Never pending.
+# All three rewritten against the service-cgroup level
+# (id=~".../container.slice/<svc>.service"), where quadlet MemoryMax limits
+# actually land (the libpod payload cgroups report limit 0). Anti-flap via
+# keep_firing_for (first-class since Prometheus 2.42) instead of ALERTS tricks.
 
 groups:
   - name: service_health
     interval: 30s
     rules:
       # ========================================================================
-      # ALERT 1: Container Restarting (Crash Loop)
+      # ALERT 1: Container Memory Pressure (L-002 — cAdvisor OOM-spiral class)
       # ========================================================================
-      # Only alert on MULTIPLE restarts (crash loop)
-      # Threshold raised from >0 to >0.1 to ignore single intentional restarts
-      - alert: ContainerRestarting
-        expr: rate(container_restarts_total[15m]) > 0.1
-        for: 10m
-        labels:
-          severity: warning
-          category: reliability
-          component: container
-        annotations:
-          summary: "Container {{ $labels.name }} is crash-looping"
-          description: "Container has restarted {{ $value | humanize }} times in the last 15 minutes. This indicates a crash loop."
-
-      # ========================================================================
-      # ALERT 2: Container Memory Pressure
-      # ========================================================================
-      # Warning: Container using >95% of memory limit
-      # Raised threshold from 90% to 95% - databases often run at 85-92% by design
-      # Hysteresis: Fire >95%, resolve <90% (prevents flapping)
+      # working_set (usage minus reclaimable page cache) is what the OOM killer
+      # weighs; raw usage_bytes would false-positive on DBs warming page cache.
+      # Threshold 0.85 / 30m: highest steady-state today is loki at ~59%
+      # (measured 2026-06-12), so 85% sustained for 30m is genuinely anomalous.
+      # Services without MemoryMax report limit ~9.2e18 -> ratio ~0, self-scoping.
       - alert: ContainerMemoryPressure
         expr: |
-          (
-            (
-              container_memory_working_set_bytes{name!~"POD|pause"}
-              /
-              container_spec_memory_limit_bytes{name!~"POD|pause"}
-            ) > 0.95
-            and
-            ALERTS{alertname="ContainerMemoryPressure"} != 1
-          )
-          or
-          (
-            (
-              container_memory_working_set_bytes{name!~"POD|pause"}
-              /
-              container_spec_memory_limit_bytes{name!~"POD|pause"}
-            ) > 0.90
-            and
-            ALERTS{alertname="ContainerMemoryPressure"} == 1
-          )
-          and container_spec_memory_limit_bytes > 0
-        for: 15m
+          label_replace(
+            container_memory_working_set_bytes{id=~".+/container\\.slice/[^/]+\\.service"}
+              / container_spec_memory_limit_bytes{id=~".+/container\\.slice/[^/]+\\.service"},
+            "container", "$1", "id", ".+/container\\.slice/([^/]+)\\.service"
+          ) > 0.85
+        for: 30m
+        keep_firing_for: 15m
         labels:
           severity: warning
           category: performance
           component: container
         annotations:
-          summary: "Container {{ $labels.name }} memory pressure high"
-          description: "Container {{ $labels.name }} is using {{ $value | humanizePercentage }} of its memory limit. May be at risk of OOM kill."
+          summary: "Container {{ $labels.container }} memory pressure high"
+          description: "{{ $labels.container }} is using {{ $value | humanizePercentage }} of its MemoryMax limit (sustained 30m). At risk of OOM kill / kernel reclaim spiral. Check for a leak or raise the limit in its quadlet."
+
+      # ========================================================================
+      # ALERT 2: Container Restarting (Crash Loop)
+      # ========================================================================
+      # container_start_time_seconds changes whenever systemd recreates the
+      # service cgroup, i.e. on every (re)start. >2 changes in 30m = 3+ starts =
+      # crash loop; deliberate single restarts (adopt-baked waves) don't trip it.
+      - alert: ContainerRestarting
+        expr: |
+          label_replace(
+            changes(container_start_time_seconds{id=~".+/container\\.slice/[^/]+\\.service"}[30m]),
+            "container", "$1", "id", ".+/container\\.slice/([^/]+)\\.service"
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: reliability
+          component: container
+        annotations:
+          summary: "Container {{ $labels.container }} is crash-looping"
+          description: "{{ $labels.container }} started {{ $value | humanize }} times in the last 30 minutes. Check: journalctl --user -u {{ $labels.container }}.service -n 50"
 
       # ========================================================================
       # ALERT 3: Container Not Running
       # ========================================================================
-      # Warning: Container not seen for >5 minutes (expected to be up)
+      # max_over_time over a range vector keeps reading samples after the series
+      # goes stale (staleness only affects instant selectors), so this stays
+      # evaluable for the full 1h window after a container stops. Auto-resolves
+      # once the window passes — sustained outages are covered by the
+      # blast-radius / dependency alerts; this is the fast canary.
       - alert: ContainerNotRunning
         expr: |
-          (
-            time() - container_last_seen{name!~"POD|pause"} > 300
-          )
+          label_replace(
+            time() - max_over_time(container_last_seen{id=~".+/container\\.slice/[^/]+\\.service"}[1h]),
+            "container", "$1", "id", ".+/container\\.slice/([^/]+)\\.service"
+          ) > 600
         for: 5m
         labels:
           severity: warning
           category: availability
           component: container
         annotations:
-          summary: "Container {{ $labels.name }} not running"
-          description: "Container {{ $labels.name }} has not been seen for more than 5 minutes. It may have crashed or been stopped."
+          summary: "Container {{ $labels.container }} not running"
+          description: "{{ $labels.container }} has not been seen by cAdvisor for over 10 minutes. It may have crashed or been stopped. Check: systemctl --user status {{ $labels.container }}.service"
