@@ -246,6 +246,13 @@ Layer 2: Threat Intelligence (CrowdSec IP reputation, behavioral analysis)
 Layer 1: Port Filtering (UDM Pro firewall, only 80/443 exposed)
 ```
 
+> **Scoping note (L-024):** the full 7-layer stack applies only to
+> Authelia-protected services. For **native-auth** services (the list under
+> Middleware Chains below), Layer 4 is the application's own login — so the
+> perimeter defense for them is layers 1–3 plus app-layer auth, and their
+> session/device hygiene lives in the app, not in Authelia. Don't read the
+> diagram as "everything sits behind WebAuthn."
+
 ### Middleware Chains (per-service in routers.yml)
 
 **Authelia-protected services:**

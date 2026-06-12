@@ -512,6 +512,15 @@ After selecting a pattern:
 3. Verify prerequisites in validation_checks section
 4. Deploy using command above
 5. Follow post_deployment checklist
+6. **Mandatory smoke-test gate (L-049):** run
+   `verify-deployment.sh <service>` (7-level verification) **and** exercise
+   the real workload end-to-end once (one upload / login / inference /
+   playback). A deployment is not done until both pass — "service started"
+   is not "service works".
+7. **If the route mixes public and protected paths (L-030):** audit every
+   endpoint the app's workflows touch against the Authelia bypass rules
+   *before* calling it deployed — missing bypasses surface as broken user
+   workflows, one at a time.
 
 **Related Documentation:**
 - Skill usage: `.claude/skills/homelab-deployment/SKILL.md`
