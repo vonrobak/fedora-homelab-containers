@@ -89,7 +89,9 @@ http:
     # Average steady-state browse rate; burst absorbs PROPFIND tree walks
     # (Music library is ~2080 PROPFINDs, but client parallelism caps the
     # 1-minute window at a few hundred). Tier 2 staged downsize 1500→800
-    # (2026-04-28); next step pending 7-day soak with zero 429s.
+    # (2026-04-28). RATIFIED 2026-06-12: zero 429s across the full soak +
+    # 6 weeks after; measured 15d peak is 93 req/min (burst = 8.6x headroom).
+    # See docs/98-journals/2026-06-12-rate-limit-soak-closure.md.
     rate-limit-nextcloud:
       rateLimit:
         average: 300
@@ -102,6 +104,10 @@ http:
     # qBittorrent (per-IP post-ADR-022, also behind Authelia SSO).
     # Burst covers initial WebUI page load (~500 resources). Average matches
     # WebUI poll cadence (~30-60 req/min) with headroom.
+    # KEPT at 600 (decided 2026-06-12, closing the T2.2 thread): zero WebUI
+    # traffic in the 15d measurement window, so data-driven sizing (3x p99)
+    # is meaningless here — the structural floor is the ~500-resource initial
+    # page load, and cutting below it breaks the UI's only use case.
     rate-limit-qbittorrent:
       rateLimit:
         average: 100
@@ -114,10 +120,14 @@ http:
     # Immich (per-IP post-ADR-022) — sized for one device's worst-case op.
     # Burst covers rapid timeline scroll / mobile-app upload burst.
     # Average drops from NAT-era 500 to realistic browsing rate.
+    # Tier 2 staged downsize 1500→800 (2026-06-12), batched after Nextcloud's
+    # clean soak per the 2026-04-28 plan. Measured 15d peak: 33 req/min — 800
+    # still gives 24x headroom for an unobserved first-sync/bulk-upload burst.
+    # Watch for 429s; drop further only with sync-window measurements.
     rate-limit-immich:
       rateLimit:
         average: 200
-        burst: 1500
+        burst: 800
         period: 1m
         sourceCriterion:
           ipStrategy:

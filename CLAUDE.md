@@ -80,8 +80,10 @@ Why: Separation of concerns (quadlets = deployment, Traefik = routing), centrali
 2. Add route to `config/traefik/dynamic/routers.yml` with standard middleware chain:
    - **Default (Authelia):** `crowdsec-bouncer@file, rate-limit@file, authelia@file, security-headers@file` — used by qBittorrent, Homepage, Grafana, etc.
    - **Native auth** (Jellyfin, Nextcloud, Immich, Vaultwarden, HA, Navidrome, Audiobookshelf): `crowdsec-bouncer@file, rate-limit-public@file, compression@file, security-headers@file` — NO authelia
+   - **Endpoint audit first (L-030):** if any route mixes public and protected paths (Authelia bypass rules), enumerate every route/API call the app's workflows touch *before* deploying — Gathio needed 5 iterative bypass fixes, each discovered through a broken user workflow
 3. `systemctl --user daemon-reload && systemctl --user enable --now <service>.service`
 4. Verify: `curl -I https://service.patriark.org`
+5. **Smoke-test the real workload (L-049) — deployment is not done until this passes.** Run `verify-deployment.sh <service>` (7-level check, `.claude/skills/homelab-deployment/scripts/`) **plus one end-to-end exercise of the actual workload** (one upload, one login, one inference, one playback). "Service started" is not "service works."
 
 Pattern-based deployment available via `homelab-deployment` skill (see `.claude/skills/homelab-deployment/`).
 

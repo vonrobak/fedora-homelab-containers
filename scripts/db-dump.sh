@@ -21,6 +21,16 @@
 #
 # Schedule: db-dump.timer @ 01:30 (before Urd's 04:00 send).
 # Usage:    db-dump.sh [--service <name>] [--help]
+#
+# ADDING A NEW ENGINE — cold-cache checklist (L-020):
+#   A new dump job MUST be timed cold-cache before being declared viable:
+#   either in the real nightly slot, or after `echo 3 | sudo tee
+#   /proc/sys/vm/drop_caches`. A warm-cache test run lies — the nightly slot
+#   runs right after Prometheus has evicted the page cache, and that is how a
+#   "fast" Loki dump turned into a ~15-minute freeze (pause + 70k-file copy on
+#   a cold cache) before being cut from the engine set (ADR-029).
+#   Also add the engine to db-restore-test.sh, or audit-dump-coverage.sh /
+#   DbDumpCoverageGap will (correctly) flag it.
 ################################################################################
 
 set -uo pipefail   # deliberately NOT -e: per-engine isolation
