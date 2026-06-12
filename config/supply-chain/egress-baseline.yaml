@@ -65,10 +65,20 @@ services:
         added 2026-06-12 after first live alert — served valid api.crowdsec.net cert,
         CAPI ELB rotated into this range)
     - owner: Amazon Technologies Inc.
-      cidrs: [18.128.0.0/9, 34.192.0.0/10, 52.0.0.0/10, 52.208.0.0/13, 52.220.0.0/15, 52.223.128.0/18, 52.64.0.0/12, 54.160.0.0/11, 54.192.0.0/12, 54.208.0.0/13, 54.224.0.0/11, 54.64.0.0/11]
+      cidrs: [18.128.0.0/9, 34.192.0.0/10, 52.0.0.0/10, 52.208.0.0/13, 52.220.0.0/15, 52.223.128.0/18, 52.64.0.0/12, 52.84.0.0/15, 54.160.0.0/11, 54.192.0.0/12, 54.208.0.0/13, 54.224.0.0/11, 54.64.0.0/11]
       note: CrowdSec CAPI/blocklist mirrors (observed 18.200.183.204, 34.240.98.252,
         52.213.228.152, 54.170.104.57, …; 54.192.0.0/12 added 2026-06-12 for
-        54.195.186.68, shadow-window CAPI dest with valid api.crowdsec.net cert)
+        54.195.186.68, shadow-window CAPI dest with valid api.crowdsec.net cert;
+        52.84.0.0/15 added 2026-06-12 evening — hub-cdn.crowdsec.net via CloudFront,
+        TLS-verified against 52.84.50.42, first seen on hardening-wave restart)
+    - owner: Cloudflare, Inc.
+      cidrs: [104.16.0.0/12]
+      note: version.crowdsec.net startup version check (TLS-verified against
+        104.20.41.3, 2026-06-12 — first seen on hardening-wave restart; the
+        baseline's 18-day shadow window never included a crowdsec restart).
+        NOT added — 172.66.154.109 (Cloudflare dedicated-IP space), seen same
+        restart, count=2, no SNI identified (api/blocklists/smoke/app/version/
+        hub candidates all fail). Watch for recurrence before allow-listing.
     - owner: Amazon.com, Inc.
       cidrs: [108.128.0.0/13, 108.136.0.0/14, 63.32.0.0/14, 99.78.128.0/17, 99.80.0.0/15, 99.82.128.0/18]
       note: CrowdSec CAPI/blocklist mirrors (observed 108.128.137.208, 63.34.141.128, 99.81.12.92, …)
@@ -99,6 +109,13 @@ services:
     - owner: Telenor (RIPE)
       cidrs: [157.249.0.0/16]
       note: Norwegian endpoint, likely met.no/yr weather integration (observed 157.249.81.141)
+    - owner: Hetzner (radio-browser.info community server)
+      cidrs: [91.98.4.78/32]
+      note: de1.api.radio-browser.info (PTR-confirmed) — HA radio_browser integration
+        refreshes the station list at startup; first seen on 2026-06-12 hardening-wave
+        restart (the shadow window never included an HA restart). Deliberately /32, not
+        a Hetzner owner range — radio-browser is DNS round-robin over community servers,
+        so sibling servers (de2/fr1/nl1) may fire later; identify before widening.
   immich-server:
     - owner: CLOUDFLARENET-EU
       cidrs: [188.114.97.0/24]
@@ -131,8 +148,10 @@ services:
       cidrs: [2.22.225.0/24]
       note: last.fm scrobbling (observed 2.22.225.107, 2.22.225.83)
     - owner: Cloudflare, Inc.
-      cidrs: [104.16.0.0/12]
-      note: observed 104.21.43.229
+      cidrs: [104.16.0.0/12, 172.64.0.0/13]
+      note: observed 104.21.43.229; 172.64.0.0/13 added 2026-06-12 evening —
+        navidrome.org startup update check (CheckForUpdates default), TLS-verified
+        against 172.67.186.189, first seen on hardening-wave restart
     - owner: Fastly, Inc.
       cidrs: [151.101.0.0/16]
       note: observed 151.101.237.188, 151.101.238.53, …
