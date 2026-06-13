@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-06-12 05:03:55 UTC
+**Generated:** 2026-06-13 19:01:38 UTC
 **System:** fedora-htpc
 
 ---
@@ -183,7 +183,7 @@ Derived from `After=` directives in quadlet files. systemd handles this automati
 
 | Service | Starts After |
 |---------|-------------|
-| alert-discord-relay | traefik |
+| alert-discord-relay | (no ordering constraints) |
 | alertmanager | (no ordering constraints) |
 | audiobookshelf | traefik |
 | authelia | redis-authelia |

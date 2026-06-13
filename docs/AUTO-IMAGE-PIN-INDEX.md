@@ -1,6 +1,6 @@
 # Container Image Pin Index (Auto-Generated)
 
-**Generated:** 2026-06-12 22:09:21 UTC
+**Generated:** 2026-06-13 19:01:40 UTC
 **Source:** `/home/patriark/containers/quadlets` — ADR-030 (Container Supply-Chain Trust Model)
 
 Pins live in each quadlet's `Image=` line (where Podman reads them); this is
