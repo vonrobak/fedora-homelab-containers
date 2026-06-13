@@ -94,7 +94,8 @@ the chosen forge (it does not move the center of gravity).
   - **Do not replace GitHub-side merges with local owner-signed merges on a live-config
     repo** — it reintroduces the live-config flicker window the merge-commit-only
     decision closed (checking out `main` transiently strips applied-but-unmerged changes
-    from the running tree) and trades against direct-push branch protection.
+    from the running tree) and normalizes exercising the admin branch-protection bypass
+    against a live tree (protection itself isn't a hard blocker — see Alternatives).
   - Merge strategy for live-config repos in this tier = **merge-commit-only** (ADR-038, 2026-06-12),
     which preserves the owner's substance signatures rather than squash-replacing them.
 
@@ -168,12 +169,16 @@ New repos are sorted into this table at creation using the D2 rubric.
 
 - **Local owner-signed merges on `containers`.** Would put the owner's *hardware* key on
   the merge node end-to-end (verified on both forges). But the merge requires checking out
-  `main` in a worktree that **is the running config** (transient live-config flicker) and
-  relaxing direct-push branch protection (fat-finger protection that matters precisely
-  because the tree is live). Cost outweighs a cosmetic gain on a private ledger. Rejected
-  for live-config repos — and effectively how Forgejo-first repos already obtain
-  owner-controlled merge provenance, via instance signing (ADR-034), without touching a
-  live tree.
+  `main` in a worktree that **is the running config** (transient live-config flicker).
+  Branch protection is *not* a hard blocker here — the owner's admin **bypass** already
+  lets signed commits reach `main` directly (confirmed 2026-06-13: a trivia-lane push went
+  through, GitHub logging *"Bypassed rule violations … Changes must be made through a pull
+  request"*). The cost is subtler: routinely local-merging would **normalize exercising
+  that bypass**, eroding *in practice* the fat-finger protection that matters precisely
+  because the tree is live — and the live-config flicker remains the hard disqualifier
+  regardless. Cost outweighs a cosmetic gain on a private ledger. Rejected for live-config
+  repos — and effectively how Forgejo-first repos already obtain owner-controlled merge
+  provenance, via instance signing (ADR-034), without touching a live tree.
 
 ## Related
 
