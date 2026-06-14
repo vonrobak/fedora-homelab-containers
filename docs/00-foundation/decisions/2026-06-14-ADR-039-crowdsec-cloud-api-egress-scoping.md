@@ -1,7 +1,10 @@
 # ADR-039: Egress Baseline Scoping for High-Rotation Cloud-API Endpoints (CrowdSec CAPI)
 
 **Date:** 2026-06-14
-**Status:** Proposed
+**Status:** Accepted (implemented 2026-06-14: `scripts/sync-aws-egress-ranges.sh`,
+crowdsec block regenerated in `egress-baseline.yaml` to 67 published `eu-west-1` EC2
+prefixes + static CloudFront/Cloudflare entries, monthly-loop drift check wired into
+`monthly-update.sh`)
 **Amends:** ADR-030 (Container Supply-Chain Trust Model) — refines P7 (Tier 4 egress
 observatory) baseline-scoping policy for one class of destination. ADR-030's principles
 and the egress-baseline.yaml frozen-prefix model are otherwise unchanged.
@@ -97,9 +100,16 @@ a bake interval (ADR-030/036), so the compromise path is narrow; (c) crowdsec is
 IP-reputation layer, not a data store — a low-value exfil target; (d) D4 restores a real
 off-profile signal that the noisy status quo had effectively disabled.
 
-**Implementation status:** Proposed. The sync step and the actual `egress-baseline.yaml`
-regeneration are follow-up work to be done on ratification; #299's `/17` widening stands
-as the interim state until then.
+**Implementation status:** Implemented 2026-06-14. `scripts/sync-aws-egress-ranges.sh`
+fetches `ip-ranges.json` (offline/deliberate), collapses the `eu-west-1` EC2 prefixes,
+and splices them between `BEGIN/END generated` markers in `egress-baseline.yaml` (`--write`;
+default is preview + diff + a coverage self-check that refuses to drop an observed IP).
+The crowdsec block is now 67 published `eu-west-1` EC2 prefixes (superseding #299's hand
+`/17` and the earlier `/9`–`/16` hand ranges) plus two static entries — CloudFront
+(`52.84.0.0/15`, hub-cdn) and Cloudflare (`104.16.0.0/12`, `172.64.0.0/13`, version/hub-data)
+— neither of which has hit the D3 gate. All 80 observed crowdsec destinations classify as
+expected (`egress_unexpected_destination_count{service="crowdsec"} = 0`). A notify-only
+drift check runs in `monthly-update.sh` Step 1.
 
 ## Consequences
 
