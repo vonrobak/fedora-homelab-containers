@@ -117,7 +117,7 @@ Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second p
 
 ### Architecture Decision Records
 
-**Architectural decisions recorded as ADRs — latest is ADR-038** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
+**Architectural decisions recorded as ADRs — latest is ADR-039** (see `docs/*/decisions/` for full details; number new ADRs sequentially from the latest)
 
 **Design-Guiding ADRs (affect future decisions):**
 - **ADR-001:** Rootless Containers — UID 1000, `:Z` SELinux labels on all mounts
@@ -136,6 +136,7 @@ Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second p
 - **ADR-036:** Bake Policy & Exception Lane (amends ADR-030) — P3 cooling-off codified (egress 7d / internal 3d in `bake-policy.yml`), wave-ordered batch adoption via `adopt-baked.sh`, security-release CVE override with `--allow-young`
 - **ADR-037:** Forge Center-of-Gravity (Per-Repo Placement) — each repo has one authoritative forge (GitHub-primary + Forgejo ledger, or Forgejo-first + GitHub mirror); rubric = audience × sovereignty × CI locus; signing/merge consequences (incl. accepting GitHub-signed merge nodes) follow from placement. `containers` = GitHub-primary
 - **ADR-038:** Merge-Commit-Only Strategy — squash/rebase disabled repo-side (squash replaces owner SSH signatures with GitHub's web-flow key and breaks stacked-PR ancestry against the live-config worktree); branch + PR per work package, stacked branches merge in order. Operationalized in the Git & PR Workflow section above
+- **ADR-039 (Proposed):** Egress Baseline Scoping for High-Rotation Cloud-API Endpoints (amends ADR-030 P7) — crowdsec's CAPI is AWS-API-Gateway-fronted in eu-west-1 and rotates across the published pool, so per-IP allow-listing is a re-baseline treadmill (3 PRs in 48h). Scope crowdsec's AWS allowance to AWS-published eu-west-1 ranges via a deliberate offline sync (never hot-path); crowdsec-only carve-out gated by ≥3 benign re-baselines; sharpens the off-region exfil signal rather than discarding it. `infrastructure: []` unchanged. Not yet implemented
 
 Check if an ADR exists before proposing changes. Reference the ADR and explain what changed if suggesting alternatives. New decisions get new ADRs (don't edit existing ones).
 
