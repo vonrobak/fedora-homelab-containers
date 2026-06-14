@@ -53,6 +53,13 @@ echo "── Step 1/5: Discovery sweep (registry digest-diff + bake verdicts) �
 "$SCRIPT_DIR/check-image-updates.sh"
 echo ""
 
+# ADR-039: notify-only check for AWS published-range drift in crowdsec's egress
+# allow-list (deliberate, offline — never writes here). "No change" = nothing to do.
+echo "── Egress range drift (ADR-039): crowdsec AWS eu-west-1 published-range check ──"
+"$SCRIPT_DIR/sync-aws-egress-ranges.sh" 2>&1 | grep -E '^#|No change|ERROR|markers' || true
+echo "   (to apply drift: sync-aws-egress-ranges.sh --write, review the diff, commit)"
+echo ""
+
 echo "── Step 2/5: Adoption plan ──"
 ADOPT_ARGS=()
 [ -n "$ALLOW_YOUNG" ] && ADOPT_ARGS+=(--allow-young "$ALLOW_YOUNG")
