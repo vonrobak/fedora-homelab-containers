@@ -10,7 +10,7 @@
 #   2. adopt-baked.sh --dry-run      show the wave plan
 #   3. [confirm]                     adopt with per-service verification
 #   4. pin index + git commit + PR   (optional merge from here)
-#   5. [confirm] update-before-reboot.sh   snapshot → graceful shutdown → pull
+#   5. [confirm] prepare-for-reboot.sh   manifest → graceful shutdown → image presence
 #   6. print the manual tail: dnf update → reboot → post-reboot-verify.sh
 #
 # Usage: monthly-update.sh [--allow-young svc,svc] [--skip-os]
@@ -129,10 +129,10 @@ if $SKIP_OS; then
 fi
 
 echo "── Step 5/5: OS pre-reboot workflow ──"
-if confirm "Run update-before-reboot.sh (snapshot → graceful shutdown → image ensure)?"; then
-    "$SCRIPT_DIR/update-before-reboot.sh"
+if confirm "Run prepare-for-reboot.sh (manifest → graceful shutdown → image presence)?"; then
+    "$SCRIPT_DIR/prepare-for-reboot.sh"
 else
     echo ""
     echo "Skipped. Container phase is complete; run it later with:"
-    echo "  ./scripts/update-before-reboot.sh"
+    echo "  ./scripts/prepare-for-reboot.sh"
 fi

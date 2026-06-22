@@ -13,7 +13,7 @@
 # RUN AS: your normal user (patriark) — podman/systemctl run natively; the tool
 # uses sudo only for the filesystem ops on subuid-owned data. Prime sudo first.
 #
-# PRECONDITION: run inside the offline window — `scripts/update-before-reboot.sh`
+# PRECONDITION: run inside the offline window — `scripts/prepare-for-reboot.sh`
 # (graceful-shutdown) must have stopped the containers. The tool refuses to
 # migrate a service that is still running.
 #

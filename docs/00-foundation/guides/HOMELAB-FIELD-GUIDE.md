@@ -378,8 +378,8 @@ sudo btrfs scrub status /mnt/btrfs-pool  # Check for errors
 **Strategy:** Most services use `:latest` tags. Databases and Immich are pinned.
 
 ```bash
-# Pre-update: run the update script (pulls new images, manages restarts)
-~/containers/scripts/update-before-reboot.sh
+# Before a reboot: quiesce containers cleanly + snapshot state for verification
+~/containers/scripts/prepare-for-reboot.sh
 
 # Manual single-service update
 podman pull <image>:<tag>
@@ -403,8 +403,8 @@ Full strategy: [ADR-015](../../00-foundation/decisions/2025-12-22-ADR-015-contai
 # Check available updates
 sudo dnf check-update
 
-# Run pre-update container script first
-~/containers/scripts/update-before-reboot.sh
+# Prepare for reboot first (quiesce + manifest)
+~/containers/scripts/prepare-for-reboot.sh
 
 # Apply system updates
 sudo dnf upgrade --refresh
