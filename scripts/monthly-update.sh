@@ -9,7 +9,7 @@
 #   1. check-image-updates.sh        fresh sweep (verdicts, JSON, metrics)
 #   2. adopt-baked.sh --dry-run      show the wave plan
 #   3. [confirm]                     adopt with per-service verification
-#   4. pin index + git commit + PR   (optional squash-merge from here)
+#   4. pin index + git commit + PR   (optional merge from here)
 #   5. [confirm] update-before-reboot.sh   snapshot → graceful shutdown → pull
 #   6. print the manual tail: dnf update → reboot → post-reboot-verify.sh
 #
@@ -109,11 +109,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
             git push -u origin "$branch"
             pr_url="$(gh pr create --fill 2>/dev/null | tail -1)"
             echo "   PR: $pr_url"
-            if confirm "Squash-merge the PR now?"; then
-                gh pr merge --squash --delete-branch
+            if confirm "Merge the PR now (merge commit — ADR-038)?"; then
+                gh pr merge --merge --delete-branch
                 echo "   ✓ merged; back on $(git branch --show-current)"
             else
-                echo "   PR left open — merge when ready: gh pr merge $pr_url --squash --delete-branch"
+                echo "   PR left open — merge when ready: gh pr merge $pr_url --merge --delete-branch"
             fi
         else
             echo "   ⚠️  Adopted pins are UNCOMMITTED — the git-revert rollback path"
