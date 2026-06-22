@@ -41,9 +41,9 @@ What do you need to do?
 │   ├─ Clear swap → ./scripts/clear-swap-memory.sh
 │   └─ Rotate logs → ./scripts/rotate-journal-export.sh
 │
-├─ Update containers / prepare for reboot?
-│   └─ ./scripts/update-before-reboot.sh
-│       (orchestrates: snapshot → health gate → graceful shutdown → pull → prune)
+├─ Prepare for reboot?
+│   └─ ./scripts/prepare-for-reboot.sh
+│       (orchestrates: state manifest → graceful shutdown → pinned-image presence → prune)
 │
 ├─ Manage backups?
 │   ├─ Daily/weekly snapshots → ./scripts/btrfs-snapshot-backup.sh
@@ -183,27 +183,31 @@ The daily automation follows a deliberate sequence:
 
 ### Update Workflow
 
-Container updates follow a 6-step orchestrated workflow:
+Image updates are **deliberate**, not automated (ADR-030/036). Discovery and
+adoption are separate from the reboot-prep orchestrator:
 
 ```
-update-before-reboot.sh (orchestrator)
-  ├─ 1. pre-update-snapshot.sh      → Capture system state to JSON
-  ├─ 2. pre-update-health-check.sh  → Gate: disk, services, DB, memory
-  ├─ 3. graceful-shutdown.sh        → 6-phase dependency-aware shutdown
-  ├─ 4. podman pull / prune         → Update images, clean old layers
-  └─ (after reboot)
-      └─ post-reboot-verify.sh      → Compare against pre-update snapshot
-          └─ post-update-health-check.sh → Verify services + NC DB upgrade
+Image updates (deliberate — ADR-030/036):
+  monthly-update.sh
+    ├─ check-image-updates.sh   → skopeo digest-diff, bake verdicts (notify-only)
+    └─ adopt-baked.sh           → bake-gated, wave-ordered adoption + per-service verify
 
-podman-auto-update-weekly.timer (Sunday 03:00)
-  ├─ pre-update-health-check.sh (ExecStartPre)
-  ├─ podman auto-update
-  └─ post-update-health-check.sh (ExecStartPost)
+Reboot prep (does NOT update containers):
+prepare-for-reboot.sh (orchestrator)
+  ├─ 1. pre-update-snapshot.sh   → capture state manifest to JSON
+  ├─ 2. graceful-shutdown.sh     → 6-phase dependency-aware shutdown
+  ├─ 3. ensure pinned images present → reboot-readiness; never re-floats (ADR-030)
+  ├─ 4. podman image prune -f    → drop dangling layers
+  └─ (after reboot)
+      └─ post-reboot-verify.sh   → compare against the manifest
+          └─ post-update-health-check.sh → verify services + NC DB upgrade
+
+(The old podman-auto-update-weekly.timer was removed when the fleet was digest-pinned.)
 ```
 
 | Script | Purpose | Notes |
 |--------|---------|-------|
-| `update-before-reboot.sh` | Orchestrator: snapshot → health → shutdown → pull | `--skip-pull`, `--dry-run` |
+| `prepare-for-reboot.sh` | Reboot prep: manifest → graceful shutdown → pinned-image presence → prune (no updates) | `--skip-pull`, `--dry-run` |
 | `pre-update-snapshot.sh` | Capture containers/images state to JSON | Output: `data/update-snapshots/` |
 | `pre-update-health-check.sh` | Pre-flight health gate (exit 1 = abort) | Checks disk, services, DB, memory |
 | `graceful-shutdown.sh` | 6-phase dependency-aware container shutdown | `--dry-run` supported |

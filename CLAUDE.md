@@ -102,7 +102,7 @@ Governed by **ADR-030 (Container Supply-Chain Trust Model):** **all four tiers i
 - **Immich:** server + ML + postgres version-locked as a set (tight coupling)
 - **Local builds** (proton-bridge, alert-discord-relay): Tier 2 — built locally from digest-pinned bases, no registry trust
 
-Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second path. Remaining ADR-030 work: signer-coverage growth — periodically re-survey publishers (`config/supply-chain/known-unsigned.md` has the procedure; 2/33 verified as of 2026-06-13: home-assistant, vaultwarden). Workflow: `scripts/update-before-reboot.sh` before DNF updates (ensures pinned digests present, never re-floats them).
+Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second path. Remaining ADR-030 work: signer-coverage growth — periodically re-survey publishers (`config/supply-chain/known-unsigned.md` has the procedure; 2/33 verified as of 2026-06-13: home-assistant, vaultwarden). Workflow: `scripts/prepare-for-reboot.sh` before DNF updates (manifest → graceful shutdown → ensures pinned digests present, never re-floats them; chained as `monthly-update.sh` step 5).
 
 ### Git & PR Workflow (merge commits — ADR-038, decided 2026-06-12)
 

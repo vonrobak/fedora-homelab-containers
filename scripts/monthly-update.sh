@@ -9,8 +9,8 @@
 #   1. check-image-updates.sh        fresh sweep (verdicts, JSON, metrics)
 #   2. adopt-baked.sh --dry-run      show the wave plan
 #   3. [confirm]                     adopt with per-service verification
-#   4. pin index + git commit + PR   (optional squash-merge from here)
-#   5. [confirm] update-before-reboot.sh   snapshot → graceful shutdown → pull
+#   4. pin index + git commit + PR   (optional merge from here)
+#   5. [confirm] prepare-for-reboot.sh   manifest → graceful shutdown → image presence
 #   6. print the manual tail: dnf update → reboot → post-reboot-verify.sh
 #
 # Usage: monthly-update.sh [--allow-young svc,svc] [--skip-os]
@@ -109,11 +109,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
             git push -u origin "$branch"
             pr_url="$(gh pr create --fill 2>/dev/null | tail -1)"
             echo "   PR: $pr_url"
-            if confirm "Squash-merge the PR now?"; then
-                gh pr merge --squash --delete-branch
+            if confirm "Merge the PR now (merge commit — ADR-038)?"; then
+                gh pr merge --merge --delete-branch
                 echo "   ✓ merged; back on $(git branch --show-current)"
             else
-                echo "   PR left open — merge when ready: gh pr merge $pr_url --squash --delete-branch"
+                echo "   PR left open — merge when ready: gh pr merge $pr_url --merge --delete-branch"
             fi
         else
             echo "   ⚠️  Adopted pins are UNCOMMITTED — the git-revert rollback path"
@@ -129,10 +129,10 @@ if $SKIP_OS; then
 fi
 
 echo "── Step 5/5: OS pre-reboot workflow ──"
-if confirm "Run update-before-reboot.sh (snapshot → graceful shutdown → image ensure)?"; then
-    "$SCRIPT_DIR/update-before-reboot.sh"
+if confirm "Run prepare-for-reboot.sh (manifest → graceful shutdown → image presence)?"; then
+    "$SCRIPT_DIR/prepare-for-reboot.sh"
 else
     echo ""
     echo "Skipped. Container phase is complete; run it later with:"
-    echo "  ./scripts/update-before-reboot.sh"
+    echo "  ./scripts/prepare-for-reboot.sh"
 fi

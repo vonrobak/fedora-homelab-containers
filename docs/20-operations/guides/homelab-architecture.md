@@ -476,11 +476,10 @@ Network=systemd-reverse_proxy.network
 ### Update Workflow
 
 ```bash
-~/containers/scripts/update-before-reboot.sh  # Before DNF updates
-# Uses :latest tags for most services
-# Databases pinned to major version
-# Immich pinned to specific version
-# Rollback via BTRFS snapshots
+~/containers/scripts/prepare-for-reboot.sh  # Before DNF updates: quiesce + manifest
+# Image updates are deliberate (ADR-030/036): ./scripts/monthly-update.sh
+# All images digest-pinned; DBs to major version; Immich version-locked as a set
+# Rollback via git revert of the digest line; BTRFS snapshots as second path
 ```
 
 ---
