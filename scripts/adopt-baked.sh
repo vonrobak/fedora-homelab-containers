@@ -146,6 +146,41 @@ verify_service() {
     else
         echo "    ❌ $svc: active but healthcheck stuck in '$health'"; return 1
     fi
+
+    # Workload smoke (GH#314): HTTP health can stay green while the service's
+    # real path is broken. Assert it; a failure halts the adoption right here.
+    workload_smoke "$svc"
+}
+
+# Smoke-test a service's NON-HTTP workload when it has one. Forgejo 15.0.3
+# shipped the go1.26.4 fix for CVE-2026-39831 (x/crypto/ssh enforces FIDO
+# User-Presence) and silently broke git-over-SSH while :3000 stayed healthy —
+# the mirror push only failed hours later, after a reboot. Probe the SSH push
+# path with the dedicated deploy key: "successfully authenticated" = good,
+# connection-drop/deny = bad.
+workload_smoke() {
+    case "$1" in
+        forgejo)
+            local key="${MIRROR_SSH_KEY:-$HOME/.ssh/id_ed25519_forgejo_mirror}"
+            if [ ! -f "$key" ]; then
+                echo "    ⚠ forgejo: SSH smoke skipped (deploy key $key not on this host)"
+                return 0
+            fi
+            local out
+            out="$(ssh -F none -i "$key" -o IdentitiesOnly=yes -o IdentityAgent=none \
+                       -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+                       -o BatchMode=yes -o ConnectTimeout=8 -p 2222 -T git@127.0.0.1 2>&1 || true)"
+            if grep -q "successfully authenticated" <<< "$out"; then
+                echo "    ✓ forgejo: SSH push path (:2222) authenticates"
+                return 0
+            fi
+            echo "    ❌ forgejo: SSH push path (:2222) BROKEN — the mirror would fail."
+            echo "       probe: $(grep -iE 'closed|denied|authenticated|timeout' <<< "$out" | head -1)"
+            echo "       (Forgejo SSH-auth regression — cf. CVE-2026-39831 / GH#314)"
+            return 1
+            ;;
+        *) return 0 ;;
+    esac
 }
 
 halt() {
