@@ -31,9 +31,17 @@ Secret=ha-prometheus-token,type=mount,target=/run/secrets/ha-prometheus-token
 # systemd-monitoring network. Accepted for this homelab: the external path is
 # Authelia-fronted (routers.yml), only the snapshot endpoint is used, and the
 # dump job pre-cleans orphaned snapshots. See ADR-029.
+#
+# --enable-feature=memory-snapshot-on-shutdown: on a clean SIGTERM (the path
+# graceful-shutdown.sh / prepare-for-reboot.sh always take) Prometheus writes a
+# head-chunk snapshot and loads it on next start INSTEAD of replaying the WAL
+# (~16s of HDD reads on subvol8-db, among the heaviest fleet boot I/O — the very
+# reason this service sits in boot tier C, see ADR-035). Falls back to WAL replay
+# on an unclean stop, so it never hurts. GH#308.
 Exec=--config.file=/etc/prometheus/prometheus.yml \
      --storage.tsdb.path=/prometheus \
      --storage.tsdb.retention.time=15d \
+     --enable-feature=memory-snapshot-on-shutdown \
      --web.console.libraries=/usr/share/prometheus/console_libraries \
      --web.console.templates=/usr/share/prometheus/consoles \
      --web.enable-lifecycle \

@@ -1,14 +1,28 @@
 #!/bin/bash
 # graceful-shutdown.sh
-# Dependency-aware 6-phase graceful shutdown of all homelab containers
+# Dependency-aware, tiered graceful shutdown of all homelab containers.
 #
-# Phases (reverse startup order):
-#   1. Supporting services (exporters, ML, matter)
-#   2. Applications (user-facing services)
-#   3. Infrastructure (monitoring, security)
-#   4. Auth (authentication stack)
-#   5. Data (databases, caches)
-#   6. Gateway (traefik - last to stop, first to start)
+# Fleet membership is DERIVED AT RUNTIME from quadlets/*.container (the systemd
+# source of truth) and classified into shutdown tiers by role — it is NOT a
+# hardcoded list. A hardcoded list silently omits any service deployed after it
+# was last edited: the previous version's static array skipped forgejo-db (a
+# PostgreSQL database) plus 8 other running services, which then fell to the
+# reboot transition instead of being quiesced while the host was up — defeating
+# the script's entire purpose for a database. See GH#307 / lesson L-079.
+#
+# Tiers (reverse startup order — supporting first, gateway last):
+#   1 Supporting     exporters, ML, relays, log shippers
+#   2 Applications   user-facing services (stop before their DBs)   [catch-all]
+#   3 Infrastructure monitoring + security
+#   4 Auth           authentication stack
+#   5 Data           databases & caches (quiesce last-but-one)
+#   6 Gateway        traefik (last to stop, first to start)
+#
+# Classification is by name pattern, first match wins (so *-exporter is caught
+# before the database name patterns — postgres-exporter is tier 1, not tier 5).
+# Anything matching no known role falls to tier 2 (Applications); it still gets
+# stopped and is visible in the roster, never silently skipped. After the run a
+# loud guard fails if ANY container survives (catches non-quadlet orphans too).
 #
 # Usage: ./scripts/graceful-shutdown.sh [--dry-run]
 
@@ -26,22 +40,48 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Phase definitions: name and services
-declare -A PHASES
-PHASES=(
-    [1_name]="Supporting services"
-    [1_services]="alert-discord-relay cadvisor node_exporter promtail unpoller immich-ml"
-    [2_name]="Applications"
-    [2_services]="nextcloud gathio immich-server jellyfin home-assistant vaultwarden audiobookshelf navidrome qbittorrent"
-    [3_name]="Infrastructure"
-    [3_services]="grafana prometheus loki alertmanager crowdsec"
-    [4_name]="Auth"
-    [4_services]="authelia"
-    [5_name]="Data"
-    [5_services]="nextcloud-db nextcloud-redis gathio-db postgresql-immich redis-immich redis-authelia"
-    [6_name]="Gateway"
-    [6_services]="traefik"
+QUADLET_DIR="${QUADLET_DIR:-$HOME/containers/quadlets}"
+
+declare -A TIER_NAME=(
+    [1]="Supporting services"
+    [2]="Applications"
+    [3]="Infrastructure"
+    [4]="Auth"
+    [5]="Data (databases & caches)"
+    [6]="Gateway"
 )
+
+# classify <service> -> tier 1..6. First matching pattern wins.
+classify() {
+    case "$1" in
+        traefik)
+            echo 6 ;;                                              # gateway
+        authelia)
+            echo 4 ;;                                              # auth
+        *-exporter|cadvisor|node_exporter|promtail|unpoller|*-ml|*-relay)
+            echo 1 ;;                                              # supporting
+        prometheus|loki|grafana|alertmanager|crowdsec)
+            echo 3 ;;                                              # infrastructure
+        *-db|*-redis|redis-*|postgres*|postgresql-*|mariadb*|mongo*)
+            echo 5 ;;                                              # data
+        *)
+            echo 2 ;;                                              # apps + catch-all
+    esac
+}
+
+# --- Discover the fleet from quadlet sources -------------------------------
+declare -A SVC_TIER
+shopt -s nullglob
+for f in "$QUADLET_DIR"/*.container; do
+    svc="$(basename "$f" .container)"
+    SVC_TIER["$svc"]="$(classify "$svc")"
+done
+shopt -u nullglob
+
+if [ "${#SVC_TIER[@]}" -eq 0 ]; then
+    echo -e "${RED}No quadlet .container files found in $QUADLET_DIR — refusing to run.${NC}" >&2
+    exit 1
+fi
 
 TOTAL_STOPPED=0
 TOTAL_SKIPPED=0
@@ -73,25 +113,30 @@ stop_service() {
 }
 
 echo "============================================"
-echo "  GRACEFUL SHUTDOWN - 6-Phase Dependency Order"
+echo "  GRACEFUL SHUTDOWN - tiers derived from quadlets/"
 if $DRY_RUN; then
     echo -e "  ${CYAN}(DRY RUN - no services will be stopped)${NC}"
 fi
 echo "============================================"
+echo "  Discovered ${#SVC_TIER[@]} quadlet services"
 echo ""
 
-for phase in 1 2 3 4 5 6; do
-    name="${PHASES[${phase}_name]}"
-    services="${PHASES[${phase}_services]}"
+for tier in 1 2 3 4 5 6; do
+    # Services in this tier, sorted for stable, readable output.
+    mapfile -t svcs < <(
+        for svc in "${!SVC_TIER[@]}"; do
+            [[ "${SVC_TIER[$svc]}" == "$tier" ]] && echo "$svc"
+        done | sort
+    )
+    [ "${#svcs[@]}" -eq 0 ] && continue
 
-    echo -e "${CYAN}Phase $phase: $name${NC}"
-
-    for service in $services; do
+    echo -e "${CYAN}Tier $tier: ${TIER_NAME[$tier]}${NC}"
+    for service in "${svcs[@]}"; do
         stop_service "$service"
     done
 
-    # Brief pause between phases to allow clean TCP teardown
-    if ! $DRY_RUN && [ "$phase" -lt 6 ]; then
+    # Brief pause between tiers to allow clean TCP teardown.
+    if ! $DRY_RUN && [ "$tier" -lt 6 ]; then
         sleep 2
     fi
 
@@ -112,12 +157,15 @@ if [ "$TOTAL_FAILED" -gt 0 ]; then
 fi
 
 if ! $DRY_RUN; then
-    # Verify nothing is running
+    # Loud drift guard: nothing must survive. A container left running here is
+    # either a unit that failed to stop or one with no quadlet behind it (an
+    # orphan) — exactly the silent gap GH#307 closed. Fail, don't whisper.
     REMAINING=$(podman ps --format '{{.Names}}' 2>/dev/null | wc -l)
     if [ "$REMAINING" -gt 0 ]; then
-        echo -e "${YELLOW}Warning: $REMAINING containers still running:${NC}"
+        echo -e "${RED}Drift: $REMAINING container(s) still running after shutdown:${NC}"
         podman ps --format '  {{.Names}} ({{.Status}})' 2>/dev/null
-    else
-        echo -e "${GREEN}All containers stopped successfully.${NC}"
+        echo -e "${YELLOW}If these have no quadlets/*.container, they were never covered.${NC}"
+        exit 1
     fi
+    echo -e "${GREEN}All containers stopped successfully.${NC}"
 fi
