@@ -32,6 +32,19 @@ REMOTE="${MIRROR_REMOTE:-forgejo}"
 METRICS_DIR="${HOME}/containers/data/backup-metrics"
 METRICS_FILE="${METRICS_FILE:-${METRICS_DIR}/forgejo-mirror.prom}"
 
+# SSH identity for the Forgejo loopback push (ADR-032). A DEDICATED, non-FIDO
+# ed25519 deploy key — NOT the FIDO signing key. Forgejo 15.0.3 carries the
+# go1.26.4 fix for CVE-2026-39831: x/crypto/ssh now enforces FIDO User-Presence,
+# so the no-touch signing key's touch-less auth signatures are rejected mid-auth
+# (the connection drops right after it sends the signature) and the push fails.
+# A plain ed25519 key has no User-Presence concept, so it authenticates
+# unattended on the patched server. `-F none` keeps this independent of the
+# (chezmoi-managed) user SSH config so ONLY this one key is ever offered; the
+# explicit ssh:// remote URL supplies host/port/user. Commit signing is a
+# separate client-side path and is unaffected — the FIDO key still signs commits.
+MIRROR_SSH_KEY="${MIRROR_SSH_KEY:-$HOME/.ssh/id_ed25519_forgejo_mirror}"
+export GIT_SSH_COMMAND="ssh -F none -i $MIRROR_SSH_KEY -o IdentitiesOnly=yes -o IdentityAgent=none -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$1] ${*:2}" >&2; }
 
 SUCCESS=0
@@ -68,6 +81,17 @@ finish() {
 trap finish EXIT
 
 cd "$REPO_ROOT" || { log ERROR "repo not found: $REPO_ROOT"; exit 1; }
+
+# Ensure the ledger remote is the explicit ssh:// URL, not the forgejo-local
+# ssh_config alias: with `-F none` in GIT_SSH_COMMAND above an alias would not
+# resolve, and the alias also carries the FIDO signing key (rejected post-CVE).
+# Idempotent; pins host/port/user for the dedicated deploy key.
+FORGEJO_URL="${FORGEJO_URL:-ssh://git@127.0.0.1:2222/patriark/homelab.git}"
+if [[ "$(git remote get-url "$REMOTE" 2>/dev/null)" != "$FORGEJO_URL" ]]; then
+    git remote set-url "$REMOTE" "$FORGEJO_URL" 2>/dev/null \
+        || git remote add "$REMOTE" "$FORGEJO_URL"
+    log INFO "pinned $REMOTE remote URL -> $FORGEJO_URL"
+fi
 
 if ! git fetch --quiet origin main || ! git fetch --quiet "$REMOTE" main; then
     log ERROR "fetch failed (origin or $REMOTE unreachable)"
