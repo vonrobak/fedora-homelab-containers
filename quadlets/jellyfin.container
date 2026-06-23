@@ -4,9 +4,10 @@ After=network-online.target reverse_proxy-network.service media_services-network
 Wants=media_services-network.service network-online.target reverse_proxy-network.service
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
-# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
-Image=docker.io/jellyfin/jellyfin@sha256:1694ff069f0c9dafb283c36765175606866769f5d72f2ed56b6a0f1be922fc37
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-06-23 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = adopt new digest (pin-container-image.sh --adopt), bake, restart.
+# ADR-030 P6: no publisher signature (tracked unsigned)
+Image=docker.io/jellyfin/jellyfin@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
 ContainerName=jellyfin
 NoNewPrivileges=true
 HostName=jellyfin
