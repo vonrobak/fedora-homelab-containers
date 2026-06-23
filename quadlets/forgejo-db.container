@@ -4,8 +4,9 @@ After=network-online.target forgejo-network.service
 Wants=network-online.target forgejo-network.service
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: 16-alpine, resolved 2026-05-23 (index digest, multi-arch)
-Image=docker.io/library/postgres@sha256:16bc17c64a573ef34162af9298258d1aec548232985b33ed7b1eac33ba35c229
+# ADR-030 P2: digest-pinned (integrity). tag: 16-alpine, resolved 2026-06-23 (index digest, multi-arch)
+# ADR-030 P6: no publisher signature (tracked unsigned)
+Image=docker.io/library/postgres@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
 ContainerName=forgejo-db
 NoNewPrivileges=true
 HostName=forgejo-db

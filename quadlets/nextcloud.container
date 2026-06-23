@@ -5,8 +5,9 @@ Wants=network-online.target
 
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: 33, resolved 2026-05-23 (index digest, multi-arch)
-Image=docker.io/library/nextcloud@sha256:b67959acacd54ed2d110e111c8b28c0a87a20129f9427bf5f721a1dc6121decb
+# ADR-030 P2: digest-pinned (integrity). tag: 33, resolved 2026-06-23 (index digest, multi-arch)
+# ADR-030 P6: no publisher signature (tracked unsigned)
+Image=docker.io/library/nextcloud@sha256:fe5166b04f217c9e3a263bfe76eef5e13de0dd3919966827de1b47bae2308b01
 ContainerName=nextcloud
 NoNewPrivileges=true
 
