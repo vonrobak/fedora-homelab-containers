@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-06-13 19:01:39 UTC
-**Total Documents:** 455
+**Generated:** 2026-06-23 16:49:17 UTC
+**Total Documents:** 460
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (32 documents)
+### 00-foundation/ (33 documents)
 
 **Fundamentals and core concepts**
 
@@ -59,6 +59,7 @@
 - ADR-036: [2026-06-10-ADR-036-bake-policy-and-exception-lane](00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md)
 - ADR-038: [2026-06-12-ADR-038-merge-commit-only-strategy](00-foundation/decisions/2026-06-12-ADR-038-merge-commit-only-strategy.md)
 - ADR-037: [2026-06-13-ADR-037-forge-center-of-gravity-per-repo](00-foundation/decisions/2026-06-13-ADR-037-forge-center-of-gravity-per-repo.md)
+- ADR-039: [2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping](00-foundation/decisions/2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping.md)
 - : [README](00-foundation/decisions/fixtures/README.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
@@ -135,7 +136,7 @@
 
 ---
 
-### 30-security/ (17 documents)
+### 30-security/ (19 documents)
 
 **Security architecture, configurations, and incident response**
 
@@ -154,6 +155,8 @@
 - ADR-005: [2025-11-10-ADR-005-authelia-sso-mfa-architecture](30-security/decisions/2025-11-10-ADR-005-authelia-sso-mfa-architecture.md)
 - ADR-006: [2025-11-11-ADR-006-authelia-sso-yubikey-deployment](30-security/decisions/2025-11-11-ADR-006-authelia-sso-yubikey-deployment.md)
 - ADR-008: [2025-11-12-ADR-008-crowdsec-security-architecture](30-security/decisions/2025-11-12-ADR-008-crowdsec-security-architecture.md)
+- ADR-040: [2026-06-14-ADR-040-secrets-substrate-operator-boundary](30-security/decisions/2026-06-14-ADR-040-secrets-substrate-operator-boundary.md)
+- ADR-041: [2026-06-14-ADR-041-secrets-openbao-substrate-boundary](30-security/decisions/2026-06-14-ADR-041-secrets-openbao-substrate-boundary.md)
 
 **Runbooks:**
 - [IR-001-brute-force-attack](30-security/runbooks/IR-001-brute-force-attack.md)
@@ -233,7 +236,7 @@
 
 ---
 
-### 98-journals/ (222 documents)
+### 98-journals/ (223 documents)
 
 **Chronological project history (append-only log)**
 
@@ -241,7 +244,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (58 documents)
+### 99-reports/ (59 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -251,26 +254,17 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-06-09: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
-- 2026-06-11: [2026-06-10-ADR-036-bake-policy-and-exception-lane.md](00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md)
-- 2026-06-13: [2026-06-12-ADR-038-merge-commit-only-strategy.md](00-foundation/decisions/2026-06-12-ADR-038-merge-commit-only-strategy.md)
-- 2026-06-13: [2026-06-13-ADR-037-forge-center-of-gravity-per-repo.md](00-foundation/decisions/2026-06-13-ADR-037-forge-center-of-gravity-per-repo.md)
-- 2026-06-12: [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
-- 2026-06-09: [2026-06-09-ADR-035-boot-time-io-tiering.md](20-operations/decisions/2026-06-09-ADR-035-boot-time-io-tiering.md)
-- 2026-06-12: [autonomous-operations.md](20-operations/guides/autonomous-operations.md)
-- 2026-06-12: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
-- 2026-06-09: [storage-health-monitoring.md](20-operations/guides/storage-health-monitoring.md)
-- 2026-06-12: [2026-05-25-pihole-resolver-first-class-and-ha.md](97-plans/2026-05-25-pihole-resolver-first-class-and-ha.md)
-- 2026-06-07: [2026-06-07-cabinet-cooling-fan-controller-SKETCH.md](97-plans/2026-06-07-cabinet-cooling-fan-controller-SKETCH.md)
-- 2026-06-12: [2026-06-12-adr031-phase3-design-node-b-vip.md](97-plans/2026-06-12-adr031-phase3-design-node-b-vip.md)
-- 2026-06-12: [2026-06-12-strategic-development-trajectories-2026H2.md](97-plans/2026-06-12-strategic-development-trajectories-2026H2.md)
-- 2026-06-09: [2026-06-09-adr029-phase-b-db-migration-nocow.md](98-journals/2026-06-09-adr029-phase-b-db-migration-nocow.md)
-- 2026-06-09: [2026-06-09-reboot-io-storm-not-podman-deathloop.md](98-journals/2026-06-09-reboot-io-storm-not-podman-deathloop.md)
-- 2026-06-09: [2026-06-09-storage-health-monitoring.md](98-journals/2026-06-09-storage-health-monitoring.md)
-- 2026-06-12: [2026-06-12-audit-execution-meta-lessons.md](98-journals/2026-06-12-audit-execution-meta-lessons.md)
-- 2026-06-12: [2026-06-12-handoff-post-audit-followups.md](98-journals/2026-06-12-handoff-post-audit-followups.md)
-- 2026-06-12: [2026-06-12-lessons-handoff-execution-and-stacked-pr-gotchas.md](98-journals/2026-06-12-lessons-handoff-execution-and-stacked-pr-gotchas.md)
-- 2026-06-12: [2026-06-12-project-supervisor-establishment.md](98-journals/2026-06-12-project-supervisor-establishment.md)
+- 2026-06-22: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
+- 2026-06-22: [automation-reference.md](20-operations/guides/automation-reference.md)
+- 2026-06-22: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
+- 2026-06-22: [2026-06-22-retarget-reboot-prep-verify-before-retire.md](98-journals/2026-06-22-retarget-reboot-prep-verify-before-retire.md)
+- 2026-06-23: [remediation-monthly-202605.md](99-reports/remediation-monthly-202605.md)
+- 2026-06-23: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-06-23: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-06-23: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-06-23: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-06-23: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-06-23: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
@@ -291,6 +285,7 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 **Crowdsec:**
 - Guide: [crowdsec.md](10-services/guides/crowdsec.md)
+- ADR: [ADR-039](00-foundation/decisions/2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping.md)
 - ADR: [ADR-008](30-security/decisions/2025-11-12-ADR-008-crowdsec-security-architecture.md)
 - Quadlet: `~/.config/containers/systemd/crowdsec.container`
 
