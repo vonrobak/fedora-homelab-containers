@@ -60,8 +60,12 @@ import sys, os, time, json, tempfile, ipaddress, subprocess
 snap, yamlp, destp, jsonlp, metricp, shadow_s, strict_s, resolver = sys.argv[1:9]
 shadow = shadow_s == "1"; strict = strict_s == "1"
 now = int(time.time())
-RECENCY   = int(os.environ.get("EGRESS_RECENCY",   str(24*3600)))    # "active" anomaly window
+RECENCY   = int(os.environ.get("EGRESS_RECENCY",   str(24*3600)))    # "recent" window (seen in last 24h)
 RETENTION = int(os.environ.get("EGRESS_RETENTION", str(30*24*3600))) # prune destinations.tsv beyond this
+# An unexpected dest counts as "persistent" (sustained, not a one-off) once its observation
+# span first→last reaches PERSIST_MIN AND it is still recent. A one-off has first==last (span 0)
+# and never qualifies — this is what severs the critical alert from mere 24h state-retention.
+PERSIST_MIN = int(os.environ.get("EGRESS_PERSIST_MIN", str(3600)))   # span (first→last) marking recurrence
 
 try:
     import yaml
@@ -168,13 +172,19 @@ if not shadow:
 
 # --- metrics (whole-file rewrite; detector is the sole writer of egress.prom) -----
 classify_svcs = set(s for (s, *_rest) in rows)
-unexpected_recent = {}
+unexpected_recent = {}      # unexpected dest seen in last RECENCY (24h) — the sticky "recently seen" signal
+unexpected_active = {}      # unexpected dest seen in the window THIS run just folded (last == now) — "right now"
+unexpected_persistent = {}  # unexpected dest recurring across >=PERSIST_MIN AND still recent — "sustained"
 total_recent = {}
 for (svc, ip, port, first, last, count, cls) in rows:
     if now - last <= RECENCY:
         total_recent[svc] = total_recent.get(svc, 0) + 1
         if cls == "unexpected":
             unexpected_recent[svc] = unexpected_recent.get(svc, 0) + 1
+            if last == now:
+                unexpected_active[svc] = unexpected_active.get(svc, 0) + 1
+            if (last - first) >= PERSIST_MIN:
+                unexpected_persistent[svc] = unexpected_persistent.get(svc, 0) + 1
 
 m = []
 m.append("# HELP egress_detector_last_run_timestamp ADR-030 P7 (Tier 4) egress classifier last run (unix seconds).")
@@ -191,10 +201,18 @@ m.append("# TYPE egress_destination_count gauge")
 for svc in sorted(classify_svcs):
     m.append(f'egress_destination_count{{service="{svc}"}} {total_recent.get(svc, 0)}')
 if not shadow:
-    m.append("# HELP egress_unexpected_destination_count Recent public dests NOT in the allow-list, per service (ADR-030 P7). >0 = investigate.")
+    m.append("# HELP egress_unexpected_destination_count Recent (<=24h) public dests NOT in the allow-list, per service (ADR-030 P7). >0 = new/recent destination, investigate (may be a one-off).")
     m.append("# TYPE egress_unexpected_destination_count gauge")
     for svc in sorted(classify_svcs):
         m.append(f'egress_unexpected_destination_count{{service="{svc}"}} {unexpected_recent.get(svc, 0)}')
+    m.append("# HELP egress_unexpected_destination_active Unexpected public dests seen in the LAST detector window (right-now signal), per service. Drops to 0 the window after the dest stops being observed — a one-off shows here for one window only.")
+    m.append("# TYPE egress_unexpected_destination_active gauge")
+    for svc in sorted(classify_svcs):
+        m.append(f'egress_unexpected_destination_active{{service="{svc}"}} {unexpected_active.get(svc, 0)}')
+    m.append("# HELP egress_unexpected_destination_persistent Unexpected public dests recurring across >=EGRESS_PERSIST_MIN seconds AND still recent (ADR-030 P7). >0 = SUSTAINED egress (beaconing/exfil shape), NOT a one-off — this is the signal the critical alert keys on.")
+    m.append("# TYPE egress_unexpected_destination_persistent gauge")
+    for svc in sorted(classify_svcs):
+        m.append(f'egress_unexpected_destination_persistent{{service="{svc}"}} {unexpected_persistent.get(svc, 0)}')
 if swarm:
     m.append("# HELP egress_connection_count Distinct concurrent public peers for peer-swarm services (volume signal).")
     m.append("# TYPE egress_connection_count gauge")
@@ -203,10 +221,11 @@ if swarm:
 atomic_write(metricp, "\n".join(m) + "\n")
 
 total_unexpected = sum(unexpected_recent.values())
+total_persistent = sum(unexpected_persistent.values())
 mode = "shadow" if shadow else "live"
 sys.stderr.write(
     f"detect-egress-anomaly [{mode}]: window_dest={window_dest} "
-    f"tracked={len(rows)} unexpected_recent={total_unexpected} "
+    f"tracked={len(rows)} unexpected_recent={total_unexpected} persistent={total_persistent} "
     f"new_anomaly_events={anomaly_events} swarm={ {s: len(v) for s, v in swarm.items()} }\n")
 
 sys.exit(1 if (strict and not shadow and total_unexpected > 0) else 0)

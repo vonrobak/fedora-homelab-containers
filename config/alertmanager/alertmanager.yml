@@ -87,6 +87,20 @@ route:
       receiver: 'discord-critical'
       repeat_interval: 1h
 
+    # Egress observatory — a NEW/recent unexpected destination is informational
+    # (one-off plugin/metadata fetch, or a provider that needs re-baselining). Notify
+    # ONCE: the underlying gauge stays non-zero for the full 24h recency window, so the
+    # default 4h repeat would re-page ~5x for a single benign event. repeat_interval 24h
+    # ⇒ one ping, then it self-clears. SUSTAINED egress is a separate critical
+    # (EgressUnexpectedDestinationPersistent → severity=critical route, repeat 1h, anytime).
+    # Must precede the generic severity=warning route (first-match wins).
+    - matchers:
+        - alertname = "EgressUnexpectedDestination"
+      receiver: 'discord-warnings'
+      repeat_interval: 24h
+      active_time_intervals:
+        - waking_hours
+
     # Warnings: Discord during waking hours only (7am-11pm)
     - matchers:
         - severity = "warning"

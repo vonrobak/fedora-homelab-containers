@@ -24,6 +24,7 @@ import sys, os, time, re
 destp, yamlp, metricdir, egress_csv = sys.argv[1:5]
 egress_all = [s for s in egress_csv.split(",") if s]
 now = int(time.time())
+RECENCY = int(os.environ.get("EGRESS_RECENCY", str(24*3600)))  # mirror detect-egress-anomaly.sh
 
 try:
     import yaml
@@ -107,8 +108,15 @@ for svc in sorted(egress_all):
         rows = svc_rows.get(svc, [])
         ndest = len(rows)
         unexp = g("egress_unexpected_destination_count", svc)
-        unexp_s = ("✅ 0" if unexp == 0 else f"⚠️ {int(unexp)}") if unexp is not None else (
-            f"{sum(1 for r in rows if r[5]=='unexpected')} (unarmed)" if rows else "—")
+        persist = g("egress_unexpected_destination_persistent", svc)
+        if unexp is None:
+            unexp_s = f"{sum(1 for r in rows if r[5]=='unexpected')} (unarmed)" if rows else "—"
+        elif unexp == 0:
+            unexp_s = "✅ 0"
+        elif persist and persist > 0:
+            unexp_s = f"🔴 {int(unexp)} ({int(persist)} sustained)"
+        else:
+            unexp_s = f"⚠️ {int(unexp)}"
         P(f"| {svc} | classify | {ndest if ndest else '—'} | {unexp_s} | — |")
 P("")
 
@@ -128,16 +136,30 @@ P("")
 # Detailed observed destinations
 P("## Observed destinations (durable state)")
 P("")
+P(f"Class legend: **✅ expected** (in allow-list) · **⚠️ active** (unexpected, seen within "
+  f"{RECENCY//3600}h — counts toward the live metric) · **🔴 sustained** (unexpected and "
+  f"recurring across >=1h — trips the critical alert) · **🕒 retained** (unexpected but last "
+  f"seen >{RECENCY//3600}h ago — kept for forensics until the 30d retention prunes it; NOT in "
+  f"the live metric and NOT alerting).")
+P("")
 classify_seen = [s for s in sorted(svc_rows) if s not in peer_swarm]
 if not classify_seen:
     P("*No classify-service public destinations recorded yet.*")
+PERSIST_MIN = int(os.environ.get("EGRESS_PERSIST_MIN", str(3600)))
 for svc in classify_seen:
     P(f"### {svc}")
     P("")
     P("| Destination | Port | Class | First seen | Last seen | Obs |")
     P("|---|---|---|---|---|---|")
     for ip, port, first, last, count, cls in sorted(svc_rows[svc], key=lambda r: (r[5] != "unexpected", r[0])):
-        mark = "⚠️ unexpected" if cls == "unexpected" else "✅ expected"
+        if cls != "unexpected":
+            mark = "✅ expected"
+        elif (now - last) > RECENCY:
+            mark = "🕒 retained"
+        elif (last - first) >= PERSIST_MIN:
+            mark = "🔴 sustained"
+        else:
+            mark = "⚠️ active"
         P(f"| `{ip}` | {port} | {mark} | {ago(first)} | {ago(last)} | {count} |")
     P("")
 

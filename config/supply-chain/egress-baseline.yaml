@@ -145,6 +145,18 @@ services:
     - owner: Hetzner Online GmbH
       cidrs: [178.104.0.0/15]
       note: observed 178.105.98.131
+    - owner: GitHub, Inc.
+      cidrs: [140.82.112.0/20, 185.199.108.0/22]
+      note: >-
+        Plugin updates pulled from GitHub release assets (Intro Skipper:
+        manifest on intro-skipper.org → DO/Hetzner above, .zip on GitHub).
+        Re-baselined 2026-06-24 after the startup plugin-update task (triggered
+        by the monthly digest-adoption restart, 2026-06-23) reached
+        140.82.121.3 (github.com, in 140.82.112.0/20) and 185.199.109.133
+        (Pages/asset CDN, in 185.199.108.0/22). CIDRs verified against
+        api.github.com/meta. ACCEPTED RISK: GitHub is a common C2/exfil host, so
+        this narrows Tier-4 detection for jellyfin specifically; scoped per-service
+        (not infrastructure[]) and to GitHub's two published ranges only.
   loki:
     - owner: Google LLC
       cidrs: [34.64.0.0/10]
