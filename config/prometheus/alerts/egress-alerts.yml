@@ -11,10 +11,13 @@ groups:
   - name: egress_alerts
     interval: 60s
     rules:
-      # Warning: an egress-tier service connected to a PUBLIC destination not in its
-      # frozen-prefix allow-list (ADR-030 P7). Either a legitimate new destination (a
-      # provider added ranges → re-baseline) or the residual threat this tier exists for:
-      # a compromised image beaconing/exfiltrating. Investigate the JSONL trail.
+      # Warning (informational): an egress-tier service reached a PUBLIC destination not in
+      # its frozen-prefix allow-list (ADR-030 P7) within the last 24h. Usually a legitimate
+      # new destination (provider added ranges, or a one-off like a plugin/metadata fetch →
+      # re-baseline) — but could be the first sighting of the residual threat this tier exists
+      # for. This fires on ANY observation, including a single one-off, so it is intentionally
+      # routed to notify ONCE (Alertmanager repeat_interval: 24h) and auto-resolves when the
+      # 24h recency window lapses. SUSTAINED egress escalates separately (the critical below).
       - alert: EgressUnexpectedDestination
         expr: egress_unexpected_destination_count > 0
         for: 10m
@@ -25,21 +28,26 @@ groups:
         annotations:
           # $labels.service is the real per-service textfile label — preserved by
           # honor_labels: true on the node_exporter scrape job (see prometheus.yml).
-          summary: "Unexpected egress destination from {{ $labels.service }}"
-          description: "{{ $labels.service }} connected to {{ $value }} public destination(s) outside its allow-list (ADR-030 P7). Inspect `data/egress/anomalies.jsonl` (service={{ $labels.service }}). If legitimate, re-baseline: `scripts/egress-baseline.sh` then merge into `config/supply-chain/egress-baseline.yaml`. If not, treat as possible exfiltration from a compromised image."
+          summary: "New/recent unexpected egress destination from {{ $labels.service }}"
+          description: "{{ $labels.service }} reached {{ $value }} public destination(s) outside its allow-list in the last 24h (ADR-030 P7). Often a legitimate change or a one-off (plugin/metadata fetch). Informational — notifies once, will NOT repeat, and self-clears after 24h. Inspect `data/egress/anomalies.jsonl` (service={{ $labels.service }}); if legitimate, re-baseline via `scripts/egress-baseline.sh` → merge into `config/supply-chain/egress-baseline.yaml`. If it recurs across >=1h it escalates to a SUSTAINED critical."
 
-      # Critical: the unexpected destination has persisted for an hour — far past a
-      # transient/legitimate one-off; escalate.
+      # Critical: SUSTAINED unexpected egress. Keys on egress_unexpected_destination_persistent,
+      # which the detector sets only when an unexpected destination's observation span
+      # (first→last) reaches EGRESS_PERSIST_MIN (default 1h) AND it is still recent. This is the
+      # honest persistence signal: a one-off (first==last, span 0) NEVER trips it — unlike the
+      # old `count>0 for:1h`, which fired on every one-off because the 24h recency window kept
+      # the gauge non-zero (it measured state-retention, not network behavior). `for: 5m` is a
+      # light debounce only; the >=1h recurrence is already encoded in the metric.
       - alert: EgressUnexpectedDestinationPersistent
-        expr: egress_unexpected_destination_count > 0
-        for: 1h
+        expr: egress_unexpected_destination_persistent > 0
+        for: 5m
         labels:
           severity: critical
           category: security
           component: egress
         annotations:
-          summary: "PERSISTENT unexpected egress from {{ $labels.service }}"
-          description: "{{ $labels.service }} has held egress to {{ $value }} non-allow-listed public destination(s) for 1h+. Beyond a transient legitimate change — investigate `data/egress/anomalies.jsonl` for possible exfiltration before re-baselining."
+          summary: "SUSTAINED unexpected egress from {{ $labels.service }}"
+          description: "{{ $labels.service }} has connected to {{ $value }} non-allow-listed public destination(s) repeatedly across >=1h and is still active (ADR-030 P7) — a beaconing/exfiltration shape, not a transient one-off. Investigate `data/egress/anomalies.jsonl` (service={{ $labels.service }}) for possible exfiltration from a compromised image BEFORE re-baselining."
 
       # Warning: the collector daemon has stopped sampling (~30s cadence; 5m = ~10 misses).
       # A dead collector means egress is unobserved — the dead-metric lesson (PR #225).
