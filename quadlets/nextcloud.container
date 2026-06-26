@@ -42,7 +42,6 @@ Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud/data:/var/www/html:Z
 # External storage - read-only media (shared with Jellyfin)
 Volume=/mnt/btrfs-pool/subvol3-opptak:/external/opptak:ro,z
 Volume=/mnt/btrfs-pool/subvol4-multimedia:/external/multimedia:ro,z
-Volume=/mnt/btrfs-pool/subvol5-music:/external/music:ro,z
 # REMOVED: /subvol3-opptak/immich mount (redundant - accessible via /external/opptak/immich/)
 # Immich has exclusive :Z access to this subdirectory
 
@@ -50,6 +49,9 @@ Volume=/mnt/btrfs-pool/subvol5-music:/external/music:ro,z
 Volume=/mnt/btrfs-pool/subvol6-tmp/Downloads:/external/downloads:z
 Volume=/mnt/btrfs-pool/subvol1-docs:/external/user-documents:Z
 Volume=/mnt/btrfs-pool/subvol2-pics:/external/user-photos:Z
+# Music: writable for library ingestion via Nextcloud (occ files_external mount 3 readonly=false).
+# SHARED label (:z, not :Z) — Navidrome mounts the same subvol :ro,z. www-data write via POSIX ACL u:100032 (ADR-019).
+Volume=/mnt/btrfs-pool/subvol5-music:/external/music:z
 
 # Networks (reverse_proxy FIRST for internet access!)
 # Static IPs assigned to ensure consistent DNS resolution
