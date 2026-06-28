@@ -34,9 +34,12 @@ Two changes to `config/prometheus/alerts/slo-multiwindow-alerts.yml`, group `den
 
 Ratio alerting is inherently noisy at HA's volume. To *guarantee* a single stray 4xx (e.g. the HA iOS app's periodic `GET /api/ios/config` 404s) can't trip a 10% threshold, the window needs ≥10 requests — but HA averages <1 req/30m, so a guard that strict would effectively disable the alert. The 499 exclusion is the real fix; the guard bump is a modest hardening, not a full solution. An absolute-4xx-count gate would be the cleaner long-term design if these keep recurring.
 
+## Follow-on hardening (same PR)
+
+- **Added a min-traffic guard to Navidrome and Audiobookshelf** (`> 0.01` req/s ≈ 3 req/5m, matching Nextcloud). Both are idle most of the time with session bursts (Navidrome ~0 req/24h at measurement, Audiobookshelf ~278 req/24h, median 0, peak ~34 req/5m) — the same single-event-trip profile HA had, previously unguarded. The ratio is now only evaluated under real use.
+
 ## Side findings (not actioned)
 
-- **Navidrome and Audiobookshelf have no min-traffic guard at all** — same single-event-trip exposure as HA had, pending their (higher) baseline traffic. Noted, not changed in this PR.
 - The repo's `data/traefik-logs/` is a stale orphan (0-byte `access.log`, rotated `.gz` frozen at 2026-01-16). Live logs are on the BTRFS pool (`/mnt/btrfs-pool/subvol7-containers/traefik-logs`, per `quadlets/traefik.container:29`). Harmless; a candidate for deletion.
 
 **Diagnostic note:** Traefik access-log timestamps are **UTC**; the system runs `+0200`. The log's `12:38:59` is `14:38:59` local — reconcile timezones before concluding a log "stopped updating."

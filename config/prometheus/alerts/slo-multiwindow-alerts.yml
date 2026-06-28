@@ -1183,11 +1183,17 @@ groups:
             Check: podman logs home-assistant --tail 100
 
       - alert: NavidromeHigh4xxRate
+        # Min-traffic guard 0.01 req/s (~3 req/5m), matching Nextcloud. Navidrome is
+        # idle most of the time with streaming-session bursts, so without a guard a
+        # single 4xx during a quiet window would show as a high ratio (the HA 499
+        # false-positive class, 2026-06-28). Ratio only evaluated under real use.
         expr: |
           (
             sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"4..", code!="499"}[5m]))
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[5m])), 1e-10)
           ) > 0.10
+          and
+          sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[5m])) > 0.01
         for: 10m
         labels:
           severity: warning
@@ -1208,11 +1214,17 @@ groups:
               {container_name="traefik"} |= "navidrome" | json | status >= 400 | status < 500
 
       - alert: AudiobookshelfHigh4xxRate
+        # Min-traffic guard 0.01 req/s (~3 req/5m), matching Nextcloud. Audiobookshelf
+        # is idle most of the time (~278 req/24h, median 0) with playback-session
+        # bursts; without a guard a single 4xx in a quiet window would dominate the
+        # ratio (the HA 499 false-positive class, 2026-06-28).
         expr: |
           (
             sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"4..", code!="499"}[5m]))
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[5m])), 1e-10)
           ) > 0.10
+          and
+          sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[5m])) > 0.01
         for: 10m
         labels:
           severity: warning
