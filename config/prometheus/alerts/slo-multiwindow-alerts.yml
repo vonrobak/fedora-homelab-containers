@@ -1104,6 +1104,14 @@ groups:
   #   - 429: rate limiting firing (possible attack or misconfigured client)
   #   - 403: middleware misconfiguration
   #   - sustained high 404: broken integration or misconfigured client
+  #
+  # All numerators exclude code 499 (code=~"4..", code!="499"). Traefik logs 499 when
+  # the *client* closes the connection before the response is relayed (backgrounded
+  # app, closed tab, network blip on a long-poll/token-refresh) — a client-side
+  # disconnect, never a server-side client error. Counting it inflated the 4xx ratio
+  # on low-traffic services: a single 499 token refresh once pegged Home Assistant at
+  # 50% (1 of 2 requests in the window) and tripped HomeAssistantHigh4xxRate with no
+  # real fault. See docs/98-journals/2026-06-28-ha-4xx-499-false-positive.md.
   # ===========================================================================
   - name: denylist_services_4xx_compensating
     interval: 1m
@@ -1116,7 +1124,7 @@ groups:
         # during restarts or traffic lulls where a single 4xx would show as 100%.
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"4.."}[5m]))
+            sum(rate(traefik_service_requests_total{exported_service="nextcloud@file", code=~"4..", code!="499"}[5m]))
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="nextcloud@file"}[5m])), 1e-10)
           ) > 0.10
           and
@@ -1145,13 +1153,17 @@ groups:
         # Traefik traffic (~37 req/day). With a 5m window, a single 404 would show as
         # 100% error rate and trigger the alert. The 30m window + minimum traffic guard
         # smooths low-traffic variance while still catching sustained 4xx spikes.
+        # Guard is 0.002 req/s (~3.6 req/30m): the prior 0.001 (~1.8 req/30m) still let
+        # a lone event dominate a 1-2 request window (the 50% false positive on
+        # 2026-06-28). Ratio alerting stays inherently noisy at this volume; the 499
+        # exclusion above is the primary fix, this guard is defense-in-depth.
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"4.."}[30m]))
+            sum(rate(traefik_service_requests_total{exported_service="home-assistant@file", code=~"4..", code!="499"}[30m]))
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])), 1e-10)
           ) > 0.10
           and
-          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])) > 0.001
+          sum(rate(traefik_service_requests_total{exported_service="home-assistant@file"}[30m])) > 0.002
         for: 10m
         labels:
           severity: warning
@@ -1171,11 +1183,17 @@ groups:
             Check: podman logs home-assistant --tail 100
 
       - alert: NavidromeHigh4xxRate
+        # Min-traffic guard 0.01 req/s (~3 req/5m), matching Nextcloud. Navidrome is
+        # idle most of the time with streaming-session bursts, so without a guard a
+        # single 4xx during a quiet window would show as a high ratio (the HA 499
+        # false-positive class, 2026-06-28). Ratio only evaluated under real use.
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"4.."}[5m]))
+            sum(rate(traefik_service_requests_total{exported_service="navidrome@file", code=~"4..", code!="499"}[5m]))
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[5m])), 1e-10)
           ) > 0.10
+          and
+          sum(rate(traefik_service_requests_total{exported_service="navidrome@file"}[5m])) > 0.01
         for: 10m
         labels:
           severity: warning
@@ -1196,11 +1214,17 @@ groups:
               {container_name="traefik"} |= "navidrome" | json | status >= 400 | status < 500
 
       - alert: AudiobookshelfHigh4xxRate
+        # Min-traffic guard 0.01 req/s (~3 req/5m), matching Nextcloud. Audiobookshelf
+        # is idle most of the time (~278 req/24h, median 0) with playback-session
+        # bursts; without a guard a single 4xx in a quiet window would dominate the
+        # ratio (the HA 499 false-positive class, 2026-06-28).
         expr: |
           (
-            sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"4.."}[5m]))
+            sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file", code=~"4..", code!="499"}[5m]))
             / clamp_min(sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[5m])), 1e-10)
           ) > 0.10
+          and
+          sum(rate(traefik_service_requests_total{exported_service="audiobookshelf@file"}[5m])) > 0.01
         for: 10m
         labels:
           severity: warning
