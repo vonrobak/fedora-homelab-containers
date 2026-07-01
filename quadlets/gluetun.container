@@ -44,8 +44,17 @@ Environment=VPN_TYPE=wireguard
 # ProtonVPN's WireGuard interface address is fixed; the private key is the secret.
 Environment=WIREGUARD_ADDRESSES=10.2.0.2/32
 # Server selection — narrow to keep the egress endpoint predictable (ADR-042).
-# Adjust country as desired; leaving broad lets gluetun rotate within ProtonVPN.
-Environment=SERVER_COUNTRIES=Netherlands
+# Estonia chosen for its strong digital-rights posture. Small Proton footprint:
+# only 2 standard P2P servers (EE#13, EE#23, both Tallinn) — the tunnel fails
+# closed (kill-switch) if both are down, so this is deliberate, not a fallback pool.
+Environment=SERVER_COUNTRIES=Estonia
+# CRITICAL for torrenting: restrict to port-forward-enabled (== P2P) servers.
+# Estonia also hosts Secure Core servers (CH-EE, SE-EE) on which ProtonVPN BLOCKS
+# P2P; without this filter gluetun could randomly pick one and torrents would fail
+# with "No P2P traffic permitted". This filter selects EE#13/EE#23 only. It only
+# selects the server; it does NOT enable port forwarding (that's Phase 2's
+# VPN_PORT_FORWARDING=on).
+Environment=PORT_FORWARD_ONLY=on
 # DNS resolves through the tunnel (DoT) — no leak to Pi-hole/LAN.
 Environment=DOT=on
 # Kill-switch firewall: allow the WebUI port inbound + the reverse_proxy subnet

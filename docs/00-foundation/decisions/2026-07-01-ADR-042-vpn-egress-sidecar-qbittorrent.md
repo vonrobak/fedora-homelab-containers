@@ -57,6 +57,18 @@ sharing, with a kill-switch.**
    leaves the router. gluetun's real off-host destination (the VPN endpoint) is added
    to the egress baseline as expected.
 
+**Exit selection (Phase 1 implementation, set 2026-07-01).** Exit country = **Estonia**
+(`SERVER_COUNTRIES=Estonia`), chosen for its strong digital-rights posture. **`PORT_FORWARD_ONLY=on`
+is mandatory, not cosmetic:** gluetun equates port-forward-capable with P2P-enabled, and Estonia's
+Proton footprint is only 5 logical servers — 2 standard P2P (**EE#13, EE#23**, Tallinn) and 3
+**Secure Core** (CH-EE, SE-EE) on which ProtonVPN **blocks P2P**. Without the filter gluetun could
+randomly land on a Secure Core node and torrents would fail "No P2P traffic permitted". This filter
+only *selects* the server; it does not enable port forwarding (Phase 2's `VPN_PORT_FORWARDING=on`).
+Trade-off: only 2 usable servers ⇒ **no in-country fallback** — with the kill-switch, both being down
+means qBittorrent is offline (accepted; monitor tunnel health post-cutover). Note the ProtonVPN
+WireGuard key is **account-wide**, so the country generated in the dashboard need not match
+`SERVER_COUNTRIES` — exit country is a gluetun-side, config-only change (no key regen).
+
 ## Consequences
 
 - **The WAN IP no longer originates torrent traffic** — the presenting problem is

@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-06-23 16:49:12 UTC
+**Generated:** 2026-07-01 22:04:48 UTC
 **System:** fedora-htpc | **Networks:** 11 | **Containers:** 37
 
 ---

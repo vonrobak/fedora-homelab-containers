@@ -22,7 +22,10 @@ Choices already made: **ProtonVPN** (consolidates on Proton; keeps port-forwardi
 - `quadlets/gluetun.container` — the sidecar. Digest-pinned `qmcgaw/gluetun@sha256:b0ee2135…`
   (ADR-030), `NET_ADMIN` + `/dev/net/tun`, kill-switch firewall, ProtonVPN/WireGuard env,
   `Secret=gluetun_wireguard_key`, holds static IP **`10.89.2.85`** (the slot qBittorrent uses today).
-  Default exit country = **Netherlands** (`SERVER_COUNTRIES=Netherlands` — editable before cutover).
+  Exit country = **Estonia** (`SERVER_COUNTRIES=Estonia`, digital-rights posture) **+
+  `PORT_FORWARD_ONLY=on`** — MANDATORY: Estonia's 5 Proton servers include 3 Secure Core (CH-EE/SE-EE)
+  that BLOCK P2P; the filter pins to the 2 standard P2P servers (EE#13/EE#23, Tallinn). Only 2 usable
+  ⇒ no in-country fallback (kill-switch = offline if both down). Editable before cutover.
 - `docs/00-foundation/decisions/2026-07-01-ADR-042-…md` — the decision + trade-offs + deploy gate.
 - `config/gluetun/.gitkeep` — runtime-state dir for the mount.
 
@@ -38,7 +41,8 @@ next daemon-reload / Traefik auto-reload and could break the running service bef
 **1. Get a ProtonVPN WireGuard key.** `account.protonvpn.com` → **Downloads → WireGuard configuration**:
 - Name it e.g. `gluetun-htpc`; platform **GNU/Linux (Router)**.
 - **NAT-PMP / Port Forwarding OFF** (Phase 2 only).
-- Pick a server/country (matches `SERVER_COUNTRIES` in the quadlet; default Netherlands).
+- Server/country choice here is irrelevant: ProtonVPN WG keys are **account-wide**, so gluetun's
+  `SERVER_COUNTRIES=Estonia` selection works with a key generated for any country (no need to match).
 - Create → copy the **`PrivateKey`** line from the generated config. (gluetun needs only the private key.)
 
 **2. Create the podman secret on the host** (run it yourself; the assistant never sees the key). This
