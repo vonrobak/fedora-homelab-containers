@@ -1,0 +1,90 @@
+# ~/.config/containers/systemd/gluetun.container
+# gluetun — VPN egress sidecar for qBittorrent (ADR-042)
+# Created: 2026-07-01
+# Docs: https://github.com/qdm12/gluetun-wiki
+#
+# WHAT: qBittorrent shares THIS container's network namespace
+# (Network=container:gluetun in qbittorrent.container). All qBittorrent traffic
+# exits through gluetun's ProtonVPN WireGuard tunnel. gluetun's firewall is a
+# kill-switch: if the tunnel drops, no traffic leaks — qBittorrent has no other
+# interface. Traefik reaches the qBittorrent WebUI at gluetun's IP:8085.
+
+# ═══════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════
+[Unit]
+Description=gluetun VPN egress sidecar (qBittorrent)
+Documentation=https://github.com/qdm12/gluetun-wiki
+After=network-online.target reverse_proxy-network.service
+Wants=network-online.target reverse_proxy-network.service
+
+# ═══════════════════════════════════════════════════════════
+# CONTAINER CONFIGURATION
+# ═══════════════════════════════════════════════════════════
+[Container]
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-01 (index digest, multi-arch).
+# ADR-030 P1/P4: no AutoUpdate — deliberate updates only (egress-tier: 7d bake per ADR-036).
+# ADR-030 P6: no publisher signature (tracked unsigned).
+Image=docker.io/qmcgaw/gluetun@sha256:b0ee2135e6ba52ad3f102aae9663707cd1c9531485117067a380d3b2b6dd991d
+ContainerName=gluetun
+HostName=gluetun
+# Kill-switch needs the tunnel device + NET_ADMIN to configure it. NoNewPrivileges
+# is kept: explicitly-added caps survive it (it only blocks GAINING new privileges).
+NoNewPrivileges=true
+AddCapability=NET_ADMIN
+AddDevice=/dev/net/tun
+
+# gluetun takes the reverse_proxy slot qBittorrent used to hold, so the Traefik
+# route (http://gluetun:8085) and any /etc/hosts overrides stay a one-line change.
+Network=systemd-reverse_proxy:ip=10.89.2.85
+
+# ── ProtonVPN over WireGuard ───────────────────────────────
+Environment=VPN_SERVICE_PROVIDER=protonvpn
+Environment=VPN_TYPE=wireguard
+# ProtonVPN's WireGuard interface address is fixed; the private key is the secret.
+Environment=WIREGUARD_ADDRESSES=10.2.0.2/32
+# Server selection — narrow to keep the egress endpoint predictable (ADR-042).
+# Adjust country as desired; leaving broad lets gluetun rotate within ProtonVPN.
+Environment=SERVER_COUNTRIES=Netherlands
+# DNS resolves through the tunnel (DoT) — no leak to Pi-hole/LAN.
+Environment=DOT=on
+# Kill-switch firewall: allow the WebUI port inbound + the reverse_proxy subnet
+# (so Traefik can reach the WebUI and gluetun can reply). Everything else that is
+# not the VPN tunnel is dropped.
+Environment=FIREWALL_INPUT_PORTS=8085
+Environment=FIREWALL_OUTBOUND_SUBNETS=10.89.2.0/24
+Environment=TZ=Europe/Oslo
+
+# WireGuard private key from ProtonVPN (Account → WireGuard configuration).
+# Secret handle name is the interface (ADR-041). Target source of truth is OpenBao
+# via htpc-mgmt `secretctl` — but that substrate is NOT live yet (2026-07-01: no
+# :8200, no secretctl). Until it is, this is created like the rest of the fleet:
+#   podman secret create gluetun_wireguard_key -   # paste ProtonVPN PrivateKey, Ctrl-D
+# It then migrates into OpenBao with the others when ADR-041 goes live (same name).
+Secret=gluetun_wireguard_key,type=env,target=WIREGUARD_PRIVATE_KEY
+
+# gluetun runtime state (server lists, port-forward file if enabled later).
+Volume=%h/containers/config/gluetun:/gluetun:Z
+
+# Rely on gluetun's built-in HEALTHCHECK (monitors the tunnel + public IP).
+
+# ═══════════════════════════════════════════════════════════
+# SERVICE BEHAVIOR
+# ═══════════════════════════════════════════════════════════
+[Service]
+# Tier B (default 100) — ADR-035 boot tier. Must be up before qBittorrent (its netns host).
+Slice=container.slice
+Restart=on-failure
+TimeoutStartSec=180
+RestartSec=10s
+
+# Resource Limits (gluetun is light)
+MemoryMax=256M
+MemoryHigh=200M
+CPUQuota=100%
+
+# ═══════════════════════════════════════════════════════════
+# INSTALLATION
+# ═══════════════════════════════════════════════════════════
+[Install]
+WantedBy=default.target
