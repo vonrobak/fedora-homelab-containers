@@ -1,6 +1,6 @@
 # Container Image Pin Index (Auto-Generated)
 
-**Generated:** 2026-06-23 16:49:18 UTC
+**Generated:** 2026-07-01 22:04:56 UTC
 **Source:** `/home/patriark/containers/quadlets` — ADR-030 (Container Supply-Chain Trust Model)
 
 Pins live in each quadlet's `Image=` line (where Podman reads them); this is
@@ -12,8 +12,8 @@ For local builds the `Digest` column shows the **base image** pin (FROM …@sha2
 
 | Metric | Count |
 |--------|-------|
-| Total images | 37 |
-| 🔒 Digest-pinned | 35 |
+| Total images | 38 |
+| 🔒 Digest-pinned | 36 |
 | ⚠️ Floating (mutable tag) | 0 |
 | 🔨 Local builds | 2 |
 | 🔨 Local builds with FLOATING base | 0 |
@@ -41,6 +41,7 @@ For local builds the `Digest` column shows the **base image** pin (FROM …@sha2
 | forgejo | yes | 🔒 pinned | `codeberg.org/forgejo/forgejo` | 15 | `sha256:55bb42bec9ab…` | no | — unsigned |
 | gathio-db | no | 🔒 pinned | `docker.io/library/mongo` | 7 | `sha256:8ecb514b00bd…` | no | — unsigned |
 | gathio | yes | 🔒 pinned | `ghcr.io/lowercasename/gathio` | latest | `sha256:ff66a8d2cc52…` | no | — unsigned |
+| gluetun | yes | 🔒 pinned | `docker.io/qmcgaw/gluetun` | latest | `sha256:b0ee2135e6ba…` | no | — unsigned |
 | grafana | yes | 🔒 pinned | `docker.io/grafana/grafana` | latest | `sha256:5dad0df181cb…` | no | — unsigned |
 | home-assistant | yes | 🔒 pinned | `ghcr.io/home-assistant/home-assistant` | stable | `sha256:d4fbec16196d…` | no | ✓ verified |
 | immich-ml | no | 🔒 pinned | `ghcr.io/immich-app/immich-machine-learning` | v2.7.5 | `sha256:a2501141440f…` | no | — unsigned |

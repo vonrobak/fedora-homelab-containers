@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-06-23 16:49:17 UTC
-**Total Documents:** 460
+**Generated:** 2026-07-01 22:04:55 UTC
+**Total Documents:** 469
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Documentation by Category
 
-### 00-foundation/ (33 documents)
+### 00-foundation/ (34 documents)
 
 **Fundamentals and core concepts**
 
@@ -60,6 +60,7 @@
 - ADR-038: [2026-06-12-ADR-038-merge-commit-only-strategy](00-foundation/decisions/2026-06-12-ADR-038-merge-commit-only-strategy.md)
 - ADR-037: [2026-06-13-ADR-037-forge-center-of-gravity-per-repo](00-foundation/decisions/2026-06-13-ADR-037-forge-center-of-gravity-per-repo.md)
 - ADR-039: [2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping](00-foundation/decisions/2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping.md)
+- ADR-042: [2026-07-01-ADR-042-vpn-egress-sidecar-qbittorrent](00-foundation/decisions/2026-07-01-ADR-042-vpn-egress-sidecar-qbittorrent.md)
 - : [README](00-foundation/decisions/fixtures/README.md)
 - ADR-023: [2026-04-18-ADR-023-btrfs-storage-architecture-databases](00-foundation/decisions/withdrawn/2026-04-18-ADR-023-btrfs-storage-architecture-databases.md)
 
@@ -236,7 +237,7 @@
 
 ---
 
-### 98-journals/ (223 documents)
+### 98-journals/ (228 documents)
 
 **Chronological project history (append-only log)**
 
@@ -244,7 +245,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (59 documents)
+### 99-reports/ (62 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -254,17 +255,19 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-06-22: [HOMELAB-FIELD-GUIDE.md](00-foundation/guides/HOMELAB-FIELD-GUIDE.md)
-- 2026-06-22: [automation-reference.md](20-operations/guides/automation-reference.md)
-- 2026-06-22: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
-- 2026-06-22: [2026-06-22-retarget-reboot-prep-verify-before-retire.md](98-journals/2026-06-22-retarget-reboot-prep-verify-before-retire.md)
-- 2026-06-23: [remediation-monthly-202605.md](99-reports/remediation-monthly-202605.md)
-- 2026-06-23: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-06-23: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-06-23: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
-- 2026-06-23: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
-- 2026-06-23: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-06-23: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-07-01: [2026-07-01-ADR-042-vpn-egress-sidecar-qbittorrent.md](00-foundation/decisions/2026-07-01-ADR-042-vpn-egress-sidecar-qbittorrent.md)
+- 2026-06-27: [2026-06-26-nextcloud-music-external-storage-writable.md](98-journals/2026-06-26-nextcloud-music-external-storage-writable.md)
+- 2026-06-28: [2026-06-28-ha-4xx-499-false-positive.md](98-journals/2026-06-28-ha-4xx-499-false-positive.md)
+- 2026-07-01: [2026-07-01-qbittorrent-vpn-sidecar-handoff.md](98-journals/2026-07-01-qbittorrent-vpn-sidecar-handoff.md)
+- 2026-07-01: [2026-07-01-skill-usage-report.md](99-reports/2026-07-01-skill-usage-report.md)
+- 2026-07-01: [remediation-monthly-202606.md](99-reports/remediation-monthly-202606.md)
+- 2026-07-01: [security-audit-2026-07-01.md](99-reports/security-audit-2026-07-01.md)
+- 2026-07-02: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-07-02: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-07-01: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-07-01: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-07-02: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-07-02: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
