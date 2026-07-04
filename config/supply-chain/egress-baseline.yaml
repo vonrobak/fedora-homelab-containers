@@ -107,11 +107,15 @@ services:
       cidrs: [63.176.0.0/12]
       note: observed 63.181.21.188, 63.181.74.73, 63.182.123.150
     - owner: Amazon (A100 ROW Inc, RIPE eu-central-1 allocation)
-      cidrs: [51.92.0.0/17]
+      cidrs: [51.92.0.0/14, 51.96.0.0/14, 51.100.0.0/15, 51.102.0.0/16]
       note: observed 51.102.84.196 (2026-07-03, persistent alert) — Mill (api.millheat.com)
         and Roborock (api-eu.roborock.com) cloud APIs both resolve into AWS eu-central-1
         and round-robin/rotate IPs within this pool; distinct from the existing 18.x/63.176.x
-        AWS ranges above.
+        AWS ranges above. Whois inetnum is 51.92.0.0-51.102.255.255 (netname
+        US-A100ROW-19930901), which is NOT CIDR-aligned as a single block — the
+        2026-07-03 re-baseline used a /17 that didn't actually contain the observed IP
+        (51.92.0.0/17 only covers .0-.127.255), so the alert kept firing all night;
+        these 4 CIDRs are the exact minimal-block decomposition of the full inetnum range.
     - owner: Cloudflare, Inc.
       cidrs: [104.16.0.0/12, 172.64.0.0/13]
       note: observed 104.26.4.238, 104.26.5.238, 172.67.68.90
