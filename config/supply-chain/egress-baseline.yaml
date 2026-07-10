@@ -171,6 +171,13 @@ services:
     - owner: Google LLC
       cidrs: [34.64.0.0/10]
       note: Grafana Labs usage reporting behind GCLB (observed 34.96.126.106)
+    - owner: Google LLC
+      cidrs: [34.32.0.0/11]
+      note: Grafana Labs usage reporting behind GCLB, 2nd GCP range — same telemetry
+        call as the entry above, rotated onto a non-overlapping Google-owned block
+        (observed 34.49.170.206, 2026-07-09; PTR generic *.bc.googleusercontent.com
+        on both IPs). 2nd of the ADR-039 >=3-rebaseline gate before escalating to a
+        generated Google-published range.
   navidrome:
     - owner: AKAMAI-PA
       cidrs: [2.22.225.0/24]
