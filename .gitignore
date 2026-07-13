@@ -54,12 +54,12 @@ config/jellyfin/transcoding-temp/
 # Automated Reports Directory
 # Contains system-generated reports (intel, resource forecasts, diagnostics)
 # that are regenerated regularly and don't need version control
-docs/99-reports/
+docs/99-reports
 
 # Archived Documentation
 # Superseded/obsolete/closed docs — kept locally for historical context
 # but not version-controlled. See docs/CONTRIBUTING.md for archive conventions.
-docs/90-archive/
+docs/90-archive
 
 # Private notes — suffix ANY filename with `-private.md` to keep it local
 # (not version-controlled), repo-wide. Originally journal-scoped; generalized
@@ -69,14 +69,16 @@ docs/90-archive/
 # Project supervisor docs — situational-awareness synthesis (lessons, status,
 # roadmap) stays local: it aggregates operational detail that doesn't belong
 # in a public repo. (lessons.md briefly existed on GitHub via PR #278.)
-docs/96-project-supervisor/
+docs/96-project-supervisor
 
 # Journals & plans — internal institutional memory (topology, host inventory,
-# incident narrative). Stop-forward decision 2026-07-13: no new files here go
-# public; the 270 already-tracked files stay tracked until the vault migration
-# untracks them (git rm --cached). See obsidian-knowledge-vault-proposal.
-docs/97-plans/
-docs/98-journals/
+# incident narrative). Stop-forward 2026-07-13; untracked (git rm --cached)
+# the same day. All docs/9x dirs are now SYMLINKS into the Huldr knowledge
+# vault (~/Huldr/projects/homelab/, private Forgejo patriark/huldr) — patterns
+# here carry no trailing slash because trailing-slash gitignore patterns match
+# directories only, not symlinks.
+docs/97-plans
+docs/98-journals
 
 # Active-probe posture script — tuned attack tool for this specific perimeter
 # (curated attack paths, CrowdSec burst logic, Region Block negative test).
