@@ -111,7 +111,7 @@ Rollback: `git revert` of the digest line + restart; BTRFS snapshots as second p
 - **PR-level history view:** `git log --first-parent --oneline` (equivalent to the old squash view)
 - **Revert a merged PR:** `git revert -m 1 <merge-sha>`; individual substance commits revert normally
 - **Branch discipline:** 1–2 clean, SSH-signed commits per branch (no fixup litter — it lands on main forever); branch + PR per work package; stacked branches merge in order with no rebasing needed
-- **Trivia lane:** journals, comment fixes, and doc-only commits may be pushed directly to main (signed) — PR ceremony adds nothing there. Substantive work always gets a PR (the PR body is the owner's review surface)
+- **Trivia lane:** comment fixes and doc-only commits to *public* docs may be pushed directly to main (signed) — PR ceremony adds nothing there. Substantive work always gets a PR (the PR body is the owner's review surface). Journals/plans are NOT in this repo anymore — they live in the Huldr vault (see "Internal docs & knowledge vault" below) and commit there, never here
 - **Live-config rule stands:** never return the worktree to main or rebase across applied-but-unmerged changes — running services read this tree
 - **Forgejo ledger (automated — do NOT push manually):** `forgejo-mirror.timer` (hourly) push-mirrors main to the private Forgejo (`patriark/homelab`) via `scripts/mirror-to-forgejo.sh`. The mirror is append-only with integrity gates: non-fast-forward upstream or unsigned/bad-signature commits in the delta BLOCK the mirror and fire `ForgejoMirrorFailed` — treat that as a tamper canary, never `--force` the ledger
 
@@ -153,6 +153,31 @@ Check if an ADR exists before proposing changes. Reference the ADR and explain w
 8. **Observable system** — natural language queries, comprehensive metrics, audit trails
 
 **Lesson capture:** When a session produces a durable, generalizable lesson (incident, postmortem, surprising root cause), append it to `docs/96-project-supervisor/lessons.md` following its "How to add a lesson" protocol. Consult that file before redesigning alerting, storage, security layers, or debugging strategy — it includes superseded approaches not to repeat.
+
+## Internal Docs & Knowledge Vault (2026-07-13)
+
+The five `docs/9x` directories (90-archive, 96-project-supervisor, 97-plans,
+98-journals, 99-reports) are **gitignored symlinks into the Huldr knowledge vault**
+(`~/Huldr/projects/homelab/` — an Obsidian vault, private Forgejo repo
+`patriark/huldr`, bare git dir at `~/.huldr.git`). All original paths still resolve;
+read and write them as before. The boundary is physical: `git add` here cannot stage
+internal docs, and pre-commit check 5 (`scripts/check-vault-boundary.sh`) rejects any
+staged markdown carrying `sensitivity: internal|secret`.
+
+- **New journals/plans:** write to the usual `docs/98-journals/`/`docs/97-plans/`
+  paths, then commit **in the vault**: `git --git-dir=$HOME/.huldr.git add -A && … commit && … push`
+  (or the `huldr` zsh wrapper). Never commit them to this repo.
+- **Frontmatter:** vault docs carry OKF frontmatter — minimum `type:`
+  (Journal/Plan/Report), plus `title`, `sensitivity: internal`, dates. Markdown links,
+  relative paths (no wikilinks). `index.md`/`log.md` are reserved names.
+- **Cross-project docs:** other repos' internal docs live under `~/Huldr/projects/<name>/`
+  (urd, htpc-mgmt, jern-mgmt, selv) — read directly, no submodules/MCP needed.
+- **Gotchas:** gitignore patterns for these dirs must have NO trailing slash
+  (trailing-slash patterns don't match symlinks); a checkout that crosses the 2026-07-13
+  untracking commit (PR #327) destroys the symlinks — recreate them, vault content is
+  safe (L-087). `find`/`rg` in this repo traverse into the vault; plain `find` used by
+  the AUTO-doc generators does not (by design — keeps journal titles out of public
+  artifacts).
 
 ## Common Gotchas
 
@@ -204,7 +229,8 @@ Full script catalog: `docs/20-operations/guides/automation-reference.md`
 
 | Category | Location |
 |----------|----------|
-| Lessons learned | `docs/96-project-supervisor/lessons.md` (L-NNN, incl. superseded; local-only, gitignored) |
+| Lessons learned | `docs/96-project-supervisor/lessons.md` (L-NNN, incl. superseded; symlink into Huldr vault) |
+| Knowledge vault | `~/Huldr` (Obsidian, OKF bundles; git dir `~/.huldr.git` → private Forgejo `patriark/huldr`) |
 | Service catalog | `AUTO-SERVICE-CATALOG.md` (updated daily) |
 | Network topology | `AUTO-NETWORK-TOPOLOGY.md` (diagrams, 8 networks) |
 | Dependency graph | `AUTO-DEPENDENCY-GRAPH.md` (4-tier, critical paths) |
