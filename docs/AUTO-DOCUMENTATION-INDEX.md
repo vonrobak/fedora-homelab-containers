@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-07-01 22:04:55 UTC
-**Total Documents:** 469
+**Generated:** 2026-07-13 20:01:44 UTC
+**Total Documents:** 130
 
 ---
 
@@ -189,55 +189,13 @@
 
 ---
 
-### 97-plans/ (42 documents)
+### 97-plans/ (0 documents)
 
 **Strategic plans and forward-looking projects**
-- 📋 [2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md](97-plans/2025-01-08-unpoller-with-advanced-networks-monitoring-plan.md)
-- 📋 [2025-01-09-strategic-development-trajectories-plan.md](97-plans/2025-01-09-strategic-development-trajectories-plan.md)
-- 📋 [2025-11-10-authelia-implementation-plan.md](97-plans/2025-11-10-authelia-implementation-plan.md)
-- 📋 [2025-11-10-authelia-implementation-plan-revised.md](97-plans/2025-11-10-authelia-implementation-plan-revised.md)
-- 📋 [2025-12-23-remediation-phase-3-roadmap.md](97-plans/2025-12-23-remediation-phase-3-roadmap.md)
-- 📋 [2025-12-30-matter-home-automation-implementation-plan.md](97-plans/2025-12-30-matter-home-automation-implementation-plan.md)
-- 📋 [2025-12-30-nextcloud-security-performance-observability-plan.md](97-plans/2025-12-30-nextcloud-security-performance-observability-plan.md)
-- 📋 [2026-01-04-workflow-improvements-plan.md](97-plans/2026-01-04-workflow-improvements-plan.md)
-- ✅ [2026-01-22-monthly-review-matter-hybrid-approach.md](97-plans/2026-01-22-monthly-review-matter-hybrid-approach.md)
-- 📋 [2026-03-19-fedora-coreos-rebuild-plan.md](97-plans/2026-03-19-fedora-coreos-rebuild-plan.md)
-- 📋 [2026-03-19-nixos-homelab-rebuild-plan.md](97-plans/2026-03-19-nixos-homelab-rebuild-plan.md)
-- 📋 [2026-03-22-urd-btrfs-time-machine-plan.md](97-plans/2026-03-22-urd-btrfs-time-machine-plan.md)
-- 📋 [2026-05-23-tier1-digest-pinning-and-update-deautomation.md](97-plans/2026-05-23-tier1-digest-pinning-and-update-deautomation.md)
-- 📋 [2026-05-23-tier2-build-input-and-repo-hardening.md](97-plans/2026-05-23-tier2-build-input-and-repo-hardening.md)
-- 📋 [2026-05-23-tier3-4-signatures-and-egress-detection-outline.md](97-plans/2026-05-23-tier3-4-signatures-and-egress-detection-outline.md)
-- 📋 [2026-05-24-tier3-signature-verification-deliberate-path.md](97-plans/2026-05-24-tier3-signature-verification-deliberate-path.md)
-- 📋 [2026-05-24-tier4-egress-detection.md](97-plans/2026-05-24-tier4-egress-detection.md)
-- 📋 [2026-05-25-backup-observability.md](97-plans/2026-05-25-backup-observability.md)
-- 📋 [2026-05-25-monitoring-metric-diet.md](97-plans/2026-05-25-monitoring-metric-diet.md)
-- 📋 [2026-05-25-pihole-resolver-first-class-and-ha.md](97-plans/2026-05-25-pihole-resolver-first-class-and-ha.md)
-- 📋 [2026-05-25-slo-alert-coverage.md](97-plans/2026-05-25-slo-alert-coverage.md)
-- 📋 [2026-06-07-cabinet-cooling-fan-controller-SKETCH.md](97-plans/2026-06-07-cabinet-cooling-fan-controller-SKETCH.md)
-- 📋 [2026-06-12-adr031-phase3-design-node-b-vip.md](97-plans/2026-06-12-adr031-phase3-design-node-b-vip.md)
-- 📋 [2026-06-12-strategic-development-trajectories-2026H2.md](97-plans/2026-06-12-strategic-development-trajectories-2026H2.md)
-- 📋 [ADR-REORGANIZATION-PLAN.md](97-plans/ADR-REORGANIZATION-PLAN.md)
-- 📋 [MIGRATION-PLAN-FINAL.md](97-plans/MIGRATION-PLAN-FINAL.md)
-- ✅ [PLAN-1-AUTO-UPDATE-SAFETY-NET.md](97-plans/PLAN-1-AUTO-UPDATE-SAFETY-NET.md)
-- ✅ [PLAN-2-PROACTIVE-AUTO-REMEDIATION.md](97-plans/PLAN-2-PROACTIVE-AUTO-REMEDIATION.md)
-- 📝 [PLAN-GUIDE-ORGANIZATION.md](97-plans/PLAN-GUIDE-ORGANIZATION.md)
-- ✅ [PROJECT-A-DISASTER-RECOVERY-PLAN.md](97-plans/PROJECT-A-DISASTER-RECOVERY-PLAN.md)
-- 📋 [PROJECT-A-IMPLEMENTATION-ROADMAP.md](97-plans/PROJECT-A-IMPLEMENTATION-ROADMAP.md)
-- 📝 [PROJECT-AUTONOMOUS-ORCHESTRATION.md](97-plans/PROJECT-AUTONOMOUS-ORCHESTRATION.md)
-- 📋 [PROJECT-B-SECURITY-HARDENING.md](97-plans/PROJECT-B-SECURITY-HARDENING.md)
-- 📋 [PROJECT-C-AUTO-DOCUMENTATION.md](97-plans/PROJECT-C-AUTO-DOCUMENTATION.md)
-- 📋 [PROJECT-C-AUTO-DOCUMENTATION-REVISED.md](97-plans/PROJECT-C-AUTO-DOCUMENTATION-REVISED.md)
-- 📋 [SESSION-5B-PREDICTIVE-ANALYTICS-PLAN.md](97-plans/SESSION-5B-PREDICTIVE-ANALYTICS-PLAN.md)
-- 📋 [SESSION-5C-NATURAL-LANGUAGE-QUERIES-PLAN.md](97-plans/SESSION-5C-NATURAL-LANGUAGE-QUERIES-PLAN.md)
-- 📋 [SESSION-5D-SKILL-RECOMMENDATION-ENGINE-PLAN.md](97-plans/SESSION-5D-SKILL-RECOMMENDATION-ENGINE-PLAN.md)
-- 📋 [SESSION-5E-BACKUP-INTEGRATION-PLAN.md](97-plans/SESSION-5E-BACKUP-INTEGRATION-PLAN.md)
-- ✅ [SESSION-5-MULTI-SERVICE-ORCHESTRATION-PLAN.md](97-plans/SESSION-5-MULTI-SERVICE-ORCHESTRATION-PLAN.md)
-- 📋 [SESSION-6-AUTONOMOUS-OPERATIONS-PLAN.md](97-plans/SESSION-6-AUTONOMOUS-OPERATIONS-PLAN.md)
-- ✅ [STANDALONE-PROJECTS-INDEX.md](97-plans/STANDALONE-PROJECTS-INDEX.md)
 
 ---
 
-### 98-journals/ (228 documents)
+### 98-journals/ (0 documents)
 
 **Chronological project history (append-only log)**
 
@@ -245,7 +203,7 @@ Complete dated entries documenting the homelab journey. See directory for full c
 
 ---
 
-### 99-reports/ (62 documents)
+### 99-reports/ (0 documents)
 
 **Automated system reports and point-in-time snapshots**
 
@@ -255,19 +213,12 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-07-01: [2026-07-01-ADR-042-vpn-egress-sidecar-qbittorrent.md](00-foundation/decisions/2026-07-01-ADR-042-vpn-egress-sidecar-qbittorrent.md)
-- 2026-06-27: [2026-06-26-nextcloud-music-external-storage-writable.md](98-journals/2026-06-26-nextcloud-music-external-storage-writable.md)
-- 2026-06-28: [2026-06-28-ha-4xx-499-false-positive.md](98-journals/2026-06-28-ha-4xx-499-false-positive.md)
-- 2026-07-01: [2026-07-01-qbittorrent-vpn-sidecar-handoff.md](98-journals/2026-07-01-qbittorrent-vpn-sidecar-handoff.md)
-- 2026-07-01: [2026-07-01-skill-usage-report.md](99-reports/2026-07-01-skill-usage-report.md)
-- 2026-07-01: [remediation-monthly-202606.md](99-reports/remediation-monthly-202606.md)
-- 2026-07-01: [security-audit-2026-07-01.md](99-reports/security-audit-2026-07-01.md)
-- 2026-07-02: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-07-02: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-07-01: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
-- 2026-07-01: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
-- 2026-07-02: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-07-02: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-07-13: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-07-13: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-07-13: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-07-13: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-07-13: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-07-13: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
 
 ---
 
