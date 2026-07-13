@@ -77,10 +77,17 @@ for f in "$QUADLET_DIR"/*.container; do
     repo="${img%@*}"; pinned="${img##*@}"
     tag="$(grep -m1 -oE 'tag: [^,]+' "$f" | sed 's/tag: //')"; [ -n "$tag" ] || tag="latest"
 
-    probe="$(timeout 30 skopeo inspect "docker://${repo}:${tag}" --format '{{.Digest}}|{{.Created}}' 2>/dev/null)"
+    # --no-tags: `inspect` unconditionally paginates the full repo tag list to
+    # populate RepoTags (unused here) even when --format only needs Digest/Created.
+    # immich-machine-learning's tag list is blown up by per-commit x per-hardware-
+    # variant CI tagging (cuda/openvino/armnn/rocm/rknn) and never finishes within
+    # any reasonable timeout without this flag (root-caused 2026-07-13 via
+    # `skopeo --debug inspect`, which showed it looping on tags/list?last=... instead
+    # of returning after the manifest+config fetch that already succeeded).
+    probe="$(timeout 30 skopeo inspect --no-tags "docker://${repo}:${tag}" --format '{{.Digest}}|{{.Created}}' 2>/dev/null)"
     if [ -z "$probe" ]; then
         sleep 2  # registries (esp. GHCR/Docker Hub) throttle bursts — retry once
-        probe="$(timeout 30 skopeo inspect "docker://${repo}:${tag}" --format '{{.Digest}}|{{.Created}}' 2>/dev/null)"
+        probe="$(timeout 30 skopeo inspect --no-tags "docker://${repo}:${tag}" --format '{{.Digest}}|{{.Created}}' 2>/dev/null)"
     fi
     if [ -z "$probe" ]; then
         failed+=("$name (${repo}:${tag})"); continue
