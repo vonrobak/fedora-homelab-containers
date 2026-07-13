@@ -71,6 +71,13 @@ docs/90-archive/
 # in a public repo. (lessons.md briefly existed on GitHub via PR #278.)
 docs/96-project-supervisor/
 
+# Journals & plans — internal institutional memory (topology, host inventory,
+# incident narrative). Stop-forward decision 2026-07-13: no new files here go
+# public; the 270 already-tracked files stay tracked until the vault migration
+# untracks them (git rm --cached). See obsidian-knowledge-vault-proposal.
+docs/97-plans/
+docs/98-journals/
+
 # Active-probe posture script — tuned attack tool for this specific perimeter
 # (curated attack paths, CrowdSec burst logic, Region Block negative test).
 # Low reconstruction cost but publishing it hands adversaries a pre-built
