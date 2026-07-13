@@ -4,10 +4,10 @@ After=network-online.target syslog-network.service traefik.service
 Wants=syslog-network.service network-online.target
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-06-23 (index digest, multi-arch)
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-13 (index digest, multi-arch)
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = adopt new digest (pin-container-image.sh --adopt), bake, restart.
 # ADR-030 P6: no publisher signature (tracked unsigned)
-Image=docker.io/linuxserver/syslog-ng@sha256:53d71945a46f2fa094f7412ef2fe583bece7eee2d91f20afc203eab593b076e9
+Image=docker.io/linuxserver/syslog-ng@sha256:b4ab00e399207db81ddd0bf45aca59ce858ba752ffa949d3dd8a13ca54f4bd0a
 ContainerName=unifi-syslog
 NoNewPrivileges=true
 HostName=unifi-syslog
@@ -33,7 +33,8 @@ Volume=/mnt/btrfs-pool/subvol7-containers/unifi-syslog:/var/log/unifi-syslog:Z
 
 DNS=192.168.1.69
 
-HealthCmd=pgrep -x syslog-ng
+# 4.11.0-r0-ls200 (2026-07-13 adopt): upstream comm changed syslog-ng -> syslog-ng-main, breaking `pgrep -x syslog-ng`; match full cmdline instead.
+HealthCmd=pgrep -f /usr/sbin/syslog-ng
 HealthInterval=60s
 HealthRetries=3
 HealthStartPeriod=30s

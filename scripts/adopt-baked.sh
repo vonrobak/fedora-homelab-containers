@@ -167,7 +167,7 @@ workload_smoke() {
                 return 0
             fi
             local out
-            out="$(ssh -F none -i "$key" -o IdentitiesOnly=yes -o IdentityAgent=none \
+            out="$(ssh -n -F none -i "$key" -o IdentitiesOnly=yes -o IdentityAgent=none \
                        -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
                        -o BatchMode=yes -o ConnectTimeout=8 -p 2222 -T git@127.0.0.1 2>&1 || true)"
             if grep -q "successfully authenticated" <<< "$out"; then

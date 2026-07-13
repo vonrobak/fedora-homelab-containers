@@ -4,9 +4,9 @@ After=network-online.target gathio-network.service
 Wants=gathio-network.service network-online.target
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: 7, resolved 2026-06-23 (index digest, multi-arch)
+# ADR-030 P2: digest-pinned (integrity). tag: 7, resolved 2026-07-13 (index digest, multi-arch)
 # ADR-030 P6: no publisher signature (tracked unsigned)
-Image=docker.io/library/mongo@sha256:8ecb514b00bdcc0bde67ef4e6c330385377a9dc68e24ee94e28c07c891647348
+Image=docker.io/library/mongo@sha256:d5b3ca8c3f3cdce78d44870dc0871b76d5235e9b2ad4ea6bea5d1fbff8027703
 ContainerName=gathio-db
 NoNewPrivileges=true
 HostName=gathio-db
