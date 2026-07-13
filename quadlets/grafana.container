@@ -25,6 +25,9 @@ Environment=GF_AUTH_PROXY_ENABLED=true
 Environment=GF_AUTH_PROXY_HEADER_NAME=X-Forwarded-User
 Environment=GF_AUTH_PROXY_HEADER_PROPERTY=username
 Environment=GF_AUTH_PROXY_AUTO_SIGN_UP=true
+Environment=GF_ANALYTICS_REPORTING_ENABLED=false
+Environment=GF_ANALYTICS_CHECK_FOR_UPDATES=false
+Environment=GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false
 
 # Storage
 Volume=%h/containers/data/grafana:/var/lib/grafana:Z
