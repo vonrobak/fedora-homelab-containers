@@ -4,10 +4,10 @@ After=network-online.target monitoring-network.service
 Wants=monitoring-network.service network-online.target
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-06-23 (index digest, multi-arch)
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-13 (index digest, multi-arch)
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = adopt new digest (pin-container-image.sh --adopt), bake, restart.
 # ADR-030 P6: no publisher signature (tracked unsigned)
-Image=quay.io/prometheus/alertmanager@sha256:af26fbe4dd1886ac0efd7bd55cd9027da262e105b137a376522b7c14c3626e4a
+Image=quay.io/prometheus/alertmanager@sha256:9e082985f56f4c8c9f724e18f2288c6708f472e56a5286b8863d080434ea065d
 ContainerName=alertmanager
 NoNewPrivileges=true
 HostName=alertmanager

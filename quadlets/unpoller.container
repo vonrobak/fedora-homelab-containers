@@ -5,9 +5,10 @@ After=network-online.target reverse_proxy-network.service prometheus.service tra
 Wants=network-online.target reverse_proxy-network.service
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
-# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = resolve new digest, bake, edit, restart.
-Image=ghcr.io/unpoller/unpoller@sha256:bf7bdcc59fcdaa4699687007aa3ec24ddb3c9d9521f392d8c7aa2bea1bdb781a
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-13 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = adopt new digest (pin-container-image.sh --adopt), bake, restart.
+# ADR-030 P6: no publisher signature (tracked unsigned)
+Image=ghcr.io/unpoller/unpoller@sha256:9dcccdc931a6830735f6978caf8cd67699b0dc33e37cf9ef4638611791c4df62
 ContainerName=unpoller
 
 # Configuration
