@@ -42,6 +42,9 @@ Volume=/mnt/btrfs-pool/subvol7-containers/audiobookshelf/metadata:/metadata:Z
 Volume=/mnt/btrfs-pool/subvol4-multimedia/Lydbøker:/audiobooks:ro,z
 Volume=/mnt/btrfs-pool/subvol4-multimedia/Bøker:/ebooks:ro,z
 Volume=/mnt/btrfs-pool/subvol4-multimedia/Podder:/podcasts-archive:ro,z
+# qBittorrent 'utdanning' category save path — never had an ABS library folder,
+# so its 23 items scanned into stale /ebooks library rows with no matching disk path (isMissing=1)
+Volume=/mnt/btrfs-pool/subvol4-multimedia/utdanning:/utdanning:ro,z
 
 # Podcast downloads (writable, shared context under multimedia)
 Volume=/mnt/btrfs-pool/subvol4-multimedia/audiobookshelf:/podcasts:z
