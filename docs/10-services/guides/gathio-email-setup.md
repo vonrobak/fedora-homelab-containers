@@ -68,7 +68,7 @@ https://events.patriark.org/edit/abc123?e=generated-password
 
 3. **Verify Sender Email:**
    - Settings → Sender Authentication → Single Sender Verification
-   - Add: surfaceideology@proton.me
+   - Add: your-account@example.com
    - Check Proton inbox for verification link
 
 4. **Update Gathio Config:**
@@ -80,7 +80,7 @@ nano ~/containers/config/gathio/config.toml
 Update these sections:
 ```toml
 [general]
-email = "surfaceideology@proton.me"
+email = "your-account@example.com"
 mail_service = "sendgrid"
 
 [sendgrid]
@@ -112,7 +112,7 @@ systemctl --user restart gathio.service
 3. **Update config.toml:**
 ```toml
 [general]
-email = "surfaceideology@proton.me"
+email = "your-account@example.com"
 mail_service = "nodemailer"
 
 [nodemailer]
@@ -132,7 +132,7 @@ Your current Gmail/Outlook won't work (passwordless auth = no app passwords).
 
 **Workaround:** Create a **new** Gmail account specifically for Gathio:
 
-1. **Create new Gmail:** gathio.events.patriark@gmail.com (example)
+1. **Create new Gmail:** gathio-service@example.com (example)
 2. **Enable 2FA:** Required for app passwords
 3. **Generate App Password:**
    - Google Account → Security → 2-Step Verification → App passwords
@@ -140,13 +140,13 @@ Your current Gmail/Outlook won't work (passwordless auth = no app passwords).
 4. **Update config.toml:**
 ```toml
 [general]
-email = "gathio.events.patriark@gmail.com"
+email = "gathio-service@example.com"
 mail_service = "nodemailer"
 
 [nodemailer]
 smtp_server = "smtp.gmail.com"
 smtp_port = "587"
-smtp_username = "gathio.events.patriark@gmail.com"
+smtp_username = "gathio-service@example.com"
 smtp_password = "xxxx xxxx xxxx xxxx"  # 16-character app password
 ```
 

@@ -1031,7 +1031,7 @@ log:
 
 **Successful authentication:**
 ```
-level=info msg="Successful authentication" username=patriark remote_ip=62.249.184.112
+level=info msg="Successful authentication" username=patriark remote_ip=203.0.113.42
 ```
 
 **Failed authentication:**
