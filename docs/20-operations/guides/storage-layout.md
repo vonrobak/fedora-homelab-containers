@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Storage Layout and Strategy"
+description: "Authoritative storage-layout guide — the 128GB system-drive constraint, BTRFS pool architecture, decision matrix, migration priorities, and NOCOW tuning."
+sensitivity: public
+created: 2025-10-31
+updated: 2025-12-09
+---
+
 # Storage Layout and Strategy
 
 **Last Updated:** 2025-12-09

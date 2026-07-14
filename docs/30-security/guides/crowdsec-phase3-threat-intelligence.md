@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "CrowdSec Phase 3: Threat Intelligence Enhancement Plan"
+description: "Guide to CrowdSec Phase 3 threat intelligence — CAPI enrollment, global blocklists, and scenario collection expansion."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-11-12
+---
+
 # CrowdSec Phase 3: Threat Intelligence Enhancement Plan
 
 **Version:** 1.0

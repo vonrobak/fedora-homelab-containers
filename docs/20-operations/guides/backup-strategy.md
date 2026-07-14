@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "BTRFS Backup Strategy Guide"
+description: "Guide to the BTRFS snapshot and incremental backup strategy — daily external sends, Time Machine-style retention, and offsite drive rotation (ADR-020)."
+sensitivity: public
+created: 2025-11-07
+updated: 2026-03-22
+---
+
 # BTRFS Backup Strategy Guide
 
 **Created:** 2025-11-07

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "CrowdSec Phase 2 & 5: Advanced Features"
+description: "Guide to CrowdSec advanced features — Phase 2 Prometheus/Grafana observability integration and Phase 5 hardening with custom pages, notifications, and reputation."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-11-12
+---
+
 # CrowdSec Phase 2 & 5: Advanced Features
 
 **Version:** 1.0

@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-037: Forge Center-of-Gravity — Per-Repo Placement"
+description: "ADR codifying a per-repo forge center-of-gravity rubric (GitHub-primary vs Forgejo-first) and the signing/merge consequences that follow from placement."
+sensitivity: public
+created: 2026-06-13
+updated: 2026-06-13
+---
+
 # ADR-037: Forge Center-of-Gravity — Per-Repo Placement
 
 **Date:** 2026-06-13

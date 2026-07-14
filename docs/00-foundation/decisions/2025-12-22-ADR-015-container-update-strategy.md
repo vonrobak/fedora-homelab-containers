@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-015: Container Update Strategy for State-of-the-Art Homelab"
+description: "ADR (superseded by ADR-030) setting the original container update strategy — :latest tags for most services, pinning only databases and breaking-change services."
+sensitivity: public
+created: 2025-12-22
+updated: 2026-05-23
+---
+
 # ADR-015: Container Update Strategy for State-of-the-Art Homelab
 
 **Status:** Superseded by ADR-030 (trust model; this ADR's BTRFS rollback + health-validation mechanisms remain valid)

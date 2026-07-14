@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Natural Language Query System - User Guide"
+description: "User guide to the natural-language query system (query-homelab.sh) that translates plain-English questions into cached system state answers."
+sensitivity: public
+created: 2025-11-21
+updated: 2025-11-30
+---
+
 # Natural Language Query System - User Guide
 
 **Created:** 2025-11-22

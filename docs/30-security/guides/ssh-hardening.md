@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "SSH Security Hardening Analysis - fedora-htpc"
+description: "SSH hardening analysis of fedora-htpc's OpenSSH config — key-only auth, FIDO2 hardware keys, crypto standards, and firewall posture."
+sensitivity: public
+created: 2025-11-06
+updated: 2025-11-07
+---
+
 # SSH Security Hardening Analysis - fedora-htpc
 
 **Date**: 2025-11-04

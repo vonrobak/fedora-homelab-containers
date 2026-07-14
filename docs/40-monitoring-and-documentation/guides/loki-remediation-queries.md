@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Loki Remediation Query Guide"
+description: "Guide of practical LogQL queries for analyzing autonomous remediation decision logs ingested into Loki."
+sensitivity: public
+created: 2025-12-26
+updated: 2025-12-26
+---
+
 # Loki Remediation Query Guide
 
 **Created:** 2025-12-26

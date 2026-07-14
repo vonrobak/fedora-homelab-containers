@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "Nextcloud Operational Runbook"
+description: "Operational runbook for Nextcloud — user and FIDO2 device management, external storage, backup/restore, maintenance, and troubleshooting procedures."
+sensitivity: public
+created: 2025-12-21
+updated: 2025-12-21
+---
+
 # Nextcloud Operational Runbook
 
 **Service:** Nextcloud File Sync and Collaboration  

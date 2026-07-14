@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-014: Nextcloud Passwordless Authentication with FIDO2/WebAuthn"
+description: "ADR adopting FIDO2/WebAuthn passwordless login for Nextcloud, weighing phishing resistance, usability, and device-loss recovery against traditional 2FA."
+sensitivity: public
+created: 2025-12-22
+updated: 2025-12-22
+---
+
 # ADR-014: Nextcloud Passwordless Authentication with FIDO2/WebAuthn
 
 **Date:** 2025-12-20

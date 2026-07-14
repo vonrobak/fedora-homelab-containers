@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Podman Cheatsheet"
+description: "Podman cheatsheet — common CLI commands for images, containers, networks, systemd generation, plus security flags to standardize on."
+sensitivity: public
+created: 2025-10-31
+updated: 2025-11-07
+---
+
 # Podman Cheatsheet
 
 ```bash

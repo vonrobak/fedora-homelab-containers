@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-023: BTRFS Storage Architecture for Database Workloads (WITHDRAWN)"
+description: "Withdrawn ADR that bundled database dumps with a NOCOW migration; split after adversarial review into ADR-024 and ADR-025, preserved for historical record."
+sensitivity: public
+created: 2026-04-21
+updated: 2026-04-21
+---
+
 # ADR-023: BTRFS Storage Architecture for Database Workloads (WITHDRAWN)
 
 **Date:** 2026-04-18

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Log-to-Metric Dashboard Panels"
+description: "Reference of Grafana dashboard panels visualizing log-derived metrics extracted by Promtail, with PromQL queries and thresholds."
+sensitivity: public
+created: 2026-01-11
+updated: 2026-01-11
+---
+
 # Log-to-Metric Dashboard Panels
 
 **Created:** 2026-01-11

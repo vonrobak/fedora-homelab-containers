@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "CrowdSec Security Engine"
+description: "Service guide for the CrowdSec security engine — crowdsourced IP-reputation blocking via the Traefik bouncer, with management and cscli reference."
+sensitivity: public
+created: 2025-11-07
+updated: 2025-12-23
+---
+
 # CrowdSec Security Engine
 
 **Last Updated:** 2025-11-07

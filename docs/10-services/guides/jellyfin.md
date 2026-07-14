@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Jellyfin Media Server"
+description: "Service guide for the Jellyfin media server — hardware-accelerated transcoding, Traefik HTTPS access, libraries, and management commands."
+sensitivity: public
+created: 2025-11-07
+updated: 2025-12-23
+---
+
 # Jellyfin Media Server
 
 **Last Updated:** 2025-11-14

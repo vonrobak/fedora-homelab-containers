@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Memory Management Guide"
+description: "Guide to optimizing memory and swap usage — per-container consumption breakdown, zram swap tuning, and reclamation strategy on the 30GB host."
+sensitivity: public
+created: 2025-11-28
+updated: 2025-11-28
+---
+
 # Memory Management Guide
 
 **Created:** 2025-11-28  

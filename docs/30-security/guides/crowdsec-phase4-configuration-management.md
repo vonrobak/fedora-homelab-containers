@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "CrowdSec Phase 4: Configuration Management Plan"
+description: "Guide to CrowdSec Phase 4 configuration management — bringing config files under Git, templates, validation, and backup/restore."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-11-12
+---
+
 # CrowdSec Phase 4: Configuration Management Plan
 
 **Version:** 1.0

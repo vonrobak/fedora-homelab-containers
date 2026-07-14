@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "DR-002: BTRFS Pool Corruption"
+description: "Disaster-recovery runbook for BTRFS storage-pool corruption or unmountable filesystem across all subvolumes."
+sensitivity: public
+created: 2025-11-30
+updated: 2025-11-30
+---
+
 # DR-002: BTRFS Pool Corruption
 
 **Severity:** Critical

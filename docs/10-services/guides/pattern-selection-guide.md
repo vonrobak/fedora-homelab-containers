@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Pattern Selection Guide"
+description: "Decision-tree guide for choosing the right homelab deployment pattern based on service type (media, web-app, database, auth, monitoring, etc.)."
+sensitivity: public
+created: 2025-11-14
+updated: 2026-06-12
+---
+
 # Pattern Selection Guide
 
 **Purpose:** Choose the right deployment pattern for your service

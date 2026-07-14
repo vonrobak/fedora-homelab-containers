@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Service Level Objectives (SLO) Framework"
+description: "Guide defining the homelab's SLO framework — SLI/SLO/error-budget concepts, success-criteria policies, and multi-window burn-rate alerting."
+sensitivity: public
+created: 2025-11-28
+updated: 2026-05-25
+---
+
 # Service Level Objectives (SLO) Framework
 
 **Created:** 2025-11-27

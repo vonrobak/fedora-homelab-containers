@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-006: Service Dependency Mapping & Impact Analysis"
+description: "ADR implementing an automated multi-source dependency mapping system to discover, track, and visualize service relationships and blast radius."
+sensitivity: public
+created: 2025-12-02
+updated: 2025-12-22
+---
+
 # ADR-006: Service Dependency Mapping & Impact Analysis
 
 **Date:** 2025-12-02

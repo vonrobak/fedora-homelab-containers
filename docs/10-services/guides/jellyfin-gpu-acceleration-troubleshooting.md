@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Jellyfin GPU Acceleration Troubleshooting Guide"
+description: "Troubleshooting guide for enabling AMD APU VA-API GPU transcoding in the rootless-Podman Jellyfin container, from hardware detection to validation."
+sensitivity: public
+created: 2025-11-17
+updated: 2025-11-17
+---
+
 # Jellyfin GPU Acceleration Troubleshooting Guide
 
 **Hardware:** AMD Ryzen 5 5600G (APU with integrated Radeon Vega Graphics)

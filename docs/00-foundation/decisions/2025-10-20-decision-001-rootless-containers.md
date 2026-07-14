@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-001: Rootless Podman Containers"
+description: "ADR recording the choice to run all homelab services as rootless Podman containers under user patriark (UID 1000) rather than rootful Docker."
+sensitivity: public
+created: 2025-11-07
+updated: 2025-11-07
+---
+
 # ADR-001: Rootless Podman Containers
 
 **Date:** 2025-10-20

@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-039: Egress Baseline Scoping for High-Rotation Cloud-API Endpoints (CrowdSec CAPI)"
+description: "ADR amending ADR-030 P7 to generate CrowdSec's egress allowance from AWS-published eu-west-1 ranges, ending the re-baseline treadmill for its rotating cloud API."
+sensitivity: public
+created: 2026-06-14
+updated: 2026-06-14
+---
+
 # ADR-039: Egress Baseline Scoping for High-Rotation Cloud-API Endpoints (CrowdSec CAPI)
 
 **Date:** 2026-06-14

@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-017: Slash Commands and Subagents for Claude Code Workflow"
+description: "ADR adopting Claude Code slash commands and subagents to standardize repetitive git, deployment-verification, design, and cleanup workflows."
+sensitivity: public
+created: 2026-01-05
+updated: 2026-01-05
+---
+
 # ADR-017: Slash Commands and Subagents for Claude Code Workflow
 
 **Date:** 2026-01-05

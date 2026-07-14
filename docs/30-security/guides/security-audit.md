@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Security Audit Guide"
+description: "Security audit guide covering the 53-check security-audit.sh across seven categories, audit levels, scoring, and the security-auditor skill."
+sensitivity: public
+created: 2026-01-08
+updated: 2026-03-08
+---
+
 # Security Audit Guide
 
 **Purpose:** Comprehensive security checklist for homelab infrastructure

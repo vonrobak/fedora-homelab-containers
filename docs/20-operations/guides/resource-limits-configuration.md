@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Resource Limits Configuration Guide"
+description: "Guide providing ready-to-use systemd resource-limit configurations for the most critical services to prevent memory exhaustion and OOM instability."
+sensitivity: public
+created: 2025-11-09
+updated: 2025-11-09
+---
+
 # Resource Limits Configuration Guide
 
 **Date:** 2025-11-09

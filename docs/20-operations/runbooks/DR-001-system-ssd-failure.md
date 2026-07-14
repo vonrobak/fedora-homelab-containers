@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "DR-001: System SSD Failure"
+description: "Disaster-recovery runbook for complete system NVMe SSD failure — replacement, OS reinstall, and restore from weekly backup."
+sensitivity: public
+created: 2025-11-30
+updated: 2025-11-30
+---
+
 # DR-001: System SSD Failure
 
 **Severity:** Critical

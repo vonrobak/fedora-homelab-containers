@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-004: Authelia SSO & MFA Architecture"
+description: "ADR proposing Authelia as the primary SSO and MFA provider to replace TinyAuth, with a phased service-migration approach."
+sensitivity: public
+created: 2025-11-10
+updated: 2025-12-22
+---
+
 # ADR-004: Authelia SSO & MFA Architecture
 
 **Status:** Proposed

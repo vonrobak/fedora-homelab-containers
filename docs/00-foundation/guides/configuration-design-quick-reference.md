@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Configuration Design Quick Reference Card"
+description: "Quick-reference card companion to the configuration design principles — lookup tables for where ordering matters and common design decisions."
+sensitivity: public
+created: 2025-10-31
+updated: 2025-12-31
+---
+
 # Configuration Design Quick Reference Card
 
 **Companion to:** CONFIGURATION-DESIGN-PRINCIPLES.md  

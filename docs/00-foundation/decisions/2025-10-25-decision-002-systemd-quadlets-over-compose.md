@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-002: Systemd Quadlets Over Docker Compose"
+description: "ADR recording the choice of systemd quadlets over Docker Compose, Kubernetes, or shell scripts for container orchestration."
+sensitivity: public
+created: 2025-11-07
+updated: 2025-12-31
+---
+
 # ADR-002: Systemd Quadlets Over Docker Compose
 
 **Date:** 2025-10-25

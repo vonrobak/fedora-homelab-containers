@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Homelab Snapshot Script: Developer Guide"
+description: "Developer guide to the homelab-snapshot.sh system-intelligence script — architecture, data flow, code walkthrough, and extension."
+sensitivity: public
+created: 2025-11-09
+updated: 2025-11-09
+---
+
 # Homelab Snapshot Script: Developer Guide
 ## Learn to Build, Understand, and Extend System Intelligence
 

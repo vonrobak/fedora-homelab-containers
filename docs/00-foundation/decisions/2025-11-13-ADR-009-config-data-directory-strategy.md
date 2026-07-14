@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "Configuration vs Data Directory Strategy"
+description: "ADR deciding the config-versus-data directory split, using selective gitignore exceptions to track custom configs while excluding secrets and runtime data."
+sensitivity: public
+created: 2025-11-13
+updated: 2025-12-22
+---
+
 # Configuration vs Data Directory Strategy
 
 **Date:** 2025-11-13

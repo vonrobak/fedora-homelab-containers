@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Tier 3 Initial Backup Guide"
+description: "Operational guide for the manual initial backup of the large 5.8TB subvol4-multimedia volume before incremental automated backups take over."
+sensitivity: public
+created: 2025-12-11
+updated: 2025-12-11
+---
+
 # Tier 3 Initial Backup Guide
 
 **Date:** 2025-12-10

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Apple Ecosystem Integration - Quick Reference"
+description: "Quick-reference for Apple ecosystem integration with Home Assistant — Siri voice commands, Watch complications, Focus modes, and webhook URLs."
+sensitivity: public
+created: 2026-01-30
+updated: 2026-01-30
+---
+
 # Apple Ecosystem Integration - Quick Reference
 
 **Created:** 2026-01-30

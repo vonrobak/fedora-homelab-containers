@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Storage-Health Monitoring (btrfs dev-stats + SMART)"
+description: "Guide to storage-health monitoring — BTRFS dev-stats, SMART, and monthly scrub collectors feeding Prometheus and the Discord alert path (ADR-029)."
+sensitivity: public
+created: 2026-06-09
+updated: 2026-06-09
+---
+
 # Storage-Health Monitoring (btrfs dev-stats + SMART)
 
 **Status:** Both parts implemented. Part 1 (dev-stats + SMART) is deployed and live; Part 2

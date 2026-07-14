@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-028: Podman Secret-Store Path Split After Storage Migration"
+description: "ADR resolving a Podman secret-store path split where runtime secret mounts read the legacy XDG path after graphRoot was migrated to the BTRFS pool."
+sensitivity: public
+created: 2026-04-28
+updated: 2026-04-28
+---
+
 # ADR-028: Podman Secret-Store Path Split After Storage Migration
 
 **Date:** 2026-04-27

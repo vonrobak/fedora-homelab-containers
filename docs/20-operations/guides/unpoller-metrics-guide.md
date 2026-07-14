@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Unpoller Metrics Guide"
+description: "Reference guide for working with UnPoller UniFi metrics across Prometheus, Grafana, and Home Assistant — deployment details and metric queries."
+sensitivity: public
+created: 2026-01-28
+updated: 2026-01-28
+---
+
 # Unpoller Metrics Guide
 
 **Purpose:** Reference guide for working with Unpoller metrics in Prometheus, Grafana, and Home Assistant

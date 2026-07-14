@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "SLO Target Calibration Process"
+description: "Guide to the process of calibrating SLO targets from observed performance data via daily snapshots and 95th-percentile analysis."
+sensitivity: public
+created: 2026-01-09
+updated: 2026-02-07
+---
+
 # SLO Target Calibration Process
 
 **Created:** 2026-01-09

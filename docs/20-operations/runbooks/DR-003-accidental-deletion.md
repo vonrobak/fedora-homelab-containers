@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "DR-003: Accidental Deletion Recovery"
+description: "Disaster-recovery runbook for recovering accidentally deleted files or directories from daily snapshots and external backups."
+sensitivity: public
+created: 2025-11-30
+updated: 2026-01-03
+---
+
 # DR-003: Accidental Deletion Recovery
 
 **Severity:** Medium

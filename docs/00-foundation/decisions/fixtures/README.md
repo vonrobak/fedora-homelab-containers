@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "Decision fixtures"
+description: "Index of decision fixtures — canonical sample artifacts (e.g. Urd heartbeat payload) referenced from ADR amendments as external-contract examples."
+sensitivity: public
+created: 2026-05-16
+updated: 2026-05-16
+---
+
 # Decision fixtures
 
 Sample artifacts referenced from ADR amendments. Each file is the canonical

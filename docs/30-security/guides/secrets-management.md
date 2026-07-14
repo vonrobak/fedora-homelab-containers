@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Secrets Management (workload side)"
+description: "Workload-side secrets-management guide describing the OpenBao substrate model and the Secret= name-based consumption contract this repo owns."
+sensitivity: public
+created: 2025-12-31
+updated: 2026-06-14
+---
+
 # Secrets Management (workload side)
 
 **Rewritten:** 2026-06-14. This replaces the previous version (2025-12-26), whose model was

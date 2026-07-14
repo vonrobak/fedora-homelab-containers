@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "IR-001: Brute Force Attack Detected"
+description: "Incident-response runbook for brute-force authentication attacks detected by CrowdSec or Authelia logs."
+sensitivity: public
+created: 2025-11-29
+updated: 2025-11-29
+---
+
 # IR-001: Brute Force Attack Detected
 
 **Severity:** HIGH

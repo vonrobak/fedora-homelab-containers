@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-029: Three-Tier Database Storage + Dump Backup"
+description: "ADR consolidating three prior storage ADRs into a three-tier model (snapshot, dump, discard) organized by recovery model and shipping the dump backbone."
+sensitivity: public
+created: 2026-05-22
+updated: 2026-06-09
+---
+
 # ADR-029: Three-Tier Database Storage + Dump Backup
 
 **Date:** 2026-05-22

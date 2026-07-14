@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-025: Database Storage Migration to NOCOW Subvolume (Deferred)"
+description: "ADR (superseded by ADR-029) deferring the migration of five databases to a dedicated NOCOW subvol8-db pending 60 days of baseline measurements."
+sensitivity: public
+created: 2026-04-21
+updated: 2026-05-22
+---
+
 # ADR-025: Database Storage Migration to NOCOW Subvolume (Deferred)
 
 **Date:** 2026-04-18

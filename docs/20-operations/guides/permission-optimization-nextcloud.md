@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Permission Optimization for Nextcloud Migration"
+description: "Superseded guide (by ADR-019) analyzing subvolume ownership and rootless-Podman UID mapping for the Samba-to-Nextcloud file-storage migration."
+sensitivity: public
+created: 2025-12-29
+updated: 2026-02-22
+---
+
 # Permission Optimization for Nextcloud Migration
 
 **Date:** 2025-12-29

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Remediation Chains - Multi-Playbook Orchestration"
+description: "Guide to multi-playbook remediation chains — orchestrating cleanup, maintenance, and recovery steps in sequence with conditional execution and failure strategies."
+sensitivity: public
+created: 2025-12-25
+updated: 2025-12-25
+---
+
 # Remediation Chains - Multi-Playbook Orchestration
 
 **Phase 5: Advanced Orchestration**

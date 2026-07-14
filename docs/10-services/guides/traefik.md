@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Traefik Reverse Proxy"
+description: "Service guide for the Traefik reverse proxy — HTTPS, Let's Encrypt, security middleware, and the ADR-016 rule that all routing lives in dynamic config."
+sensitivity: public
+created: 2025-11-07
+updated: 2025-12-31
+---
+
 # Traefik Reverse Proxy
 
 **Last Updated:** 2025-12-22

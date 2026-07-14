@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Log-to-Metric Feedback Loop Implementation"
+description: "Guide to the log-to-metric feedback loop — extracting Prometheus counters from logs at Promtail ingestion for real-time error alerting."
+sensitivity: public
+created: 2026-01-11
+updated: 2026-01-11
+---
+
 # Log-to-Metric Feedback Loop Implementation
 
 **Created:** 2026-01-11

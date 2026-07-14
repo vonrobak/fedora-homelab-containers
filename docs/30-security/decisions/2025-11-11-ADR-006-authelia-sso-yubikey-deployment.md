@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-005: Authelia SSO with YubiKey-First Authentication"
+description: "ADR adopting Authelia 4.38 with YubiKey/WebAuthn as the primary authentication method and tiered per-service access policies."
+sensitivity: public
+created: 2025-11-11
+updated: 2025-12-22
+---
+
 # ADR-005: Authelia SSO with YubiKey-First Authentication
 
 **Date:** 2025-11-11

@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-007: Autonomous Operations Alert Quality & Prediction System"
+description: "ADR on autonomous-operations alert quality — enabling swap cleanup, eliminating false-positive warnings, and repairing the resource-exhaustion prediction system."
+sensitivity: public
+created: 2025-12-11
+updated: 2025-12-22
+---
+
 # ADR-007: Autonomous Operations Alert Quality & Prediction System
 
 **Date:** 2025-12-11

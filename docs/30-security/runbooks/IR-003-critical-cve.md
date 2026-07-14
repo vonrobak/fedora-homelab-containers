@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "IR-003: Critical CVE in Running Container"
+description: "Incident-response runbook for a critical or high-severity CVE in a running container image, keyed to Trivy scans and severity-based response times."
+sensitivity: public
+created: 2025-11-29
+updated: 2025-11-29
+---
+
 # IR-003: Critical CVE in Running Container
 
 **Severity:** HIGH to CRITICAL (depends on CVE)

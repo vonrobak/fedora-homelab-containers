@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Alert Discord Relay"
+description: "Service guide for the custom-built Python relay that converts Alertmanager webhooks into color-coded Discord embeds, covering management and health checks."
+sensitivity: public
+created: 2026-02-05
+updated: 2026-02-05
+---
+
 # Alert Discord Relay
 
 **Last Updated:** 2026-02-05

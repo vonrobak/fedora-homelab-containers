@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-019: Filesystem Permission Model"
+description: "ADR standardizing BTRFS subvolumes to patriark:patriark 0755 with POSIX ACLs for cross-UID container writes, decommissioning Samba-era permissions."
+sensitivity: public
+created: 2026-02-22
+updated: 2026-02-22
+---
+
 # ADR-019: Filesystem Permission Model
 
 **Status:** Accepted

@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "IR-004: Failed Compliance Check"
+description: "Incident-response runbook for failed compliance checks — ADR or security-policy violations flagged by security-audit.sh or drift detection."
+sensitivity: public
+created: 2025-11-29
+updated: 2025-11-29
+---
+
 # IR-004: Failed Compliance Check
 
 **Severity:** MEDIUM to HIGH (depends on ADR violated)

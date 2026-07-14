@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Roborock Room-Specific Cleaning - Implementation Guide"
+description: "Implementation guide for activating Home Assistant room-specific Roborock cleaning automations, including how to obtain room segment IDs."
+sensitivity: public
+created: 2026-01-31
+updated: 2026-01-31
+---
+
 # Roborock Room-Specific Cleaning - Implementation Guide
 
 **Created:** 2026-01-31

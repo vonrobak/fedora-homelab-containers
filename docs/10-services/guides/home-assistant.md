@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Home Assistant - Production System Guide"
+description: "Production system guide for the Home Assistant deployment — its automations, integrated devices, integration strategy, and configuration structure."
+sensitivity: public
+created: 2026-01-31
+updated: 2026-02-01
+---
+
 # Home Assistant - Production System Guide
 
 **Status:** Production (40 automations, 20+ devices)

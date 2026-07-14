@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Pi-hole Backup and Restore Procedure"
+description: "Backup and restore procedure for the external Raspberry Pi Pi-hole DNS server — SSH archive, MacBook staging, then encrypted external drive."
+sensitivity: public
+created: 2025-11-05
+updated: 2025-12-22
+---
+
 # Pi-hole Backup and Restore Procedure
 
 **Last Updated:** 2025-11-05

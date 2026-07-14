@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Automation Reference Guide"
+description: "Authoritative reference cataloging all automation scripts, scheduled timers, deployment scripts, and remediation playbooks with a which-script-do-I-use decision tree."
+sensitivity: public
+created: 2025-11-28
+updated: 2026-06-22
+---
+
 # Automation Reference Guide
 
 **Last Updated:** 2026-02-27

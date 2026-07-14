@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Daily Error Digest"
+description: "Guide to the daily error digest — an automated timer that queries Loki for 24h of errors across log sources and alerts Discord past a threshold."
+sensitivity: public
+created: 2026-01-11
+updated: 2026-01-11
+---
+
 # Daily Error Digest
 
 **Created:** 2026-01-11

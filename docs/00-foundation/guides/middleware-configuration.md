@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Traefik Middleware Configuration: Analysis & Improvement Guide"
+description: "Guide to Traefik middleware configuration under the ADR-016 centralized dynamic-config model — CrowdSec integration, fail-fast ordering, and advanced patterns."
+sensitivity: public
+created: 2025-10-31
+updated: 2025-12-31
+---
+
 # Traefik Middleware Configuration: Analysis & Improvement Guide
 
 **Current Config Analysis:** middleware.yml

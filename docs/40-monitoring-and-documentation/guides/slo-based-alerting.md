@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "SLO-Based Alerting - Implementation Guide"
+description: "Implementation guide for SLO-based alerting using Google SRE multi-window, multi-burn-rate methodology to alert on user impact rather than symptoms."
+sensitivity: public
+created: 2025-12-19
+updated: 2026-02-07
+---
+
 # SLO-Based Alerting - Implementation Guide
 
 **Created:** 2025-12-19

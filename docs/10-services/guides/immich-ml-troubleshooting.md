@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Immich ML Troubleshooting Guide"
+description: "Troubleshooting guide for the immich-ml machine-learning container reporting unhealthy status, with log-inspection and diagnostic steps."
+sensitivity: public
+created: 2025-11-09
+updated: 2025-11-09
+---
+
 # Immich ML Troubleshooting Guide
 
 **Date:** 2025-11-09

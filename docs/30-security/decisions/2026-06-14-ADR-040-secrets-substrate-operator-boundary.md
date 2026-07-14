@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-040: Secrets Substrate & Operator Boundary"
+description: "ADR (superseded by ADR-041) on the secrets substrate and operator boundary — findings that Podman's file driver is unencrypted, Vaultwarden cannot broker, and an LLM read-wall needs privilege separation."
+sensitivity: public
+created: 2026-06-14
+updated: 2026-06-14
+---
+
 # ADR-040: Secrets Substrate & Operator Boundary
 
 **Date:** 2026-06-14

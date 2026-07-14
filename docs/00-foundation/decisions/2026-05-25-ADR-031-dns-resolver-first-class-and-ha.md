@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-031: DNS Resolver — First-Class Integration & High Availability"
+description: "ADR making the Pi-hole DNS resolver a first-class, redundant service — managed-as-code, monitored, SSO admin, and a keepalived HA VIP."
+sensitivity: public
+created: 2026-05-25
+updated: 2026-05-25
+---
+
 # ADR-031: DNS Resolver — First-Class Integration & High Availability
 
 **Date:** 2026-05-25

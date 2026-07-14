@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Gathio Email Configuration Guide"
+description: "Configuration guide for Gathio event-editing links — running without email versus wiring up SMTP delivery for magic links."
+sensitivity: public
+created: 2026-01-15
+updated: 2026-01-15
+---
+
 # Gathio Email Configuration Guide
 
 **Created:** 2026-01-14

@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-034: Forgejo Instance Commit Signing (SSH)"
+description: "ADR configuring the Forgejo instance to SSH-sign the merge/squash commits it creates server-side, closing the unsigned-merge-commit gap on main."
+sensitivity: public
+created: 2026-06-06
+updated: 2026-06-06
+---
+
 # ADR-034: Forgejo Instance Commit Signing (SSH)
 
 **Date:** 2026-06-06

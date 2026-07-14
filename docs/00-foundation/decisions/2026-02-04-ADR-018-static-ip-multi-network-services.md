@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-018: Static IP Assignment for Multi-Network Services"
+description: "ADR mandating static IP assignment plus Traefik /etc/hosts override for multi-network services, working around Podman's undefined DNS ordering."
+sensitivity: public
+created: 2026-02-04
+updated: 2026-03-18
+---
+
 # ADR-018: Static IP Assignment for Multi-Network Services
 
 **Status:** Accepted

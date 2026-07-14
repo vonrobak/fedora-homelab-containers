@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Pattern Customization Guide"
+description: "Guide for safely customizing pattern-generated quadlets after deployment, covering when to customize and how to preserve changes through updates."
+sensitivity: public
+created: 2025-11-14
+updated: 2025-12-31
+---
+
 # Pattern Customization Guide
 
 **Created:** 2025-11-14
