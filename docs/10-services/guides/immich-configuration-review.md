@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Immich Configuration Review & Optimization Report"
+description: "Configuration audit of the Immich deployment against design principles, scoring seven categories and flagging critical security and performance gaps."
+sensitivity: public
+created: 2025-11-23
+updated: 2026-02-28
+---
+
 # Immich Configuration Review & Optimization Report
 
 **Date:** 2025-11-23

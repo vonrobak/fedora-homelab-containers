@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-020: Daily External Backups with Incremental Sends"
+description: "ADR (superseded by ADR-021) moving external BTRFS backups from weekly-full to daily incremental sends with graduated Time Machine-style retention."
+sensitivity: public
+created: 2026-03-22
+updated: 2026-03-29
+---
+
 # ADR-020: Daily External Backups with Incremental Sends
 
 **Date:** 2026-03-21

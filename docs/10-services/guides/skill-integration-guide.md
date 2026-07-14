@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Claude Skills Integration Guide"
+description: "Guide for Claude Code on choosing and combining homelab skills, with a decision tree mapping request types to the right skill."
+sensitivity: public
+created: 2025-11-14
+updated: 2025-11-14
+---
+
 # Claude Skills Integration Guide
 
 **Purpose:** Help Claude Code choose and combine skills appropriately

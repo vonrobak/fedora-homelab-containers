@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-030: Container Supply-Chain Trust Model"
+description: "ADR establishing the container supply-chain trust model — digest pinning, de-automated deliberate updates, cooling-off bake, and graduated signature verification."
+sensitivity: public
+created: 2026-05-23
+updated: 2026-05-23
+---
+
 # ADR-030: Container Supply-Chain Trust Model
 
 **Date:** 2026-05-23

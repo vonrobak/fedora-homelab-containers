@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Homelab Architecture - Visual Diagrams"
+description: "Reference guide with visual diagrams of the homelab's network flow, request path, and service topology from internet through Traefik to backends."
+sensitivity: public
+created: 2025-10-31
+updated: 2025-12-22
+---
+
 # Homelab Architecture - Visual Diagrams
 
 **Last Updated:** 2025-12-22

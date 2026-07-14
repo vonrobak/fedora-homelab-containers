@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-043: Documentation Boundary as a Per-Document Sensitivity Property"
+description: "ADR deciding that documentation sensitivity is a per-document property governing public-repo versus private-vault placement, with frontmatter classification and flow rules."
+sensitivity: public
+created: 2026-07-14
+updated: 2026-07-14
+---
+
 # ADR-043: Documentation Boundary as a Per-Document Sensitivity Property
 
 **Date:** 2026-07-14

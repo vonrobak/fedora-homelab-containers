@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Vaultwarden Deployment Guide"
+description: "Deployment guide for Vaultwarden — SQLite backend, YubiKey/TOTP 2FA, strict rate limiting, and pattern-based versus manual deployment steps."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-11-14
+---
+
 # Vaultwarden Deployment Guide
 
 **Date:** 2025-11-12 (Updated: 2025-11-14)

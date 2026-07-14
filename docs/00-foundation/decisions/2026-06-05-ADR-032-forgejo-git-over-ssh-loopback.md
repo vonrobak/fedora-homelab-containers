@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-032: Forgejo Git-over-SSH — Loopback-Bound"
+description: "ADR enabling loopback-bound git-over-SSH on the Forgejo instance so headless SSH sessions can authenticate with an SSH key instead of a keyring-locked HTTPS token."
+sensitivity: public
+created: 2026-06-05
+updated: 2026-06-05
+---
+
 # ADR-032: Forgejo Git-over-SSH — Loopback-Bound
 
 **Date:** 2026-06-05

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Configuration Drift Detection Workflow"
+description: "Guide to detecting and reconciling configuration drift between running containers and their quadlet definitions using check-drift.sh."
+sensitivity: public
+created: 2025-11-14
+updated: 2025-12-31
+---
+
 # Configuration Drift Detection Workflow
 
 **Created:** 2025-11-14

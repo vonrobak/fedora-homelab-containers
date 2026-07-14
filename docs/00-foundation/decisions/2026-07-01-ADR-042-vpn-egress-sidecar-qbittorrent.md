@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-042: VPN Egress Sidecar for qBittorrent (gluetun + ProtonVPN)"
+description: "ADR routing qBittorrent's egress through a gluetun ProtonVPN sidecar with a kill-switch via network-namespace sharing, off the home WAN IP."
+sensitivity: public
+created: 2026-07-01
+updated: 2026-07-02
+---
+
 # ADR-042: VPN Egress Sidecar for qBittorrent (gluetun + ProtonVPN)
 
 **Date:** 2026-07-01

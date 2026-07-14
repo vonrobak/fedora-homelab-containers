@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Skill Recommendation Engine"
+description: "Reference for the recommend-skill.sh engine that classifies requests and scores confidence to suggest the most appropriate Claude skill."
+sensitivity: public
+created: 2025-11-30
+updated: 2025-11-30
+---
+
 # Skill Recommendation Engine
 
 **Status:** ✅ Production-Ready (Implemented 2025-11-30)

@@ -260,7 +260,7 @@ report yields a durable, generalizable lesson, promote it to `lessons.md` per it
 - **Vault → public:** free — GitHub PRs, commit hashes, URLs, repo paths in prose (vault-internal linking rules live in the vault's conventions doc)
 - Do not duplicate content across docs -- link instead
 
-**Metadata (frontmatter):** Every public document carries YAML frontmatter: `type`, `title`, `description`, `sensitivity: public` (explicit), and dates. Until the backfill completes (plan WP-C), legacy docs may still carry only a title and `Last Updated` — new documents must not. Guides additionally keep `Last Updated` current.
+**Metadata (frontmatter):** Every public document carries YAML frontmatter: `type`, `title`, `description`, `sensitivity: public` (explicit), and `created`/`updated` dates. Guides additionally keep the in-body `Last Updated` line current.
 
 ---
 

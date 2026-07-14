@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "UniFi Security Monitoring Guide"
+description: "Guide to network-layer security monitoring via Unpoller and UDM Pro metrics — architecture, dashboards, recording rules, and alerts."
+sensitivity: public
+created: 2026-01-08
+updated: 2026-01-09
+---
+
 # UniFi Security Monitoring Guide
 
 **Created:** 2026-01-08

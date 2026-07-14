@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Nextcloud Service Guide"
+description: "Service guide for the Nextcloud file-sync stack (Nextcloud + MariaDB + Redis) — access endpoints, CalDAV/CardDAV/WebDAV, and service management."
+sensitivity: public
+created: 2025-12-21
+updated: 2026-02-06
+---
+
 # Nextcloud Service Guide
 
 **Service:** Nextcloud File Sync and Collaboration

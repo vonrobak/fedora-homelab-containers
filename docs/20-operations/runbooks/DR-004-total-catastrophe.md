@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "DR-004: Total Catastrophe"
+description: "Disaster-recovery runbook for total catastrophe — simultaneous loss of primary system and backup drive, recovered via off-site backup."
+sensitivity: public
+created: 2025-11-30
+updated: 2026-01-03
+---
+
 # DR-004: Total Catastrophe
 
 **Severity:** Catastrophic

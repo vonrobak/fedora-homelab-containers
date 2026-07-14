@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-001: Monitoring Stack Architecture (Prometheus + Grafana + Loki)"
+description: "ADR adopting the Prometheus + Grafana + Loki observability stack (with Promtail, Node Exporter, Alertmanager) for the homelab."
+sensitivity: public
+created: 2025-11-07
+updated: 2025-12-22
+---
+
 # ADR-001: Monitoring Stack Architecture (Prometheus + Grafana + Loki)
 
 **Date:** 2025-11-06

@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-024: Application-Level Database Dump Backup"
+description: "ADR (superseded by ADR-029) adding a nightly application-consistent database dump job for the stateful DB engines, without moving any data."
+sensitivity: public
+created: 2026-04-21
+updated: 2026-05-22
+---
+
 # ADR-024: Application-Level Database Dump Backup
 
 **Date:** 2026-04-18

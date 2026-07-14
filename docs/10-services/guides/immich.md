@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Immich Photo Management Service"
+description: "Service guide for the Immich photo/video management stack — its four containers, features, deployment details, and management commands."
+sensitivity: public
+created: 2025-11-10
+updated: 2026-02-08
+---
+
 # Immich Photo Management Service
 
 **Last Updated:** 2026-02-08

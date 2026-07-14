@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-006: CrowdSec Security Architecture for Homelab Defense"
+description: "ADR adopting CrowdSec as the fail-fast first line of defense for internet-facing services within the Traefik middleware chain."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-12-22
+---
+
 # ADR-006: CrowdSec Security Architecture for Homelab Defense
 
 **Date:** 2025-11-12

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Matter Server - Service Guide"
+description: "Service guide for the python-matter-server container (home_automation network) — management, health checks, and WebSocket connectivity."
+sensitivity: public
+created: 2026-02-05
+updated: 2026-02-05
+---
+
 # Matter Server - Service Guide
 
 **Status:** Production

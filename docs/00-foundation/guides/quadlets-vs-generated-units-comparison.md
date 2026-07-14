@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Quadlets vs Generated Systemd Services"
+description: "Comparison guide arguing why systemd quadlets are preferable to podman-generated systemd units for declarative, maintainable container management."
+sensitivity: public
+created: 2025-10-31
+updated: 2025-12-22
+---
+
 # Quadlets vs Generated Systemd Services
 
 ## Why Quadlets Are Better

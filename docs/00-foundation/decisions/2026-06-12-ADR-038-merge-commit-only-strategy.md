@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-038: Merge-Commit-Only Strategy (signature provenance + stacked-PR safety)"
+description: "ADR switching the containers repo to merge-commit-only merges, preserving owner-key signatures and avoiding stacked-PR breakage against the live-config worktree."
+sensitivity: public
+created: 2026-06-13
+updated: 2026-06-13
+---
+
 # ADR-038: Merge-Commit-Only Strategy (signature provenance + stacked-PR safety)
 
 **Date:** 2026-06-12

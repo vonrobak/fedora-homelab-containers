@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-041: Runtime Secrets via OpenBao Substrate — Workload-Side Boundary"
+description: "ADR sourcing runtime secrets from a self-hosted OpenBao substrate service, keeping every Secret= handle byte-for-byte unchanged with the secret name as the sole cross-repo interface."
+sensitivity: public
+created: 2026-06-14
+updated: 2026-06-14
+---
+
 # ADR-041: Runtime Secrets via OpenBao Substrate — Workload-Side Boundary
 
 **Date:** 2026-06-14

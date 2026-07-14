@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-022: Systemd Socket Activation for Rootless Traefik"
+description: "ADR adopting systemd socket activation for rootless Traefik so it sees real client source IPs instead of rootlessport SNAT."
+sensitivity: public
+created: 2026-04-16
+updated: 2026-04-16
+---
+
 # ADR-022: Systemd Socket Activation for Rootless Traefik
 
 **Date:** 2026-04-16

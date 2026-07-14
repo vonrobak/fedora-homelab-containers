@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-035: Boot-Time I/O Tiering for Service Startup"
+description: "ADR introducing boot-time I/O tiering via StartupIOWeight to demote heavy TSDB/WAL replayers (Prometheus, Loki, Grafana) during post-reboot storms."
+sensitivity: public
+created: 2026-06-09
+updated: 2026-06-09
+---
+
 # ADR-035: Boot-Time I/O Tiering for Service Startup
 
 **Date:** 2026-06-09

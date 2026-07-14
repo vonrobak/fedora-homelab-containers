@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-021: Urd Replaces Shell Script for BTRFS Backup Management"
+description: "ADR replacing the ~1700-line bash backup script with Urd, a purpose-built Rust tool for BTRFS snapshot lifecycle and offsite sends."
+sensitivity: public
+created: 2026-03-29
+updated: 2026-06-04
+---
+
 # ADR-021: Urd Replaces Shell Script for BTRFS Backup Management
 
 **Date:** 2026-03-28

@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Disaster Recovery Framework"
+description: "Overview of the disaster-recovery framework — backup tiers, coverage, retention, monthly restore testing, and links to the DR runbooks."
+sensitivity: public
+created: 2025-11-30
+updated: 2025-11-30
+---
+
 # Disaster Recovery Framework
 
 **Status:** Implemented (Phase 1 complete)

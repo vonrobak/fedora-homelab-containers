@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-016: Configuration Design Principles"
+description: "ADR codifying six configuration design principles, most notably that all Traefik routing lives in dynamic config, never in container labels."
+sensitivity: public
+created: 2025-12-31
+updated: 2026-03-18
+---
+
 # ADR-016: Configuration Design Principles
 
 **Date:** 2025-12-31

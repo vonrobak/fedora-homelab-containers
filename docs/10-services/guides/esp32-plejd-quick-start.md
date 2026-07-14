@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "ESP32 Bluetooth Proxy - Quick Start Guide"
+description: "Quick-start for flashing an ESP32 as an ESPHome Bluetooth proxy to bridge Plejd lighting into Home Assistant across the IoT VLAN."
+sensitivity: public
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # ESP32 Bluetooth Proxy - Quick Start Guide
 
 **Device:** ESP32 D1 Mini (m-d1-esp32)

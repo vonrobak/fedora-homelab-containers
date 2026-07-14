@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "CrowdSec Phase 1: Configuration Audit & Fixes - Field Manual"
+description: "Field manual for CrowdSec Phase 1 — configuration audit, version pinning, middleware standardization, IP detection, and ban testing."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-11-12
+---
+
 # CrowdSec Phase 1: Configuration Audit & Fixes - Field Manual
 
 **Version:** 1.0

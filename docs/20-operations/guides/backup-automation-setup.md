@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Backup Automation Setup Guide"
+description: "Setup guide for automated BTRFS snapshot backups via systemd timers — daily local and weekly external schedules under the Single-profile no-redundancy constraint."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-12-09
+---
+
 # Backup Automation Setup Guide
 
 **Date:** 2025-11-12 (Updated: 2025-12-09)

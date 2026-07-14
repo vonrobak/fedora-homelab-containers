@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Git Setup Guide for Homelab Project"
+description: "Introductory guide to initializing Git version control for the homelab's configuration and documentation, covering setup and identity configuration."
+sensitivity: public
+created: 2025-10-31
+updated: 2025-11-07
+---
+
 # Git Setup Guide for Homelab Project
 
 **Purpose:** Initialize version control for your homelab configuration and documentation

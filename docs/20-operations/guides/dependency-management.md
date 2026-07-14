@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Service Dependency Management Guide"
+description: "Guide to the service dependency mapping system — dependency types, discovery, drift checks, blast-radius queries, and the Grafana dashboard (ADR-006)."
+sensitivity: public
+created: 2025-12-02
+updated: 2025-12-02
+---
+
 # Service Dependency Management Guide
 
 **Last Updated:** 2025-12-02

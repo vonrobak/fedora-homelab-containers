@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "IR-002: Unauthorized Port Exposed"
+description: "Incident-response runbook for an unexpected open port exposing internal services, with the expected-port whitelist and investigation steps."
+sensitivity: public
+created: 2025-11-29
+updated: 2025-11-29
+---
+
 # IR-002: Unauthorized Port Exposed
 
 **Severity:** CRITICAL

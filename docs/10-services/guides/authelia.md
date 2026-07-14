@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Authelia SSO & MFA Service Guide"
+description: "Service guide for the Authelia SSO and MFA server — YubiKey/WebAuthn-first auth, TOTP fallback, Redis sessions, and Traefik integration."
+sensitivity: public
+created: 2025-11-11
+updated: 2026-03-09
+---
+
 # Authelia SSO & MFA Service Guide
 
 **Last Updated:** 2025-11-11

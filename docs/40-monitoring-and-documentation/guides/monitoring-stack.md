@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Homelab Monitoring Stack Guide"
+description: "Comprehensive guide to the homelab's monitoring, alerting, and autonomous remediation infrastructure — components, usage, maintenance, and extension."
+sensitivity: public
+created: 2025-11-06
+updated: 2025-12-29
+---
+
 # Homelab Monitoring Stack Guide
 
 **Created:** 2025-11-06

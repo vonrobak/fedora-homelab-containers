@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR: Immich Deployment Architecture"
+description: "ADR selecting a multi-container Immich architecture (server, ML, PostgreSQL, Redis) on rootless Podman quadlets as the homelab's first database-backed, ML, and mobile-integrated service."
+sensitivity: public
+created: 2025-12-22
+updated: 2025-12-22
+---
+
 # ADR: Immich Deployment Architecture
 
 **Date:** 2025-11-08

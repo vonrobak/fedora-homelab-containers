@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Health-Driven Operations Guide"
+description: "Guide to using homelab-intel.sh health scoring (0-100) to inform deployment, maintenance, and troubleshooting decisions and to gate deployments."
+sensitivity: public
+created: 2025-11-14
+updated: 2025-11-14
+---
+
 # Health-Driven Operations Guide
 
 **Created:** 2025-11-14

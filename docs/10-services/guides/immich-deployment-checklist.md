@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Immich Deployment Checklist"
+description: "Historical step-by-step checklist for the November 2025 Immich deployment, covering network, database, and storage setup (predates the Authelia migration)."
+sensitivity: public
+created: 2025-12-31
+updated: 2025-12-31
+---
+
 # Immich Deployment Checklist
 
 **Purpose:** Step-by-step checklist for deploying Immich photo management service

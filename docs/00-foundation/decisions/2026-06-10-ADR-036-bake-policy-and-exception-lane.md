@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-036: Bake Policy Codification and Security-Release Exception Lane"
+description: "ADR amending ADR-030 to codify the image bake policy (egress 7d / internal 3d) with tooling verdicts and a security-release CVE exception lane."
+sensitivity: public
+created: 2026-06-11
+updated: 2026-06-11
+---
+
 # ADR-036: Bake Policy Codification and Security-Release Exception Lane
 
 **Date:** 2026-06-10

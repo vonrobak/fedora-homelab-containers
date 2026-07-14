@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "SSH Server Hardening Deployment Procedure"
+description: "Procedure for deploying hardened sshd_config across pihole, fedora-htpc, and fedora-jern with safe rollout ordering and lockout safeguards."
+sensitivity: public
+created: 2025-11-05
+updated: 2025-11-07
+---
+
 # SSH Server Hardening Deployment Procedure
 
 **Created:** 2025-11-05

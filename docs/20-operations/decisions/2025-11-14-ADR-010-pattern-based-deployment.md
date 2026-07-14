@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-007: Pattern-Based Deployment Automation"
+description: "ADR adopting pattern-based deployment as the primary method for new services — YAML templates, health gating, and drift detection replacing ad-hoc scripts."
+sensitivity: public
+created: 2025-11-14
+updated: 2025-12-31
+---
+
 # ADR-007: Pattern-Based Deployment Automation
 
 **Date:** 2025-11-14

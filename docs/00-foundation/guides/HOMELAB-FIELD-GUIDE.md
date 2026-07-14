@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Homelab Field Guide"
+description: "Operator field guide for independently maintaining the homelab without LLM assistance — operations, troubleshooting, security, and disaster recovery."
+sensitivity: public
+created: 2025-11-14
+updated: 2026-06-22
+---
+
 # Homelab Field Guide
 
 **Purpose:** Operational manual for independently maintaining a healthy, secure homelab

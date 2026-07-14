@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-023: Shared Mount Propagation for Monitoring Containers"
+description: "ADR fixing LUKS drive-swap failures caused by cAdvisor and node_exporter recursively bind-mounting host root and capturing removable-drive submounts."
+sensitivity: public
+created: 2026-04-22
+updated: 2026-04-22
+---
+
 # ADR-023: Shared Mount Propagation for Monitoring Containers
 
 **Date:** 2026-04-21

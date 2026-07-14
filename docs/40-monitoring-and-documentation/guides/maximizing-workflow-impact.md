@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Maximizing Impact from Claude Code Workflow Improvements"
+description: "Guide to extracting value from Claude Code workflow enhancements — slash commands, subagents, and the 7-level verification framework."
+sensitivity: public
+created: 2026-01-05
+updated: 2026-01-05
+---
+
 # Maximizing Impact from Claude Code Workflow Improvements
 
 **Version:** 1.0

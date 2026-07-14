@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-026: Pin Nextcloud to Major Version (amends ADR-015)"
+description: "ADR amending ADR-015 to require pinning Nextcloud to a major-version tag, treating it as a database-schema owner after an unattended-upgrade SLO collapse."
+sensitivity: public
+created: 2026-04-21
+updated: 2026-04-21
+---
+
 # ADR-026: Pin Nextcloud to Major Version (amends ADR-015)
 
 **Date:** 2026-04-21

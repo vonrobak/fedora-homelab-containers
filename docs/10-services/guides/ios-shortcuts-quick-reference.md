@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "iOS Shortcuts Quick Reference - Roborock Voice Commands"
+description: "Copy-paste reference for building nine iOS Shortcuts that trigger Roborock room-cleaning webhooks via Siri voice commands."
+sensitivity: public
+created: 2026-01-31
+updated: 2026-01-31
+---
+
 # iOS Shortcuts Quick Reference - Roborock Voice Commands
 
 **Purpose:** Quick copy-paste reference for creating 9 Roborock cleaning shortcuts

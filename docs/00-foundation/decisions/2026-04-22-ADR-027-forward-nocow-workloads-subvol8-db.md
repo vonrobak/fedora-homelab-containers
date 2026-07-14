@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-027: Forward-Only NOCOW Placement on subvol8-db (Policy)"
+description: "ADR (superseded by ADR-029) setting a forward-only policy that new write-hot, snapshot-hostile workloads land on subvol8-db from day one."
+sensitivity: public
+created: 2026-04-22
+updated: 2026-05-22
+---
+
 # ADR-027: Forward-Only NOCOW Placement on subvol8-db (Policy)
 
 **Date:** 2026-04-22

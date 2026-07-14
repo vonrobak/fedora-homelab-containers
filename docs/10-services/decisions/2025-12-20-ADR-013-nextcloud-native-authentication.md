@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-013: Nextcloud Native Authentication Strategy"
+description: "ADR choosing Nextcloud native authentication over Authelia SSO to preserve CalDAV/CardDAV auto-discovery and mobile/desktop client compatibility."
+sensitivity: public
+created: 2025-12-21
+updated: 2025-12-22
+---
+
 # ADR-013: Nextcloud Native Authentication Strategy
 
 **Date:** 2025-12-20

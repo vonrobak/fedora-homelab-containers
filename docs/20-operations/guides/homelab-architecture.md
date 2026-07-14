@@ -1,3 +1,12 @@
+---
+type: Guide
+title: "Homelab Architecture Documentation"
+description: "Comprehensive architecture reference covering network, service stack, security layers, DNS, storage, backup, monitoring, and autonomous operations."
+sensitivity: public
+created: 2025-10-31
+updated: 2026-06-22
+---
+
 # Homelab Architecture Documentation
 
 **Last Updated:** February 5, 2026

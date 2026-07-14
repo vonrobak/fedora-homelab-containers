@@ -1,3 +1,12 @@
+---
+type: ADR
+title: "ADR-006: Vaultwarden Password Manager Architecture"
+description: "ADR adopting Vaultwarden with SQLite as the self-hosted, Bitwarden-compatible password manager, with YubiKey/WebAuthn 2FA and defense-in-depth middleware."
+sensitivity: public
+created: 2025-11-12
+updated: 2025-12-22
+---
+
 # ADR-006: Vaultwarden Password Manager Architecture
 
 **Date:** 2025-11-12

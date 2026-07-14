@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: "IR-005: Network Security Event"
+description: "Incident-response runbook for network-layer security events detected by the UDM Pro via Unpoller — DPI threats, bandwidth spikes, and firewall block surges."
+sensitivity: public
+created: 2026-01-08
+updated: 2026-01-08
+---
+
 # IR-005: Network Security Event
 
 **Severity:** CRITICAL
