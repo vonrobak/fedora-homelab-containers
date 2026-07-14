@@ -224,7 +224,7 @@ Full script catalog: `docs/20-operations/guides/automation-reference.md`
 - `service-validator` — run after deployment for 7-level verification
 - `code-simplifier` — refactor after deployment to prevent config bloat
 
-**Slash command:** `/commit-push-pr` — stages, commits (GPG), pushes, creates PR
+**Slash commands:** `/commit-push-pr` — stages, commits (SSH-signed), pushes, creates PR (ADR-038 trivia lane for doc/comment-only changes); `/commit-push-docs` — commits/pushes the Huldr vault (user-level, `~/.claude`); `/journal` — mid-session vault journal entry; `/session-close` — end-of-session ritual (journal + status.md/lessons.md checks + `/commit-push-docs`)
 
 ## Quick Reference
 
