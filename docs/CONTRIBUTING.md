@@ -6,7 +6,7 @@ This guide covers when, where, and how to write documentation. It does not repea
 
 ---
 
-## The Two Homes (ADR-042)
+## The Two Homes (ADR-043)
 
 Documentation lives in two places, and the boundary is a **per-document property**, not a directory convention:
 
@@ -230,7 +230,7 @@ report yields a durable, generalizable lesson, promote it to `lessons.md` per it
 | Guide | No | `*/guides/` | `jellyfin.md` |
 | Journal | Yes | `98-journals/` (vault) | `2025-11-07-deployment-log.md` |
 | Plan | Yes | `97-plans/` (vault) | `2025-11-22-disaster-recovery.md` |
-| ADR | Yes | `*/decisions/` | `2026-07-14-ADR-042-title.md` |
+| ADR | Yes | `*/decisions/` | `2026-07-14-ADR-043-title.md` |
 | Report | N/A | `99-reports/` (vault) | `intel-*.json` |
 | Supervisor doc (core) | No | `96-project-supervisor/` (vault) | `lessons.md` |
 | Supervisor handoff | Yes | `96-project-supervisor/` (vault) | `2026-06-12-lessons-loose-threads-handoff.md` |
@@ -254,7 +254,7 @@ report yields a durable, generalizable lesson, promote it to `lessons.md` per it
 - Code blocks must specify the language (`bash`, `yaml`, `markdown`)
 - Keep lines under ~120 characters for terminal readability
 
-**Cross-linking (three zones, ADR-042 D5):**
+**Cross-linking (three zones, ADR-043 D5):**
 - **Public → public:** relative paths: `[SLO framework](40-monitoring-and-documentation/guides/slo-framework.md)`; ADRs by textual `ADR-NNN` reference
 - **Public → vault: never as paths or links.** A PR body or ADR may mention a vault document by name only, when strictly necessary
 - **Vault → public:** free — GitHub PRs, commit hashes, URLs, repo paths in prose (vault-internal linking rules live in the vault's conventions doc)
@@ -312,7 +312,7 @@ To update these, run the orchestrator script. Manual edits will be overwritten.
 
 Before committing documentation:
 
-- [ ] File is in the correct directory for its type — and in the correct **home** (ADR-042 birth rule)
+- [ ] File is in the correct directory for its type — and in the correct **home** (ADR-043 birth rule)
 - [ ] Filename follows naming convention (date prefix where required)
 - [ ] Frontmatter present: `type`, `title`, `description`, `sensitivity: public`, dates
 - [ ] No sensitive information (secrets, passwords, API keys, internal IPs) — the pre-commit gate rejects `sensitivity: internal|secret` markdown, but the gate is a backstop, not the check

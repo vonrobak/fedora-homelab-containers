@@ -1,4 +1,4 @@
-# ADR-042: Documentation Boundary as a Per-Document Sensitivity Property
+# ADR-043: Documentation Boundary as a Per-Document Sensitivity Property
 
 **Date:** 2026-07-14
 **Status:** Accepted. **Amends** the Huldr knowledge-vault decision (vault mechanics are
