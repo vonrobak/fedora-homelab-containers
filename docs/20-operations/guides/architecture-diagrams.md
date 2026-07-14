@@ -20,7 +20,7 @@ updated: 2025-12-22
                              │ DNS Query
                              ↓
                     ┌────────────────┐
-                    │   Cloudflare   │ patriark.org → 62.249.184.112
+                    │   Cloudflare   │ patriark.org → 203.0.113.42
                     │   DNS Server   │
                     └────────────────┘
                              │
@@ -28,7 +28,7 @@ updated: 2025-12-22
                              ↓
                 ┌────────────────────────┐
                 │   ISP / Public IP      │
-                │   62.249.184.112       │
+                │   203.0.113.42         │
                 └────────────────────────┘
                              │
                              │ Port Forward
@@ -186,7 +186,7 @@ Host: fedora-htpc (192.168.1.70)
 └─── Host Network
      ├─ DNS: 192.168.1.69 (Pi-hole)
      ├─ Gateway: 192.168.1.1 (UDM Pro)
-     └─ Public IP: 62.249.184.112 (Dynamic)
+     └─ Public IP: 203.0.113.42 (Dynamic)
 ```
 
 ---
@@ -199,7 +199,7 @@ Host: fedora-htpc (192.168.1.70)
    
 2. DNS Resolution
    Browser → Pi-hole (192.168.1.69) → 192.168.1.70 (LAN)
-   Browser → Cloudflare → 62.249.184.112 (WAN)
+   Browser → Cloudflare → 203.0.113.42 (WAN)
    
 3. TLS Handshake
    Browser ←TLS→ Traefik
