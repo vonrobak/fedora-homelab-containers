@@ -80,6 +80,14 @@ docs/96-project-supervisor
 docs/97-plans
 docs/98-journals
 
+# CLAUDE.md itself — untracked 2026-07-15 (ADR-044, adopts urd ADR-118 delta 7).
+# A public, mergeable CLAUDE.md is an instruction-injection surface (an external
+# PR that alters it would have its content followed by the next AI session with
+# no separate review lens). SYMLINK into the Huldr vault
+# (~/Huldr/projects/homelab/CLAUDE.md); no trailing slash, same reasoning as
+# docs/9x above — this pattern must match a symlink, not a directory.
+CLAUDE.md
+
 # Active-probe posture script — tuned attack tool for this specific perimeter
 # (curated attack paths, CrowdSec burst logic, Region Block negative test).
 # Low reconstruction cost but publishing it hands adversaries a pre-built
