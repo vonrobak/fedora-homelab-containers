@@ -105,8 +105,10 @@ one default route — wrong-network egress becomes structurally impossible inste
 luck-dependent (the 2026-02-02 incident lesson encoded as topology). Policed
 **live** by the timer (enumerates the network's members and their networks — even a
 hand-run `podman network connect` is caught within a minute) and alerted as
-critical (`EgressFilterSingleHomingViolation`). A commit-time quadlet lint is the
-recommended declare-time complement (future work).
+critical (`EgressFilterSingleHomingViolation`). The declare-time complement is
+`scripts/check-single-homing.sh`, wired as pre-commit check 6: a `.container`
+declaring `systemd-restricted-egress` alongside any other non-internal network
+(unknown networks count as non-internal — fail safe) rejects the commit.
 
 Corollaries applied with this ADR:
 
