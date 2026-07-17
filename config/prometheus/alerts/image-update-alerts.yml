@@ -12,6 +12,7 @@ groups:
         for: 24h
         labels:
           severity: info
+          component: supply-chain
         annotations:
           summary: "{{ $value }} container updates baked and ready to adopt"
           description: "{{ $value }} image updates have passed their ADR-036 bake interval. Run: scripts/monthly-update.sh (or adopt-baked.sh --dry-run to review the plan)."
@@ -23,6 +24,7 @@ groups:
         for: 720h
         labels:
           severity: info
+          component: supply-chain
         annotations:
           summary: "Baked image updates waiting >30d"
           description: "{{ $value }} baked update(s) have been adoptable for over 30 days. Run: scripts/monthly-update.sh"
@@ -35,6 +37,7 @@ groups:
         for: 1h
         labels:
           severity: warning
+          component: supply-chain
         annotations:
           summary: "Image update feed has not run in >8 days"
           description: "check-image-updates.timer (Sun 10:00) appears broken — the ADR-036 update nudge is blind. Check: systemctl --user status check-image-updates.{timer,service}"

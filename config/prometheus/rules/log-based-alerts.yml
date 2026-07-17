@@ -45,6 +45,7 @@ groups:
         for: 10m
         labels:
           severity: warning
+          component: immich
           category: media_processing
         annotations:
           summary: "Immich thumbnail generation failing"
@@ -64,6 +65,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          component: nextcloud
           category: background_jobs
         annotations:
           summary: "Nextcloud cron hasn't run in 10+ minutes"
@@ -124,6 +126,7 @@ groups:
         for: 30m
         labels:
           severity: warning
+          component: logging
           category: monitoring
         annotations:
           summary: "Promtail metric extraction may have failed"
