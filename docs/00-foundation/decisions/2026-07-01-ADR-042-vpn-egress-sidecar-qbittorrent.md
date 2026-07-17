@@ -10,7 +10,10 @@ updated: 2026-07-02
 # ADR-042: VPN Egress Sidecar for qBittorrent (gluetun + ProtonVPN)
 
 **Date:** 2026-07-01
-**Status:** Accepted (Phase 1 — VPN + kill-switch; port forwarding deferred to Phase 2)
+**Status:** Accepted, implementation parked (2026-07-17) — Phase 1 merged but was never
+deployed (secret provisioning never happened; found via GH#336, lesson L-094). Parked
+deliberately: no VPN subscription for now. The finished quadlet + resume checklist live
+outside the repo; qBittorrent continues on the pre-ADR direct-egress posture until resumed.
 
 ---
 

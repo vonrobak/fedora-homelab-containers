@@ -139,7 +139,7 @@ ALL_SERVICES=(
     jellyfin vaultwarden audiobookshelf navidrome qbittorrent
     home-assistant
     gathio gathio-db
-    forgejo forgejo-db gluetun proton-bridge
+    forgejo forgejo-db proton-bridge
     blackbox-exporter pihole-exporter postgres-exporter
     redis-authelia-exporter redis-immich-exporter unifi-syslog
 )
