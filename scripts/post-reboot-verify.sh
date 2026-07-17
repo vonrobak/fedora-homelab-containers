@@ -98,7 +98,35 @@ echo -e "${BOLD}Kernel:${NC}"
 echo "  Running: $(uname -r)"
 echo ""
 
-# ── Section 3: Service health ──
+# ── Section 3: Failed-unit sweep (authoritative — asks systemd, not a curated list) ──
+
+echo -e "${CYAN}Failed Units (systemd):${NC}"
+echo ""
+
+USER_FAILED=$(systemctl --user list-units --state=failed --no-legend --plain 2>/dev/null | awk '{print $1}')
+SYSTEM_FAILED=$(systemctl list-units --state=failed --no-legend --plain 2>/dev/null | awk '{print $1}')
+
+if [ -z "$USER_FAILED" ] && [ -z "$SYSTEM_FAILED" ]; then
+    echo -e "  ${GREEN}No failed units${NC} (user or system scope)"
+else
+    if [ -n "$USER_FAILED" ]; then
+        echo -e "  ${RED}Failed user units:${NC}"
+        while IFS= read -r unit; do
+            echo -e "    - $unit"
+            ISSUES=$((ISSUES + 1))
+        done <<< "$USER_FAILED"
+    fi
+    if [ -n "$SYSTEM_FAILED" ]; then
+        echo -e "  ${RED}Failed system units:${NC}"
+        while IFS= read -r unit; do
+            echo -e "    - $unit"
+            ISSUES=$((ISSUES + 1))
+        done <<< "$SYSTEM_FAILED"
+    fi
+fi
+echo ""
+
+# ── Section 4: Service health (curated fleet list) ──
 
 echo -e "${CYAN}Service Health:${NC}"
 echo ""
@@ -111,6 +139,9 @@ ALL_SERVICES=(
     jellyfin vaultwarden audiobookshelf navidrome qbittorrent
     home-assistant
     gathio gathio-db
+    forgejo forgejo-db gluetun proton-bridge
+    blackbox-exporter pihole-exporter postgres-exporter
+    redis-authelia-exporter redis-immich-exporter unifi-syslog
 )
 
 RUNNING=0
@@ -135,9 +166,27 @@ if [ ${#FAILED_LIST[@]} -gt 0 ]; then
         echo -e "    - $svc"
     done
 fi
+
+# Warn (not fail) when the curated list has drifted from the quadlet fleet —
+# a service missing here would otherwise be invisible to this section forever.
+QUADLET_DIR="$CONTAINERS_DIR/quadlets"
+if [ -d "$QUADLET_DIR" ]; then
+    UNLISTED=()
+    for q in "$QUADLET_DIR"/*.container; do
+        name="$(basename "$q" .container)"
+        listed=false
+        for s in "${ALL_SERVICES[@]}"; do
+            [ "$s" = "$name" ] && listed=true && break
+        done
+        $listed || UNLISTED+=("$name")
+    done
+    if [ ${#UNLISTED[@]} -gt 0 ]; then
+        echo -e "  ${YELLOW}Not in curated list (update ALL_SERVICES):${NC} ${UNLISTED[*]}"
+    fi
+fi
 echo ""
 
-# ── Section 4: Container health checks ──
+# ── Section 5: Container health checks ──
 
 echo -e "${CYAN}Container Health Checks:${NC}"
 echo ""
@@ -170,7 +219,7 @@ if [ "$HEALTH_FAIL" -gt 0 ]; then
 fi
 echo ""
 
-# ── Section 5: Run existing health check if available ──
+# ── Section 6: Run existing health check if available ──
 
 HEALTH_CHECK_SCRIPT="$SCRIPT_DIR/post-update-health-check.sh"
 if [ -x "$HEALTH_CHECK_SCRIPT" ]; then
@@ -180,7 +229,7 @@ if [ -x "$HEALTH_CHECK_SCRIPT" ]; then
     echo ""
 fi
 
-# ── Section 6: Summary ──
+# ── Section 7: Summary ──
 
 echo "============================================"
 echo "  VERIFICATION SUMMARY"
