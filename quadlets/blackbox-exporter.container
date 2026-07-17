@@ -1,8 +1,8 @@
 [Unit]
 Description=Blackbox Exporter (Prometheus) - HTTP/DNS/ICMP/TCP probes
 Documentation=https://github.com/prometheus/blackbox_exporter
-After=network-online.target reverse_proxy-network.service monitoring-network.service traefik.service
-Wants=network-online.target reverse_proxy-network.service monitoring-network.service
+After=network-online.target restricted-egress-network.service monitoring-network.service traefik.service
+Wants=network-online.target restricted-egress-network.service monitoring-network.service
 
 [Container]
 # ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-27 (multi-arch index digest).
@@ -11,9 +11,12 @@ Image=quay.io/prometheus/blackbox-exporter@sha256:e753ff9f3fc458d02cca5eddab5a77
 ContainerName=blackbox-exporter
 HostName=blackbox-exporter
 
-# reverse_proxy first → default route (reach LAN .69 DNS, .1 ICMP, internet for external probes).
+# restricted-egress first → default route for LAN-only probes (ADR-045: all probe
+# targets are LAN/container — .69 DNS, .1 ICMP, nextcloud status.php; no internet).
 # monitoring → scraped by Prometheus on :9115.
-Network=systemd-reverse_proxy:ip=10.89.2.90
+# Single-homing invariant: restricted-egress must stay the ONLY non-internal
+# network on this container (pre-commit check 6 + egress-filter alerts police this).
+Network=systemd-restricted-egress
 Network=systemd-monitoring:ip=10.89.4.95
 
 Volume=%h/containers/config/blackbox-exporter/blackbox.yml:/etc/blackbox_exporter/config.yml:Z,ro

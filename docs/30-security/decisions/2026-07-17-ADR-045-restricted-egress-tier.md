@@ -1,13 +1,36 @@
 ---
 type: ADR
-title: "ADR-045: Restricted-Egress Tier — LAN-Only Network with In-Netns nft Filter"
-description: "ADR adding the missing middle tier of a three-tier egress model: a restricted-egress network whose members get LAN reachability but no internet, enforced by an nft filter inside the rootless netns with fail-open semantics and mandatory drift detection."
+title: "ADR-045: Restricted-Egress Tier — Outbound-Restricted Network with In-Netns nft Filter"
+description: "ADR adding the missing middle tier of a three-tier egress model: a restricted-egress network whose members can dial only LAN + container fabric (no internet), enforced by an nft filter inside the rootless netns with fail-open semantics and mandatory drift detection. The tier constrains OUTBOUND traffic only — inbound reachability is governed solely by Traefik routing and is unaffected."
 sensitivity: public
 created: 2026-07-17
 updated: 2026-07-17
 ---
 
-# ADR-045: Restricted-Egress Tier — LAN-Only Network with In-Netns nft Filter
+# ADR-045: Restricted-Egress Tier — Outbound-Restricted Network with In-Netns nft Filter
+
+> **Clarification (2026-07-17 evening, GH#274):** the tier's original shorthand
+> "LAN-only" conflated two independent axes and is retired from all artifacts:
+>
+> - **Inbound reachability** — *who can dial the container.* Governed solely by
+>   the UDM port-forward (80/443 → Traefik) and Traefik's routers + middleware.
+>   **This tier says nothing about inbound.** A member with no router (prometheus)
+>   is unreachable from the internet; a member with a router (audiobookshelf,
+>   forgejo, authelia) remains fully internet-reachable through its unchanged
+>   middleware chain — Traefik dials it cross-bridge (both bridges
+>   `isolate=false`), and replies to Traefik's 10.89.2.69 are inside the
+>   filter's `10.89.0.0/16` accept set.
+> - **Outbound egress** — *who the container can dial.* This is what the tier
+>   restricts: LAN + container fabric only, internet dropped.
+>
+> For Traefik-routed members this is the classic DMZ posture: **guarded front
+> door, no back door** — and egress restriction is *most* valuable for exactly
+> those internet-exposed services, since they are the likeliest to be
+> compromised and the filter denies the resulting exfiltration/C2 callback.
+> Lateral movement between the two non-internal bridges (reverse_proxy members
+> can dial restricted-egress members' ports) is explicitly OUT OF SCOPE here —
+> identical to the exposure the members had while sitting on reverse_proxy
+> itself — and remains a separate future hardening item.
 
 **Date:** 2026-07-17
 **Status:** Accepted. Executes GH#334 (design handoff from the htpc-mgmt wayfinder
@@ -47,7 +70,7 @@ restarts, network reloads, and network creates; netavark rewrites only its own
 | Tier | Mechanism | Egress | Members |
 |------|-----------|--------|---------|
 | `internal` | `Internal=true` networks | none (no default route) | DBs, backends (unchanged) |
-| **`restricted-egress`** | non-internal network + in-netns nft filter | **LAN + container bridges only** | pihole-exporter, unpoller, prometheus |
+| **`restricted-egress`** | non-internal network + in-netns nft filter | **LAN + container bridges only** | pihole-exporter, unpoller, prometheus, blackbox-exporter, audiobookshelf, forgejo, authelia (last four: GH#274, 2026-07-17) |
 | open | default-allow | unrestricted | rest of the fleet (unchanged) |
 
 The new network is pinned like every fleet network: `Subnet=10.89.11.0/24`,

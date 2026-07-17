@@ -1,7 +1,7 @@
 [Unit]
 Description=Authelia - SSO & MFA Authentication Server (YubiKey-First)
-After=network-online.target redis-authelia.service reverse_proxy-network.service auth_services-network.service mail-network.service
-Wants=auth_services-network.service network-online.target reverse_proxy-network.service mail-network.service
+After=network-online.target redis-authelia.service restricted-egress-network.service auth_services-network.service mail-network.service
+Wants=auth_services-network.service network-online.target restricted-egress-network.service mail-network.service
 Requires=redis-authelia.service
 
 [Container]
@@ -14,7 +14,16 @@ NoNewPrivileges=true
 
 # Multi-network: Serves SSO portal + handles auth verification
 # Static IPs assigned to ensure consistent DNS resolution
-Network=systemd-reverse_proxy:ip=10.89.2.78
+# Networks (ADR-045/GH#274): restricted-egress FIRST = default route, outbound
+# limited to LAN + container fabric. INBOUND unchanged: sso.patriark.org portal and
+# every forward-auth check are Traefik DIALING IN (cross-bridge, pinned IP in
+# config/traefik/hosts) — session cookies ride back through Traefik's responses.
+# Authelia's only self-initiated connections: redis-authelia (auth_services,
+# internal) and the NTP startup check (disabled in configuration.yml — host
+# chronyd owns time). SMTP, if ever re-enabled, goes to proton-bridge over the
+# internal mail network — proton-bridge does the internet leg.
+# Single-homing invariant: restricted-egress must stay the ONLY non-internal network.
+Network=systemd-restricted-egress:ip=10.89.11.78
 Network=systemd-auth_services:ip=10.89.3.78
 Network=systemd-mail:ip=10.89.9.78
 
