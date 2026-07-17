@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-07-13 20:01:44 UTC
-**Total Documents:** 130
+**Generated:** 2026-07-17 10:43:31 UTC
+**Total Documents:** 133
 
 ---
 
@@ -137,7 +137,7 @@
 
 ---
 
-### 30-security/ (19 documents)
+### 30-security/ (20 documents)
 
 **Security architecture, configurations, and incident response**
 
@@ -158,6 +158,7 @@
 - ADR-008: [2025-11-12-ADR-008-crowdsec-security-architecture](30-security/decisions/2025-11-12-ADR-008-crowdsec-security-architecture.md)
 - ADR-040: [2026-06-14-ADR-040-secrets-substrate-operator-boundary](30-security/decisions/2026-06-14-ADR-040-secrets-substrate-operator-boundary.md)
 - ADR-041: [2026-06-14-ADR-041-secrets-openbao-substrate-boundary](30-security/decisions/2026-06-14-ADR-041-secrets-openbao-substrate-boundary.md)
+- ADR-045: [2026-07-17-ADR-045-restricted-egress-tier](30-security/decisions/2026-07-17-ADR-045-restricted-egress-tier.md)
 
 **Runbooks:**
 - [IR-001-brute-force-attack](30-security/runbooks/IR-001-brute-force-attack.md)
@@ -168,7 +169,7 @@
 
 ---
 
-### 40-monitoring-and-documentation/ (14 documents)
+### 40-monitoring-and-documentation/ (16 documents)
 
 **Monitoring stack, SLOs, and documentation practices**
 
@@ -213,117 +214,3 @@ Recent intelligence reports and resource forecasts. Updated automatically by aut
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-07-13: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
-- 2026-07-13: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
-- 2026-07-13: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
-- 2026-07-13: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
-- 2026-07-13: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
-- 2026-07-13: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
-
----
-
-## Quick Search by Service
-
-**Traefik:**
-- Guide: [traefik.md](10-services/guides/traefik.md)
-- ADR: [ADR-022](00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md)
-- Config: `~/containers/config/traefik/`
-- Quadlet: `~/.config/containers/systemd/traefik.container`
-
-**Authelia:**
-- Guide: [authelia.md](10-services/guides/authelia.md)
-- ADR: [ADR-005](30-security/decisions/2025-11-10-ADR-005-authelia-sso-mfa-architecture.md)
-- ADR: [ADR-006](30-security/decisions/2025-11-11-ADR-006-authelia-sso-yubikey-deployment.md)
-- Config: `~/containers/config/authelia/`
-- Quadlet: `~/.config/containers/systemd/authelia.container`
-
-**Crowdsec:**
-- Guide: [crowdsec.md](10-services/guides/crowdsec.md)
-- ADR: [ADR-039](00-foundation/decisions/2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping.md)
-- ADR: [ADR-008](30-security/decisions/2025-11-12-ADR-008-crowdsec-security-architecture.md)
-- Quadlet: `~/.config/containers/systemd/crowdsec.container`
-
-**Jellyfin:**
-- Guide: [jellyfin.md](10-services/guides/jellyfin.md)
-- Related: [jellyfin-gpu-acceleration-troubleshooting.md](10-services/guides/jellyfin-gpu-acceleration-troubleshooting.md)
-- Quadlet: `~/.config/containers/systemd/jellyfin.container`
-
-**Immich Server:**
-- Guide: [immich.md](10-services/guides/immich.md)
-- Related: [immich-configuration-review.md](10-services/guides/immich-configuration-review.md)
-- Related: [immich-deployment-checklist.md](10-services/guides/immich-deployment-checklist.md)
-- Related: [immich-ml-troubleshooting.md](10-services/guides/immich-ml-troubleshooting.md)
-- Quadlet: `~/.config/containers/systemd/immich-server.container`
-
-**Nextcloud:**
-- Guide: [nextcloud.md](10-services/guides/nextcloud.md)
-- ADR: [ADR-026](00-foundation/decisions/2026-04-21-ADR-026-nextcloud-pinned-major-version.md)
-- ADR: [ADR-013](10-services/decisions/2025-12-20-ADR-013-nextcloud-native-authentication.md)
-- ADR: [ADR-014](10-services/decisions/2025-12-20-ADR-014-nextcloud-passwordless-authentication.md)
-- Quadlet: `~/.config/containers/systemd/nextcloud.container`
-
-**Vaultwarden:**
-- Related: [vaultwarden-deployment.md](10-services/guides/vaultwarden-deployment.md)
-- ADR: [ADR-007](10-services/decisions/2025-11-12-ADR-007-vaultwarden-architecture.md)
-- Config: `~/containers/config/vaultwarden/`
-- Quadlet: `~/.config/containers/systemd/vaultwarden.container`
-
-**Home Assistant:**
-- Guide: [home-assistant.md](10-services/guides/home-assistant.md)
-- Related: [home-assistant.md](10-services/guides/home-assistant.md)
-- Config: `~/containers/config/home-assistant/`
-- Quadlet: `~/.config/containers/systemd/home-assistant.container`
-
-**Gathio:**
-- Related: [gathio-email-setup.md](10-services/guides/gathio-email-setup.md)
-- Config: `~/containers/config/gathio/`
-- Quadlet: `~/.config/containers/systemd/gathio.container`
-
-**Prometheus:**
-- Config: `~/containers/config/prometheus/`
-- Quadlet: `~/.config/containers/systemd/prometheus.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
-**Grafana:**
-- Config: `~/containers/config/grafana/`
-- Quadlet: `~/.config/containers/systemd/grafana.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
-**Loki:**
-- Config: `~/containers/config/loki/`
-- Quadlet: `~/.config/containers/systemd/loki.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
-**Alertmanager:**
-- Config: `~/containers/config/alertmanager/`
-- Quadlet: `~/.config/containers/systemd/alertmanager.container`
-- Stack Guide: [monitoring-stack.md](40-monitoring-and-documentation/guides/monitoring-stack.md)
-- SLO Framework: [slo-framework.md](40-monitoring-and-documentation/guides/slo-framework.md)
-
----
-
-## Documentation Practices
-
-### Directory Structure
-
-- **guides/** - Living reference documentation (updated in place)
-- **decisions/** - Architecture Decision Records (immutable, dated)
-- **runbooks/** - Operational procedures (DR, incident response)
-- **journal/** - Chronological entries (append-only, never edited)
-
-### File Naming Conventions
-
-- **Guides:** Descriptive names (e.g., `slo-framework.md`)
-- **ADRs:** `YYYY-MM-DD-ADR-NNN-description.md`
-- **Journals:** `YYYY-MM-DD-description.md`
-- **Reports:** `TYPE-YYYYMMDD-HHMMSS.json` or `.md`
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full documentation guidelines.
-
----
-
-*Auto-generated by `scripts/generate-doc-index.sh`*
-*Updates daily to reflect documentation changes*

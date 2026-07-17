@@ -1,0 +1,17 @@
+[Unit]
+Description=Restricted-egress nft filter — reapply + drift metrics (ADR-045)
+Documentation=file:///home/patriark/containers/docs/30-security/decisions/2026-07-17-ADR-045-restricted-egress-tier.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/egress-filter-apply.sh
+TimeoutStartSec=1m
+
+# Cheap (a few podman inspects + one nft apply) — stay polite anyway
+Nice=10
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

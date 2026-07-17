@@ -1,7 +1,7 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-07-01 22:04:48 UTC
-**System:** fedora-htpc | **Networks:** 11 | **Containers:** 37
+**Generated:** 2026-07-17 10:43:25 UTC
+**System:** fedora-htpc | **Networks:** 12 | **Containers:** 37
 
 ---
 
@@ -23,7 +23,6 @@ graph TB
     Authelia -->|Proxy| grafana[grafana]
     Authelia -->|Proxy| home_assistant[home-assistant]
     Authelia -->|Proxy| loki[loki]
-    Authelia -->|Proxy| prometheus[prometheus]
     Authelia -->|Proxy| qbittorrent[qbittorrent]
 
     %% Services with native authentication (bypass Authelia)
@@ -36,9 +35,7 @@ graph TB
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
     CrowdSec -->|Rate Limit| navidrome[navidrome]
     CrowdSec -->|Rate Limit| nextcloud[nextcloud]
-    CrowdSec -->|Rate Limit| pihole_exporter[pihole-exporter]
     CrowdSec -->|Rate Limit| proton_bridge[proton-bridge]
-    CrowdSec -->|Rate Limit| unpoller[unpoller]
     CrowdSec -->|Rate Limit| vaultwarden[vaultwarden]
 
     %% Styling
@@ -131,6 +128,13 @@ graph TB
         photos_redis_immich_exporter[redis-immich-exporter]
     end
 
+    subgraph restricted-egress["restricted-egress<br/>10.89.11.0/24"]
+        direction LR
+        restricted-egress_pihole_exporter[pihole-exporter]
+        restricted-egress_prometheus[prometheus]
+        restricted-egress_unpoller[unpoller]
+    end
+
     subgraph reverse_proxy["reverse_proxy<br/>10.89.2.0/24"]
         direction LR
         reverse_proxy_alert_discord_relay[alert-discord-relay]
@@ -148,12 +152,9 @@ graph TB
         reverse_proxy_loki[loki]
         reverse_proxy_navidrome[navidrome]
         reverse_proxy_nextcloud[nextcloud]
-        reverse_proxy_pihole_exporter[pihole-exporter]
-        reverse_proxy_prometheus[prometheus]
         reverse_proxy_proton_bridge[proton-bridge]
         reverse_proxy_qbittorrent[qbittorrent]
         reverse_proxy_traefik[traefik]
-        reverse_proxy_unpoller[unpoller]
         reverse_proxy_vaultwarden[vaultwarden]
     end
 
@@ -178,49 +179,49 @@ graph TB
 
 Shows which services belong to which networks. Dynamically generated from running container state.
 
-| Service | auth_services | forgejo | gathio | home_automation | mail | media_services | monitoring | nextcloud | photos | reverse_proxy | syslog |
-|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Service | auth_services | forgejo | gathio | home_automation | mail | media_services | monitoring | nextcloud | photos | restricted-egress | reverse_proxy | syslog |
+|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **Gateway & Security** |
-| authelia | ✅ | - | - | - | ✅ | - | - | - | - | ✅ | - |
-| crowdsec | - | - | - | - | - | - | - | - | - | ✅ | - |
-| redis-authelia | ✅ | - | - | - | - | - | - | - | - | - | - |
-| traefik | - | - | - | - | - | - | - | - | - | ✅ | - |
+| authelia | ✅ | - | - | - | ✅ | - | - | - | - | - | ✅ | - |
+| crowdsec | - | - | - | - | - | - | - | - | - | - | ✅ | - |
+| redis-authelia | ✅ | - | - | - | - | - | - | - | - | - | - | - |
+| traefik | - | - | - | - | - | - | - | - | - | - | ✅ | - |
 | **Public Services** |
-| alert-discord-relay | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| audiobookshelf | - | - | - | - | - | - | - | - | - | ✅ | - |
-| blackbox-exporter | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| forgejo | - | ✅ | - | - | - | - | - | - | - | ✅ | - |
-| gathio | - | - | ✅ | - | - | - | - | - | - | ✅ | - |
-| home-assistant | - | - | - | ✅ | - | - | - | - | - | ✅ | - |
-| immich-server | - | - | - | - | - | - | - | - | ✅ | ✅ | - |
-| jellyfin | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
-| navidrome | - | - | - | - | - | - | - | - | - | ✅ | - |
-| nextcloud | - | - | - | - | - | - | - | ✅ | - | ✅ | - |
-| pihole-exporter | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| proton-bridge | - | - | - | - | ✅ | - | - | - | - | ✅ | - |
-| qbittorrent | - | - | - | - | - | - | - | - | - | ✅ | - |
-| unpoller | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| vaultwarden | - | - | - | - | - | - | - | - | - | ✅ | - |
+| alert-discord-relay | - | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
+| audiobookshelf | - | - | - | - | - | - | - | - | - | - | ✅ | - |
+| blackbox-exporter | - | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
+| forgejo | - | ✅ | - | - | - | - | - | - | - | - | ✅ | - |
+| gathio | - | - | ✅ | - | - | - | - | - | - | - | ✅ | - |
+| home-assistant | - | - | - | ✅ | - | - | - | - | - | - | ✅ | - |
+| immich-server | - | - | - | - | - | - | - | - | ✅ | - | ✅ | - |
+| jellyfin | - | - | - | - | - | ✅ | - | - | - | - | ✅ | - |
+| navidrome | - | - | - | - | - | - | - | - | - | - | ✅ | - |
+| nextcloud | - | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| proton-bridge | - | - | - | - | ✅ | - | - | - | - | - | ✅ | - |
+| qbittorrent | - | - | - | - | - | - | - | - | - | - | ✅ | - |
+| vaultwarden | - | - | - | - | - | - | - | - | - | - | ✅ | - |
 | **Monitoring** |
-| alertmanager | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| cadvisor | - | - | - | - | - | - | ✅ | - | - | - | - |
-| grafana | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| loki | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| node_exporter | - | - | - | - | - | - | ✅ | - | - | - | - |
-| prometheus | - | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| promtail | - | - | - | - | - | - | ✅ | - | - | - | - |
+| alertmanager | - | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
+| cadvisor | - | - | - | - | - | - | ✅ | - | - | - | - | - |
+| grafana | - | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
+| loki | - | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
+| node_exporter | - | - | - | - | - | - | ✅ | - | - | - | - | - |
+| prometheus | - | - | - | - | - | - | ✅ | - | - | ✅ | - | - |
+| promtail | - | - | - | - | - | - | ✅ | - | - | - | - | - |
+| unpoller | - | - | - | - | - | - | ✅ | - | - | ✅ | - | - |
 | **Backend Services** |
-| forgejo-db | - | ✅ | - | - | - | - | - | - | - | - | - |
-| gathio-db | - | - | ✅ | - | - | - | - | - | - | - | - |
-| immich-ml | - | - | - | - | - | - | - | - | ✅ | - | - |
-| nextcloud-db | - | - | - | - | - | - | - | ✅ | - | - | - |
-| nextcloud-redis | - | - | - | - | - | - | - | ✅ | - | - | - |
-| postgres-exporter | - | - | - | - | - | - | ✅ | - | ✅ | - | - |
-| postgresql-immich | - | - | - | - | - | - | - | - | ✅ | - | - |
-| redis-authelia-exporter | ✅ | - | - | - | - | - | ✅ | - | - | - | - |
-| redis-immich-exporter | - | - | - | - | - | - | ✅ | - | ✅ | - | - |
-| redis-immich | - | - | - | - | - | - | - | - | ✅ | - | - |
-| unifi-syslog | - | - | - | - | - | - | - | - | - | - | ✅ |
+| forgejo-db | - | ✅ | - | - | - | - | - | - | - | - | - | - |
+| gathio-db | - | - | ✅ | - | - | - | - | - | - | - | - | - |
+| immich-ml | - | - | - | - | - | - | - | - | ✅ | - | - | - |
+| nextcloud-db | - | - | - | - | - | - | - | ✅ | - | - | - | - |
+| nextcloud-redis | - | - | - | - | - | - | - | ✅ | - | - | - | - |
+| pihole-exporter | - | - | - | - | - | - | ✅ | - | - | ✅ | - | - |
+| postgres-exporter | - | - | - | - | - | - | ✅ | - | ✅ | - | - | - |
+| postgresql-immich | - | - | - | - | - | - | - | - | ✅ | - | - | - |
+| redis-authelia-exporter | ✅ | - | - | - | - | - | ✅ | - | - | - | - | - |
+| redis-immich-exporter | - | - | - | - | - | - | ✅ | - | ✅ | - | - | - |
+| redis-immich | - | - | - | - | - | - | - | - | ✅ | - | - | - |
+| unifi-syslog | - | - | - | - | - | - | - | - | - | - | - | ✅ |
 
 ---
 
@@ -388,11 +389,23 @@ sequenceDiagram
 - redis-immich-exporter
 
 
+### restricted-egress
+
+- **Full Name:** `systemd-restricted-egress`
+- **Subnet:** 10.89.11.0/24
+- **Services:** 3
+
+**Members:**
+- pihole-exporter
+- prometheus
+- unpoller
+
+
 ### reverse_proxy
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 22
+- **Services:** 19
 
 **Members:**
 - alert-discord-relay
@@ -410,12 +423,9 @@ sequenceDiagram
 - loki
 - navidrome
 - nextcloud
-- pihole-exporter
-- prometheus
 - proton-bridge
 - qbittorrent
 - traefik
-- unpoller
 - vaultwarden
 
 

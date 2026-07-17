@@ -1,8 +1,8 @@
 [Unit]
 Description=Unpoller - UniFi Metrics Exporter for Prometheus
 Documentation=https://unpoller.com/docs/
-After=network-online.target reverse_proxy-network.service prometheus.service traefik.service
-Wants=network-online.target reverse_proxy-network.service
+After=network-online.target restricted-egress-network.service prometheus.service traefik.service
+Wants=network-online.target restricted-egress-network.service
 
 [Container]
 # ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-13 (index digest, multi-arch)
@@ -24,9 +24,13 @@ Secret=unpoller_pass,type=env,target=UP_UNIFI_DEFAULT_PASS
 Environment=TZ=Europe/Oslo
 
 # Network configuration
-# reverse_proxy first for default route (UDM Pro polling at 192.168.1.1)
-Network=systemd-reverse_proxy:ip=10.89.2.87
-Network=systemd-monitoring
+# restricted-egress first for default route (UDM Pro polling at 192.168.1.1);
+# internet egress dropped by the netns nft filter (ADR-045). Single-homing
+# invariant: this must stay the ONLY non-internal network on this container.
+# monitoring IP pinned — Prometheus scrapes 10.89.4.97:9130 (name resolves
+# ambiguously across the two shared networks post-swap).
+Network=systemd-restricted-egress
+Network=systemd-monitoring:ip=10.89.4.97
 
 # Prometheus metrics exposed on systemd-monitoring network (port 9130)
 # No PublishPort needed - Prometheus can reach unpoller:9130 directly

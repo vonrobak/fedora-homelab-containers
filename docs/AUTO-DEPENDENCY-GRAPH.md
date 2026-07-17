@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-07-01 22:04:54 UTC
+**Generated:** 2026-07-17 10:43:30 UTC
 **System:** fedora-htpc
 
 ---
@@ -88,11 +88,8 @@ graph TB
     traefik -.-> loki
     traefik -.-> navidrome
     traefik -.-> nextcloud
-    traefik -.-> pihole_exporter
-    traefik -.-> prometheus
     traefik -.-> proton_bridge
     traefik -.-> qbittorrent
-    traefik -.-> unpoller
     traefik -.-> vaultwarden
 
     %% Monitoring (Prometheus scrapes via monitoring network)
@@ -245,7 +242,9 @@ Services on the same network can communicate:
 
 **photos:** immich-ml,immich-server,postgres-exporter,postgresql-immich,redis-immich,redis-immich-exporter
 
-**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,blackbox-exporter,crowdsec,forgejo,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,pihole-exporter,prometheus,proton-bridge,qbittorrent,traefik,unpoller,vaultwarden
+**restricted-egress:** pihole-exporter,prometheus,unpoller
+
+**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,blackbox-exporter,crowdsec,forgejo,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,proton-bridge,qbittorrent,traefik,vaultwarden
 
 **syslog:** unifi-syslog
 

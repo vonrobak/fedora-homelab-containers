@@ -73,7 +73,7 @@ access_control:
     # Tier 1: Admin Services - YubiKey Required (two_factor)
     - domain:
         - 'grafana.patriark.org'
-        - 'prometheus.patriark.org'
+        # prometheus.patriark.org removed 2026-07-17 — Traefik router deleted (ADR-045)
         - 'traefik.patriark.org'
         - 'loki.patriark.org'
         - 'home.patriark.org'

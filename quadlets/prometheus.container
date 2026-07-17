@@ -1,7 +1,7 @@
 [Unit]
 Description=Prometheus Metrics Database
-After=network-online.target monitoring-network.service node_exporter.service traefik.service
-Wants=monitoring-network.service network-online.target node_exporter.service
+After=network-online.target restricted-egress-network.service monitoring-network.service node_exporter.service traefik.service
+Wants=restricted-egress-network.service monitoring-network.service network-online.target node_exporter.service
 
 [Container]
 # ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-06-10 (index digest, multi-arch)
@@ -10,8 +10,13 @@ Image=quay.io/prometheus/prometheus@sha256:69f5241418838263316593f7274a304b095c4
 ContainerName=prometheus
 NoNewPrivileges=true
 HostName=prometheus
-# Static IPs assigned to ensure consistent DNS resolution
-Network=systemd-reverse_proxy:ip=10.89.2.79
+# restricted-egress first → default route for LAN scrapes (Pi node_exporter,
+# blackbox DNS targets) with internet egress dropped by the netns nft filter
+# (ADR-045). Cross-bridge scrapes to reverse_proxy targets (traefik, crowdsec,
+# navidrome, HA) use pinned IPs + kernel routing — no DNS, no shared network.
+# Single-homing invariant: restricted-egress must stay the ONLY non-internal
+# network on this container. monitoring IP pinned for ADR-018-style determinism.
+Network=systemd-restricted-egress
 Network=systemd-monitoring:ip=10.89.4.79
 
 # Prometheus configuration and data

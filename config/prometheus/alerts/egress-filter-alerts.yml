@@ -1,0 +1,54 @@
+# ADR-045 — restricted-egress nft filter drift detection.
+#
+# The filter is FAIL-OPEN (members run regardless of filter state — it is
+# defense-in-depth, not a containment boundary), so drift detection is the
+# mandatory complement: an unfiltered window must never pass silently.
+# Metrics come from egress-filter-apply.sh (1-min timer) via the node_exporter
+# textfile collector (honor_labels on that job — see prometheus.yml).
+groups:
+  - name: egress_filter_alerts
+    interval: 60s
+    rules:
+      # Warning: the rootless netns exists (containers are running) but the
+      # egress_filter table has not converged. Design gate is >5 min (the
+      # post-reboot unfiltered burst inside the first minute is explicitly
+      # accepted — ADR-045).
+      - alert: EgressFilterAbsent
+        expr: egress_filter_netns_present == 1 and egress_filter_table_present == 0
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+          component: egress-filter
+        annotations:
+          summary: "Restricted-egress nft filter absent >5m while netns is up"
+          description: "The rootless netns exists but table inet egress_filter is missing — restricted-egress members (prometheus, unpoller, pihole-exporter) currently have UNFILTERED internet egress. Check: journalctl --user -u egress-filter.service -n 20; apply by hand: systemctl --user start egress-filter.service. See ADR-045."
+
+      # Warning: the enforcement timer itself is dead or wedged — without it
+      # there is neither enforcement nor the sensor above. Catches both a
+      # stale timestamp and the metric disappearing entirely.
+      - alert: EgressFilterCollectorStale
+        expr: (time() - egress_filter_last_run_timestamp) > 300 or absent(egress_filter_last_run_timestamp)
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+          component: egress-filter
+        annotations:
+          summary: "egress-filter.timer has not reported for >5m"
+          description: "egress-filter-apply.sh last wrote its textfile more than 5 minutes ago (cadence is 1 min) — enforcement AND drift detection for the restricted-egress tier are blind. Check: systemctl --user status egress-filter.timer egress-filter.service. See ADR-045."
+
+      # Critical: the single-homing invariant is broken — a restricted-egress
+      # member joined another non-internal network, giving it a second default
+      # route around the filter. This is the 2026-02-02 incident topology;
+      # it must be impossible, not just filtered (ADR-045).
+      - alert: EgressFilterSingleHomingViolation
+        expr: egress_filter_singlehome_violations > 0
+        for: 2m
+        labels:
+          severity: critical
+          category: security
+          component: egress-filter
+        annotations:
+          summary: "Restricted-egress member is multi-homed onto a non-internal network"
+          description: "{{ $value }} membership(s) of the restricted-egress network also join another NON-internal network — that container has a default route that bypasses the egress filter (ADR-045 invariant, 2026-02-02 lesson). Identify: journalctl --user -u egress-filter.service | grep VIOLATION; fix the quadlet (or undo the podman network connect) immediately."
