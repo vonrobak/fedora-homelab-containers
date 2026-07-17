@@ -280,15 +280,16 @@ getenforce
 ```
 
 **Level 2 (Important):**
-- [ ] Container images use specific tags (not `:latest` for databases)
+- [ ] Container images digest-pinned (`tag@sha256:…`, whole fleet — ADR-030)
 - [ ] Health checks defined in quadlet files
 - [ ] No exposed ports outside intended scope (check `ss -tulnp`)
 - [ ] Secrets managed via podman secrets (Pattern 2: type=env)
 
 ```bash
-# Check for containers using :latest inappropriately
-podman ps --format "{{.Names}}\t{{.Image}}" | grep -E "postgres|mariadb|redis" | grep ":latest"
-# Expected: Empty (databases should be pinned)
+# Check for quadlets not digest-pinned (ADR-030: every registry image = tag@sha256)
+grep -L 'Image=.*@sha256:' ~/containers/quadlets/*.container
+# Expected: only the 2 local builds (alert-discord-relay, proton-bridge) — they are
+# Tier 2 (built locally, no registry trust) and pin their Containerfile FROM bases instead
 
 # Verify podman secrets exist
 podman secret ls

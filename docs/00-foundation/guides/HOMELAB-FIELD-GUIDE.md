@@ -384,27 +384,39 @@ sudo btrfs scrub status /mnt/btrfs-pool  # Check for errors
 
 ### Container Updates
 
-**Strategy:** Most services use `:latest` tags. Databases and Immich are pinned.
+**Strategy (ADR-030):** The **whole fleet is digest-pinned** (`tag@sha256:…` — tag is
+the discovery handle, digest is the execution contract) and all auto-update paths are
+removed. Nothing updates by pulling a tag; updates are deliberate, baked (ADR-036
+cooling-off: egress 7d / internal 3d), and adopted in waves.
 
 ```bash
+# Monthly deliberate-update loop (single entry point — chains discover → adopt)
+~/containers/scripts/monthly-update.sh
+
+# Discover candidates only (skopeo digest-diff, notify-only, BAKED/TOO-YOUNG annotated)
+~/containers/scripts/check-image-updates.sh
+
+# Single-service update — NEVER `podman pull` + restart (that silently re-floats a pin)
+~/containers/scripts/pin-container-image.sh <svc> --adopt <digest> --apply
+systemctl --user daemon-reload && systemctl --user restart <service>.service
+
 # Before a reboot: quiesce containers cleanly + snapshot state for verification
 ~/containers/scripts/prepare-for-reboot.sh
-
-# Manual single-service update
-podman pull <image>:<tag>
-systemctl --user restart <service>.service
 
 # Verify after update
 podman logs <service> --tail 20
 podman healthcheck run <service>
 ```
 
-**Pinned services (require manual version bumps):**
-- PostgreSQL (Immich) -- major version needs migration
-- MariaDB (Nextcloud) -- major version needs migration
-- Immich -- tight coupling between server, ML, and DB
+**Extra-care services (beyond the standard pin):**
+- PostgreSQL (Immich), MariaDB (Nextcloud), MongoDB (Gathio) -- pinned to major-version
+  tags; major upgrades are explicit migration projects (ADR-029 dump backbone)
+- Immich -- server, ML, and DB version-locked as a set
+- Local builds (proton-bridge, alert-discord-relay) -- built from digest-pinned bases
 
-Full strategy: [ADR-015](../../00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md)
+Full strategy: [ADR-030](../../00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
++ [ADR-036 bake policy](../../00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md);
+daily audit view: `docs/AUTO-IMAGE-PIN-INDEX.md`
 
 ### Fedora System Updates
 
@@ -1124,7 +1136,8 @@ These ADRs affect how you operate the system:
 |---|---|---|
 | [001](../../00-foundation/decisions/2025-10-20-decision-001-rootless-containers.md) | Rootless Containers | All containers as UID 1000, `:Z` labels required |
 | [002](../../00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md) | Systemd Quadlets | `systemctl --user` for all container management |
-| [015](../../00-foundation/decisions/2025-12-22-ADR-015-container-update-strategy.md) | Update Strategy | `:latest` for most, pin databases and Immich |
+| [030](../../00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md) | Supply-Chain Trust | Whole fleet digest-pinned, deliberate updates only (supersedes ADR-015) |
+| [036](../../00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md) | Bake Policy | Cooling-off before adoption (egress 7d / internal 3d), CVE exception lane |
 | [016](../../00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md) | Config Design | ALL routing in `routers.yml`, never in labels |
 | [018](../../00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md) | Static IPs | Multi-network DNS fix, `/etc/hosts` override |
 
