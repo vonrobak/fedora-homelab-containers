@@ -6,3 +6,7 @@ Subnet=10.89.2.0/24
 Gateway=10.89.2.1
 IPRange=10.89.2.2-10.89.2.68
 DNS=192.168.1.69
+# Pin cross-bridge forwarding open (prometheus scrapes traefik/crowdsec pinned IPs
+# from restricted-egress — ADR-045). netavark 2.0 plans to flip the isolation
+# default; this freezes today's behavior at declare time (applies on recreation).
+Options=isolate=false

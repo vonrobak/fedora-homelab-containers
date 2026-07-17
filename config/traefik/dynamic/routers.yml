@@ -161,18 +161,10 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Prometheus Metrics Database
-    prometheus-secure:
-      rule: "Host(`prometheus.patriark.org`)"
-      service: "prometheus"
-      entryPoints:
-        - websecure
-      middlewares:
-        - crowdsec-bouncer@file
-        - rate-limit@file
-        - authelia@file
-      tls:
-        certResolver: letsencrypt
+    # Prometheus - INTERNAL ONLY (router removed 2026-07-17, ADR-045)
+    # Unused since fall 2025; Grafana is the UI and queries prometheus over the
+    # monitoring network. Removing the route is what lets prometheus be
+    # single-homed on restricted-egress (GH#334 single-homing invariant).
 
     # Loki Log Aggregation
     loki-secure:
@@ -330,10 +322,7 @@ http:
         servers:
           - url: "http://grafana:3000"
 
-    prometheus:
-      loadBalancer:
-        servers:
-          - url: "http://prometheus:9090"
+    # prometheus: (removed 2026-07-17 — internal-only, see router note above)
 
     loki:
       loadBalancer:

@@ -1,8 +1,8 @@
 [Unit]
 Description=Pi-hole Exporter (Prometheus) — query/block metrics from the LAN resolver
 Documentation=https://github.com/eko/pihole-exporter
-After=network-online.target reverse_proxy-network.service monitoring-network.service traefik.service
-Wants=network-online.target reverse_proxy-network.service monitoring-network.service
+After=network-online.target restricted-egress-network.service monitoring-network.service traefik.service
+Wants=network-online.target restricted-egress-network.service monitoring-network.service
 
 [Container]
 # ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-27.
@@ -12,9 +12,12 @@ Image=docker.io/ekofr/pihole-exporter@sha256:a890cc731a39da719ba19cfd717427d9336
 ContainerName=pihole-exporter
 HostName=pihole-exporter
 
-# reverse_proxy first → default route to LAN (the Pi at 192.168.1.69).
-# monitoring → Prometheus scrapes :9617.
-Network=systemd-reverse_proxy:ip=10.89.2.91
+# restricted-egress first → default route to LAN (the Pi at 192.168.1.69),
+# internet egress dropped by the netns nft filter (ADR-045). Single-homing
+# invariant: this must stay the ONLY non-internal network on this container.
+# monitoring → Prometheus scrapes :9617 (pinned IP; name resolves ambiguously
+# across the two shared networks post-swap).
+Network=systemd-restricted-egress
 Network=systemd-monitoring:ip=10.89.4.96
 
 Environment=PIHOLE_HOSTNAME=192.168.1.69

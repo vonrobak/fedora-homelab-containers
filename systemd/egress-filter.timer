@@ -1,0 +1,13 @@
+[Unit]
+Description=Reapply restricted-egress nft filter every minute (enforcer + sensor, ADR-045)
+
+[Timer]
+# The netns (and every rule in it) dies with the last bridge container and on
+# reboot — 1-minute cadence bounds the unfiltered window; the ruleset prelude
+# makes each tick idempotent. Tight accuracy so the cadence stays real.
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=15s
+
+[Install]
+WantedBy=timers.target

@@ -63,9 +63,13 @@ scrape_configs:
         action: drop
 
   # Traefik monitoring (metrics enabled 2025-11-06)
+  # Pinned IP (ADR-045): prometheus moved to restricted-egress and shares no
+  # network with traefik — scraped cross-bridge via pinned reverse_proxy IP +
+  # kernel routing (deterministic, no DNS). Depends on isolate=false staying
+  # pinned in the .network quadlets.
   - job_name: 'traefik'
     static_configs:
-      - targets: ['traefik:8080']
+      - targets: ['10.89.2.69:8080']
         labels:
           instance: 'fedora-htpc'
           service: 'traefik'
@@ -95,9 +99,11 @@ scrape_configs:
           service: 'promtail'
 
   # CrowdSec security monitoring
+  # Pinned IP (ADR-045): scraped cross-bridge from restricted-egress — see
+  # the traefik job note.
   - job_name: 'crowdsec'
     static_configs:
-      - targets: ['crowdsec:6060']
+      - targets: ['10.89.2.70:6060']
         labels:
           instance: 'fedora-htpc'
           service: 'crowdsec'
@@ -125,10 +131,13 @@ scrape_configs:
   # Timeout (L-034 sweep 2026-06-12): measured p95 16ms / 7d-max 1.3s — the
   # exporter polls the UDM Pro synchronously, so a slow controller can stretch
   # a scrape. 10s explicit (was implicit default) gives >7x worst-case headroom.
+  # Pinned monitoring IP (ADR-045): unpoller and prometheus now share BOTH
+  # restricted-egress and monitoring, so the DNS name resolves ambiguously —
+  # pin the monitoring-network IP.
   - job_name: 'unpoller'
     scrape_timeout: 10s
     static_configs:
-      - targets: ['unpoller:9130']
+      - targets: ['10.89.4.97:9130']
         labels:
           instance: 'fedora-htpc'
           service: 'unpoller'
@@ -235,11 +244,13 @@ scrape_configs:
   # still caught by PiHoleExporterDown (warning, for:5m) + the watchdog timer.
   # 30s interval matches the exporter's own INTERVAL=30s and reduces Pi-hole API
   # login churn (also eases the GH#246 session leak). timeout must be ≤ interval.
+  # Pinned monitoring IP (ADR-045): shares two networks with prometheus
+  # post-swap — see the unpoller job note.
   - job_name: 'pihole'
     scrape_interval: 30s
     scrape_timeout: 20s
     static_configs:
-      - targets: ['pihole-exporter:9617']
+      - targets: ['10.89.4.96:9617']
         labels:
           instance: 'raspberrypi'
           service: 'pihole'
