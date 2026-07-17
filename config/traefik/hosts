@@ -23,6 +23,14 @@
 # is what makes the router dial the right bridge. Inbound exposure is governed
 # solely by routers.yml — the tier only limits the member's OUTBOUND traffic.
 
+# Loopback — this file fully REPLACES podman's generated /etc/hosts, so the
+# standard localhost entries must be carried here. Without them the container
+# healthcheck's `wget http://localhost:8080/ping` (every 10s) falls through to
+# DNS and leaks A/AAAA localhost queries to the LAN resolver (~16k/day observed
+# in Pi-hole, 2026-07-17).
+127.0.0.1  localhost
+::1        localhost
+
 # Core Services
 10.89.2.76  home-assistant
 10.89.11.78 authelia
