@@ -21,6 +21,14 @@ log:
   level: info
   format: text
 
+# NTP startup sanity-check disabled (ADR-045/GH#274): authelia sits on the
+# restricted-egress tier, so its default probe of time.cloudflare.com:123 would
+# be dropped by the egress filter and fail the startup check. The container
+# clock is the host clock (chronyd-disciplined), which is what TOTP time-step
+# correctness actually depends on — the probe adds nothing here.
+ntp:
+  disable_startup_check: true
+
 # JWT secret for tokens (from Podman secret)
 # Set via environment variable: AUTHELIA_JWT_SECRET
 

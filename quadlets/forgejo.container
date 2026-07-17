@@ -1,6 +1,6 @@
 [Unit]
 Description=Forgejo Git Forge
-After=network-online.target forgejo-db.service reverse_proxy-network.service forgejo-network.service
+After=network-online.target forgejo-db.service restricted-egress-network.service forgejo-network.service
 Wants=network-online.target
 Requires=forgejo-db.service
 
@@ -42,6 +42,14 @@ Environment=FORGEJO__service__DISABLE_REGISTRATION=true
 Environment=FORGEJO__service__REQUIRE_SIGNIN_VIEW=true
 Environment=FORGEJO__session__COOKIE_SECURE=true
 
+# No third-party references in rendered pages (GH#274, with the restricted-egress move).
+# OFFLINE_MODE does NOT affect access/visibility (that's REQUIRE_SIGNIN_VIEW above) —
+# it means pages reference no external CDN assets. DISABLE_GRAVATAR stops avatar URLs
+# that the VISITOR'S BROWSER would fetch (leaking visitor IP + email-hash to Gravatar)
+# — a privacy leak the server-side egress filter structurally cannot see.
+Environment=FORGEJO__server__OFFLINE_MODE=true
+Environment=FORGEJO__picture__DISABLE_GRAVATAR=true
+
 # Instance commit signing (ADR-034): the FORGE signs its own server-side merge/
 # squash commits so `main` stays fully verifiable. Authors sign their commits with
 # their FIDO2 YubiKeys (ADR-033); a server can't tap a key, so the instance uses a
@@ -70,8 +78,15 @@ Secret=forgejo_signing_key_pub,type=mount,target=/run/secrets/forgejo_signing_ke
 # Storage (repos/LFS/data on container pool; not a DB, no NOCOW)
 Volume=/mnt/btrfs-pool/subvol7-containers/forgejo:/data:Z
 
-# Networks (reverse_proxy FIRST = default route for internet; static IPs per ADR-018)
-Network=systemd-reverse_proxy:ip=10.89.2.89
+# Networks (ADR-045/GH#274): restricted-egress FIRST = default route, outbound
+# limited to LAN + container fabric. INBOUND unchanged: git.patriark.org still
+# arrives via Traefik (cross-bridge dial to the pinned IP in config/traefik/hosts);
+# the hourly repo mirror is a PUSH INTO forgejo from the host — also inbound.
+# CEREMONY: migrating/mirror-PULLING a repo FROM an external forge needs internet →
+# temporarily revert this line to Network=systemd-reverse_proxy:ip=10.89.2.89
+# (+ hosts entry back to 10.89.2.89 + traefik restart), pull, then re-apply.
+# Single-homing invariant: restricted-egress must stay the ONLY non-internal network.
+Network=systemd-restricted-egress:ip=10.89.11.89
 Network=systemd-forgejo:ip=10.89.8.89
 
 # git-over-SSH published to LOOPBACK ONLY — htpc-local; reached via agent-forwarded SSH sessions

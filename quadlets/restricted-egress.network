@@ -1,10 +1,12 @@
 [Unit]
-Description=Restricted Egress Network (LAN-only, nft-filtered — ADR-045)
+Description=Restricted Egress Network (outbound LAN+fabric only, nft-filtered — ADR-045)
 Documentation=file:///home/patriark/containers/docs/30-security/decisions/2026-07-17-ADR-045-restricted-egress-tier.md
 
 [Network]
 # Middle tier of the three-tier egress model (ADR-045):
-#   internal (no egress) → restricted-egress (LAN-only, filtered) → open (default-allow)
+#   internal (no egress) → restricted-egress (outbound LAN+fabric only) → open (default-allow)
+# NOTE: the tier restricts OUTBOUND only. Inbound is governed solely by Traefik
+# routing — Traefik-routed members stay internet-reachable (cross-bridge dial).
 # Internal=false so members get a default route and LAN reachability; internet
 # egress from 10.89.11.0/24 is dropped by egress-filter.timer inside the
 # rootless netns (table inet egress_filter — see scripts/egress-filter-apply.sh).

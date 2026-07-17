@@ -9,8 +9,8 @@
 [Unit]
 Description=Audiobookshelf Audiobook & Podcast Server
 Documentation=https://github.com/advplyr/audiobookshelf
-After=network-online.target traefik.service
-Wants=network-online.target traefik.service
+After=network-online.target restricted-egress-network.service traefik.service
+Wants=network-online.target restricted-egress-network.service traefik.service
 
 # ═══════════════════════════════════════════════════════════
 # CONTAINER CONFIGURATION
@@ -23,8 +23,18 @@ ContainerName=audiobookshelf
 NoNewPrivileges=true
 HostName=audiobookshelf
 
-# Network (single network - standalone service, no inter-service communication)
-Network=systemd-reverse_proxy:ip=10.89.2.74
+# Network: restricted-egress (ADR-045, GH#274) — outbound limited to LAN + container
+# fabric; INBOUND is unchanged and governed solely by the Traefik router (remote
+# access from anywhere still works — Traefik dials in cross-bridge via the pinned
+# IP in config/traefik/hosts; replies to 10.89.2.69 are in the filter's accept set).
+# Zero internet egress observed in the 18-day baseline (podcasts are archived local
+# files: feedURL empty, autoDownloadEpisodes=0 for all 32).
+# CEREMONY (accepted 2026-07-17): "Match" metadata lookups and adding a LIVE podcast
+# feed need internet → temporarily revert this line to
+#   Network=systemd-reverse_proxy:ip=10.89.2.74  (+ hosts file entry back to 10.89.2.74)
+# restart, do the fetch, then re-apply this line and restart again.
+# Single-homing invariant: restricted-egress must stay the ONLY non-internal network.
+Network=systemd-restricted-egress:ip=10.89.11.74
 
 # Environment
 Environment=TZ=Europe/Oslo
