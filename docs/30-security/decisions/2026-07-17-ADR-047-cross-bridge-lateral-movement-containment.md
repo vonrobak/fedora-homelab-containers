@@ -129,6 +129,27 @@ ADR-018/045 carefully settled. Lower favourite unless A/B prove awkward.
 **Leaning:** A as the destination, B only if we decide we cannot wait for F45.
 Decide in the spike.
 
+### Audit-mode staging (mandatory for whichever option is chosen)
+
+A default-drop containment filter fails destructively when the enumerated allow-list
+is incomplete — an edge you forgot silently breaks a service the moment enforcement
+flips on. **Before any rule drops a packet on the live fabric, run it in observe-only
+mode:** the same match rules with `log`/`counter` in place of `drop`, so every packet
+that *would* be dropped is recorded but still forwarded. Watch the counters/log for a
+representative window (a full scrape cycle, a login, a route exercise of each
+internet-facing service, an ABS/forgejo on-demand action) and confirm the only
+would-drop hits are the illegitimate edges from the baseline matrix — any legitimate
+edge showing up is a gap in the enumeration to fix *before* enforcing. Only then swap
+`log` → `drop`.
+
+This is distinct from ADR-045's fail-open egress filter: that one is safe to enforce
+immediately because a missed allow just leaks (defense-in-depth, no outage); a
+*containment* filter's missed allow is an outage, so it earns the observe-first step.
+For Option A the equivalent is netavark's isolation in a logging posture (or a
+temporary `lateral_filter` audit table alongside) before the `isolate=false` pin is
+removed; for Option B it is the `lateral_filter` table itself shipped `log`-first.
+Fold the audit window into the spike gate below.
+
 ## Prerequisite
 
 ADR-046 must land first: while Traefik resolves the three cross-bridge backends by
@@ -147,10 +168,14 @@ stable, enumerated IP edge set.
 3. **Prototype** the chosen option in a throwaway netns/prototype (ADR-045 set the
    precedent: prove nft-table survival across restart/reload/create, hook priority vs
    netavark's FORWARD, DNS path intact) **before** touching the live fabric.
-4. **Prove containment:** post-change, `qbittorrent → authelia:9091` (and the other
-   illegitimate edges) **drop**; every enumerated legitimate edge still 200s; all
+4. **Audit-mode window on the live fabric:** deploy the rules `log`/`counter`-only
+   (per "Audit-mode staging" above), exercise every internet-facing service + scrape
+   cycle for a representative window, and confirm the only would-drop hits are the
+   baseline's illegitimate edges before any rule is switched to `drop`.
+5. **Prove containment:** post-enforcement, `qbittorrent → authelia:9091` (and the
+   other illegitimate edges) **drop**; every enumerated legitimate edge still 200s; all
    Prometheus targets healthy; every `*.patriark.org` route serves.
-5. **Reboot + failure semantics:** define fail-open vs fail-closed deliberately (a
+6. **Reboot + failure semantics:** define fail-open vs fail-closed deliberately (a
    *containment* boundary may warrant fail-closed with alerting, unlike ADR-045's
    fail-open egress filter — decide explicitly), and prove reconvergence.
 
