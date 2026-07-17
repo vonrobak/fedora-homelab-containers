@@ -34,6 +34,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: system
           category: availability
         annotations:
           summary: "Service {{ $labels.job }} on {{ $labels.instance }} is down"
@@ -82,6 +83,7 @@ groups:
         for: 1h
         labels:
           severity: critical
+          component: security
           category: security
         annotations:
           summary: "TLS certificate expires in less than 7 days"
@@ -95,6 +97,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: monitoring
           category: monitoring
         annotations:
           runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
@@ -109,6 +112,7 @@ groups:
         for: 10m
         labels:
           severity: critical
+          component: monitoring
           category: monitoring
         annotations:
           runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
@@ -123,6 +127,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: network
           category: networking
         annotations:
           summary: "Traefik reverse proxy is down"
@@ -136,6 +141,7 @@ groups:
         for: 10m
         labels:
           severity: critical
+          component: monitoring
           category: monitoring
         annotations:
           runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
@@ -150,6 +156,7 @@ groups:
         for: 10m
         labels:
           severity: critical
+          component: monitoring
           category: monitoring
         annotations:
           runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
@@ -164,6 +171,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: monitoring
           category: monitoring
         annotations:
           runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
@@ -186,6 +194,7 @@ groups:
         for: 5m
         labels:
           severity: critical
+          component: monitoring
           category: monitoring
         annotations:
           runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"

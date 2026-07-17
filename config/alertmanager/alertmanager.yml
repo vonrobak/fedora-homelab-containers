@@ -178,12 +178,18 @@ inhibit_rules:
       - alertname = "DiskSpaceWarning"
     equal: ['instance', 'mountpoint']
 
-  # Global: Critical alerts for a service silence warnings for same service
+  # Global: Critical alerts for a service silence warnings for the same service
+  # AND domain. `component` is in the equality key because every node_*/textfile
+  # alert inherits service="node_exporter" + instance="fedora-htpc" from the
+  # scrape job — without it, a critical backup alert would mute unrelated
+  # host-level warnings (SMART, db-dump, supply-chain nudges) for days (GH#277).
+  # All alert rules carry `component` (audited 2026-07-17); Alertmanager treats
+  # a label absent on BOTH sides as equal, so coverage must stay universal.
   - source_matchers:
       - severity = "critical"
     target_matchers:
       - severity = "warning"
-    equal: ['service', 'instance']
+    equal: ['service', 'instance', 'component']
 
   # If Traefik is down, suppress all service availability warnings
   # (nothing is accessible anyway)

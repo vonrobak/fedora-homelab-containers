@@ -65,6 +65,7 @@ groups:
         for: 6h
         labels:
           severity: info
+          component: security
           category: security
         annotations:
           summary: "TLS certificate renewal overdue for {{ $labels.cn }}"
