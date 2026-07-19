@@ -1,6 +1,6 @@
 # Network Topology (Auto-Generated)
 
-**Generated:** 2026-07-17 10:43:25 UTC
+**Generated:** 2026-07-19 12:58:46 UTC
 **System:** fedora-htpc | **Networks:** 12 | **Containers:** 37
 
 ---
@@ -28,9 +28,6 @@ graph TB
     %% Services with native authentication (bypass Authelia)
     CrowdSec -->|Rate Limit| alert_discord_relay[alert-discord-relay]
     CrowdSec -->|Rate Limit| alertmanager[alertmanager]
-    CrowdSec -->|Rate Limit| audiobookshelf[audiobookshelf]
-    CrowdSec -->|Rate Limit| blackbox_exporter[blackbox-exporter]
-    CrowdSec -->|Rate Limit| forgejo[forgejo]
     CrowdSec -->|Rate Limit| immich_server[immich-server]
     CrowdSec -->|Rate Limit| jellyfin[jellyfin]
     CrowdSec -->|Rate Limit| navidrome[navidrome]
@@ -130,6 +127,10 @@ graph TB
 
     subgraph restricted-egress["restricted-egress<br/>10.89.11.0/24"]
         direction LR
+        restricted-egress_audiobookshelf[audiobookshelf]
+        restricted-egress_authelia[authelia]
+        restricted-egress_blackbox_exporter[blackbox-exporter]
+        restricted-egress_forgejo[forgejo]
         restricted-egress_pihole_exporter[pihole-exporter]
         restricted-egress_prometheus[prometheus]
         restricted-egress_unpoller[unpoller]
@@ -139,11 +140,7 @@ graph TB
         direction LR
         reverse_proxy_alert_discord_relay[alert-discord-relay]
         reverse_proxy_alertmanager[alertmanager]
-        reverse_proxy_audiobookshelf[audiobookshelf]
-        reverse_proxy_authelia[authelia]
-        reverse_proxy_blackbox_exporter[blackbox-exporter]
         reverse_proxy_crowdsec[crowdsec]
-        reverse_proxy_forgejo[forgejo]
         reverse_proxy_gathio[gathio]
         reverse_proxy_grafana[grafana]
         reverse_proxy_home_assistant[home-assistant]
@@ -182,15 +179,12 @@ Shows which services belong to which networks. Dynamically generated from runnin
 | Service | auth_services | forgejo | gathio | home_automation | mail | media_services | monitoring | nextcloud | photos | restricted-egress | reverse_proxy | syslog |
 |---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **Gateway & Security** |
-| authelia | ✅ | - | - | - | ✅ | - | - | - | - | - | ✅ | - |
+| authelia | ✅ | - | - | - | ✅ | - | - | - | - | ✅ | - | - |
 | crowdsec | - | - | - | - | - | - | - | - | - | - | ✅ | - |
 | redis-authelia | ✅ | - | - | - | - | - | - | - | - | - | - | - |
 | traefik | - | - | - | - | - | - | - | - | - | - | ✅ | - |
 | **Public Services** |
 | alert-discord-relay | - | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
-| audiobookshelf | - | - | - | - | - | - | - | - | - | - | ✅ | - |
-| blackbox-exporter | - | - | - | - | - | - | ✅ | - | - | - | ✅ | - |
-| forgejo | - | ✅ | - | - | - | - | - | - | - | - | ✅ | - |
 | gathio | - | - | ✅ | - | - | - | - | - | - | - | ✅ | - |
 | home-assistant | - | - | - | ✅ | - | - | - | - | - | - | ✅ | - |
 | immich-server | - | - | - | - | - | - | - | - | ✅ | - | ✅ | - |
@@ -210,7 +204,10 @@ Shows which services belong to which networks. Dynamically generated from runnin
 | promtail | - | - | - | - | - | - | ✅ | - | - | - | - | - |
 | unpoller | - | - | - | - | - | - | ✅ | - | - | ✅ | - | - |
 | **Backend Services** |
+| audiobookshelf | - | - | - | - | - | - | - | - | - | ✅ | - | - |
+| blackbox-exporter | - | - | - | - | - | - | ✅ | - | - | ✅ | - | - |
 | forgejo-db | - | ✅ | - | - | - | - | - | - | - | - | - | - |
+| forgejo | - | ✅ | - | - | - | - | - | - | - | ✅ | - | - |
 | gathio-db | - | - | ✅ | - | - | - | - | - | - | - | - | - |
 | immich-ml | - | - | - | - | - | - | - | - | ✅ | - | - | - |
 | nextcloud-db | - | - | - | - | - | - | - | ✅ | - | - | - | - |
@@ -393,9 +390,13 @@ sequenceDiagram
 
 - **Full Name:** `systemd-restricted-egress`
 - **Subnet:** 10.89.11.0/24
-- **Services:** 3
+- **Services:** 7
 
 **Members:**
+- audiobookshelf
+- authelia
+- blackbox-exporter
+- forgejo
 - pihole-exporter
 - prometheus
 - unpoller
@@ -405,16 +406,12 @@ sequenceDiagram
 
 - **Full Name:** `systemd-reverse_proxy`
 - **Subnet:** 10.89.2.0/24
-- **Services:** 19
+- **Services:** 15
 
 **Members:**
 - alert-discord-relay
 - alertmanager
-- audiobookshelf
-- authelia
-- blackbox-exporter
 - crowdsec
-- forgejo
 - gathio
 - grafana
 - home-assistant

@@ -1,7 +1,7 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-07-17 10:43:31 UTC
-**Total Documents:** 133
+**Generated:** 2026-07-19 12:58:57 UTC
+**Total Documents:** 135
 
 ---
 
@@ -137,7 +137,7 @@
 
 ---
 
-### 30-security/ (20 documents)
+### 30-security/ (22 documents)
 
 **Security architecture, configurations, and incident response**
 
@@ -159,6 +159,8 @@
 - ADR-040: [2026-06-14-ADR-040-secrets-substrate-operator-boundary](30-security/decisions/2026-06-14-ADR-040-secrets-substrate-operator-boundary.md)
 - ADR-041: [2026-06-14-ADR-041-secrets-openbao-substrate-boundary](30-security/decisions/2026-06-14-ADR-041-secrets-openbao-substrate-boundary.md)
 - ADR-045: [2026-07-17-ADR-045-restricted-egress-tier](30-security/decisions/2026-07-17-ADR-045-restricted-egress-tier.md)
+- ADR-046: [2026-07-17-ADR-046-retire-etc-hosts-dns-override](30-security/decisions/2026-07-17-ADR-046-retire-etc-hosts-dns-override.md)
+- ADR-047: [2026-07-17-ADR-047-cross-bridge-lateral-movement-containment](30-security/decisions/2026-07-17-ADR-047-cross-bridge-lateral-movement-containment.md)
 
 **Runbooks:**
 - [IR-001-brute-force-attack](30-security/runbooks/IR-001-brute-force-attack.md)

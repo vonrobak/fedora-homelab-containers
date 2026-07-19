@@ -1,6 +1,6 @@
 # Service Dependency Graph (Auto-Generated)
 
-**Generated:** 2026-07-17 10:43:30 UTC
+**Generated:** 2026-07-19 12:58:51 UTC
 **System:** fedora-htpc
 
 ---
@@ -76,10 +76,6 @@ graph TB
     %% Routing dependencies (services in reverse_proxy depend on Traefik)
     traefik -.-> alert_discord_relay
     traefik -.-> alertmanager
-    traefik -.-> audiobookshelf
-    traefik -.-> authelia
-    traefik -.-> blackbox_exporter
-    traefik -.-> forgejo
     traefik -.-> gathio
     traefik -.-> grafana
     traefik -.-> home_assistant
@@ -242,9 +238,9 @@ Services on the same network can communicate:
 
 **photos:** immich-ml,immich-server,postgres-exporter,postgresql-immich,redis-immich,redis-immich-exporter
 
-**restricted-egress:** pihole-exporter,prometheus,unpoller
+**restricted-egress:** audiobookshelf,authelia,blackbox-exporter,forgejo,pihole-exporter,prometheus,unpoller
 
-**reverse_proxy:** alert-discord-relay,alertmanager,audiobookshelf,authelia,blackbox-exporter,crowdsec,forgejo,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,proton-bridge,qbittorrent,traefik,vaultwarden
+**reverse_proxy:** alert-discord-relay,alertmanager,crowdsec,gathio,grafana,home-assistant,immich-server,jellyfin,loki,navidrome,nextcloud,proton-bridge,qbittorrent,traefik,vaultwarden
 
 **syslog:** unifi-syslog
 
