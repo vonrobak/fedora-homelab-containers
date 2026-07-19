@@ -58,6 +58,12 @@ Volume=/mnt/btrfs-pool/subvol5-music:/external/music:z
 Network=systemd-reverse_proxy:ip=10.89.2.82
 Network=systemd-nextcloud:ip=10.89.10.82
 
+# Self-referential URL fix: LAN DNS resolves nextcloud.patriark.org to the host
+# LAN IP, which is unreachable from the container netns (hairpin blocked), so
+# Nextcloud's setup self-checks report "HTTP headers not set". Route self-dials
+# to the host-bound Traefik sockets (ADR-022) via host.containers.internal.
+AddHost=nextcloud.patriark.org:169.254.1.2
+
 # Health check (verifies both reachability AND no pending DB upgrade)
 HealthCmd=curl -sf http://localhost:80/status.php | grep -q '"needsDbUpgrade":false'
 HealthInterval=30s
