@@ -4,7 +4,7 @@ title: "Pattern Customization Guide"
 description: "Guide for safely customizing pattern-generated quadlets after deployment, covering when to customize and how to preserve changes through updates."
 sensitivity: public
 created: 2025-11-14
-updated: 2025-12-31
+updated: 2026-07-20
 ---
 
 # Pattern Customization Guide
@@ -125,12 +125,12 @@ AddDevice=/dev/dri/renderD128
 
 # Before:
 # [Container]
-# Image=jellyfin/jellyfin:latest
+# Image=docker.io/jellyfin/jellyfin@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
 # ...
 
 # After:
 # [Container]
-# Image=jellyfin/jellyfin:latest
+# Image=docker.io/jellyfin/jellyfin@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
 # AddDevice=/dev/dri/renderD128
 # ...
 
@@ -593,7 +593,7 @@ grep "AddDevice" ~/.config/containers/systemd/jellyfin.container
 **Documentation example:**
 ```ini
 [Container]
-Image=jellyfin/jellyfin:latest
+Image=docker.io/jellyfin/jellyfin@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
 # CUSTOMIZATION: GPU passthrough for hardware transcoding
 AddDevice=/dev/dri/renderD128
 ```
@@ -607,7 +607,7 @@ AddDevice=/dev/dri/renderD128
 **Add comments to quadlet:**
 ```ini
 [Container]
-Image=jellyfin/jellyfin:latest
+Image=docker.io/jellyfin/jellyfin@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
 
 # CUSTOMIZATION 2025-11-14: GPU transcoding
 AddDevice=/dev/dri/renderD128

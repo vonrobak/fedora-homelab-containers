@@ -4,7 +4,7 @@ title: "Immich ML Troubleshooting Guide"
 description: "Troubleshooting guide for the immich-ml machine-learning container reporting unhealthy status, with log-inspection and diagnostic steps."
 sensitivity: public
 created: 2025-11-09
-updated: 2025-11-09
+updated: 2026-07-20
 ---
 
 # Immich ML Troubleshooting Guide
@@ -398,7 +398,6 @@ Based on snapshot data and common Immich ML issues:
 - [Immich ML Documentation](https://immich.app/docs/features/ml-face-detection)
 - [Immich GitHub Issues - ML troubleshooting](https://github.com/immich-app/immich/issues?q=is%3Aissue+ml)
 - Project: `docs/10-services/decisions/2025-11-08-immich-deployment-architecture.md`
-- Snapshot: `docs/99-reports/snapshot-20251109-172016.json`
 
 ---
 

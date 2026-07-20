@@ -4,7 +4,7 @@ title: "ESP32 Bluetooth Proxy - VLAN2 Firewall Configuration"
 description: "Guide to the VLAN2 firewall rule letting an ESP32 Bluetooth proxy on the IoT network reach Home Assistant over the ESPHome API (port 6053)."
 sensitivity: public
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-07-20
 ---
 
 # ESP32 Bluetooth Proxy - VLAN2 Firewall Configuration
@@ -260,4 +260,3 @@ nc -zv 192.168.2.x 6053
 ## Related Documentation
 
 - Quick Start Guide: `docs/10-services/guides/esp32-plejd-quick-start.md`
-- Journal Entry: `docs/98-journals/2026-02-04-esp32-bluetooth-proxy-for-plejd-integration.md`

@@ -4,7 +4,7 @@ title: "Alert Discord Relay"
 description: "Service guide for the custom-built Python relay that converts Alertmanager webhooks into color-coded Discord embeds, covering management and health checks."
 sensitivity: public
 created: 2026-02-05
-updated: 2026-02-05
+updated: 2026-07-20
 ---
 
 # Alert Discord Relay
@@ -171,13 +171,15 @@ The Discord webhook URL is injected via Podman secret:
 ```bash
 # View existing secret
 podman secret ls | grep discord
+```
 
-# Update the webhook URL
-echo "https://discord.com/api/webhooks/..." | podman secret create discord_webhook_url -
+The `discord_webhook_url` secret is provisioned from the OpenBao substrate and synced
+into podman secrets automatically (ADR-041). Update the webhook URL via the htpc-mgmt
+`secretctl` tool — never manual `podman secret create`/`rm`; the `Secret=` handle in
+the quadlet is unchanged. See `../../30-security/guides/secrets-management.md`.
+After rotation:
 
-# If updating, remove old secret first
-podman secret rm discord_webhook_url
-echo "https://discord.com/api/webhooks/..." | podman secret create discord_webhook_url -
+```bash
 systemctl --user restart alert-discord-relay.service
 ```
 

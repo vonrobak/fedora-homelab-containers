@@ -7,6 +7,13 @@ created: 2025-11-12
 updated: 2025-11-12
 ---
 
+<!-- allow-vault-paths: historical record; citations were accurate when written -->
+
+> **Historical (2025-11):** this field manual records the Phase 1 remediation as
+> executed, including the then-current `:latest` → version-tag pinning. The fleet
+> has since moved to full digest pinning (ADR-030); read this as history, not
+> current procedure.
+
 # CrowdSec Phase 1: Configuration Audit & Fixes - Field Manual
 
 **Version:** 1.0

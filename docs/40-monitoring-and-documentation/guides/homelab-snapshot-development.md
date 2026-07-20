@@ -4,13 +4,15 @@ title: "Homelab Snapshot Script: Developer Guide"
 description: "Developer guide to the homelab-snapshot.sh system-intelligence script — architecture, data flow, code walkthrough, and extension."
 sensitivity: public
 created: 2025-11-09
-updated: 2025-11-09
+updated: 2026-07-20
 ---
+
+<!-- allow-vault-paths: code listings below faithfully show the script's real output paths -->
 
 # Homelab Snapshot Script: Developer Guide
 ## Learn to Build, Understand, and Extend System Intelligence
 
-**Last Updated:** 2025-11-09
+**Last Updated:** 2026-07-20
 **Target Audience:** Developers learning bash scripting, system intelligence, infrastructure as code
 **Prerequisites:** Basic bash knowledge, understanding of containers and systemd
 
@@ -65,7 +67,7 @@ The script collects 14 categories of information:
 
 ### Output
 
-A single JSON file in `docs/99-reports/snapshot-TIMESTAMP.json` containing:
+A single JSON file (`snapshot-TIMESTAMP.json`), written to the internal vault reports directory (untracked, vault-side), containing:
 - **820 lines** of structured data (for 16-service homelab)
 - **Complete state** that can be diff'd over time
 - **Machine-readable** for programmatic analysis
@@ -189,7 +191,7 @@ homelab-snapshot.sh
          ▼
 ┌─────────────────────────────────────┐
 │  Output                             │
-│  docs/99-reports/snapshot-*.json    │
+│  snapshot-*.json (vault reports dir)│
 └─────────────────────────────────────┘
 ```
 
@@ -1076,7 +1078,7 @@ Use this guide as a reference when extending the script or building similar inte
 
 ---
 
-**Last Updated:** 2025-11-09
+**Last Updated:** 2026-07-20
 **Version:** 1.0
 **Maintained By:** Homelab Documentation Team
-**Related:** `scripts/homelab-snapshot.sh`, `docs/99-reports/snapshot-*.json`
+**Related:** `scripts/homelab-snapshot.sh`; `snapshot-*.json` outputs in the internal vault reports directory

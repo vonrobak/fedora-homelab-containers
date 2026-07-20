@@ -4,7 +4,7 @@ title: "CrowdSec Security Engine"
 description: "Service guide for the CrowdSec security engine — crowdsourced IP-reputation blocking via the Traefik bouncer, with management and cscli reference."
 sensitivity: public
 created: 2025-11-07
-updated: 2025-12-23
+updated: 2026-07-20
 ---
 
 # CrowdSec Security Engine
@@ -193,13 +193,17 @@ podman exec crowdsec cscli scenarios list
 
 **Create/update:**
 ```bash
-# Inside CrowdSec
+# Inside CrowdSec — generates the bouncer API key
 podman exec crowdsec cscli bouncers add traefik-bouncer
+```
 
-# Returns API key - store in secret
-echo "KEY" | podman secret create crowdsec_api_key -
+The `crowdsec_api_key` podman secret is provisioned from the OpenBao substrate and
+synced automatically (ADR-041). Store the generated key via the htpc-mgmt `secretctl`
+tool — never manual `podman secret create`/`rm`; the `Secret=` handle in the Traefik
+quadlet is unchanged. See `../../30-security/guides/secrets-management.md`.
+Then restart Traefik to pick up the new key:
 
-# Restart Traefik to pick up new key
+```bash
 systemctl --user restart traefik.service
 ```
 

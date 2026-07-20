@@ -4,7 +4,7 @@ title: "Skill Recommendation Engine"
 description: "Reference for the recommend-skill.sh engine that classifies requests and scores confidence to suggest the most appropriate Claude skill."
 sensitivity: public
 created: 2025-11-30
-updated: 2025-11-30
+updated: 2026-07-20
 ---
 
 # Skill Recommendation Engine
@@ -298,6 +298,5 @@ new-skill)
 
 ## References
 
-- Session 5D Plan: `docs/99-reports/SESSION-5D-SKILL-RECOMMENDATION-ENGINE-PLAN.md`
 - Autonomous Operations: `docs/20-operations/guides/autonomous-operations.md`
 - Available Skills: `.claude/skills/*/SKILL.md`

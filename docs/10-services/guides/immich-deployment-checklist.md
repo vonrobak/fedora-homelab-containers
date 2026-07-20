@@ -4,7 +4,7 @@ title: "Immich Deployment Checklist"
 description: "Historical step-by-step checklist for the November 2025 Immich deployment, covering network, database, and storage setup (predates the Authelia migration)."
 sensitivity: public
 created: 2025-12-31
-updated: 2025-12-31
+updated: 2026-07-20
 ---
 
 # Immich Deployment Checklist
@@ -141,40 +141,20 @@ updated: 2025-12-31
   ls -la /mnt/btrfs-pool/subvol8-photos
   ```
 
-### Phase 3: Secrets Creation (15 minutes)
+### Phase 3: Secrets Provisioning (15 minutes)
 
-- [ ] **Generate strong passwords**
+- [ ] **Provision secrets via OpenBao substrate (ADR-041)**
 
-  ```bash
-  POSTGRES_PW=$(openssl rand -base64 32)
-  REDIS_PW=$(openssl rand -base64 32)
-  JWT_SECRET=$(openssl rand -base64 32)
+  Runtime secrets (`postgres-password`, `redis-password`, `immich-jwt-secret`) are
+  sourced from the OpenBao substrate and synced into podman secrets automatically.
+  Creation and rotation happen via the htpc-mgmt `secretctl` tool — never manual
+  `podman secret create`/`rm`. The `Secret=` handles in the quadlets below are
+  unchanged. See `../../30-security/guides/secrets-management.md`.
 
-  # Display for verification (DO NOT commit to Git)
-  echo "PostgreSQL password: $POSTGRES_PW"
-  echo "Redis password: $REDIS_PW"
-  echo "JWT secret: $JWT_SECRET"
-  ```
-
-- [ ] **Create Podman secrets**
-
-  ```bash
-  echo -n "$POSTGRES_PW" | podman secret create postgres-password -
-  echo -n "$REDIS_PW" | podman secret create redis-password -
-  echo -n "$JWT_SECRET" | podman secret create immich-jwt-secret -
-  ```
-
-- [ ] **Verify secrets created**
+- [ ] **Verify secrets present**
 
   ```bash
   podman secret ls | grep -E 'postgres-password|redis-password|immich-jwt-secret'
-  ```
-
-- [ ] **Store backup of secrets securely** (NOT in Git)
-
-  ```bash
-  # Example: Use password manager or encrypted vault
-  # DO NOT: echo "$POSTGRES_PW" > secrets.txt
   ```
 
 ### Phase 4: PostgreSQL Deployment (45 minutes)
@@ -190,9 +170,10 @@ updated: 2025-12-31
   Requires=systemd-photos-network.service
 
   [Container]
-  Image=ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+  # Digest-pinned per ADR-030 (tag = discovery handle, digest = execution contract);
+  # updates flow through the deliberate monthly loop (scripts/monthly-update.sh), never auto-update
+  Image=ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
   ContainerName=postgresql-immich
-  AutoUpdate=registry
 
   # Network
   Network=systemd-photos.network
@@ -273,9 +254,9 @@ updated: 2025-12-31
   Requires=systemd-photos-network.service
 
   [Container]
-  Image=docker.io/valkey/valkey:8
+  # Digest-pinned per ADR-030 — no AutoUpdate
+  Image=docker.io/valkey/valkey@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9
   ContainerName=redis-immich
-  AutoUpdate=registry
 
   # Network
   Network=systemd-photos.network
@@ -378,9 +359,9 @@ updated: 2025-12-31
   Requires=postgresql-immich.service redis-immich.service
 
   [Container]
-  Image=ghcr.io/immich-app/immich-server:release
+  # Digest-pinned per ADR-030 — no AutoUpdate
+  Image=ghcr.io/immich-app/immich-server@sha256:c15bff75068effb03f4355997d03dc7e0fc58720c2b54ad6f7f10d1bc57efaa5
   ContainerName=immich-server
-  AutoUpdate=registry
 
   # Networks
   Network=systemd-photos.network
@@ -474,9 +455,9 @@ updated: 2025-12-31
   Requires=systemd-photos-network.service
 
   [Container]
-  Image=ghcr.io/immich-app/immich-machine-learning:release
+  # Digest-pinned per ADR-030 — no AutoUpdate
+  Image=ghcr.io/immich-app/immich-machine-learning@sha256:a2501141440f10516d329fdfba2c68082e19eb9ba6016c061ac80d23beadf7f3
   ContainerName=immich-ml
-  AutoUpdate=registry
 
   # Network
   Network=systemd-photos.network
@@ -786,6 +767,11 @@ updated: 2025-12-31
 
 ## Week 2 Day 5: Backup Integration (1 hour)
 
+> **Historical:** the `btrfs-snapshot-backup.sh` script below was retired when
+> [Urd](https://github.com/vonrobak/urd) (ADR-021) became the sole backup system
+> (2026-03-25); the pg_dump backbone is now governed by ADR-029. Kept as a record
+> of the original deployment.
+
 ### Backup Script Updates
 
 - [ ] **Update BTRFS backup script**
@@ -973,9 +959,8 @@ updated: 2025-12-31
   - Backup procedures
   - Upgrade process
 
-- [ ] **Update system state report**
+- [ ] **Update system state report** (internal vault)
 
-  `docs/99-reports/YYYY-MM-DD-system-state.md`:
   - Add Immich to service inventory
   - Update resource usage
   - Update backup strategy section

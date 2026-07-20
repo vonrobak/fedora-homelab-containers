@@ -4,13 +4,13 @@ title: "Homelab Monitoring Stack Guide"
 description: "Comprehensive guide to the homelab's monitoring, alerting, and autonomous remediation infrastructure — components, usage, maintenance, and extension."
 sensitivity: public
 created: 2025-11-06
-updated: 2025-12-29
+updated: 2026-07-20
 ---
 
 # Homelab Monitoring Stack Guide
 
 **Created:** 2025-11-06
-**Last Updated:** 2025-12-26
+**Last Updated:** 2026-07-20
 
 ## Overview
 
@@ -816,7 +816,7 @@ global:
 - **Rootless containers** - All services run as user processes (UID 1000), not root
 - **Network isolation** - Monitoring network isolated from reverse proxy network
 - **Secrets management** - Three-tier approach:
-  - Podman secrets for containerized services (encrypted at rest)
+  - Podman secrets for containerized services, sourced from the self-hosted OpenBao vault (barrier-encrypted at rest there) and synced into a tmpfs-only podman secret cache (ADR-041; the podman `file` driver itself is only base64, not encryption)
   - EnvironmentFile for systemd services (remediation webhook)
   - Strict file permissions (mode 600) for all secrets
 - **Webhook authentication** - Token-based auth (fail-closed, 256-bit tokens)

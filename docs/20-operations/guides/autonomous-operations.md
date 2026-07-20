@@ -4,7 +4,7 @@ title: "Autonomous Operations Guide"
 description: "Guide to the autonomous-operations OODA-loop engine — daily timer, confidence-versus-risk decision matrix, and emergency pause/stop/resume controls."
 sensitivity: public
 created: 2025-11-29
-updated: 2026-06-12
+updated: 2026-07-20
 ---
 
 # Autonomous Operations Guide
@@ -231,7 +231,6 @@ execute_disk_cleanup() {
 
 **See:**
 - Remediation framework: `~/containers/.claude/remediation/README.md`
-- Implementation report: `docs/99-reports/2025-11-30-remediation-integration-implementation.md`
 
 ## Troubleshooting
 

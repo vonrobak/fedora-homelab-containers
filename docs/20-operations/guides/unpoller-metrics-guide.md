@@ -4,7 +4,7 @@ title: "Unpoller Metrics Guide"
 description: "Reference guide for working with UnPoller UniFi metrics across Prometheus, Grafana, and Home Assistant — deployment details and metric queries."
 sensitivity: public
 created: 2026-01-28
-updated: 2026-01-28
+updated: 2026-07-20
 ---
 
 # Unpoller Metrics Guide
@@ -27,7 +27,7 @@ UniFi Controller → Unpoller (scraper) → Prometheus (storage) → Grafana/Hom
 
 **Current Deployment:**
 - **Service:** `unpoller.service` (systemd quadlet)
-- **Container:** `ghcr.io/unpoller/unpoller:latest`
+- **Container:** `ghcr.io/unpoller/unpoller` (digest-pinned per ADR-030)
 - **Network:** `systemd-monitoring` (10.89.4.0/24)
 - **Metrics Endpoint:** `http://unpoller:9130/metrics`
 - **Config:** `~/containers/config/unpoller/up.conf`
@@ -522,7 +522,8 @@ scrape_configs:
 **Key directives:**
 ```ini
 [Container]
-Image=ghcr.io/unpoller/unpoller:latest
+# Digest-pinned (ADR-030) — updated via the deliberate monthly loop, never auto
+Image=ghcr.io/unpoller/unpoller@sha256:9dcccdc931a6830735f6978caf8cd67699b0dc33e37cf9ef4638611791c4df62
 Network=systemd-monitoring
 Secret=unpoller_url,type=env,target=UP_UNIFI_DEFAULT_URL
 Secret=unpoller_user,type=env,target=UP_UNIFI_DEFAULT_USER
@@ -687,7 +688,6 @@ sum by (name) (rate(unpoller_client_receive_bytes_total[5m]))
 **Homelab-Specific:**
 - Recording Rules: `~/containers/config/prometheus/rules/unifi-recording-rules.yml`
 - Grafana Dashboards: `~/containers/config/grafana/provisioning/dashboards/json/unifi-*.json`
-- Deployment Journal: `docs/98-journals/2026-01-28-matter-hybrid-week2-matter-server-deployment.md`
 
 **Community Resources:**
 - Unpoller GitHub: https://github.com/unpoller/unpoller

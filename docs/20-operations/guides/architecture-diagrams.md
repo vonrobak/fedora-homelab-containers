@@ -391,113 +391,35 @@ Legend:
 ```
 /home/patriark/containers/
 │
-├── config/                          # Service configurations
+├── quadlets/                        # Systemd quadlet unit files (37 containers,
+│   │                                #  12 .network files) — the deployment layer
+│   ├── <service>.container          # One quadlet per container, digest-pinned images
+│   └── <name>.network               # Podman network definitions
+│
+├── config/                          # Service configurations (one dir per service)
 │   ├── traefik/
-│   │   ├── traefik.yml             # Static configuration
-│   │   ├── dynamic/                # Dynamic configurations
-│   │   │   ├── routers.yml         # Route definitions
-│   │   │   ├── middleware.yml      # Security & auth
-│   │   │   ├── tls.yml             # TLS options
-│   │   │   └── rate-limit.yml      # Rate limiting rules
-│   │   ├── letsencrypt/            # SSL certificates
-│   │   │   └── acme.json           # Let's Encrypt data
-│   │   └── certs/                  # (deprecated)
-│   │
-│   ├── crowdsec/                   # CrowdSec config (auto-generated)
-│   ├── jellyfin/                   # Jellyfin configuration
-│   └── tinyauth/                   # (config via env vars)
+│   │   ├── traefik.yml              # Static configuration
+│   │   └── dynamic/                 # Dynamic config (auto-reloads)
+│   │       ├── routers.yml          # ALL routing rules (ADR-016: never in labels)
+│   │       ├── middleware.yml       # CrowdSec, rate limiting, auth, headers
+│   │       └── tls.yml              # TLS options
+│   ├── prometheus/ | grafana/ | loki/ | alertmanager/   # Monitoring stack
+│   ├── supply-chain/                # Bake policy, egress baselines (ADR-030/036/039)
+│   └── <service>/                   # Per-service config dirs
 │
-├── data/                           # Persistent service data
-│   ├── crowdsec/
-│   │   ├── db/                     # Decision database
-│   │   └── config/                 # Runtime config
-│   ├── jellyfin/                   # Media library metadata
-│   └── nextcloud/                  # (to be created)
+├── scripts/                         # Automation (85 scripts — see automation-reference.md)
 │
-├── scripts/                        # Automation scripts
-│   ├── cloudflare-ddns.sh         # DNS updater - with cron or systemd (do not remember) jobs to update every 30 mins
-│   ├── security-audit.sh          # Security checker
-│   └── health-check.sh            # System health
+├── data/                            # Persistent service data (bind mounts, :Z labels)
 │
-├── secrets/                        # Sensitive data (chmod 600)
-│   ├── cloudflare_token           # API token
-│   └── cloudflare_zone_id         # Zone ID
+├── docs/                            # Public documentation (this tree — see docs/README.md)
+│   ├── 00-40 sections               # Guides + ADRs + runbooks
+│   └── AUTO-*.md                    # Auto-generated daily views
 │
-├── backups/                        # Configuration backups
-│   ├── phase1-TIMESTAMP/          # Authelia migration backup
-│   ├── config-YYYYMMDD/           # Regular config backups
-│   └── pre-change-TIMESTAMP/      # Pre-change snapshots
-│
-├── docs/                  # Documentation
-├──     00-foundation/
-│       ├── day01-learnings.md
-│       ├── day02-networking.md
-│       ├── day03-pod-commands.md
-│       ├── day03-pods.md
-│       ├── day03-pods-vs-containers.md
-│       └── podman-cheatsheet.md
-├──     10-services/
-│       ├── day04-jellyfin-final.md
-│       ├── day06-complete.md
-│       ├── day06-quadlet-success.md
-│       ├── day06-traefik-routing.md
-│       ├── day07-yubikey-inventory.md
-│       └── quadlets-vs-generated.md
-├──     20-operations/
-│       ├── 20251023-storage_data_architecture_revised.md
-│       ├── DAILY-PROGRESS-2025-10-23.md
-│       ├── HOMELAB-ARCHITECTURE-DIAGRAMS.md
-│       ├── HOMELAB-ARCHITECTURE-DOCUMENTATION.md
-│       ├── NEXTCLOUD-INSTALLATION-GUIDE.md
-│       ├── QUICK-REFERENCE.md
-│       ├── readme-week02.md
-│       ├── storage-layout.md
-│       └── TODAYS-ACHIEVEMENTS.md
-├──     30-security/
-│       └── TINYAUTH-GUIDE.md
-├──     90-archive/
-│       ├── 20251024-storage_data_architecture-and-2fa-proposal.md
-│       ├── 2025-10-24-storage_data_architecture_tailored_addendum.md
-│       ├── checklist-week02.md
-│       ├── DOMAIN-CHANGE-SUMMARY.md
-│       ├── progress.md
-│       ├── quick-reference.bak-20251021-172023.md
-│       ├── quick-reference.bak-20251021-221915.md
-│       ├── quick-reference.md
-│       ├── quick-reference-v2.md
-│       ├── quick-start-guide-week02.md
-│       ├── readme.bak-20251021-172023.md
-│       ├── readme.bak-20251021-221915.md
-│       ├── readme.md
-│       ├── revised-learning-plan.md
-│       ├── SCRIPT-EXPLANATION.md
-│       ├── summary-revised.md
-│       ├── TOMORROW-QUICK-START.md
-│       ├── week02-failed-authelia-but-tinyauth-goat.md
-│       ├── week02-implementation-plan.md
-│       └── week02-security-and-tls.md
-└── 99-reports/
-        ├── 20251024-configurations-quadlets-and-more.md
-        ├── 20251025-storage-architecture-authoritative.md
-        ├── 20251025-storage-architecture-authoritative-rev2.md
-        ├── authelia-diag-20251020-183321.txt
-        ├── failed-authelia-adventures-of-week-02-current-state-of-system.md
-        ├── homelab-diagnose-20251021-165859.txt
-        ├── latest-summary.md
-        ├── pre-letsencrypt-diag-20251022-161247.txt
-        ├── script2-week2-authelia-dual-domain.md
-        └── system-state-20251022-213400.txt
-
-/home/patriark/.config/containers/systemd/          # quadlet configuration directory
-├── auth_services.network           # podman bridge network - currently idle with no services
-├── crowdsec.container              # CrowdSec service definition
-├── jellyfin.container              # Jellyfin service definition
-├── media_services.network          # Media Services podman bridge network
-├── reverse_proxy.network           # Reverse Proxy podman bridge network - members: all
-├── authelia.container              # Authelia SSO service definition
-├── redis-authelia.container        # Redis for Authelia sessions
-└── traefik.container               # Traefik service definition
+├── builds/                          # Local image builds (Tier 2, digest-pinned bases)
+├── backups/  cache/  systemd/       # Operational directories
+└── secrets/                         # Gitignored (runtime secrets come from OpenBao, ADR-041)
 ```
+
 
 ---
 

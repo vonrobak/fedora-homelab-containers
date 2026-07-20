@@ -4,7 +4,7 @@ title: "Configuration Drift Detection Workflow"
 description: "Guide to detecting and reconciling configuration drift between running containers and their quadlet definitions using check-drift.sh."
 sensitivity: public
 created: 2025-11-14
-updated: 2025-12-31
+updated: 2026-07-20
 ---
 
 # Configuration Drift Detection Workflow
@@ -22,8 +22,12 @@ updated: 2025-12-31
 
 - Quadlet file is edited but service not restarted
 - Container manually modified via `podman` commands
-- Image updated without quadlet update
+- Container running an image other than the quadlet's pinned digest (e.g. manual pull/run; there is no auto-update path anymore — ADR-030)
 - Networks or volumes changed outside quadlet
+
+In other words: drift now means the running container diverges from the worktree's
+declared (digest-pinned) config — the old "image auto-updated under us" cause no
+longer exists.
 
 **Drift detection** compares running containers against their quadlet definitions and identifies mismatches that require reconciliation.
 
@@ -339,25 +343,26 @@ done
 
 ## Common Drift Scenarios
 
-### Scenario 1: Image Update Without Quadlet Change
+### Scenario 1: Running Image Differs from Pinned Digest
 
 **Detection:**
 ```
 Service: jellyfin
   ✗ Image: DRIFT
-    Quadlet: jellyfin/jellyfin:latest
-    Running: jellyfin/jellyfin:10.8.13
+    Quadlet: docker.io/jellyfin/jellyfin:10.10.7@sha256:aefb67e6...
+    Running: docker.io/jellyfin/jellyfin@sha256:1b2c3d4e...
 ```
 
-**Cause:** Image was pulled manually or auto-updated without updating quadlet
+**Cause:** The quadlet's pinned digest was updated (e.g. `pin-container-image.sh
+--adopt` or `adopt-baked.sh`) but the service was not restarted — or the container
+was started manually from a different image. Since ADR-030 the fleet is fully
+digest-pinned with no auto-update path, so an image mismatch always means the
+running container has fallen behind (or diverged from) the applied config.
 
 **Fix:**
 ```bash
-# Option A: Update quadlet to match running
-nano ~/.config/containers/systemd/jellyfin.container
-# Change: Image=jellyfin/jellyfin:10.8.13
-
-# Option B: Restart to pull latest
+# Restart to run the digest declared in the quadlet
+systemctl --user daemon-reload
 systemctl --user restart jellyfin.service
 ```
 

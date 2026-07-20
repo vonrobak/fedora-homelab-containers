@@ -4,14 +4,14 @@ title: "Security Audit Guide"
 description: "Security audit guide covering the 53-check security-audit.sh across seven categories, audit levels, scoring, and the security-auditor skill."
 sensitivity: public
 created: 2026-01-08
-updated: 2026-03-08
+updated: 2026-07-20
 ---
 
 # Security Audit Guide
 
 **Purpose:** Comprehensive security checklist for homelab infrastructure
 **Frequency:** Biweekly automated (1st/15th) + on-demand deep audits via Claude Code skill
-**Last Updated:** 2026-03-08
+**Last Updated:** 2026-07-20
 
 ---
 
@@ -38,7 +38,7 @@ This guide provides a structured approach to auditing the security posture of yo
 
 **Scoring:** Start at 100. L1 fail: -15, L2 fail: -5, L3 fail: -2. Warnings: half penalty.
 
-**History:** `data/security-audit/audit-YYYY-MM-DD.json` | **Reports:** `docs/99-reports/security-audit-YYYY-MM-DD.md`
+**History:** `data/security-audit/audit-YYYY-MM-DD.json` | **Reports:** `security-audit-YYYY-MM-DD.md` in the internal vault reports directory (untracked, vault-side)
 
 ---
 
@@ -588,7 +588,7 @@ git status --short
 **Process:**
 1. Review this checklist section by section
 2. Execute verification commands for Level 1 and Level 2 items
-3. Document findings in `docs/99-reports/security-audit-YYYY-MM.md`
+3. Document findings in a `security-audit-YYYY-MM.md` report in the internal vault reports directory
 4. Create remediation tasks for failures
 5. Update this guide if new checks are identified
 
@@ -606,7 +606,7 @@ git status --short
 
 ### Reporting
 
-**Template:** `docs/99-reports/security-audit-YYYY-MM.md`
+**Template:** `security-audit-YYYY-MM.md` (internal vault reports directory)
 
 ```markdown
 # Security Audit Report: YYYY-MM

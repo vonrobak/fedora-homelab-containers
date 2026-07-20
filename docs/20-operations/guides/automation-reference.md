@@ -4,7 +4,7 @@ title: "Automation Reference Guide"
 description: "Authoritative reference cataloging all automation scripts, scheduled timers, deployment scripts, and remediation playbooks with a which-script-do-I-use decision tree."
 sensitivity: public
 created: 2025-11-28
-updated: 2026-06-22
+updated: 2026-07-20
 ---
 
 # Automation Reference Guide
@@ -55,8 +55,7 @@ What do you need to do?
 │       (orchestrates: state manifest → graceful shutdown → pinned-image presence → prune)
 │
 ├─ Manage backups?
-│   ├─ Daily/weekly snapshots → ./scripts/btrfs-snapshot-backup.sh
-│   ├─ Monitor transfer → ./scripts/monitor-btrfs-transfer.sh
+│   ├─ Snapshots + external sync → Urd (https://github.com/vonrobak/urd, ADR-021; urd-backup.timer)
 │   └─ Test restore → ./scripts/test-backup-restore.sh
 │
 ├─ Regenerate documentation?
@@ -100,7 +99,7 @@ systemctl --user start <name>.service                 # Trigger manually
 | Timer | Schedule | Script | Purpose |
 |-------|----------|--------|---------|
 | `daily-slo-snapshot` | 23:50 | `daily-slo-snapshot.sh` | Capture SLO metrics for trend analysis |
-| `btrfs-backup-daily` | 02:00 | `btrfs-snapshot-backup.sh --local-only` | Local BTRFS snapshots |
+| `urd-backup` | ~04:00 | Urd (ADR-021) | BTRFS snapshots + external sync |
 | `predictive-maintenance-check` | 06:00 | Remediation: `predictive-maintenance` | Forecast resource exhaustion 7-14 days ahead |
 | `daily-drift-check` | ~06:00 | `daily-drift-check.sh` | Config drift detection → digest |
 | `dependency-discovery` | ~06:00 | `discover-dependencies.sh` | Map service dependencies from quadlets + networks |
@@ -115,8 +114,6 @@ systemctl --user start <name>.service                 # Trigger manually
 
 | Timer | Schedule | Script | Purpose |
 |-------|----------|--------|---------|
-| `btrfs-backup-weekly` | Sat 04:00 | `btrfs-snapshot-backup.sh` | Sync snapshots to external drive |
-| `podman-auto-update-weekly` | Sun 03:00 | `podman auto-update` (with pre/post health checks) | Container image updates |
 | `database-maintenance` | Sun ~03:00 | Remediation: `database-maintenance` | PostgreSQL VACUUM, Redis analysis |
 | `maintenance-cleanup` | Sun ~03:00 | `maintenance-cleanup.sh` | Prune containers, rotate logs |
 | `vulnerability-scan` | Sun ~06:00 | `scan-vulnerabilities.sh --all --notify --quiet` | Trivy CVE scanning → Discord |
@@ -139,7 +136,7 @@ The daily automation follows a deliberate sequence:
 
 ```
 23:50  daily-slo-snapshot       (capture yesterday's SLO data)
-02:00  btrfs-backup-daily       (local snapshots while system quiet)
+04:00  urd-backup               (Urd snapshots + sync while system quiet)
 06:00  predictive-maintenance   (forecast before OODA loop)
 06:00  daily-drift-check        (detect drift → write digest status)
 06:00  dependency-discovery     (refresh dependency graph)
@@ -227,10 +224,9 @@ prepare-for-reboot.sh (orchestrator)
 
 | Script | Purpose | Notes |
 |--------|---------|-------|
-| `btrfs-snapshot-backup.sh` | Create snapshots, sync to external drive | Timer: daily + weekly |
+| [Urd](https://github.com/vonrobak/urd) | Snapshots + external sync (sole backup system, ADR-021) | Timer: `urd-backup` daily |
 | `test-backup-restore.sh` | Validate backup integrity via restore test | Timer: monthly last Sunday |
 | `collect-storage-info.sh` | Storage diagnostics | On-demand |
-| `monitor-btrfs-transfer.sh` | Monitor btrfs send/receive progress | On-demand helper |
 | `backup-pihole.sh` | Backup Pi-hole config to external drive | Manual |
 
 ### Security & Compliance
