@@ -603,7 +603,7 @@ echo "Sample log line" | grep -P '<your-regex>'
 - Error breakdown by service (pie chart)
 - Alert firing history (stat)
 
-**Timeline:** Complete (see `log-to-metric-dashboard-panels.md`)
+**Timeline:** Complete (dashboard panels documented internally)
 
 ### 3. Additional Metrics
 
@@ -617,11 +617,7 @@ echo "Sample log line" | grep -P '<your-regex>'
 
 ## Related Documentation
 
-- **Daily Error Digest:** `docs/40-monitoring-and-documentation/guides/daily-error-digest.md`
-- **Dashboard Panels:** `docs/40-monitoring-and-documentation/guides/log-to-metric-dashboard-panels.md`
-- **SLO Framework:** `docs/40-monitoring-and-documentation/guides/slo-framework.md`
-- **Loki Queries:** `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md`
-- **Monitoring Stack:** `docs/40-monitoring-and-documentation/guides/monitoring-stack.md`
+- **SLO-Based Alerting:** `docs/40-monitoring-and-documentation/guides/slo-based-alerting.md`
 
 ---
 

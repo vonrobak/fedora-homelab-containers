@@ -422,7 +422,7 @@ cAdvisor (containers)    UnPoller (UniFi network)
 - Monthly compliance reporting
 
 **Dashboard:** Grafana SLO dashboard
-**Reference:** `docs/40-monitoring-and-documentation/guides/slo-framework.md`
+**Reference:** `docs/40-monitoring-and-documentation/guides/slo-based-alerting.md`
 
 ### Alerting
 

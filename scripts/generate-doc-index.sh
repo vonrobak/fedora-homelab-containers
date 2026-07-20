@@ -272,49 +272,12 @@ EOF
         echo "- [$basename]($relpath)" >> "$OUTPUT_FILE"
     done
 
-    # 96-project-supervisor/ is deliberately NOT indexed: the directory is
-    # gitignored (local-only situational awareness), and this index is public.
+    # The vault directories (90/96/97/98/99) are deliberately NOT indexed:
+    # they are gitignored symlinks into the private Huldr vault (ADR-043/048),
+    # and this index is public — a path-shaped reference here would also trip
+    # the check-vault-boundary.sh pre-commit gate.
 
     cat >> "$OUTPUT_FILE" <<EOF
-
----
-
-### 97-plans/ ($(count_files "$DOCS_DIR/97-plans") documents)
-
-**Strategic plans and forward-looking projects**
-EOF
-
-    find "$DOCS_DIR/97-plans" -name "*.md" ! -name "*-private.md" -type f 2>/dev/null | sort | while read -r file; do
-        local basename
-        basename=$(basename "$file")
-        local relpath
-        relpath=$(realpath --relative-to="$DOCS_DIR" "$file")
-        local status="📋"
-        if grep -q "Status.*Complete" "$file" 2>/dev/null; then
-            status="✅"
-        elif grep -q "Status.*Draft" "$file" 2>/dev/null; then
-            status="📝"
-        fi
-        echo "- $status [$basename]($relpath)" >> "$OUTPUT_FILE"
-    done
-
-    cat >> "$OUTPUT_FILE" <<EOF
-
----
-
-### 98-journals/ ($(count_files "$DOCS_DIR/98-journals") documents)
-
-**Chronological project history (append-only log)**
-
-Complete dated entries documenting the homelab journey. See directory for full chronological listing.
-
----
-
-### 99-reports/ ($(count_files "$DOCS_DIR/99-reports") documents)
-
-**Automated system reports and point-in-time snapshots**
-
-Recent intelligence reports and resource forecasts. Updated automatically by autonomous operations.
 
 ---
 

@@ -58,9 +58,9 @@ every document carries `sensitivity: public` frontmatter.
 
 **Frequently used guides:**
 - **Architecture overview:** `20-operations/guides/homelab-architecture.md`
-- **Immich / Jellyfin / Traefik / Authelia:** `10-services/guides/`
-- **Monitoring stack:** `40-monitoring-and-documentation/guides/monitoring-stack.md`
-- **Secrets model:** `30-security/guides/secrets-management.md`
+- **Traefik / Authelia design:** `10-services/guides/`
+- **SLO-based alerting:** `40-monitoring-and-documentation/guides/slo-based-alerting.md`
+- **Secrets model:** ADR-041 (`*/decisions/`)
 - **Backups:** [Urd](https://github.com/vonrobak/urd) (ADR-021)
 
 **Operational tooling** (run from the repo root):
@@ -70,7 +70,7 @@ every document carries `sensitivity: public` frontmatter.
 ./scripts/security-audit.sh             # 53-check security audit
 ```
 
-Full script catalog: `20-operations/guides/automation-reference.md`
+The full script catalog is maintained internally; `scripts/` file headers document each script.
 
 ---
 

@@ -51,7 +51,7 @@ groups:
           category: capacity
           component: system
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "CRITICAL: System disk space dangerously low"
           description: "System SSD {{ $labels.instance }} has only {{ $value | humanizePercentage }} free space. Immediate cleanup required!"
 
@@ -70,7 +70,7 @@ groups:
           category: capacity
           component: storage
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "CRITICAL: BTRFS data pool (/mnt) space dangerously low"
           description: "Data pool /mnt on {{ $labels.instance }} has only {{ $value | humanizePercentage }} free. A full pool blocks snapshots AND db dumps — free space immediately."
 
@@ -100,7 +100,7 @@ groups:
           component: monitoring
           category: monitoring
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Prometheus monitoring system is down"
           description: "The Prometheus service has been down for more than 5 minutes. Monitoring is blind!"
 
@@ -115,7 +115,7 @@ groups:
           component: monitoring
           category: monitoring
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Alertmanager is down"
           description: "Alertmanager has been unreachable for more than 10 minutes. No alerts will be delivered!"
 
@@ -144,7 +144,7 @@ groups:
           component: monitoring
           category: monitoring
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Grafana dashboard is down"
           description: "Grafana has been unreachable for more than 10 minutes. Dashboard unavailable."
 
@@ -159,7 +159,7 @@ groups:
           component: monitoring
           category: monitoring
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Loki log aggregation is down"
           description: "Loki has been unreachable for more than 10 minutes. Log ingestion is stopped!"
 
@@ -174,7 +174,7 @@ groups:
           component: monitoring
           category: monitoring
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Node Exporter is down"
           description: "System metrics collection has stopped. Node Exporter has been down for more than 5 minutes."
 
@@ -197,7 +197,7 @@ groups:
           component: monitoring
           category: monitoring
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "cAdvisor is down — container observability blind"
           description: "cAdvisor has been unreachable for more than 5 minutes. All container-level alerts (liveness, memory pressure, restarts) are blind until it returns. Check: systemctl --user status cadvisor.service"
 
@@ -212,7 +212,7 @@ groups:
           category: security
           component: security
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/30-security/guides/crowdsec-phase1-field-manual.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/90-archive/crowdsec-phase1-field-manual.md"
           summary: "CrowdSec security monitoring is down"
           description: "CrowdSec has been unreachable for more than 5 minutes. IP reputation filtering is disabled!"
 
@@ -238,7 +238,7 @@ groups:
           category: monitoring
           component: logging
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Promtail not sending logs to Loki"
           description: |
             No log entries sent in 10 minutes. Log ingestion pipeline may be broken.
@@ -267,7 +267,7 @@ groups:
           category: monitoring
           component: alerting
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Prometheus rule evaluation failing"
           description: |
             {{ $value }} rule evaluations failed in last 5 minutes.
@@ -292,7 +292,7 @@ groups:
           category: monitoring
           component: alerting
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
           summary: "Alertmanager failing to send notifications"
           description: |
             {{ $value }} notifications/sec failing. Alerts are not reaching Discord!

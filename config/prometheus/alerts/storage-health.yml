@@ -29,7 +29,7 @@ groups:
           category: storage
           component: btrfs-dev-stats
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "BTRFS dev-stats collector stale"
           description: "btrfs-dev-stats collector last ran {{ $value | humanizeDuration }} ago (expected every 15m). Check `systemctl --user status btrfs-dev-stats.timer`."
 
@@ -45,7 +45,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "SMART health FAILED on {{ $labels.device }} ({{ $labels.model }})"
           description: "smartctl overall-health self-assessment FAILED on {{ $labels.device }} (model {{ $labels.model }}, serial {{ $labels.serial }}). The drive is reporting itself as failing — verify backups and replace it."
 
@@ -57,7 +57,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "SMART pending sectors on {{ $labels.device }}"
           description: "{{ $value }} current-pending (unreadable) sector(s) on {{ $labels.device }} — imminent uncorrectable read errors. Run a scrub to surface affected files; plan replacement."
 
@@ -69,7 +69,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "SMART offline-uncorrectable sectors on {{ $labels.device }}"
           description: "{{ $value }} offline-uncorrectable sector(s) on {{ $labels.device }} — the drive cannot read these. On Single-profile data, affected files restore from backup. Plan replacement."
 
@@ -81,7 +81,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "NVMe critical warning on {{ $labels.device }}"
           description: "NVMe critical_warning bitfield = {{ $value }} (nonzero) on {{ $labels.device }} — spare exhausted / reliability degraded / read-only / temperature alarm. Investigate now (/home + container metadata live here)."
 
@@ -99,7 +99,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "SMART reallocated sectors INCREASING on {{ $labels.device }}"
           description: "{{ $labels.device }} reallocated-sector count rose to {{ $value }} over the past week — the drive is actively remapping bad sectors (degrading). Verify backups and plan replacement. (A stable count does not fire; the absolute value is in Grafana.)"
 
@@ -111,7 +111,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "Disk {{ $labels.device }} running hot ({{ $value }}°C)"
           description: "{{ $labels.device }} sustained {{ $value }}°C (>55°C for 30m). Check cabinet airflow/cooling (see the active-cooling fan plan)."
 
@@ -123,7 +123,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "NVMe {{ $labels.device }} endurance at {{ $value }}%"
           description: "NVMe endurance used {{ $value }}% (>85% of rated write life). Plan SSD replacement; /home, container metadata, and Grafana live here."
 
@@ -135,7 +135,7 @@ groups:
           category: storage
           component: smartmon
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "SMART collector stale"
           description: "smartmon collector last ran {{ $value | humanizeDuration }} ago (expected hourly). Check `systemctl --user status smartmon.timer` and the /etc/sudoers.d/homelab-storage-health grant."
 
@@ -176,6 +176,6 @@ groups:
           category: storage
           component: btrfs-scrub
         annotations:
-          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/20-operations/guides/storage-health-monitoring.md"
+          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/20-operations/guides/storage-health-monitoring.md"
           summary: "BTRFS scrub overdue on {{ $labels.filesystem }}"
           description: "{{ $labels.filesystem }} has not completed a scrub in {{ $value | humanizeDuration }} (monthly cadence + grace). Bit rot could be accumulating undetected. Check `systemctl --user status btrfs-scrub-internal.timer`."

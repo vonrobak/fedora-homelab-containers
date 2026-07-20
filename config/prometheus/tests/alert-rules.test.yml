@@ -233,7 +233,7 @@ tests:
               severity: critical
               category: monitoring
             exp_annotations:
-              runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/40-monitoring-and-documentation/guides/monitoring-stack.md"
+              runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/40-monitoring-and-documentation/guides/monitoring-stack.md"
               summary: "cAdvisor is down — container observability blind"
               description: "cAdvisor has been unreachable for more than 5 minutes. All container-level alerts (liveness, memory pressure, restarts) are blind until it returns. Check: systemctl --user status cadvisor.service"
 

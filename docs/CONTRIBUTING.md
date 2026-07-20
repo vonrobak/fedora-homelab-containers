@@ -256,7 +256,7 @@ report yields a durable, generalizable lesson, promote it to `lessons.md` per it
 - Keep lines under ~120 characters for terminal readability
 
 **Cross-linking (three zones, ADR-043 D5):**
-- **Public → public:** relative paths: `[SLO framework](40-monitoring-and-documentation/guides/slo-framework.md)`; ADRs by textual `ADR-NNN` reference
+- **Public → public:** relative paths: `[SLO alerting](40-monitoring-and-documentation/guides/slo-based-alerting.md)`; ADRs by textual `ADR-NNN` reference
 - **Public → vault: never as paths or links.** A PR body or ADR may mention a vault document by name only, when strictly necessary
 - **Vault → public:** free — GitHub PRs, commit hashes, URLs, repo paths in prose (vault-internal linking rules live in the vault's conventions doc)
 - Do not duplicate content across docs -- link instead
