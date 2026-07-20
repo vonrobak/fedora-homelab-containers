@@ -212,7 +212,7 @@ groups:
           category: security
           component: security
         annotations:
-          runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/90-archive/crowdsec-phase1-field-manual.md"
+          runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/30-security/decisions/2025-11-12-ADR-008-crowdsec-security-architecture.md"
           summary: "CrowdSec security monitoring is down"
           description: "CrowdSec has been unreachable for more than 5 minutes. IP reputation filtering is disabled!"
 
