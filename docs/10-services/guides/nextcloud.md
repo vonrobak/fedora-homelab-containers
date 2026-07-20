@@ -383,7 +383,7 @@ podman exec -u www-data nextcloud php occ maintenance:mode --off
 ```
 
 **Automated Backup (Recommended):**
-See: `docs/20-operations/guides/backup-strategy.md`
+See: [Urd](https://github.com/vonrobak/urd) (ADR-021)
 
 ### Restore Procedures
 

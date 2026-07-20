@@ -748,7 +748,7 @@ systemctl --user restart jellyfin.service
 - **Deployment log:** `docs/10-services/journal/2025-10-23-day04-jellyfin-deployment.md`
 - **Traefik integration:** `docs/10-services/guides/traefik.md`
 - **Storage architecture:** `docs/20-operations/guides/storage-layout.md`
-- **Backup strategy:** `docs/20-operations/guides/backup-strategy.md`
+- **Backup strategy:** [Urd](https://github.com/vonrobak/urd) (ADR-021)
 
 ---
 

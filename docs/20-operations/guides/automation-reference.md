@@ -425,7 +425,7 @@ systemctl --user enable --now my-task.timer
 
 ## See Also
 
-- `docs/20-operations/guides/backup-strategy.md` — Backup automation details
+- [Urd](https://github.com/vonrobak/urd) — backup system (ADR-021)
 - `docs/20-operations/guides/autonomous-operations.md` — OODA loop framework
 - `docs/40-monitoring-and-documentation/guides/slo-framework.md` — SLO monitoring
 - `docs/40-monitoring-and-documentation/guides/loki-remediation-queries.md` — LogQL queries

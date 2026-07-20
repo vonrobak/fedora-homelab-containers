@@ -102,7 +102,7 @@ docs/
 - **Traefik:** `10-services/guides/traefik.md`
 - **Authelia:** `10-services/guides/authelia.md` (SSO + YubiKey MFA)
 - **Monitoring:** `40-monitoring-and-documentation/guides/monitoring-stack.md`
-- **Backup:** `20-operations/guides/backup-strategy.md`
+- **Backup:** [Urd](https://github.com/vonrobak/urd) (ADR-021)
 
 ### Understanding Project History
 
