@@ -4,14 +4,13 @@ title: "Homelab Architecture Documentation"
 description: "Comprehensive architecture reference covering network, service stack, security layers, DNS, storage, backup, monitoring, and autonomous operations."
 sensitivity: public
 created: 2025-10-31
-updated: 2026-06-22
+updated: 2026-07-20
 ---
 
 # Homelab Architecture Documentation
 
-**Last Updated:** February 5, 2026
+**Last Updated:** July 20, 2026
 **Status:** Production Ready
-**Health Score:** 100/100 (as of 2026-02-05)
 
 ---
 
@@ -36,7 +35,7 @@ updated: 2026-06-22
 
 ### Current State
 
-**Infrastructure:** 28 rootless Podman containers across 14 service groups on Fedora Linux
+**Infrastructure:** 37 rootless Podman containers across 17 service groups on Fedora Linux
 **Orchestration:** Systemd quadlets with pattern-based deployment
 **Accessibility:** Internet-accessible with 7-layer defense-in-depth security
 **Autonomous:** Daily OODA loop, predictive maintenance, drift detection
@@ -75,9 +74,9 @@ UDM Pro (gateway/firewall)
         └── Other devices
 ```
 
-### Container Networks (8 custom networks)
+### Container Networks (12 custom networks)
 
-Services are segmented across 8 Podman bridge networks based on trust boundaries.
+Services are segmented across 12 Podman bridge networks based on trust boundaries.
 Key principle: **First `Network=` line in a quadlet gets the default route** (determines internet access).
 
 ```
@@ -85,41 +84,66 @@ Key principle: **First `Network=` line in a quadlet gets the default route** (de
 │  reverse_proxy (10.89.2.0/24) — 15 containers              │
 │  Internet-facing services. Traefik routes to all backends.  │
 │  Has default route (internet access).                       │
-│  Members: traefik, crowdsec, authelia, homepage, jellyfin,  │
-│           immich-server, nextcloud, vaultwarden, grafana,   │
-│           prometheus, loki, alertmanager, gathio,           │
-│           home-assistant, alert-discord-relay                │
+│  Members: traefik, crowdsec, jellyfin, immich-server,       │
+│           nextcloud, vaultwarden, grafana, loki,            │
+│           alertmanager, gathio, home-assistant, navidrome,  │
+│           qbittorrent, proton-bridge, alert-discord-relay   │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│  monitoring (10.89.1.0/24) — 17 containers                 │
-│  Observability stack. Cross-network scraping.               │
+│  monitoring (10.89.4.0/24) — 14 containers                 │
+│  Observability stack (Internal=true, no internet).          │
 │  Members: prometheus, grafana, loki, promtail, alertmanager,│
-│           cadvisor, node_exporter, unpoller,                │
-│           alert-discord-relay, + most services for scraping │
+│           cadvisor, node_exporter, unpoller, blackbox-      │
+│           exporter, pihole-exporter, postgres-exporter,     │
+│           redis-authelia-exporter, redis-immich-exporter,   │
+│           alert-discord-relay                                │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  restricted-egress (10.89.11.0/24) — 7 members (ADR-045)   │
+│  Outbound-restricted tier: internet egress dropped by an    │
+│  nft filter in the rootless netns; INBOUND still governed   │
+│  solely by Traefik routing (members stay reachable via      │
+│  cross-bridge dial).                                        │
+│  Members: prometheus, unpoller, pihole-exporter,            │
+│           blackbox-exporter, audiobookshelf, forgejo,       │
+│           authelia                                           │
 └─────────────────────────────────────────────────────────────┘
 
 ┌───────────────────────────┐  ┌──────────────────────────────┐
 │  auth_services            │  │  media_services              │
-│  (10.89.3.0/24) — 3      │  │  Jellyfin media isolation    │
-│  authelia, traefik,       │  │  Members: jellyfin           │
-│  redis-authelia           │  │                              │
+│  (10.89.3.0/24) — 3      │  │  (10.89.1.0/24)             │
+│  authelia, redis-authelia,│  │  Jellyfin media isolation    │
+│  redis-authelia-exporter  │  │  Members: jellyfin           │
 └───────────────────────────┘  └──────────────────────────────┘
 
 ┌───────────────────────────┐  ┌──────────────────────────────┐
-│  photos                   │  │  nextcloud                   │
+│  photos (10.89.5.0/24)    │  │  nextcloud (10.89.10.0/24)   │
 │  Immich stack isolation   │  │  Nextcloud ecosystem         │
-│  Members: immich-server,  │  │  Members: nextcloud,         │
-│  immich-ml, postgresql-   │  │  collabora, nextcloud-db,    │
-│  immich, redis-immich     │  │  nextcloud-redis             │
+│  immich-server, immich-ml,│  │  Members: nextcloud,         │
+│  postgresql-immich,       │  │  nextcloud-db,               │
+│  redis-immich + exporters │  │  nextcloud-redis             │
 └───────────────────────────┘  └──────────────────────────────┘
 
 ┌───────────────────────────┐  ┌──────────────────────────────┐
-│  home_automation          │  │  gathio                      │
-│  Smart home stack         │  │  Event management            │
-│  Members: home-assistant, │  │  Members: gathio, gathio-db  │
-│  matter-server            │  │                              │
+│  home_automation          │  │  gathio (10.89.0.0/24)       │
+│  (10.89.6.0/24)          │  │  Event management            │
+│  Members: home-assistant  │  │  Members: gathio, gathio-db  │
 └───────────────────────────┘  └──────────────────────────────┘
+
+┌───────────────────────────┐  ┌──────────────────────────────┐
+│  forgejo (10.89.8.0/24)   │  │  mail (10.89.9.0/24)         │
+│  Git forge backend        │  │  SMTP relay path             │
+│  Members: forgejo,        │  │  Members: authelia,          │
+│  forgejo-db               │  │  proton-bridge               │
+└───────────────────────────┘  └──────────────────────────────┘
+
+┌───────────────────────────┐
+│  syslog (10.89.7.0/24)    │
+│  UDM Pro log ingestion    │
+│  Members: unifi-syslog    │
+└───────────────────────────┘
 ```
 
 ### Logical Request Flow
@@ -150,54 +174,61 @@ Services on multiple networks use static IP assignment + Traefik /etc/hosts over
 
 ## Service Stack
 
-### Production Services (14 service groups, 28 containers)
+### Production Services (17 service groups, 37 containers)
 
 #### Core Infrastructure
 
 | Service | Container(s) | Network(s) | Purpose |
 |---------|-------------|------------|---------|
-| **Traefik** | traefik | reverse_proxy, auth_services, monitoring | Reverse proxy, SSL termination, routing |
-| **CrowdSec** | crowdsec | reverse_proxy, monitoring | IP reputation, threat intelligence |
-| **Authelia** | authelia, redis-authelia | reverse_proxy, auth_services, monitoring | SSO + YubiKey MFA |
+| **Traefik** | traefik | reverse_proxy | Reverse proxy, SSL termination, routing |
+| **CrowdSec** | crowdsec | reverse_proxy | IP reputation, threat intelligence |
+| **Authelia** | authelia, redis-authelia | auth_services, mail, restricted-egress | SSO + YubiKey MFA |
 
 #### User Applications
 
 | Service | Container(s) | Network(s) | Auth Method | URL Pattern |
 |---------|-------------|------------|-------------|-------------|
-| **Homepage** | homepage | reverse_proxy, monitoring | Authelia | home.* |
-| **Jellyfin** | jellyfin | reverse_proxy, media_services, monitoring | Native | jellyfin.* |
-| **Immich** | immich-server, immich-ml, postgresql-immich, redis-immich | reverse_proxy, photos, monitoring | Native | photos.* |
-| **Nextcloud** | nextcloud, collabora, nextcloud-db, nextcloud-redis | reverse_proxy, nextcloud, monitoring | Native | nextcloud.* |
-| **Vaultwarden** | vaultwarden | reverse_proxy, monitoring | Native | vault.* |
-| **Gathio** | gathio, gathio-db | reverse_proxy, gathio, monitoring | Authelia | events.* |
-| **Home Assistant** | home-assistant, matter-server | reverse_proxy, home_automation, monitoring | Native | ha.* |
+| **Jellyfin** | jellyfin | reverse_proxy, media_services | Native | jellyfin.* |
+| **Immich** | immich-server, immich-ml, postgresql-immich, redis-immich | reverse_proxy, photos | Native | photos.* |
+| **Nextcloud** | nextcloud, nextcloud-db, nextcloud-redis | reverse_proxy, nextcloud | Native | nextcloud.* |
+| **Vaultwarden** | vaultwarden | reverse_proxy | Native | vault.* |
+| **Gathio** | gathio, gathio-db | reverse_proxy, gathio | Authelia | events.* |
+| **Home Assistant** | home-assistant | reverse_proxy, home_automation | Native | ha.* |
+| **Navidrome** | navidrome | reverse_proxy | Native | musikk.* |
+| **Audiobookshelf** | audiobookshelf | restricted-egress | Native | audiobookshelf.* |
+| **qBittorrent** | qbittorrent | reverse_proxy | Authelia | torrent.* |
+| **Forgejo** | forgejo, forgejo-db | forgejo, restricted-egress | Native | git.* |
+| **Proton Bridge** | proton-bridge | reverse_proxy, mail | N/A (SMTP relay) | — |
 
 #### Monitoring & Observability
 
 | Service | Container(s) | Network(s) | Purpose |
 |---------|-------------|------------|---------|
-| **Prometheus** | prometheus | reverse_proxy, monitoring | Metrics collection |
+| **Prometheus** | prometheus | monitoring, restricted-egress | Metrics collection (internal-only since 2026-07) |
 | **Grafana** | grafana | reverse_proxy, monitoring | Dashboards & visualization |
 | **Loki** | loki | reverse_proxy, monitoring | Log aggregation |
-| **Alertmanager** | alertmanager | monitoring | Alert routing (Discord) |
+| **Alertmanager** | alertmanager | reverse_proxy, monitoring | Alert routing (Discord) |
 | **Promtail** | promtail | monitoring | Log shipping to Loki |
 | **cAdvisor** | cadvisor | monitoring | Container metrics |
 | **Node Exporter** | node_exporter | monitoring | Host system metrics |
-| **UnPoller** | unpoller | monitoring | UniFi network metrics |
+| **UnPoller** | unpoller | monitoring, restricted-egress | UniFi network metrics |
+| **Blackbox Exporter** | blackbox-exporter | monitoring, restricted-egress | Endpoint probing |
+| **Pi-hole Exporter** | pihole-exporter | monitoring, restricted-egress | Pi-hole DNS metrics |
+| **DB/Redis Exporters** | postgres-exporter, redis-authelia-exporter, redis-immich-exporter | monitoring + backend nets | Database metrics |
+| **UniFi Syslog** | unifi-syslog | syslog | UDM Pro log ingestion |
 | **Alert Discord Relay** | alert-discord-relay | reverse_proxy, monitoring | Alertmanager → Discord |
 
 ### Internal-Only Services (no public route)
 
-- **Collabora** - Document editing server (accessed by Nextcloud internally)
-- **Alertmanager** - Alert routing (access via Grafana or direct container exec)
+- **Prometheus** - Queried by Grafana over the monitoring network (public router removed, ADR-045)
 - **All databases/Redis instances** - Backend-only, no Traefik routing
 
 ### Authentication Model
 
 | Auth Method | Services | Rationale |
 |-------------|----------|-----------|
-| **Authelia SSO** | Homepage, Traefik Dashboard, Grafana, Prometheus, Loki, Gathio | Admin/monitoring tools — centralized auth |
-| **Native auth** | Jellyfin, Immich, Nextcloud, Vaultwarden, Home Assistant | Mobile apps, WebDAV clients need direct auth |
+| **Authelia SSO** | Traefik Dashboard, Grafana, Loki, Gathio, qBittorrent | Admin/monitoring tools — centralized auth |
+| **Native auth** | Jellyfin, Immich, Nextcloud, Vaultwarden, Home Assistant, Navidrome, Audiobookshelf, Forgejo | Mobile apps, WebDAV/git clients need direct auth |
 
 ---
 
@@ -247,7 +278,7 @@ cd .claude/skills/homelab-deployment
 
 ```
 Layer 7: Container Isolation (rootless, SELinux enforcing, UID 1000)
-Layer 6: Network Segmentation (8 isolated Podman networks)
+Layer 6: Network Segmentation (12 isolated Podman networks + restricted-egress outbound filter, ADR-045)
 Layer 5: Security Headers (HSTS, CSP, X-Frame-Options)
 Layer 4: Authentication (Authelia YubiKey/WebAuthn + TOTP, or native)
 Layer 3: Rate Limiting (tiered: 50-400 req/min by service type)
@@ -273,7 +304,7 @@ Layer 1: Port Filtering (UDM Pro firewall, only 80/443 exposed)
 ### Vulnerability Management
 
 - **Weekly:** Automated CVE scanning (Sundays 06:00)
-- **Monthly:** Security audit (`scripts/security-audit.sh`, 40+ checks)
+- **Biweekly (1st/15th):** Security audit (`scripts/security-audit.sh`, 53 checks)
 - **Continuous:** CrowdSec behavioral analysis + global threat intelligence
 
 ---
@@ -311,15 +342,14 @@ Layer 1: Port Filtering (UDM Pro firewall, only 80/443 exposed)
 │   ├── crowdsec/          # Threat detection config
 │   ├── prometheus/        # Scrape targets, recording rules, alerts
 │   ├── grafana/           # Provisioned dashboards & datasources
-│   ├── loki/              # Log aggregation config
-│   └── homepage/          # Dashboard widget config
+│   └── loki/              # Log aggregation config
 │
 ├── data/                   # Runtime data (gitignored, on BTRFS pool)
 │   ├── crowdsec/          # Threat database
 │   └── backup-logs/       # Backup operation logs
 │
 ├── quadlets/              # Symlink → ~/.config/containers/systemd/
-│                           # All 28 .container files + .network files
+│                           # All 37 .container files + .network files
 │
 ├── scripts/               # 65+ automation scripts (git-tracked)
 ├── secrets/               # API tokens, passwords (gitignored, chmod 600)
@@ -346,7 +376,10 @@ Layer 1: Port Filtering (UDM Pro firewall, only 80/443 exposed)
 
 ### Three Pillars
 
-1. **Local BTRFS Snapshots**
+Backups are managed by **[Urd](https://github.com/vonrobak/urd)** (ADR-021), a Rust-based
+BTRFS Time Machine that replaced the earlier shell scripts.
+
+1. **Local BTRFS Snapshots (Urd)**
    - Daily automated, 14+ day retention
    - RTO: <10 minutes (validated)
    - RPO: 24 hours
@@ -355,7 +388,7 @@ Layer 1: Port Filtering (UDM Pro firewall, only 80/443 exposed)
    - Configs, quadlets, docs, scripts tracked on GitHub
    - Full history, instant config recovery
 
-3. **External Backup**
+3. **External Backup (Urd)**
    - WD-18TB drive, validated restore (81,716 files)
    - Off-site capability for catastrophic recovery
 
@@ -427,10 +460,10 @@ Daily automated cycle: **Observe → Orient → Decide → Act**
 Key scheduled operations:
 - Every 5 min: Nextcloud cron, dependency metrics
 - Every 30 min: Cloudflare DDNS
-- Hourly: Journal log rotation
-- Daily: BTRFS backup, SLO snapshot, drift check, resource forecast, error digest, auto-doc
-- Weekly: Intelligence report, vulnerability scan, podman auto-update, database maintenance
-- Monthly: SLO report, remediation report, skill usage report
+- Hourly: Journal log rotation, Forgejo mirror
+- Daily: Urd backup, SLO snapshot, drift check, resource forecast, error digest, auto-doc
+- Weekly: Intelligence report, vulnerability scan, database maintenance, image-update discovery (notify-only)
+- Monthly: Deliberate image-update loop (`monthly-update.sh`, ADR-036), SLO report, remediation report, skill usage report
 - Biweekly: Backup restore test
 
 ---
@@ -470,7 +503,7 @@ Network=systemd-reverse_proxy.network
 - CrowdSec threat updates (continuous)
 - Container health checks (every 10-30s)
 - SSL certificate renewal (Let's Encrypt)
-- BTRFS snapshots (daily)
+- BTRFS snapshots via Urd (daily)
 - Log rotation (hourly)
 - Documentation regeneration (daily 07:00)
 
@@ -493,5 +526,4 @@ Network=systemd-reverse_proxy.network
 
 ---
 
-**Document Version:** 3.0
-**Previous versions:** [v1.0 archived from Nov 2025](../../90-archive/)
+**Document Version:** 3.0 (previous versions archived internally)

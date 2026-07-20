@@ -8,12 +8,13 @@ This guide covers when, where, and how to write documentation. It does not repea
 
 ## The Two Homes (ADR-043)
 
+<!-- allow-vault-paths: this file documents the boundary itself -->
 Documentation lives in two places, and the boundary is a **per-document property**, not a directory convention:
 
-- **This repo (`docs/00-40`)** — public on GitHub. Guides, ADRs, runbooks, patterns. Every document carries frontmatter with `sensitivity: public` explicit.
+- **This repo (`docs/00-40`)** — public on GitHub. Guides, ADRs, runbooks, patterns. Every document carries frontmatter with `sensitivity: public` explicit. The public tree is a **curated reference for readers building comparable homelabs** — not a dumping ground for everything non-sensitive. System-decision ADRs live here; project-process meta-ADRs (how the owner runs docs, repos, workflow) are vault-resident. ADR numbering is one shared sequence across both homes, so gaps in the public sequence are expected, not errors.
 - **The private vault** — journals, plans, reports, supervisor docs, archive, and any document classified `internal` or `secret`. The `docs/9x` paths still resolve (gitignored symlinks), but the content is physically unstageable here; a pre-commit gate (`scripts/check-vault-boundary.sh`) rejects staged markdown carrying `sensitivity: internal|secret`. The vault has its own conventions document — consult it there.
 
-**Birth rule (type decides, repo-public default):** guides, ADRs, and patterns are born here, public, with frontmatter from day one. A document whose *first draft* needs internal specifics (incident post-mortems, host-specific runbooks) is born in the vault; publishing it later is a deliberate copy-and-scrub. Do not word public docs for an external audience — write for the owner; the public reader is a welcome eavesdropper.
+**Birth rule (two tests, in order — ADR-048, internal):** first the *sensitivity* test: a document whose first draft needs internal specifics (incident post-mortems, host-specific runbooks) is born in the vault; publishing later is a deliberate copy-and-scrub. Then the *audience* test: even a non-sensitive document belongs in the vault when it is owner-operational — written to run *this* system — rather than transferable reference a reader could apply to their own homelab. Public docs serve the external reader: prefer linking the auto-generated views over hardcoding counts and inventories that drift.
 
 **Runbook split test:** a runbook stays public when the procedure is generic and specifics are incidental (scrub stray IPs/hostnames to placeholders). It lives in the vault when specificity *is* its value — leaving a public stub here: title, one-line purpose, "operational specifics live in the private vault."
 
@@ -279,8 +280,15 @@ Note: `90-archive/` is **vault-resident** (symlink). Archiving a *public* doc th
 
 ### How to Archive
 
+Archiving a public doc crosses the boundary (see note above), so it is a two-step move — vault first, so the file is never homeless:
+
 ```bash
-git mv docs/<category>/<file>.md docs/90-archive/
+# 1. Vault side: copy into the archive and commit there
+cp docs/<category>/<file>.md ~/Huldr/projects/homelab/90-archive/
+# (set frontmatter: sensitivity: internal, status: archived; then commit via the vault's bare-repo workflow)
+
+# 2. Public side: remove from this repo (PR or trivia lane)
+git rm docs/<category>/<file>.md
 ```
 
 Add an archival header to the top of the moved file:

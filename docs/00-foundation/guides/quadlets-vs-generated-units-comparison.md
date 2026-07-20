@@ -4,7 +4,7 @@ title: "Quadlets vs Generated Systemd Services"
 description: "Comparison guide arguing why systemd quadlets are preferable to podman-generated systemd units for declarative, maintainable container management."
 sensitivity: public
 created: 2025-10-31
-updated: 2025-12-22
+updated: 2026-07-20
 ---
 
 # Quadlets vs Generated Systemd Services
@@ -37,16 +37,19 @@ ExecStart=/usr/bin/podman run --cidfile=%t/%n.ctr-id --cgroups=no-conmon...
 ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
 ```
 
-### 4. **Auto-Update Support**
+### 4. **Auto-Update Support (capability — deliberately disabled here)**
+Quadlets support built-in auto-updates:
 ```ini
 [Container]
-AutoUpdate=registry  # Built-in support!
+AutoUpdate=registry  # Supported by quadlets — NOT used in this project
 ```
 
-Then use:
-```bash
-podman auto-update  # Updates all containers with AutoUpdate=registry
-```
+This project deliberately does **not** use it (ADR-030, Container Supply-Chain
+Trust Model). Every image is digest-pinned (`tag@sha256:...`), all
+`AutoUpdate=registry` lines are stripped, and updates happen through a
+deliberate monthly loop (`scripts/monthly-update.sh`) with a cooling-off bake
+policy — not `podman auto-update`. The capability exists; the trust model
+chooses not to exercise it.
 
 ### 5. **Better Dependency Management**
 ```ini

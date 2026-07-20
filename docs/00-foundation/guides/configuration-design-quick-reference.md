@@ -4,7 +4,7 @@ title: "Configuration Design Quick Reference Card"
 description: "Quick-reference card companion to the configuration design principles — lookup tables for where ordering matters and common design decisions."
 sensitivity: public
 created: 2025-10-31
-updated: 2025-12-31
+updated: 2026-07-20
 ---
 
 # Configuration Design Quick Reference Card
@@ -271,7 +271,8 @@ Wants=network-online.target
 # CONTAINER CONFIGURATION
 # ═══════════════════════════════════════════════
 [Container]
-Image=docker.io/<image>:<tag>
+# Digest-pinned per ADR-030: tag = discovery handle, digest = execution contract
+Image=docker.io/<image>:<tag>@sha256:<digest>
 ContainerName=<service-name>
 User=<uid>:<gid>  # Non-root user
 
@@ -451,11 +452,11 @@ Network=systemd-database.network
 ```ini
 # WRONG: No health check
 [Container]
-Image=myapp:latest
+Image=myapp:v1.2.3@sha256:<digest>
 
 # RIGHT: With health check
 [Container]
-Image=myapp:latest
+Image=myapp:v1.2.3@sha256:<digest>
 HealthCmd=curl -f http://localhost:8080/health || exit 1
 HealthInterval=30s
 ```
@@ -464,11 +465,11 @@ HealthInterval=30s
 ```ini
 # WRONG: Implicit root
 [Container]
-Image=myapp:latest
+Image=myapp:v1.2.3@sha256:<digest>
 
 # RIGHT: Explicit non-root
 [Container]
-Image=myapp:latest
+Image=myapp:v1.2.3@sha256:<digest>
 User=1000:1000
 ```
 

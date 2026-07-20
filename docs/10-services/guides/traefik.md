@@ -4,7 +4,7 @@ title: "Traefik Reverse Proxy"
 description: "Service guide for the Traefik reverse proxy — HTTPS, Let's Encrypt, security middleware, and the ADR-016 rule that all routing lives in dynamic config."
 sensitivity: public
 created: 2025-11-07
-updated: 2025-12-31
+updated: 2026-07-20
 ---
 
 # Traefik Reverse Proxy
@@ -483,13 +483,13 @@ podman healthcheck run traefik  # If health check defined
 - **Never commit to git!**
 
 **Create/update secret:**
-```bash
-# Create
-echo "your-api-key" | podman secret create crowdsec_api_key -
 
-# Update (must recreate)
-podman secret rm crowdsec_api_key
-echo "new-api-key" | podman secret create crowdsec_api_key -
+The `crowdsec_api_key` podman secret is provisioned from the OpenBao substrate and
+synced automatically (ADR-041). Create/rotate it via the htpc-mgmt `secretctl` tool —
+never manual `podman secret create`/`rm`; the `Secret=` handle in the quadlet is
+unchanged. See `../../30-security/guides/secrets-management.md`. After rotation:
+
+```bash
 systemctl --user restart traefik.service
 ```
 

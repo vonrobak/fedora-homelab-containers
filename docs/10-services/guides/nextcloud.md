@@ -4,7 +4,7 @@ title: "Nextcloud Service Guide"
 description: "Service guide for the Nextcloud file-sync stack (Nextcloud + MariaDB + Redis) — access endpoints, CalDAV/CardDAV/WebDAV, and service management."
 sensitivity: public
 created: 2025-12-21
-updated: 2026-02-06
+updated: 2026-07-20
 ---
 
 # Nextcloud Service Guide
@@ -296,24 +296,20 @@ podman secret inspect nextcloud_db_password
 ```
 
 **Rotate Secret:**
+
+Runtime secrets are provisioned from the OpenBao substrate and synced into podman
+secrets automatically (ADR-041). Creation and rotation happen via the htpc-mgmt
+`secretctl` tool — never manual `podman secret create`/`rm` on this host. The
+`Secret=` handles in the quadlets are unchanged. After rotating
+`nextcloud_db_password` via `secretctl`, update the database to match and restart:
+
 ```bash
-# 1. Generate new password
-NEW_PASSWORD=$(openssl rand -base64 32)
-
-# 2. Remove old secret
-systemctl --user stop nextcloud.service
-podman secret rm nextcloud_db_password
-
-# 3. Create new secret
-echo -n "${NEW_PASSWORD}" | podman secret create nextcloud_db_password -
-
-# 4. Update database password
-podman exec nextcloud-db mysql -u root -e "ALTER USER 'nextcloud'@'%' IDENTIFIED BY '${NEW_PASSWORD}';"
-
-# 5. Restart services
-systemctl --user daemon-reload
-systemctl --user start nextcloud.service
+# Update database password to the rotated value, then:
+podman exec nextcloud-db mysql -u root -e "ALTER USER 'nextcloud'@'%' IDENTIFIED BY '<rotated-password>';"
+systemctl --user restart nextcloud.service
 ```
+
+See `../../30-security/guides/secrets-management.md`.
 
 ---
 
@@ -638,8 +634,8 @@ podman exec crowdsec cscli decisions list
 # Vulnerability scanning
 ~/containers/scripts/scan-vulnerabilities.sh --severity CRITICAL,HIGH
 
-# Check for updates
-podman auto-update --dry-run
+# Check for image updates (ADR-030/036 deliberate update loop — notify-only)
+~/containers/scripts/check-image-updates.sh
 ```
 
 ---

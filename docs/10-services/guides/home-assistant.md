@@ -4,7 +4,7 @@ title: "Home Assistant - Production System Guide"
 description: "Production system guide for the Home Assistant deployment — its automations, integrated devices, integration strategy, and configuration structure."
 sensitivity: public
 created: 2026-01-31
-updated: 2026-02-01
+updated: 2026-07-20
 ---
 
 # Home Assistant - Production System Guide
@@ -452,6 +452,10 @@ podman logs home-assistant 2>&1 | grep -i error
 
 **Approach:** Matter motion sensors (Sep 2026 when Thread support mature)
 
+**Note (2026-07-20):** The python-matter-server container was decommissioned
+2026-05-18, pending a matter.js-based successor. The Matter-based trajectories
+(2 and 3) are on hold until that successor is deployed.
+
 **Steps:**
 1. **Install Matter motion sensors** (3-5 sensors for key rooms)
 2. **Room occupancy tracking:**
@@ -723,7 +727,6 @@ template:
 - Mill: https://www.home-assistant.io/integrations/mill/
 
 **Local Documentation:**
-- Journals: `/docs/98-journals/` (chronological history)
 - Roborock setup: `/docs/10-services/guides/roborock-room-cleaning-setup.md`
 - iOS Shortcuts: `/docs/10-services/guides/ios-shortcuts-quick-reference.md`
 - Completion summary: `/docs/ROBOROCK-IMPLEMENTATION-COMPLETE.md`

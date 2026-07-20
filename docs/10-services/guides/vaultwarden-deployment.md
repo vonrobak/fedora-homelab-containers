@@ -4,7 +4,7 @@ title: "Vaultwarden Deployment Guide"
 description: "Deployment guide for Vaultwarden — SQLite backend, YubiKey/TOTP 2FA, strict rate limiting, and pattern-based versus manual deployment steps."
 sensitivity: public
 created: 2025-11-12
-updated: 2025-11-14
+updated: 2026-07-20
 ---
 
 # Vaultwarden Deployment Guide
@@ -320,8 +320,7 @@ systemctl --user is-enabled vaultwarden.service
 ### Step 13: Verify Backups Include Vaultwarden
 
 ```bash
-# Run backup manually (with local-only flag)
-~/fedora-homelab-containers/scripts/btrfs-snapshot-backup.sh --local-only --verbose
+# Backups run automatically via Urd (ADR-021) — verify the latest snapshot exists
 
 # Check snapshot includes Vaultwarden data
 sudo btrfs subvolume list /mnt/btrfs-pool | grep containers
@@ -613,14 +612,19 @@ nano ~/.config/containers/systemd/vaultwarden.container
 
 ## Updating Vaultwarden
 
-Vaultwarden is configured for automatic updates (`AutoUpdate=registry` in quadlet).
+Vaultwarden's image is digest-pinned in the quadlet
+(`Image=docker.io/vaultwarden/server@sha256:...` — tag is the discovery handle,
+digest the execution contract). `AutoUpdate` is stripped fleet-wide (ADR-030);
+updates happen through the deliberate monthly loop (ADR-036).
 
-**Manual update:**
+**Update:**
 ```bash
-# Pull latest image
-podman pull docker.io/vaultwarden/server:latest
+# Monthly loop (discover → bake → adopt)
+~/containers/scripts/monthly-update.sh
 
-# Recreate container with new image
+# Or single-service:
+~/containers/scripts/pin-container-image.sh vaultwarden --adopt <digest> --apply
+systemctl --user daemon-reload
 systemctl --user restart vaultwarden.service
 
 # Verify update
@@ -630,7 +634,7 @@ podman logs vaultwarden | grep -i version
 
 **Update process:**
 1. Automatic backup (happens daily at 02:00 AM)
-2. Pull new image
+2. Adopt the new digest (baked per `config/supply-chain/bake-policy.yml`)
 3. Restart service
 4. Verify service healthy
 5. Test login with 2FA

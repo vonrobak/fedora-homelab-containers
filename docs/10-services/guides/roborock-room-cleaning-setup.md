@@ -460,7 +460,6 @@ curl -X GET "https://ha.patriark.org/api/webhook/clean_living_room"
 ## Related Documentation
 
 - [Home Assistant Automation Catalog](./home-assistant-automations.md) - Complete automation reference
-- [Learning Journey Journal](../../98-journals/2026-01-31-learning-journey-completion.md) - Implementation summary
 - [Roborock Room Cleaning - HA Community](https://community.home-assistant.io/t/roborock-room-cleaning/589015) - Community discussion
 - [Control Roborock with Siri via HA](https://noahtallen.com/2025/05/18/controlling-roborock-vacuums-with-siri-nfc-via-home-assistant/) - External guide
 

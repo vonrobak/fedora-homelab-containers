@@ -4,7 +4,7 @@ title: "Traefik Middleware Configuration: Analysis & Improvement Guide"
 description: "Guide to Traefik middleware configuration under the ADR-016 centralized dynamic-config model — CrowdSec integration, fail-fast ordering, and advanced patterns."
 sensitivity: public
 created: 2025-10-31
-updated: 2025-12-31
+updated: 2026-07-20
 ---
 
 # Traefik Middleware Configuration: Analysis & Improvement Guide
@@ -657,16 +657,20 @@ podman exec crowdsec cscli scenarios list
 http:
   routers:
     # ════════════════════════════════════════════════════
-    # Public service (no auth)
+    # Authelia-protected service (live example: Grafana)
+    # Mirrors the actual grafana-secure router in routers.yml
     # ════════════════════════════════════════════════════
-    homepage-router:
-      rule: "Host(`home.patriark.org`)"
+    grafana-secure:
+      rule: "Host(`grafana.patriark.org`)"
+      service: "grafana"
+      entryPoints:
+        - websecure
       middlewares:
         - crowdsec-bouncer@file
-        - rate-limit-public@file
-        - compression@file
-        - security-headers-public@file
-      service: homepage-service
+        - rate-limit@file
+        - authelia@file
+      tls:
+        certResolver: letsencrypt
     
     # ════════════════════════════════════════════════════
     # Standard authenticated service

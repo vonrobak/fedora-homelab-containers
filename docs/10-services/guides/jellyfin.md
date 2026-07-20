@@ -4,13 +4,13 @@ title: "Jellyfin Media Server"
 description: "Service guide for the Jellyfin media server — hardware-accelerated transcoding, Traefik HTTPS access, libraries, and management commands."
 sensitivity: public
 created: 2025-11-07
-updated: 2025-12-23
+updated: 2026-07-20
 ---
 
 # Jellyfin Media Server
 
 **Last Updated:** 2025-11-14
-**Version:** Latest (auto-update enabled)
+**Version:** Digest-pinned (ADR-030 — deliberate updates via `scripts/monthly-update.sh`)
 **Status:** Production
 **Networks:** reverse_proxy, media_services
 
@@ -589,7 +589,7 @@ systemctl --user start jellyfin.service
 rsync jellyfin-config-*.tar.gz backup-server:/backups/
 ```
 
-**Automated:** Use `scripts/btrfs-snapshot-backup.sh` (backs up relevant subvolumes)
+**Automated:** [Urd](https://github.com/vonrobak/urd) (ADR-021) snapshots and backs up the relevant subvolumes
 
 ### Restore Procedure
 
@@ -708,35 +708,34 @@ Dashboard → Playback:
 
 ## Upgrade Procedure
 
-**Auto-update enabled** (`AutoUpdate=registry` in quadlet)
+**Digest-pinned, deliberate updates (ADR-030/036).** The quadlet pins the image by
+digest (`Image=docker.io/jellyfin/jellyfin@sha256:...` — tag is the discovery handle,
+digest the execution contract). `AutoUpdate` is stripped fleet-wide; nothing updates
+automatically.
 
-**Automatic upgrades:**
-- Podman auto-update.timer checks daily
-- Pulls new `jellyfin/jellyfin:latest` image
-- Restarts container if new version available
-
-**Manual upgrade:**
+**Monthly update loop:**
 ```bash
-# 1. Pull latest image
-podman pull docker.io/jellyfin/jellyfin:latest
+# Single entry point (discover → bake → adopt, interactive)
+~/containers/scripts/monthly-update.sh
 
-# 2. Restart service
+# Or the individual steps:
+~/containers/scripts/check-image-updates.sh          # discover (notify-only, bake policy annotated)
+~/containers/scripts/adopt-baked.sh --dry-run        # adopt baked updates (wave-ordered)
+```
+
+**Single-service update:**
+```bash
+~/containers/scripts/pin-container-image.sh jellyfin --adopt <digest> --apply
+systemctl --user daemon-reload
 systemctl --user restart jellyfin.service
 
-# 3. Verify new version
+# Verify new version
 curl http://localhost:8096/System/Info/Public | grep Version
 ```
 
 **Rollback if issues:**
 ```bash
-# 1. Find previous image
-podman images | grep jellyfin
-
-# 2. Update quadlet to specific version
-# Change: Image=docker.io/jellyfin/jellyfin:latest
-# To: Image=docker.io/jellyfin/jellyfin:10.8.13
-
-# 3. Restart
+# git revert the digest line in the quadlet, then:
 systemctl --user daemon-reload
 systemctl --user restart jellyfin.service
 ```

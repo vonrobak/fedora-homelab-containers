@@ -4,7 +4,7 @@ title: "Immich Configuration Review & Optimization Report"
 description: "Configuration audit of the Immich deployment against design principles, scoring seven categories and flagging critical security and performance gaps."
 sensitivity: public
 created: 2025-11-23
-updated: 2026-02-28
+updated: 2026-07-20
 ---
 
 # Immich Configuration Review & Optimization Report
@@ -978,9 +978,10 @@ Wants=network-online.target
 Requires=photos-network.service postgresql-immich.service redis-immich.service
 
 [Container]
-Image=ghcr.io/immich-app/immich-server:v2.3.1
+# Digest-pinned per ADR-030 (tag = discovery handle, digest = execution contract);
+# updates flow through the deliberate monthly loop (scripts/monthly-update.sh), never AutoUpdate
+Image=ghcr.io/immich-app/immich-server@sha256:c15bff75068effb03f4355997d03dc7e0fc58720c2b54ad6f7f10d1bc57efaa5
 ContainerName=immich-server
-AutoUpdate=registry
 
 # ═══════════════════════════════════════════════
 # SECURITY: Run as non-root user

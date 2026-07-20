@@ -4,7 +4,7 @@ title: "Remediation Chains - Multi-Playbook Orchestration"
 description: "Guide to multi-playbook remediation chains — orchestrating cleanup, maintenance, and recovery steps in sequence with conditional execution and failure strategies."
 sensitivity: public
 created: 2025-12-25
-updated: 2025-12-25
+updated: 2026-07-20
 ---
 
 # Remediation Chains - Multi-Playbook Orchestration
@@ -697,7 +697,6 @@ systemctl --user list-timers  # Verify scheduled
 
 - **Playbooks:** `.claude/remediation/README.md` - Individual playbook documentation
 - **Autonomous Operations:** `docs/20-operations/guides/autonomous-operations.md`
-- **Roadmap:** `docs/97-plans/2025-12-23-remediation-phase-3-roadmap.md`
 - **Metrics:** `docs/40-monitoring-and-documentation/guides/prometheus-metrics.md`
 
 ---

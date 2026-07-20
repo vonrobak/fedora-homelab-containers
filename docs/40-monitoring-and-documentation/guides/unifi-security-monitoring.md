@@ -439,7 +439,6 @@ systemctl --user restart grafana.service
 - [SLO Framework](./slo-framework.md) - SLO targets and burn rate calculations
 - [Loki Remediation Queries](./loki-remediation-queries.md) - LogQL correlation patterns
 - [Security Audit Guide](../../../30-security/guides/security-audit.md) - Network monitoring checklist
-- [Matter Home Automation Plan](../../../97-plans/2025-12-30-matter-home-automation-implementation-plan.md) - VPN presence detection integration
 
 ---
 

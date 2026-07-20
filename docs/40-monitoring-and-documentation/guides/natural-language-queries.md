@@ -4,14 +4,14 @@ title: "Natural Language Query System - User Guide"
 description: "User guide to the natural-language query system (query-homelab.sh) that translates plain-English questions into cached system state answers."
 sensitivity: public
 created: 2025-11-21
-updated: 2025-11-30
+updated: 2026-07-20
 ---
 
 # Natural Language Query System - User Guide
 
 **Created:** 2025-11-22
 **Status:** ✅ Production-Ready
-**Safety Audit:** [docs/99-reports/2025-11-22-query-system-safety-audit.md](../../99-reports/2025-11-22-query-system-safety-audit.md)
+**Safety Audit:** 2025-11-22 query-system safety audit (internal vault report)
 
 ---
 
@@ -431,7 +431,7 @@ Network members:
 $ ~/containers/scripts/query-homelab.sh "What's jellyfin's configuration?"
 Configuration:
   service: jellyfin
-  image: docker.io/jellyfin/jellyfin:latest
+  image: docker.io/jellyfin/jellyfin@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
   memory_limit: 4G
   networks: systemd-reverse_proxy.network,systemd-media_services.network
 ```
@@ -466,8 +466,7 @@ Potential improvements (not yet implemented):
 
 ## See Also
 
-- **Safety Audit**: `docs/99-reports/2025-11-22-query-system-safety-audit.md`
-- **Session 5C Plan**: `docs/99-reports/SESSION-5C-NATURAL-LANGUAGE-QUERIES-PLAN.md`
+- **Safety Audit**: 2025-11-22 query-system safety audit (internal vault report)
 - **Homelab Intelligence Skill**: `.claude/skills/homelab-intelligence/SKILL.md`
 - **CLAUDE.md**: Main homelab reference guide
 

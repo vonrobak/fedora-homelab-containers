@@ -4,7 +4,7 @@ title: "Resource Limits Configuration Guide"
 description: "Guide providing ready-to-use systemd resource-limit configurations for the most critical services to prevent memory exhaustion and OOM instability."
 sensitivity: public
 created: 2025-11-09
-updated: 2025-11-09
+updated: 2026-07-20
 ---
 
 # Resource Limits Configuration Guide
@@ -259,7 +259,7 @@ If you prefer manual edits:
 2. **Find the [Service] section:**
    ```ini
    [Container]
-   Image=quay.io/prometheus/prometheus:latest
+   Image=quay.io/prometheus/prometheus:<tag>@sha256:<digest>  # digest-pinned (ADR-030)
    ...
 
    [Service]

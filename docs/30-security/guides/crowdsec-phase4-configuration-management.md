@@ -4,13 +4,13 @@ title: "CrowdSec Phase 4: Configuration Management Plan"
 description: "Guide to CrowdSec Phase 4 configuration management — bringing config files under Git, templates, validation, and backup/restore."
 sensitivity: public
 created: 2025-11-12
-updated: 2025-11-12
+updated: 2026-07-20
 ---
 
 # CrowdSec Phase 4: Configuration Management Plan
 
 **Version:** 1.0
-**Last Updated:** 2025-11-12
+**Last Updated:** 2026-07-20
 **Prerequisites:** Phase 1 and optionally Phase 3 completed
 **Estimated Time:** 45-60 minutes
 **Risk Level:** Low (documentation and templates, no service changes)
@@ -310,7 +310,7 @@ cat > ~/crowdsec-phase4-inventory/configuration-decisions.md <<'EOF'
 - **Standard threats (4 hours):** Proportional response to low-severity issues
 
 **References:**
-- ADR: See `docs/99-reports/2025-11-12-crowdsec-security-enhancements.md`
+- Report: 2025-11-12 CrowdSec security enhancements (internal vault report)
 - Design principle: Fail-fast, defense in depth
 
 **Trade-offs:**
@@ -598,7 +598,7 @@ cat > config/crowdsec/templates/profiles.yaml.template <<'EOF'
 # CrowdSec Ban Profiles - Tiered Duration Strategy
 #
 # This configuration implements a 3-tier ban system based on threat severity.
-# See: docs/99-reports/2025-11-12-crowdsec-security-enhancements.md
+# See: the 2025-11-12 CrowdSec security enhancements report (internal vault)
 #
 # Template Variables:
 #   (none - this template uses static values)
@@ -1548,7 +1548,7 @@ All configuration changes should follow this workflow:
 ### Configuration Change Documentation
 
 Store change documentation in:
-- `docs/99-reports/` for significant changes
+- the internal vault reports directory for significant changes
 - Git commit messages for minor changes
 
 ### Git Commit Message Format

@@ -4,7 +4,7 @@ title: "Immich Photo Management Service"
 description: "Service guide for the Immich photo/video management stack — its four containers, features, deployment details, and management commands."
 sensitivity: public
 created: 2025-11-10
-updated: 2026-02-08
+updated: 2026-07-20
 ---
 
 # Immich Photo Management Service
@@ -39,7 +39,7 @@ Immich is a **self-hosted photo and video management solution** designed as an a
 | immich-server | ghcr.io/immich-app/immich-server:v2.5.5 | 4G | ~280MB |
 | immich-ml | ghcr.io/immich-app/immich-machine-learning:v2.5.5 | 4G | ~19MB idle |
 | postgresql-immich | tensorchord/cloudnative-pgvecto.rs:14-v0.4.0 | 1G | ~32MB |
-| redis-immich | valkey:latest | 512M | ~13MB |
+| redis-immich | docker.io/valkey/valkey (digest-pinned, ADR-030) | 512M | ~13MB |
 
 ---
 

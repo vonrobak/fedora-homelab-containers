@@ -4,7 +4,7 @@ title: "Health-Driven Operations Guide"
 description: "Guide to using homelab-intel.sh health scoring (0-100) to inform deployment, maintenance, and troubleshooting decisions and to gate deployments."
 sensitivity: public
 created: 2025-11-14
-updated: 2025-11-14
+updated: 2026-07-20
 ---
 
 # Health-Driven Operations Guide
@@ -44,8 +44,8 @@ updated: 2025-11-14
 # JSON output (for automation)
 ./scripts/homelab-intel.sh --json
 
-# Latest report location
-ls -lt ~/containers/docs/99-reports/intel-*.json | head -1
+# JSON reports (intel-*.json) are written to the internal vault reports
+# directory (untracked) — list the newest one there to see the latest run.
 ```
 
 ### Health Score Interpretation
@@ -295,10 +295,12 @@ systemctl --user restart prometheus.service
 
 ```bash
 # Weekly health tracking
+# REPORTS_DIR = the internal vault reports directory (untracked), where
+# homelab-intel.sh writes its intel-*.json files
 for i in {1..4}; do
   date=$(date +%Y%m%d --date="$i weeks ago")
   echo "=== Week $i ==="
-  cat ~/containers/docs/99-reports/intel-${date}*.json | jq '{
+  cat "$REPORTS_DIR"/intel-${date}*.json | jq '{
     health_score: .health_score,
     disk_system: .metrics.disk_usage_system,
     disk_btrfs: .metrics.disk_usage_btrfs,
@@ -493,7 +495,8 @@ Description=Run Homelab Intelligence Scan
 
 [Service]
 Type=oneshot
-ExecStart=/home/user/containers/scripts/homelab-intel.sh --json --output /home/user/containers/docs/99-reports/intel-%Y%m%d.json
+# --output points at the internal vault reports directory (untracked)
+ExecStart=/home/user/containers/scripts/homelab-intel.sh --json --output <reports-dir>/intel-%Y%m%d.json
 
 # Enable timer
 systemctl --user enable --now health-check.timer

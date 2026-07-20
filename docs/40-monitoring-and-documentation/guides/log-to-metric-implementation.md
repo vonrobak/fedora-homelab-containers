@@ -4,7 +4,7 @@ title: "Log-to-Metric Feedback Loop Implementation"
 description: "Guide to the log-to-metric feedback loop — extracting Prometheus counters from logs at Promtail ingestion for real-time error alerting."
 sensitivity: public
 created: 2026-01-11
-updated: 2026-01-11
+updated: 2026-07-20
 ---
 
 # Log-to-Metric Feedback Loop Implementation
@@ -402,7 +402,7 @@ nano ~/containers/config/promtail/promtail-config.yml
 
 # Validate config
 podman run --rm -v ~/containers/config/promtail:/etc/promtail:Z \
-  grafana/promtail:latest \
+  docker.io/grafana/promtail@sha256:6cfa64ec432b24a912d640e2edb940eeae2666f61861a66c121d763dd7241381 \
   -config.file=/etc/promtail/promtail-config.yml \
   -dry-run
 
@@ -464,7 +464,7 @@ journalctl --user -u promtail.service -n 50
 
 # 3. Validate Promtail config
 podman run --rm -v ~/containers/config/promtail:/etc/promtail:Z \
-  grafana/promtail:latest \
+  docker.io/grafana/promtail@sha256:6cfa64ec432b24a912d640e2edb940eeae2666f61861a66c121d763dd7241381 \
   -config.file=/etc/promtail/promtail-config.yml \
   -dry-run
 ```
