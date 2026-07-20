@@ -533,5 +533,4 @@ After selecting a pattern:
 
 **Related Documentation:**
 - Skill usage: `.claude/skills/homelab-deployment/SKILL.md`
-- Integration guide: `docs/10-services/guides/skill-integration-guide.md`
 - Quick recipes: `.claude/skills/homelab-deployment/COOKBOOK.md`

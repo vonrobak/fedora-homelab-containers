@@ -199,7 +199,7 @@ groups:
       #       probes for >3m. Under HA this means BOTH nodes are broken or VRRP
       #       holds the VIP nowhere. Check per-node probes (.69 / .169) to see
       #       which side survives; alert-path containers fall back to node IPs.
-      #     runbook_url: "https://github.com/vonrobak/fedora-homelab-containers/blob/main/docs/97-plans/2026-06-12-adr031-phase3-design-node-b-vip.md"
+      #     runbook_url: "https://git.patriark.org/patriark/huldr/src/branch/main/projects/homelab/97-plans/2026-06-12-adr031-phase3-design-node-b-vip.md"
       #
       # - alert: PiHoleNodeBDown
       #   expr: up{job="node-exporter-pi-b"} == 0

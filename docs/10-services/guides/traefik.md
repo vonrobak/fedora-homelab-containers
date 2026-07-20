@@ -487,7 +487,7 @@ podman healthcheck run traefik  # If health check defined
 The `crowdsec_api_key` podman secret is provisioned from the OpenBao substrate and
 synced automatically (ADR-041). Create/rotate it via the htpc-mgmt `secretctl` tool —
 never manual `podman secret create`/`rm`; the `Secret=` handle in the quadlet is
-unchanged. See `../../30-security/guides/secrets-management.md`. After rotation:
+unchanged (full model: ADR-041). After rotation:
 
 ```bash
 systemctl --user restart traefik.service

@@ -1097,7 +1097,6 @@ Jellyfin transcoding slow/using CPU?
 ## Appendix D: Related Documentation
 
 **Project Documentation:**
-- Jellyfin guide: `docs/10-services/guides/jellyfin.md`
 - Storage layout: `docs/20-operations/guides/storage-layout.md`
 - Podman fundamentals: `docs/00-foundation/guides/podman-fundamentals.md`
 
