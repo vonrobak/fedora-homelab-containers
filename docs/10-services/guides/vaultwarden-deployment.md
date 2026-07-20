@@ -34,7 +34,7 @@ Vaultwarden is a lightweight, self-hosted implementation of the Bitwarden passwo
 Before deploying, ensure:
 
 - ✅ Traefik is running (`systemctl --user status traefik.service`)
-- ✅ Backup automation is working (see `docs/20-operations/guides/backup-automation-setup.md`)
+- ✅ Backup automation is working ([Urd](https://github.com/vonrobak/urd), ADR-021)
 - ✅ DNS record for `vault.patriark.org` points to your public IP
 - ✅ Ports 80/443 are forwarded to your server
 
@@ -459,7 +459,7 @@ scrape_configs:
 
 ### Restore from BTRFS Snapshot
 
-See: `docs/20-operations/guides/backup-automation-setup.md` → Restoration Process
+See: [Urd](https://github.com/vonrobak/urd) — BTRFS snapshot restore (ADR-021)
 
 **Quick restore:**
 ```bash
@@ -660,7 +660,6 @@ systemctl --user start vaultwarden.service
 ## Related Documentation
 
 - **ADR-006:** `docs/10-services/decisions/2025-11-12-decision-006-vaultwarden-architecture.md`
-- **Backup Strategy:** `docs/20-operations/guides/backup-strategy.md`
-- **Backup Automation:** `docs/20-operations/guides/backup-automation-setup.md`
+- **Backups:** [Urd](https://github.com/vonrobak/urd) (ADR-021)
 - **Traefik Configuration:** `docs/10-services/guides/traefik.md`
 - **Rate Limiting Design:** `docs/00-foundation/guides/middleware-configuration.md`
