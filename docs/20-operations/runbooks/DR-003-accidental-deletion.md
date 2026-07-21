@@ -4,15 +4,15 @@ title: "DR-003: Accidental Deletion Recovery"
 description: "Disaster-recovery runbook for recovering accidentally deleted files or directories from daily snapshots and external backups."
 sensitivity: public
 created: 2025-11-30
-updated: 2026-01-03
+updated: 2026-07-21
 ---
 
 # DR-003: Accidental Deletion Recovery
 
 **Severity:** Medium
 **RTO Target:** 5-30 minutes
-**RPO Target:** Up to 1 day (daily snapshots)
-**Last Tested:** 2026-01-03
+**RPO Target:** Up to 1 day (daily snapshots, managed by [Urd](https://github.com/vonrobak/urd))
+**Last Tested:** 2026-01-03 (pre-Urd; mechanism unchanged post-migration)
 **Success Rate:** 100% (verified external backup restore)
 
 ---
@@ -32,9 +32,13 @@ This could result from:
 - Application bug removing data
 - User mistake in file manager
 
+**Snapshots and external sends are managed by [Urd](https://github.com/vonrobak/urd) (ADR-021)** — a
+nightly `urd-backup.timer` (04:00) snapshots all 9 tracked subvolumes and sends deltas to two
+external drives. `urd status` shows current protection state per subvolume.
+
 ## Prerequisites
 
-- [ ] BTRFS snapshots exist for affected subvolume
+- [ ] BTRFS snapshots exist for affected subvolume (`urd status` shows `PROTECTED`)
 - [ ] Sufficient disk space for restore (if restoring large directories)
 - [ ] Know approximate time when files were last known to exist
 - [ ] Can identify file/directory names or paths
@@ -86,103 +90,75 @@ Determine which subvolume contained the deleted files:
 | `/mnt/btrfs-pool/subvol7-containers/*` | subvol7-containers |
 | `/` (system files) | htpc-root |
 
-### Step 2: List Available Snapshots
+### Step 2: Restore a Single File with `urd get`
 
-**For home directory:**
+For a single file, skip manual snapshot browsing entirely:
+
 ```bash
+# Print to stdout
+urd get /home/patriark/path/to/file.txt --at 2026-01-15
+
+# Write straight to a recovery location (doesn't touch the original path yet)
+urd get /home/patriark/path/to/file.txt --at 2026-01-15 -o /tmp/recovered-file.txt
+
+# "yesterday" and "today" work as --at values too
+urd get /mnt/btrfs-pool/subvol7-containers/config/jellyfin/config.xml --at yesterday
+```
+
+`urd get` auto-detects the owning subvolume from the path; override with `--subvolume <name>`
+if the path is ambiguous (e.g. a bind-mounted location). It reads from the **local** snapshot
+store first — for local-pool-loss scenarios see Step 3.
+
+### Step 3: Directory Restores / Local Pool Loss — Browse Snapshots Directly
+
+`urd get` only retrieves single files. For whole directories, or when the local pool itself is
+gone and you're restoring from an external drive, browse the snapshot tree directly. Urd names
+local snapshots `YYYYMMDD-HHMM-<short_name>` under each subvolume's `snapshot_root`
+(`~/containers/.config/urd/urd.toml` has the authoritative list — `urd status` shows the same
+short names):
+
+```bash
+# Home directory
 ls -lt $HOME/.snapshots/htpc-home/
-```
 
-**For BTRFS pool subvolumes:**
-```bash
-# Documents
+# BTRFS pool subvolumes (docs, pics, opptak/media, containers, music, multimedia, tmp)
 ls -lt /mnt/btrfs-pool/.snapshots/subvol1-docs/
-
-# Photos
-ls -lt /mnt/btrfs-pool/.snapshots/subvol2-pics/
-
-# Media (opptak)
-ls -lt /mnt/btrfs-pool/.snapshots/subvol3-opptak/
-
-# Containers
 ls -lt /mnt/btrfs-pool/.snapshots/subvol7-containers/
+
+# External drive, if the local snapshot is gone (see DR-002/DR-004)
+ls -lt /run/media/patriark/WD-18TB/.snapshots/subvol7-containers/
 ```
 
-**For system root (if external drive mounted):**
-```bash
-ls -lt /run/media/patriark/WD-18TB/.snapshots/htpc-root/
-```
-
-**Snapshot naming format:** `YYYYMMDD-subvolume` (e.g., `20251130-docs`)
-
-### Step 3: Find Deleted File in Snapshot
-
-Determine when file was last known to exist, then search snapshots:
+Find and restore a directory:
 
 ```bash
-# Find file in specific snapshot
-find $HOME/.snapshots/htpc-home/20251130/ -name "important-file.txt"
+# Find a directory inside a specific snapshot
+find /mnt/btrfs-pool/.snapshots/subvol1-docs/20260115-0403-docs/ \
+    -type d -name "project-folder"
 
-# Search across multiple recent snapshots
-for snapshot in $(ls -t $HOME/.snapshots/htpc-home/ | head -7); do
-    echo "=== Checking $snapshot ==="
-    find $HOME/.snapshots/htpc-home/$snapshot -name "important-file.txt"
-done
+# Restore the whole directory (preserves permissions, COW-reflinked on BTRFS)
+cp -a /mnt/btrfs-pool/.snapshots/subvol1-docs/20260115-0403-docs/Projects/MyProject/ \
+      /mnt/btrfs-pool/subvol1-docs/Projects/MyProject/
 
-# Find directory in snapshot
-find /mnt/btrfs-pool/.snapshots/subvol1-docs/20251130/ -type d -name "project-folder"
-```
-
-### Step 4: Verify File Integrity
-
-Before restoring, verify the file in the snapshot is the correct version:
-
-```bash
-# Check file size and modification time
-ls -lh $HOME/.snapshots/htpc-home/20251130/path/to/file.txt
-
-# Preview file contents (for text files)
-head -20 $HOME/.snapshots/htpc-home/20251130/path/to/file.txt
-
-# Calculate checksum for verification
-sha256sum $HOME/.snapshots/htpc-home/20251130/path/to/file.txt
-```
-
-### Step 5: Restore File or Directory
-
-**Restore single file:**
-```bash
-# Copy file back to original location (preserves permissions)
-cp -a $HOME/.snapshots/htpc-home/20251130/path/to/file.txt \
-      $HOME/path/to/file.txt
-
-# Verify restoration
-ls -lh $HOME/path/to/file.txt
-```
-
-**Restore directory:**
-```bash
-# Restore entire directory with all contents
-cp -a $HOME/.snapshots/htpc-home/20251130/path/to/directory/ \
-      $HOME/path/to/directory/
-
-# Verify contents
-ls -R $HOME/path/to/directory/
-```
-
-**Restore specific files from directory:**
-```bash
 # Restore only certain file types
-cp -a $HOME/.snapshots/htpc-home/20251130/Documents/*.pdf \
-      $HOME/Documents/
-
-# Restore files modified within date range
-find $HOME/.snapshots/htpc-home/20251130/Documents/ \
-    -type f -newermt "2025-11-01" ! -newermt "2025-11-30" \
-    -exec cp -a {} $HOME/Documents/ \;
+cp -a /mnt/btrfs-pool/.snapshots/subvol1-docs/20260115-0403-docs/Documents/*.pdf \
+      /mnt/btrfs-pool/subvol1-docs/Documents/
 ```
 
-### Step 6: Verify Restored Data
+### Step 4: Verify File Integrity Before Restoring
+
+```bash
+# Check file size and modification time in the snapshot
+ls -lh /mnt/btrfs-pool/.snapshots/subvol1-docs/20260115-0403-docs/path/to/file.txt
+
+# Preview contents (text files)
+head -20 /mnt/btrfs-pool/.snapshots/subvol1-docs/20260115-0403-docs/path/to/file.txt
+
+# Checksum for verification
+sha256sum /mnt/btrfs-pool/.snapshots/subvol1-docs/20260115-0403-docs/path/to/file.txt
+```
+
+### Step 5: Verify Restored Data
 
 ```bash
 # Check file exists
@@ -223,9 +199,8 @@ If restored file is wrong version or causes issues:
 # Delete incorrectly restored file
 rm /path/to/restored/file.txt
 
-# Try different snapshot
-cp -a $HOME/.snapshots/htpc-home/20251129/path/to/file.txt \
-      $HOME/path/to/file.txt
+# Try a different date with urd get
+urd get /home/patriark/path/to/file.txt --at 2026-01-14
 ```
 
 ## Estimated Timeline
@@ -242,41 +217,35 @@ cp -a $HOME/.snapshots/htpc-home/20251129/path/to/file.txt \
 ### Scenario A: Deleted file from home directory today
 
 ```bash
-# Use today's snapshot
-TODAY=$(date +%Y%m%d)
-cp -a $HOME/.snapshots/htpc-home/${TODAY}-home/path/to/file.txt \
-      $HOME/path/to/file.txt
+urd get /home/patriark/path/to/file.txt --at today
 ```
 
 ### Scenario B: Deleted entire project directory yesterday
 
 ```bash
-# Use yesterday's snapshot
+# Directories need the raw snapshot path, not urd get (single-file only)
 YESTERDAY=$(date -d "yesterday" +%Y%m%d)
-cp -a /mnt/btrfs-pool/.snapshots/subvol1-docs/${YESTERDAY}-docs/Projects/MyProject/ \
+LATEST=$(ls -t /mnt/btrfs-pool/.snapshots/subvol1-docs/ | grep "^${YESTERDAY}" | head -1)
+cp -a "/mnt/btrfs-pool/.snapshots/subvol1-docs/${LATEST}/Projects/MyProject/" \
       /mnt/btrfs-pool/subvol1-docs/Projects/MyProject/
 ```
 
 ### Scenario C: Need file from last week
 
 ```bash
-# Find snapshots from last week
-ls -lt $HOME/.snapshots/htpc-home/ | grep "$(date -d '7 days ago' +%Y%m)"
-
-# Restore from specific date
-cp -a $HOME/.snapshots/htpc-home/20251123-home/Documents/report.docx \
-      $HOME/Documents/report-recovered.docx
+urd get /home/patriark/Documents/report.docx --at 2026-01-08 \
+  -o /home/patriark/Documents/report-recovered.docx
 ```
 
 ### Scenario D: Accidentally deleted container config
 
 ```bash
-# Find latest snapshot with config
-find /mnt/btrfs-pool/.snapshots/subvol7-containers/20251130-containers/config/jellyfin/ \
-    -name "*.xml"
+# Single file
+urd get /mnt/btrfs-pool/subvol7-containers/config/jellyfin/config.xml --at yesterday
 
-# Restore entire config directory
-cp -a /mnt/btrfs-pool/.snapshots/subvol7-containers/20251130-containers/config/jellyfin/ \
+# Whole config directory — needs the raw snapshot path
+LATEST=$(ls -t /mnt/btrfs-pool/.snapshots/subvol7-containers/ | head -1)
+cp -a "/mnt/btrfs-pool/.snapshots/subvol7-containers/${LATEST}/config/jellyfin/" \
       /mnt/btrfs-pool/subvol7-containers/config/jellyfin/
 
 # Restart service
@@ -328,14 +297,21 @@ fi
 
 ### Automated Snapshot Verification
 
-Already implemented via `scripts/test-backup-restore.sh`:
-- Monthly automated testing
-- Validates snapshot integrity
+Implemented via `scripts/test-backup-restore.sh`, run by `backup-restore-test.timer`:
+- Weekly automated testing (Sundays)
+- Samples files per subvolume, restores to `subvol6-tmp` scratch space, and checksum-verifies
 - Alerts on restoration failures
+
+Separately, `urd verify` checks incremental send-chain integrity and drive pin health directly:
+```bash
+urd verify --detail
+```
 
 ### External Backup Restore Verified
 
-**Test Date:** 2026-01-03
+**Test Date:** 2026-01-03 (pre-Urd; the mechanism this validated — `btrfs send`/`receive` off an
+external drive's read-only snapshot — is unchanged post-migration, only the naming convention
+around each snapshot directory changed: `YYYYMMDD-shortname` then, `YYYYMMDD-HHMM-shortname` now)
 **Test Scope:** Restored subvol7-containers (81,716 files) from external drive
 **Result:** ✅ Success - All files restored correctly with proper permissions
 **Procedure Verified:** BTRFS send/receive from WD-18TB external drive works correctly
@@ -365,18 +341,24 @@ sudo btrfs send /run/media/patriark/WD-18TB/.snapshots/subvol7-containers/202601
 ## Appendix: Quick Reference Commands
 
 ```bash
-# List all snapshots for home
+# Restore a single file to stdout or a chosen path
+urd get /path/to/file.txt --at 2026-01-15
+urd get /path/to/file.txt --at yesterday -o /tmp/recovered.txt
+
+# Check subvolume protection state and snapshot counts
+urd status
+
+# Check incremental chain integrity
+urd verify --detail
+
+# Browse recent backup runs (or just failures)
+urd history --last 20
+urd history --failures
+
+# List all local snapshots for home (directory restores)
 ls -lt ~/.snapshots/htpc-home/
 
-# Find file across all snapshots
-for snap in $(ls -t ~/.snapshots/htpc-home/); do
-    find ~/.snapshots/htpc-home/$snap -name "filename.txt" 2>/dev/null
-done
-
-# Restore with timestamp preservation
-cp -a /source/file.txt /dest/file.txt
-
-# Restore directory recursively
+# Restore directory recursively from a snapshot path
 cp -a /source/directory/ /dest/directory/
 
 # Verify checksum after restore
@@ -389,6 +371,6 @@ systemctl --user status service.service
 
 ---
 
-**Last Updated:** 2026-01-03 (External restore verified)
+**Last Updated:** 2026-07-21 (Rewritten around Urd — ADR-021 superseded `btrfs-snapshot-backup.sh` on 2026-03-25)
 **Maintainer:** Homelab Operations
 **Review Schedule:** Quarterly

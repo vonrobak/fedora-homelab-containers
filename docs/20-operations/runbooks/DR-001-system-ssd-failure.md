@@ -4,14 +4,16 @@ title: "DR-001: System SSD Failure"
 description: "Disaster-recovery runbook for complete system NVMe SSD failure — replacement, OS reinstall, and restore from weekly backup."
 sensitivity: public
 created: 2025-11-30
-updated: 2025-11-30
+updated: 2026-07-21
 ---
 
 # DR-001: System SSD Failure
 
 **Severity:** Critical
 **RTO Target:** 4-6 hours
-**RPO Target:** Up to 7 days (last weekly backup)
+**RPO Target:** Up to 1 day for the primary external drive (`urd-backup.timer` sends nightly at
+04:00); the offsite `WD-18TB1` rotation lags further behind since it isn't kept continuously
+connected — check `urd status` for each subvolume's actual `last_send_age_secs` before assuming RPO
 **Last Tested:** Not yet tested
 **Success Rate:** Not yet tested in production
 
@@ -78,9 +80,11 @@ sudo smartctl -a /dev/nvme0n1  # Check SMART status (if readable)
 - Network services (if BTRFS pool separate)
 
 **Data loss risk:**
-- Last 7 days of home directory changes (since last weekly backup)
-- System packages installed in last 30 days (monthly root backup)
-- Any data not backed up to external drive
+- Home directory changes since the last nightly Urd send (typically < 24h; confirm actual age
+  with `urd status` before assuming)
+- `htpc-root` has `local_snapshots = false` and only a thin daily external retention — system-level
+  config changes since the last send are the most exposed
+- Any data not yet sent to external drive at time of failure
 
 ## Recovery Procedure
 
@@ -128,6 +132,10 @@ sudo anaconda
 
 ### Step 3: Mount External Backup Drive
 
+Urd knows two drives for this host — `WD-18TB` (primary, normally connected) and `WD-18TB1`
+(offsite, rotated in less often). Use whichever is physically available; if reinstalling `urd`
+on the fresh system, `urd drives` will re-identify a connected drive against its stored UUID.
+
 **Connect and unlock external drive:**
 ```bash
 # List available drives
@@ -142,15 +150,19 @@ sudo mkdir -p /mnt/external
 # Mount drive
 sudo mount /dev/mapper/WD-18TB /mnt/external
 
-# Verify mount
+# Verify mount — snapshot layout is the same on either drive:
+# .snapshots/<subvolume-name>/<YYYYMMDD-HHMM-shortname>/
 ls -lh /mnt/external/.snapshots/
 ```
 
 ### Step 4: Restore Home Directory
 
+`urd get` only retrieves single files (see DR-003) — a full home-directory restore after total
+loss needs the raw snapshot tree.
+
 **Find latest home backup:**
 ```bash
-# List available home snapshots
+# List available home snapshots (newest last)
 ls -lt /mnt/external/.snapshots/htpc-home/
 
 # Identify latest snapshot
@@ -172,6 +184,11 @@ sudo chown -R patriark:patriark /home/patriark
 # Verify restoration
 ls -la /home/patriark/
 ```
+
+Once the base system is back, reinstall Urd itself (`cargo install --path .` from the urd repo,
+or the published binary — see the [Urd README](https://github.com/vonrobak/urd)) and restore its
+config from `~/.config/urd/urd.toml` (now present again under the restored home) before
+re-enabling `urd-backup.timer` in Step 10.
 
 **Restore SSH keys and GPG keys:**
 ```bash
@@ -252,6 +269,10 @@ sudo mkdir -p /mnt/btrfs-pool/subvol7-containers
 sudo cp -a /mnt/external/.snapshots/subvol7-containers/$LATEST_CONTAINERS/* \
          /mnt/btrfs-pool/subvol7-containers/
 ```
+
+**Note:** this is a whole-pool-loss scenario within an SSD-only failure (unusual — see DR-002 if
+the pool itself is the thing that's corrupted). `chattr +C` the database directories again after
+restore (Prometheus, Loki, PostgreSQL) — the NOCOW flag doesn't survive a `cp -a` restore.
 
 ### Step 7: Reinstall Essential Packages
 
@@ -335,17 +356,25 @@ nslookup google.com
 
 ### Step 10: Restore Backup Automation
 
-**Re-enable backup timers:**
+**Re-enable Urd and its supporting timers:**
 ```bash
-# Enable backup timers
-systemctl --user enable --now btrfs-snapshot-backup@tier1-daily.timer
-systemctl --user enable --now btrfs-snapshot-backup@tier1-weekly.timer
+# Confirm urd itself is installed and its config restored (see Step 4)
+urd doctor
 
-# Enable restore test timer
+# Enable the nightly backup timer
+systemctl --user enable --now urd-backup.timer
+
+# Enable the passive sentinel (filesystem/drive monitor)
+systemctl --user enable --now urd-sentinel.service
+
+# Enable weekly restore-test and nightly/weekly DB dump verification
 systemctl --user enable --now backup-restore-test.timer
+systemctl --user enable --now db-dump.timer
+systemctl --user enable --now db-restore-test.timer
 
 # Verify timers
 systemctl --user list-timers
+urd status
 ```
 
 ## Verification Checklist
@@ -409,15 +438,17 @@ If recovery fails or critical issues found:
 
 ## Data Loss Window
 
-**Expected data loss:**
-- Home directory: Last 7 days (since last weekly backup)
-- System packages: Last 30 days (since last monthly root backup)
-- Containers config: Last 7 days (if not on separate BTRFS pool)
+**Expected data loss:** whatever changed since each subvolume's last successful Urd send — run
+`urd status` (or `urd history --last 5`) on the surviving system *before* it fails, or on another
+host after, to see actual `last_send_age_secs` per subvolume rather than assuming a fixed window.
+In practice, `htpc-home` and `subvol7-containers` send nightly, so loss is typically < 24h;
+`htpc-root` is external-only with 1-day retention.
 
 **Minimizing data loss:**
-- Restore from most recent daily snapshot (if available locally)
-- Check if BTRFS pool survived (contains most critical data)
-- Review Git commit history for config changes
+- Restore from the most recent local snapshot if the BTRFS pool itself survived — local retention
+  is deeper than what's sent externally
+- Review Git commit history for `~/containers` config changes (config lives in git, independent
+  of Urd)
 
 ## Prevention Measures
 
@@ -442,13 +473,12 @@ sudo smartctl -a /dev/nvme0n1 | grep -E 'Power_On_Hours|Wear_Leveling|Temperatur
 # Alert on reallocated sectors
 ```
 
-### Increase Backup Frequency
+### Backup Frequency
 
-**For critical data, move to daily external backups:**
-```bash
-# Modify backup script to run daily for Tier 1
-# Reduces RPO from 7 days to 1 day
-```
+Already daily for every tracked subvolume via Urd's `send_interval = "1d"` (see
+`~/.config/urd/urd.toml`). To tighten a specific subvolume's RPO further, lower its
+`snapshot_interval`/`send_interval` in that config — `urd doctor` will flag anything
+inconsistent before it's applied.
 
 ### System Package List Backup
 
@@ -496,8 +526,12 @@ sudo chown -R patriark:patriark /home/patriark
 # Mount BTRFS pool
 sudo mount /dev/mapper/btrfs-pool /mnt/btrfs-pool
 
-# Restore containers
+# Restore containers config from git (source of truth, independent of Urd)
 git clone https://github.com/vonrobak/fedora-homelab-containers.git ~/containers
+
+# Reinstall and re-verify Urd once home is restored
+urd doctor
+urd status
 
 # Start services
 systemctl --user daemon-reload
@@ -510,7 +544,7 @@ podman ps
 
 ---
 
-**Last Updated:** 2025-11-30
+**Last Updated:** 2026-07-21 (Rewritten around Urd — ADR-021 superseded `btrfs-snapshot-backup.sh` on 2026-03-25)
 **Maintainer:** Homelab Operations
 **Review Schedule:** Quarterly
-**Next Test:** Q1 2026 (simulated recovery on spare hardware)
+**Next Test:** Not yet scheduled

@@ -4,14 +4,16 @@ title: "DR-002: BTRFS Pool Corruption"
 description: "Disaster-recovery runbook for BTRFS storage-pool corruption or unmountable filesystem across all subvolumes."
 sensitivity: public
 created: 2025-11-30
-updated: 2025-11-30
+updated: 2026-07-21
 ---
 
 # DR-002: BTRFS Pool Corruption
 
 **Severity:** Critical
 **RTO Target:** 6-12 hours (depends on data volume)
-**RPO Target:** Up to 7 days (Tier 1), up to 30 days (Tier 3)
+**RPO Target:** Up to 1 day for most subvolumes — [Urd](https://github.com/vonrobak/urd) (ADR-021)
+sends nightly at 04:00. Check `urd status` for actual `last_send_age_secs` per subvolume; don't
+assume a fixed window.
 **Last Tested:** Not yet tested
 **Success Rate:** Not yet tested in production
 
@@ -19,12 +21,16 @@ updated: 2025-11-30
 
 ## Scenario Description
 
-BTRFS filesystem on the storage pool becomes corrupted or unmountable, affecting:
-- `/mnt/btrfs-pool` (all subvolumes)
+BTRFS filesystem on the storage pool becomes corrupted or unmountable, affecting all 7 pool
+subvolumes tracked by Urd:
 - Container configuration (`subvol7-containers`)
 - Media library (`subvol3-opptak`)
 - Photo library (`subvol2-pics`)
 - Documents (`subvol1-docs`)
+- Music (`subvol5-music`)
+- Multimedia (`subvol4-multimedia`)
+- Scratch/tmp (`subvol6-tmp`) — **not sent externally** (`send_enabled = false` in
+  `urd.toml`); anything here that isn't reproducible elsewhere is unrecoverable by design
 
 This could result from:
 - Power outage during write operations
@@ -86,8 +92,9 @@ sudo btrfs device stats /dev/mapper/btrfs-pool
 - Network connectivity
 
 **Data loss risk:**
-- Last 7 days for Tier 1 data (containers, opptak)
-- Last 7-30 days for Tier 2/3 data (docs, pics)
+- Whatever changed since each subvolume's last successful Urd send — run `urd status` on the
+  surviving system (home directory is separate from the pool) before proceeding
+- `subvol6-tmp` is not sent externally at all — total loss for anything not reproducible
 
 ## Recovery Procedure
 
@@ -203,7 +210,7 @@ df -h /mnt/btrfs-pool
 
 ### Step 5: Recreate Subvolume Structure
 
-**Create all required subvolumes:**
+**Create all required subvolumes** (all 7 tracked in `~/.config/urd/urd.toml`):
 ```bash
 cd /mnt/btrfs-pool
 
@@ -211,13 +218,13 @@ cd /mnt/btrfs-pool
 sudo btrfs subvolume create subvol1-docs
 sudo btrfs subvolume create subvol2-pics
 sudo btrfs subvolume create subvol3-opptak
+sudo btrfs subvolume create subvol4-multimedia
+sudo btrfs subvolume create subvol5-music
+sudo btrfs subvolume create subvol6-tmp
 sudo btrfs subvolume create subvol7-containers
 
-# Create snapshot directories
-sudo mkdir -p .snapshots/subvol1-docs
-sudo mkdir -p .snapshots/subvol2-pics
-sudo mkdir -p .snapshots/subvol3-opptak
-sudo mkdir -p .snapshots/subvol7-containers
+# Create snapshot directories (Urd expects this layout — see snapshot_root in urd.toml)
+sudo mkdir -p .snapshots/{subvol1-docs,subvol2-pics,subvol3-opptak,subvol4-multimedia,subvol5-music,subvol6-tmp,subvol7-containers}
 
 # Set ownership
 sudo chown -R patriark:patriark .
@@ -306,6 +313,19 @@ sudo rsync -av --progress \
 sudo chown -R patriark:patriark /mnt/btrfs-pool/subvol2-pics/
 ```
 
+**Restore music and multimedia (same pattern, lower priority — restore after Tier 1 if RTO is
+tight):**
+```bash
+for name in subvol5-music subvol4-multimedia; do
+    LATEST=$(ls -t /mnt/external/.snapshots/$name/ | head -1)
+    sudo rsync -av --progress "/mnt/external/.snapshots/$name/$LATEST/" "/mnt/btrfs-pool/$name/"
+    sudo chown -R patriark:patriark "/mnt/btrfs-pool/$name/"
+done
+```
+
+`subvol6-tmp` is scratch space and isn't sent externally (`send_enabled = false`) — recreate it
+empty; there's nothing to restore.
+
 ### Step 9: Restart Services
 
 **Update fstab if needed:**
@@ -335,6 +355,15 @@ podman ps
 
 # View logs
 journalctl --user -u traefik.service -f
+```
+
+**Re-enable Urd backup automation** (the pool it snapshots was just recreated — it needs to
+re-baseline):
+```bash
+urd doctor
+systemctl --user enable --now urd-backup.timer
+systemctl --user enable --now urd-sentinel.service
+urd status
 ```
 
 ### Step 10: Verify Data Integrity
@@ -438,16 +467,14 @@ If restore fails or data integrity issues found:
 
 ## Data Loss Window
 
-**Expected data loss:**
-- Containers: Last 7 days (weekly backup)
-- Media (opptak): Last 7 days (weekly backup)
-- Documents: Last 7-30 days (weekly/monthly backup)
-- Photos: Last 30 days (monthly backup)
+**Expected data loss:** whatever changed since each subvolume's last successful Urd send —
+check `urd status`/`urd history` beforehand, don't assume a fixed window. All 6 backed-up pool
+subvolumes send nightly; `subvol6-tmp` is never sent (total loss for anything not reproducible).
 
 **Minimizing data loss:**
-- Check if any recent local snapshots survived
-- Review Git history for config changes
-- Check if home directory has recent work files
+- Check if any recent local snapshots survived on a still-mountable part of the pool
+- Review Git history for `~/containers` config changes
+- Check if home directory has recent work files (separate from the pool, on the system SSD)
 
 ## Prevention Measures
 
@@ -481,13 +508,11 @@ sudo btrfs scrub status /mnt/btrfs-pool
 - Allows clean shutdown during power loss
 - Protects against write corruption
 
-### Increase Backup Frequency
+### Backup Frequency
 
-**For critical data:**
-```bash
-# Change Tier 1 to daily external backups
-# Reduces RPO from 7 days to 1 day
-```
+Already daily for every backed-up subvolume via Urd's `send_interval = "1d"`. To tighten further,
+edit the relevant subvolume's interval in `~/.config/urd/urd.toml` — `urd doctor` validates the
+change before it's applied.
 
 ### BTRFS Filesystem Options
 
@@ -525,20 +550,27 @@ sudo mount /dev/mapper/WD-18TB /mnt/external
 LATEST=$(ls -t /mnt/external/.snapshots/SUBVOLNAME/ | head -1)
 sudo cp -av /mnt/external/.snapshots/SUBVOLNAME/$LATEST/* /mnt/btrfs-pool/SUBVOLNAME/
 sudo chown -R patriark:patriark /mnt/btrfs-pool/SUBVOLNAME/
+# SUBVOLNAME ∈ subvol1-docs, subvol2-pics, subvol3-opptak, subvol4-multimedia,
+#              subvol5-music, subvol7-containers (subvol6-tmp is never sent externally)
 
 # Restart services
 systemctl --user daemon-reload
 systemctl --user start traefik.service
 
+# Re-enable Urd against the recreated pool
+urd doctor
+systemctl --user enable --now urd-backup.timer
+
 # Verify
 sudo btrfs scrub start /mnt/btrfs-pool
 df -h /mnt/btrfs-pool
 podman ps
+urd status
 ```
 
 ---
 
-**Last Updated:** 2025-11-30
+**Last Updated:** 2026-07-21 (Rewritten around Urd — ADR-021 superseded `btrfs-snapshot-backup.sh` on 2026-03-25)
 **Maintainer:** Homelab Operations
 **Review Schedule:** Quarterly
-**Next Test:** Q2 2026 (simulated corruption on test volume)
+**Next Test:** Not yet scheduled

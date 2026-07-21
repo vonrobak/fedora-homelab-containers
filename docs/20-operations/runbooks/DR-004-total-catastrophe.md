@@ -4,14 +4,16 @@ title: "DR-004: Total Catastrophe"
 description: "Disaster-recovery runbook for total catastrophe — simultaneous loss of primary system and backup drive, recovered via off-site backup."
 sensitivity: public
 created: 2025-11-30
-updated: 2026-01-03
+updated: 2026-07-21
 ---
 
 # DR-004: Total Catastrophe
 
 **Severity:** Catastrophic
 **RTO Target:** 1-2 weeks (hardware replacement + rebuild + off-site restore)
-**RPO Target:** Depends on off-site mirror frequency (manual sync schedule)
+**RPO Target:** Depends on off-site drive rotation cadence — [Urd](https://github.com/vonrobak/urd)
+(ADR-021) now tracks this automatically as a `role = "offsite"` drive (`WD-18TB1`) with an
+*observed* rotation forecast; check `urd status` for the live number rather than assuming
 **Last Tested:** 2026-01-03 (external backup verified, off-site mirror exists but not tested)
 **Success Rate:** External backups: 100% verified | Off-site mirror: Exists (restore not yet tested)
 
@@ -40,17 +42,20 @@ Complete loss of both primary system AND backup drive due to:
 - 81,716 files restored successfully from subvol7-containers
 - Hardware failure scenarios (DR-001, DR-002, DR-003) have proven recovery paths
 
-**✅ OFF-SITE BACKUP EXISTS (Manual Process):**
-- WD-18TB external drive periodically mirrored via Icy Box
-- Mirror copy stored at separate physical location (off-site)
-- Manual synchronization process (outside automated backup logic)
-- User confirms mirror is reliable carbon copy of verified external backup
+**✅ OFF-SITE BACKUP EXISTS (Physical Rotation, Urd-Tracked):**
+- `WD-18TB1` is registered in Urd (`~/.config/urd/urd.toml`) as a second drive per subvolume with
+  `role = "offsite"`, alongside the always-connected `WD-18TB` (`role = "primary"`)
+- It's physically rotated in periodically; whenever it's mounted, the same `urd-backup.timer` run
+  that sends to `WD-18TB` also sends to it — no separate manual sync step
+- While disconnected, `urd status` still reports its `PROTECTED` state from the last known send
+  and shows an *observed* rotation cadence/forecast (derived from actual connect history, not a
+  config value) — this answers "what's the mirror's real RPO" without manual tracking
 
 **⚠️ REMAINING GAPS:**
 - Off-site mirror restore **not yet tested** (assumes mirror reliability)
-- Mirror sync frequency not documented/automated
-- No metrics for mirror age (days since last sync)
-- RPO depends on manual sync schedule
+- No alerting yet if the observed rotation cadence drifts significantly past forecast (i.e. the
+  drive hasn't come home in longer than usual) — `urd status`/`urd doctor` must be checked
+  manually
 
 **Protection levels achieved:**
 - **Level 0 (pre-Nov 2025):** Local snapshots only → No hardware failure protection ❌
@@ -143,37 +148,20 @@ sudo dnf install -y podman git vim htop btrfs-progs cryptsetup
 
 ### Step 3: Access Off-Site Backup
 
-**Option A: Cloud backup (Backblaze, Wasabi, etc.)**
+**Actual implemented path: retrieve the `WD-18TB1` rotation drive**
 ```bash
-# Install rclone
-sudo dnf install rclone
+# Retrieve WD-18TB1 from its off-site location
+# Connect and unlock (same LUKS procedure as WD-18TB)
+sudo cryptsetup open /dev/sdX WD-18TB1
+sudo mount /dev/mapper/WD-18TB1 /mnt/external
 
-# Configure rclone (decrypt with stored credentials)
-rclone config
-
-# List backups
-rclone ls remote:homelab-backup/
-
-# Download critical data first (photos, documents)
-rclone copy remote:homelab-backup/subvol2-pics/ ~/restore/photos/
-rclone copy remote:homelab-backup/subvol1-docs/ ~/restore/docs/
+# Same .snapshots/<subvolume>/<YYYYMMDD-HHMM-shortname>/ layout as the primary drive
+ls -lh /mnt/external/.snapshots/
 ```
 
-**Option B: Friend's house backup exchange**
-```bash
-# Travel to friend's location
-# Retrieve your external drive from their safe
-# Connect drive and mount
-sudo cryptsetup open /dev/sdX WD-18TB
-sudo mount /dev/mapper/WD-18TB /mnt/external
-```
-
-**Option C: Bank safe deposit box**
-```bash
-# Visit bank during business hours
-# Retrieve drive from safe deposit box
-# Same as Option B for mounting
-```
+**Cloud backup (Backblaze, Wasabi, etc.) — NOT currently implemented.** No `rclone` config or
+cloud remote exists on this host as of 2026-07-21; this remains a future-improvement option (see
+"Next Steps" below), not a fallback you can actually reach for today.
 
 ### Step 4: Restore Data by Priority
 
@@ -181,11 +169,13 @@ sudo mount /dev/mapper/WD-18TB /mnt/external
 ```bash
 # Photos (HIGHEST PRIORITY)
 mkdir -p ~/restore/photos
-cp -av /mnt/external/.snapshots/subvol2-pics/LATEST/* ~/restore/photos/
+LATEST_PICS=$(ls -t /mnt/external/.snapshots/subvol2-pics/ | head -1)
+cp -av "/mnt/external/.snapshots/subvol2-pics/$LATEST_PICS"/* ~/restore/photos/
 
 # Documents
 mkdir -p ~/restore/docs
-cp -av /mnt/external/.snapshots/subvol1-docs/LATEST/* ~/restore/docs/
+LATEST_DOCS=$(ls -t /mnt/external/.snapshots/subvol1-docs/ | head -1)
+cp -av "/mnt/external/.snapshots/subvol1-docs/$LATEST_DOCS"/* ~/restore/docs/
 
 # Verify critical files present
 ls -lh ~/restore/photos/
@@ -199,10 +189,14 @@ cd ~
 git clone https://github.com/vonrobak/fedora-homelab-containers.git containers
 
 # Restore home directory configs
-cp -av /mnt/external/.snapshots/htpc-home/LATEST/.config ~/
-cp -av /mnt/external/.snapshots/htpc-home/LATEST/.ssh ~/
+LATEST_HOME=$(ls -t /mnt/external/.snapshots/htpc-home/ | head -1)
+cp -av "/mnt/external/.snapshots/htpc-home/$LATEST_HOME/.config" ~/
+cp -av "/mnt/external/.snapshots/htpc-home/$LATEST_HOME/.ssh" ~/
 chmod 700 ~/.ssh
 chmod 600 ~/.ssh/id_*
+
+# Restore Urd's own config so it can be reinstalled and pointed at the same drives/subvolumes
+cp -av "/mnt/external/.snapshots/htpc-home/$LATEST_HOME/.config/urd" ~/.config/
 ```
 
 **Priority 3: Container data**
@@ -211,9 +205,14 @@ chmod 600 ~/.ssh/id_*
 # ... (see DR-002 for BTRFS setup)
 
 # Restore container configs
-cp -av /mnt/external/.snapshots/subvol7-containers/LATEST/* \
+LATEST_CONTAINERS=$(ls -t /mnt/external/.snapshots/subvol7-containers/ | head -1)
+cp -av "/mnt/external/.snapshots/subvol7-containers/$LATEST_CONTAINERS"/* \
        /mnt/btrfs-pool/subvol7-containers/
 ```
+
+For any single known-missing file rather than a whole-directory restore, reinstall Urd first
+(Priority 2 restores its config) and use `urd get FILE --at DATE` instead of hunting through
+snapshot directories by hand (see DR-003).
 
 **Priority 4: Media library (lowest priority)**
 ```bash
@@ -231,21 +230,20 @@ cp -av /mnt/external/.snapshots/subvol7-containers/LATEST/* \
 5. Restore monitoring stack
 6. Re-enable backup automation
 
-### Step 6: Implement Off-Site Backup Immediately
+### Step 6: Re-establish Off-Site Rotation Immediately
 
-**DO NOT REPEAT THE SAME MISTAKE:**
+The disaster that triggered this runbook destroyed **both** `WD-18TB` and `WD-18TB1` — the
+off-site rotation that would have protected you was, by definition, not in rotation at the time.
+Don't rebuild with only one external drive:
 
 ```bash
-# Set up cloud backup THIS TIME
-# Options:
-# 1. Backblaze B2 (~$6/TB/month)
-# 2. Wasabi (~$7/TB/month)
-# 3. Friend exchange (free, requires coordination)
+# Acquire a NEW second external drive
+# Adopt it into Urd's identity system
+urd drives adopt
 
-# Use rclone with encryption
-rclone sync /mnt/btrfs-pool/subvol2-pics/ \
-            remote:homelab-backup/subvol2-pics/ \
-            --crypt-password=STRONG_PASSWORD
+# Confirm both drives are tracked with primary/offsite roles in urd.toml, then
+# re-establish the physical rotation habit (see "off-site rotation cadence" below)
+urd status
 ```
 
 ## Recovery Without Off-Site Backup (Current Reality)
@@ -273,142 +271,35 @@ rclone sync /mnt/btrfs-pool/subvol2-pics/ \
 
 4. **Estimated rebuild time:** 2-4 weeks of full-time work
 
-## Prevention: Off-Site Backup Implementation
+## Off-Site Backup: What's Actually Implemented
 
-### Option 1: Cloud Backup (RECOMMENDED)
+**Physical drive rotation, Urd-tracked (live today):** `WD-18TB1` is registered in
+`~/.config/urd/urd.toml` as `role = "offsite"` for every subvolume that also has `WD-18TB` as
+`role = "primary"`. Whenever it's connected, the normal `urd-backup.timer` run sends to it same
+as the primary — there's no separate manual sync step or script. Its rotation cadence is
+*observed*, not configured: Urd derives "how often does this drive come home" from actual connect
+history and reports it in `urd status` (`rotation.cadence_secs`, `rotation.forecast_secs`).
 
-**Pros:**
-- Automated sync
-- Geographic redundancy
-- Always accessible
-- Pay only for what you use
+This is a **single off-site copy**, not a cloud/friend/bank-vault multi-tier scheme — if `WD-18TB1`
+is at the same physical location as the primary system when disaster strikes, it offers no
+protection. The rotation only helps if it's actually away from the house when needed.
 
-**Cons:**
-- Monthly cost (~$6-7/TB)
-- Requires reliable internet
-- Initial upload takes time
+**Not implemented, and not currently planned:** cloud backup (Backblaze/Wasabi/rclone), a
+friend/family drive exchange, or a bank safe-deposit rotation. If off-site protection needs to
+survive a *simultaneous* primary + off-site-drive loss (e.g. both were home during the disaster),
+one of these remains the real gap — see "Next Steps" below.
 
-**Recommended provider:** Backblaze B2
-```bash
-# Install rclone
-sudo dnf install rclone
+**Replaceability, for prioritizing a time-constrained restore:**
 
-# Configure Backblaze B2
-rclone config
-# Name: backblaze
-# Type: b2
-# Account ID: (from B2 console)
-# Application Key: (from B2 console)
+| Data | Replaceability | Notes |
+|------|----------------|-------|
+| Family photos, personal documents | **Irreplaceable** | Restore first |
+| Container configs, system configs | Difficult to recreate | Git (`~/containers`) covers most of it independent of Urd |
+| Media library, music, multimedia | Mostly replaceable | Re-downloadable, lowest restore priority |
 
-# Set up encryption
-rclone config
-# Name: backblaze-crypt
-# Type: crypt
-# Remote: backblaze:homelab-backup
-# Password: STRONG_RANDOM_PASSWORD
-# Password2: STRONG_RANDOM_PASSWORD
-
-# Initial backup (will take days for 3TB)
-rclone sync /mnt/btrfs-pool/subvol2-pics/ backblaze-crypt:photos/ --progress
-rclone sync /mnt/btrfs-pool/subvol1-docs/ backblaze-crypt:docs/ --progress
-rclone sync /mnt/btrfs-pool/subvol7-containers/ backblaze-crypt:containers/ --progress
-
-# Automate with systemd timer (monthly sync)
-```
-
-**Estimated cost for current data:**
-- Photos (500GB): $3/month
-- Documents (20GB): $0.12/month
-- Containers (100GB): $0.60/month
-- **Total: ~$4/month**
-
-### Option 2: Friend/Family Backup Exchange
-
-**Pros:**
-- Free
-- Full control
-- Trust-based security
-
-**Cons:**
-- Requires coordination
-- Manual rotation
-- Depends on friend's reliability
-
-**Setup:**
-1. Find trusted friend with similar needs
-2. Each buy external drive for other person
-3. Monthly meetup: swap drives
-4. Store friend's drive in secure location
-5. They do same for you
-
-**Implementation:**
-```bash
-# Each month:
-# 1. Run full backup to "swap drive"
-# 2. Meet friend
-# 3. Exchange drives
-# 4. Store friend's drive in fireproof safe/box
-```
-
-### Option 3: Bank Safe Deposit Box
-
-**Pros:**
-- Very secure
-- Fireproof, flood-proof
-- Professional storage
-
-**Cons:**
-- Access during business hours only
-- Quarterly rotation (slow RPO)
-- Annual cost (~$50-200)
-
-**Implementation:**
-```bash
-# Quarterly process:
-# 1. Run full backup to "vault drive"
-# 2. Visit bank
-# 3. Swap drive in deposit box
-# 4. Bring old drive home for reuse
-```
-
-### Recommended Hybrid Approach
-
-**Best protection:**
-1. **Cloud backup (daily):** Critical data only (photos, docs, configs)
-2. **Friend exchange (monthly):** Full system backup
-3. **Local external (weekly):** Fast recovery for minor issues
-
-**Total cost:** ~$4/month cloud + one-time hardware
-
-**Protection level:** 99.999% - survives almost all disaster scenarios
-
-## Data Prioritization for Off-Site Backup
-
-### Tier 1: Critical - Must backup off-site
-
-| Data | Size | Replaceability | Backup Method |
-|------|------|----------------|---------------|
-| Family photos | 500GB | **IRREPLACEABLE** | Cloud daily + friend monthly |
-| Personal documents | 20GB | **IRREPLACEABLE** | Cloud daily + friend monthly |
-| Container configs | 100GB | Difficult to recreate | Cloud weekly + friend monthly |
-
-**Total Tier 1:** ~620GB → Cloud cost: ~$4/month
-
-### Tier 2: Important - Nice to have off-site
-
-| Data | Size | Replaceability | Backup Method |
-|------|------|----------------|---------------|
-| Media library (opptak) | 2TB | Mostly replaceable | Friend monthly only |
-| System configs | 40GB | Rebuildable from Git | Git + friend monthly |
-
-**Total Tier 2:** ~2TB → Friend exchange or cheaper cloud storage
-
-### Tier 3: Low priority - Can skip off-site
-
-| Data | Size | Replaceability | Notes |
-|------|------|----------------|-------|
-| Downloaded media | 1TB+ | Fully replaceable | Can re-download, skip off-site |
-| Application binaries | - | Fully replaceable | Re-download from repos |
+All pool subvolumes receive the same primary+offsite Urd treatment (`urd.toml`'s per-subvolume
+`priority` field affects scheduling order, not which drives they're sent to) — there's no
+differentiated "critical gets cloud, everything else doesn't" tiering to configure.
 
 ## Insurance Considerations
 
@@ -482,93 +373,57 @@ rclone sync /mnt/btrfs-pool/subvol7-containers/ backblaze-crypt:containers/ --pr
 
 ## The Hard Truth (Now Much Better)
 
-**As of today (2026-01-03):**
-
-**EXCELLENT NEWS:**
-- ✅ External backups are PROVEN to work (tested and verified)
-- ✅ Hardware failure (SSD, drive corruption) can be recovered
-- ✅ Accidental deletion has verified recovery path
-- ✅ Level 2 Protection achieved (verified restore)
-- ✅ **Level 3 Protection exists (off-site mirror at separate location)**
+**As of 2026-07-21 (originally established 2026-01-03, now Urd-tracked since ADR-021):**
 
 **WHAT CAN BE RECOVERED:**
-- ✅ Fire/flood/theft at primary location → **Recoverable from off-site mirror**
-- ✅ All family photos → **Protected at off-site location**
-- ✅ All personal documents → **Protected at off-site location**
-- ✅ All media library → **Protected at off-site location**
-- ✅ All configurations → **Protected at off-site location**
+- ✅ Fire/flood/theft at primary location → **Recoverable from `WD-18TB1`, if it was actually
+  off-site when the disaster hit**
+- ✅ All family photos, personal documents, media library, configurations → protected in the
+  same nightly `urd-backup.timer` send as the primary drive, whenever `WD-18TB1` is connected
 
 **REMAINING GAPS:**
 - ⚠️ Off-site mirror restore not yet tested (assumes reliability)
-- ⚠️ Manual sync process (not automated, no metrics)
-- ⚠️ RPO depends on sync frequency (document this)
-
-**You've achieved complete disaster recovery capability. Next step: verify off-site mirror restore and document sync process.**
-
-**Time to implement off-site backup:** ~4 hours initial setup
-**Monthly time investment:** ~15 minutes
-**Monthly cost:** ~$4 (cloud) or $0 (friend exchange)
-
-**Question:** Is it worth 4 hours and $4/month to protect irreplaceable family memories?
-
-**Answer:** **YES. DO IT NOW.**
+- ⚠️ No alerting on rotation drift (drive not coming home on its usual observed cadence) —
+  `urd status`/`urd doctor` must be checked manually; nothing pages if the rotation stalls
+- ⚠️ Single off-site copy, not a multi-location scheme — see "What's Actually Implemented" above
+  for the honest limits of this
 
 ## Next Steps: Improve Off-Site Backup
 
-**STATUS:** ✅ Off-site backup already exists (manual mirror via Icy Box)
+**STATUS:** ✅ Off-site rotation exists and is Urd-tracked (`WD-18TB1`, `role = "offsite"`)
 
 **IMPROVEMENTS TO CONSIDER:**
 
-### Option 1: Verify Off-Site Mirror Restore (RECOMMENDED)
+### Option 1: Verify Off-Site Mirror Restore (RECOMMENDED — still open)
 
 **Priority:** HIGH
 **Effort:** 2-3 hours
-**Value:** Confirms off-site mirror works correctly
+**Value:** Confirms the off-site drive restores correctly, not just that it receives sends
 
 ```bash
-# When next accessing off-site mirror:
-# 1. Bring mirror drive to primary location
-# 2. Test restore from mirror (same procedure as 2026-01-03 test)
-# 3. Document results in runbook
-# 4. Update "Last Tested" date for off-site restore
+# When WD-18TB1 is next connected:
+# 1. Test restore from it (same procedure as the WD-18TB test on 2026-01-03)
+# 2. Document results in this runbook
+# 3. Update "Last Tested" date for off-site restore
 ```
 
-### Option 2: Document Mirror Sync Process
+### Option 2: Rotation Drift Alerting
 
 **Priority:** MEDIUM
-**Effort:** 1 hour
-**Value:** Ensures consistent process, enables RPO calculation
+**Effort:** 1-2 hours
+**Value:** Pages if `WD-18TB1`'s connect cadence drifts well past its observed forecast — sync
+frequency and RPO tracking are already solved by Urd's `rotation.cadence_secs`/`forecast_secs`
+(see `urd status`); what's missing is turning that into an alert instead of a manual check
 
-**Document:**
-- Sync frequency (weekly? monthly? quarterly?)
-- Sync procedure (how is mirror created?)
-- Last sync date (for RPO tracking)
-- Tools used (Icy Box, rsync, BTRFS send?)
+### Option 3: Add Cloud Backup (Additional Protection)
 
-### Option 3: Automate Mirror Age Tracking
-
-**Priority:** LOW
-**Effort:** 2-3 hours
-**Value:** Monitoring/alerting if mirror gets too old
-
-```bash
-# Add metric for off-site mirror age
-# Alert if mirror not synced in >60 days
-# Helps prevent stale off-site backups
-```
-
-### Option 4: Add Cloud Backup (Additional Protection)
-
-**Priority:** LOW (already have off-site)
+**Priority:** LOW (single off-site copy already exists)
 **Effort:** 4-6 hours
-**Value:** Automatic off-site sync, eliminates manual process
+**Value:** A second, geographically independent off-site copy — protects against the "both drives
+were home during the disaster" gap that a single rotation drive can't cover
 
-**Still recommended for:**
-- Automated continuous protection
-- No manual intervention required
-- Multiple off-site locations
-
-**Cost:** ~$4/month for critical data (photos, docs, configs)
+Not currently planned; would need `rclone` installed and a remote configured from scratch (see
+Step 3 above — nothing exists today).
 
 ## Related Runbooks
 
@@ -584,15 +439,16 @@ All other runbooks assume backups exist. This runbook exists to scare you into i
 
 Every other disaster has a solution if you have backups.
 
-This disaster has NO SOLUTION without off-site backup.
+This disaster has NO SOLUTION if `WD-18TB1` was at the primary location when it happened — a
+single-drive rotation only protects against a disaster that catches the rotation drive away.
 
-**Don't let this be the runbook you actually need.**
-
-**Implement off-site backup NOW.**
+**Don't let this be the runbook you actually need. Verify the off-site restore, and keep the
+rotation drive actually rotating.**
 
 ---
 
-**Last Updated:** 2026-01-03 (Level 3 protection confirmed - off-site mirror exists)
+**Last Updated:** 2026-07-21 (Rewritten around Urd — ADR-021 superseded the manual Icy Box mirror
+process on 2026-03-25; off-site rotation is now tracked automatically via `role = "offsite"`)
 **Maintainer:** Homelab Operations
 **Review Schedule:** Quarterly
-**Implementation Priority:** ✅ **ACHIEVED - Consider testing off-site mirror restore**
+**Implementation Priority:** ⚠️ Off-site rotation exists but restore is unverified — see "Next Steps"
