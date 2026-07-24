@@ -14,7 +14,7 @@ NoNewPrivileges=true
 # redis-cli auto-reads REDISCLI_AUTH; redis-server gets it via shell expansion
 # and rewrites its own argv post-startup. See issue #154.
 Secret=nextcloud_redis_password,type=env,target=REDISCLI_AUTH
-Exec=sh -c 'exec redis-server --requirepass "$REDISCLI_AUTH"'
+Exec=sh -c 'exec redis-server --requirepass "$REDISCLI_AUTH" --maxmemory 200mb --maxmemory-policy allkeys-lru'
 
 # Storage
 Volume=/mnt/btrfs-pool/subvol7-containers/nextcloud-redis/data:/data:Z
