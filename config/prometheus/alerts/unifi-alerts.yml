@@ -53,18 +53,17 @@ groups:
             3. Verify if CrowdSec has banned the IP
             4. Review firewall rules and consider additional blocking
 
-      # Alert: High firewall block rate (sustained blocking activity)
-      - alert: HighFirewallBlockRate
-        expr: homelab:firewall_blocks_per_minute:rate5m > 10
-        for: 10m
-        labels:
-          severity: warning
-          component: security
-          remediation: none
-        annotations:
-          summary: "Elevated firewall blocking activity"
-          description: "UDM Pro firewall blocking {{ $value | humanize }} connections per minute. Possible attack or misconfiguration."
-          query: "homelab:firewall_blocks_per_minute:rate5m"
+      # HighFirewallBlockRate removed 2026-07-25: its recording rule
+      # (homelab:firewall_blocks_per_minute:rate5m) read
+      # unpoller_device_stat_gw_user_num_blocked_total, which unpoller emits
+      # under no name at all — there is no replacement series, unlike the UDM
+      # cpu/memory/uptime rules repaired in the same change. The alert reported a
+      # vector(0) fallback as a real zero and could never fire.
+      #
+      # A genuine firewall/IPS-block signal does exist, but in Loki, not
+      # Prometheus: UDM CEF syslog carries "Threat Detected and Blocked" events
+      # ({job="unifi-syslog"} |= `Threat Detected and Blocked`). Rebuilding this
+      # as a log-based alert is deliberate future work, not a rename.
 
       # Alert: UDM Pro high CPU usage
       - alert: UDMProHighCPU

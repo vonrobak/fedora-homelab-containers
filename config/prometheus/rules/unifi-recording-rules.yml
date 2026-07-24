@@ -21,9 +21,11 @@ groups:
       - record: homelab:udm_health:up
         expr: up{job="unpoller"}
 
-      # Firewall blocks per minute
-      - record: homelab:firewall_blocks_per_minute:rate5m
-        expr: sum(rate(unpoller_device_stat_gw_user_num_blocked_total[5m])) * 60 OR on() vector(0)
+      # homelab:firewall_blocks_per_minute:rate5m removed 2026-07-25 — its base
+      # series (unpoller_device_stat_gw_user_num_blocked_total) is emitted by no
+      # current unpoller version and has no replacement. See the removal note on
+      # HighFirewallBlockRate in ../alerts/unifi-alerts.yml for the Loki-based
+      # signal that could take its place.
 
       # DPI security threat bytes (if available)
       - record: homelab:dpi_security_bytes:rate5m
