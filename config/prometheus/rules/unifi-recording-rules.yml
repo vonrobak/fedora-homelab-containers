@@ -46,14 +46,25 @@ groups:
       - record: homelab:avg_wireless_signal_db
         expr: avg(unpoller_client_radio_signal_db) OR on() vector(0)
 
-      # UDM Pro CPU usage percentage
+      # UDM Pro gateway health (CPU / memory / uptime)
+      #
+      # unpoller renamed these: the old unpoller_device_stat_gw_* series are no
+      # longer emitted, so all three rules silently evaluated to 0 (the
+      # `OR on() vector(0)` fallback turned "metric gone" into "value is zero").
+      # UDMProHighCPU/UDMProHighMemory could therefore never fire — real memory
+      # touched 85.9% inside the 85% threshold's window and stayed quiet.
+      #
+      # No vector(0) fallback here on purpose: if unpoller renames these again,
+      # the rules must go stale and surface as missing data, not report 0.
+      # {type="udm"} scopes to the gateway — the current series also cover the
+      # AP, and an unfiltered avg() would blend them. Ratios are 0-1, hence *100
+      # (the alerts in unifi-alerts.yml compare against 90 / 85).
+
       - record: homelab:udm_cpu_percent
-        expr: avg(unpoller_device_stat_gw_system_stats_cpu_percent) OR on() vector(0)
+        expr: avg(unpoller_device_cpu_utilization_ratio{type="udm"}) * 100
 
-      # UDM Pro memory usage percentage
       - record: homelab:udm_memory_percent
-        expr: avg(unpoller_device_stat_gw_system_stats_mem_percent) OR on() vector(0)
+        expr: avg(unpoller_device_memory_utilization_ratio{type="udm"}) * 100
 
-      # UDM Pro uptime in days
       - record: homelab:udm_uptime_days
-        expr: (avg(unpoller_device_stat_gw_uptime_seconds) / 86400) OR on() vector(0)
+        expr: avg(unpoller_device_uptime_seconds{type="udm"}) / 86400
