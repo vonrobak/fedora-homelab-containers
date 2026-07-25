@@ -7,13 +7,21 @@
 # orchestration, not new trust decisions.
 #
 #   1. check-image-updates.sh        fresh sweep (verdicts, JSON, metrics)
-#   2. adopt-baked.sh --dry-run      show the wave plan
-#   3. [confirm]                     adopt with per-service verification
+#   2. adopt-baked.sh --dry-run      show the plan
+#   3. [confirm]                     pin + pull (COLD, ADR-049); only the critical
+#                                    tier is restarted and verified here
 #   4. pin index + git commit + PR   (optional merge from here)
 #   5. [confirm] prepare-for-reboot.sh   manifest → graceful shutdown → image presence
 #   6. print the manual tail: dnf update → reboot → post-reboot-verify.sh
 #
-# Usage: monthly-update.sh [--allow-young svc,svc] [--skip-os]
+# ADR-049: the reboot IS the rollout. Restarting the whole fleet before a reboot
+# restarts everything twice, and does it in the hostile environment — so the cold
+# path pins and pre-pulls, and verification moves to post-reboot-verify.sh. Use
+# --live only when NO reboot is coming (then the adoption must be proven now).
+#
+# Usage: monthly-update.sh [--live] [--allow-young svc,svc] [--skip-os]
+#   --live         restart + verify every adopted service before the reboot
+#                  (pre-ADR-049 behaviour; correct when not rebooting)
 #   --allow-young  ADR-036 exception lane, passed through to adopt-baked.sh
 #                  (security-release override — name the CVE when prompted)
 #   --skip-os      stop after the container phase (no pre-reboot workflow)
@@ -22,9 +30,11 @@ set -euo pipefail
 CONTAINERS_DIR="$HOME/containers"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-ALLOW_YOUNG=""; SKIP_OS=false
+ALLOW_YOUNG=""; SKIP_OS=false; MODE=--cold
 while [ $# -gt 0 ]; do
     case "$1" in
+        --live) MODE=--live ;;
+        --cold) MODE=--cold ;;
         --allow-young) ALLOW_YOUNG="$2"; shift ;;
         --skip-os) SKIP_OS=true ;;
         *) echo "unknown arg: $1" >&2; exit 2 ;;
@@ -37,6 +47,15 @@ if [ ! -t 0 ]; then
     echo "❌ monthly-update.sh is interactive (ADR-030 P1: adoption needs a human)." >&2
     echo "   For unattended visibility use the check-image-updates.timer feed." >&2
     exit 2
+fi
+
+# --live is only the right choice when no reboot follows. If the OS phase is still
+# in play, the operator is about to restart everything twice — say so up front.
+if [ "$MODE" = --live ] && ! $SKIP_OS; then
+    echo "ℹ️  --live restarts and verifies every service now, and the OS phase is"
+    echo "   still enabled — so each service restarts twice (ADR-049). Use --cold"
+    echo "   when a reboot follows, or --skip-os if it does not."
+    echo ""
 fi
 
 confirm() {  # confirm "question" → 0 yes / 1 no
@@ -61,11 +80,17 @@ echo "   (to apply drift: sync-aws-egress-ranges.sh --write, review the diff, co
 echo ""
 
 echo "── Step 2/5: Adoption plan ──"
-ADOPT_ARGS=()
+ADOPT_ARGS=("$MODE")
 [ -n "$ALLOW_YOUNG" ] && ADOPT_ARGS+=(--allow-young "$ALLOW_YOUNG")
 plan_output="$("$SCRIPT_DIR/adopt-baked.sh" --dry-run "${ADOPT_ARGS[@]}" 2>&1)"
 echo "$plan_output"
 echo ""
+
+if [ "$MODE" = --cold ]; then
+    prompt="Pin + pull the plan above now (cold — only the critical tier restarts)?"
+else
+    prompt="Adopt the plan above now (per-service restart + verification, halts on failure)?"
+fi
 
 adopted_any=false
 if grep -q "Adoption plan" <<< "$plan_output"; then
@@ -73,7 +98,7 @@ if grep -q "Adoption plan" <<< "$plan_output"; then
         echo "⚠️  --allow-young is the ADR-036 security-release exception lane:"
         echo "    the commit message must name the CVE/advisory that justifies it."
     fi
-    if confirm "Adopt the plan above now (per-service verification, halts on failure)?"; then
+    if confirm "$prompt"; then
         echo ""
         echo "── Step 3/5: Adopting ──"
         "$SCRIPT_DIR/adopt-baked.sh" "${ADOPT_ARGS[@]}"
@@ -125,6 +150,11 @@ fi
 
 if $SKIP_OS; then
     echo "── Step 5/5: skipped (--skip-os) ──"
+    if [ "$MODE" = --cold ]; then
+        echo ""
+        echo "⚠️  Cold path with no reboot: the pinned digests are NOT running."
+        echo "   Nothing rolls out until you reboot (or restart each service)."
+    fi
     exit 0
 fi
 
@@ -136,3 +166,17 @@ else
     echo "Skipped. Container phase is complete; run it later with:"
     echo "  ./scripts/prepare-for-reboot.sh"
 fi
+
+echo ""
+echo "── Step 6/6: after the reboot ──"
+if [ "$MODE" = --cold ]; then
+    echo "The pinned digests are still INERT — the reboot is what rolls them out."
+fi
+cat <<'EOM'
+  sudo dnf update && sudo reboot
+  ./scripts/post-reboot-verify.sh     # ← the verification step (ADR-049)
+
+post-reboot-verify.sh closes with a short manual smoke list. Do it. Route-level
+checks assert "Traefik answered", not "the workload works" — that is exactly how
+the 2026-07-25 vaultwarden breakage stayed invisible while every check was green.
+EOM

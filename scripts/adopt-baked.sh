@@ -16,8 +16,29 @@
 # via the Traefik route (service-url.sh) when one exists. Halts on the first
 # failure with rollback instructions — a halted batch is a feature, not a bug.
 #
-# Usage: adopt-baked.sh [--dry-run] [--report <json>] [--only svc,svc]
-#                       [--allow-young svc,svc]
+# ADR-049 splits application into two paths, selected by whether a reboot follows:
+#
+#   --live (default)  today's behaviour: adopt → restart → verify, every service,
+#                     serially, on a live system. Correct when NO reboot is coming
+#                     and the adoption must be proven working immediately.
+#   --cold            pin + ensure-pulled only; the REBOOT performs the rollout.
+#                     Nothing is restarted except CRITICAL_TIER. Verification moves
+#                     to post-reboot-verify.sh.
+#
+# Why: when a reboot follows, a live pass restarts every service twice and does it in
+# the hostile environment (serving traffic, inline pulls, fixed 120s gates) rather
+# than the tolerant one (ADR-035 boot tiers, systemd retries). The 2026-07-25 run
+# produced two halts, both false positives the batch manufactured itself, and zero
+# real defects. See ADR-049.
+#
+# CRITICAL_TIER = services whose failure would obstruct DIAGNOSIS of the others:
+# a dead front door hides everything, a dead auth backend locks the operator out of
+# the dashboards. Databases deliberately excluded — they fail loudly and locally.
+#
+# Usage: adopt-baked.sh [--cold|--live] [--dry-run] [--report <json>]
+#                       [--only svc,svc] [--allow-young svc,svc]
+#   --cold          pin + pull only; restart/verify CRITICAL_TIER alone
+#   --live          restart + verify every adopted service (default)
 #   --dry-run       print the wave plan, change nothing
 #   --report        candidate JSON (default: newest image-updates-*.json)
 #   --only          restrict to these services
@@ -28,11 +49,17 @@ set -euo pipefail
 CONTAINERS_DIR="$HOME/containers"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 QUADLET_DIR="${QUADLET_DIR:-$CONTAINERS_DIR/quadlets}"
-HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"
+# 120s was too tight: navidrome's 2026-07-25 bump ran two schema migrations and took
+# 4m38s to serve, which the old default recorded as a 502 failure (ADR-049).
+HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-600}"
+# Dependency order matters: redis before the auth server that uses it, front door last.
+CRITICAL_TIER="${CRITICAL_TIER:-redis-authelia authelia traefik}"
 
-DRY_RUN=false; REPORT=""; ONLY=""; ALLOW_YOUNG=""
+DRY_RUN=false; REPORT=""; ONLY=""; ALLOW_YOUNG=""; MODE=live
 while [ $# -gt 0 ]; do
     case "$1" in
+        --cold) MODE=cold ;;
+        --live) MODE=live ;;
         --dry-run) DRY_RUN=true ;;
         --report) REPORT="$2"; shift ;;
         --only) ONLY="$2"; shift ;;
@@ -97,11 +124,26 @@ if [ -z "$plan" ]; then
     exit 0
 fi
 
+is_critical() {
+    local s
+    for s in $CRITICAL_TIER; do [ "$s" = "$1" ] && return 0; done
+    return 1
+}
+
 WAVE_NAMES=([1]="plumbing" [2]="apps" [3]="core" [4]="data")
 echo ""
-echo "── Adoption plan ──"
+if [ "$MODE" = cold ]; then
+    echo "── Adoption plan (COLD — reboot performs the rollout, ADR-049) ──"
+else
+    echo "── Adoption plan (LIVE — restart + verify each service) ──"
+fi
 while IFS=$'\t' read -r wv svc digest age tier note; do
-    printf "  wave %s (%-8s) %-25s age %sd [%s] %s\n" "$wv" "${WAVE_NAMES[$wv]}" "$svc" "$age" "$tier" "$note"
+    marker=""
+    if [ "$MODE" = cold ]; then
+        if is_critical "$svc"; then marker="  ← critical: restart+verify now"
+        else marker="  (pin+pull only)"; fi
+    fi
+    printf "  wave %s (%-8s) %-25s age %sd [%s] %s%s\n" "$wv" "${WAVE_NAMES[$wv]}" "$svc" "$age" "$tier" "$note" "$marker"
 done <<< "$plan"
 echo ""
 
@@ -183,6 +225,38 @@ workload_smoke() {
     esac
 }
 
+# Cold-path gate. A reboot onto an unpulled digest is slow at best and fails at
+# worst, so presence is asserted BEFORE anything is committed or the machine goes
+# down. Unlike a health timeout this cannot be manufactured by system load.
+ensure_pulled() {
+    local svc="$1" img
+    img="$(grep -m1 -E '^Image=' "$QUADLET_DIR/$svc.container" | sed 's/^Image=//' | tr -d '[:space:]')"
+    if [ -z "$img" ]; then
+        echo "    ❌ $svc: no Image= in quadlet"; return 1
+    fi
+    if podman image exists "$img"; then
+        echo "    ✓ $svc: pinned, image present"
+    elif podman pull "$img" >/dev/null 2>&1; then
+        echo "    ✓ $svc: pinned, image pulled"
+    else
+        echo "    ❌ $svc: image pull FAILED — $img"; return 1
+    fi
+}
+
+cold_halt() {
+    local svc="$1"
+    cat >&2 <<EOM
+
+❌ HALTED at $svc — remaining candidates NOT pinned.
+Nothing has been restarted, so the running fleet is untouched; the pins already
+written are inert until a restart or reboot picks them up.
+DO NOT REBOOT until this is resolved.
+Roll back the pins written so far:
+  git -C "$CONTAINERS_DIR" checkout -- quadlets/
+EOM
+    exit 1
+}
+
 halt() {
     local svc="$1"
     cat >&2 <<EOM
@@ -198,6 +272,49 @@ EOM
 }
 
 adopted=()
+
+if [ "$MODE" = cold ]; then
+    # Pass 1 — pin every candidate and assert its image is local. No restarts, so
+    # no wave ordering is needed: nothing is running the new digests yet.
+    echo "═══ Pass 1: pin + pull (no restarts) ═══"
+    while IFS=$'\t' read -r wv svc digest age tier note; do
+        echo "  ▶ $svc → ${digest:0:19}… (age ${age}d, $tier, $note)"
+        "$SCRIPT_DIR/pin-container-image.sh" "$svc" --adopt "$digest" --apply || cold_halt "$svc"
+        ensure_pulled "$svc" || cold_halt "$svc"
+        adopted+=("$svc")
+    done <<< "$plan"
+
+    # One reload for every pin written above. This regenerates units; it does NOT
+    # restart anything, so non-critical services keep serving their old image until
+    # the reboot.
+    systemctl --user daemon-reload
+
+    # Pass 2 — only the services whose failure would obstruct diagnosing the rest.
+    crit_done=()
+    for svc in $CRITICAL_TIER; do
+        grep -qP "^\d+\t$svc\t" <<< "$plan" || continue
+        echo "═══ Pass 2: critical — $svc ═══"
+        systemctl --user restart "$svc.service" || halt "$svc"
+        verify_service "$svc" || halt "$svc"
+        crit_done+=("$svc")
+    done
+
+    echo ""
+    echo "✅ Pinned ${#adopted[@]} service(s): ${adopted[*]}"
+    if [ ${#crit_done[@]} -gt 0 ]; then
+        echo "   verified live (critical tier): ${crit_done[*]}"
+    fi
+    echo "   everything else is pinned but still running its OLD image —"
+    echo "   the reboot performs the rollout (ADR-049)."
+    echo ""
+    echo "Next steps:"
+    echo "  ./scripts/generate-image-pin-index.sh        # refresh AUTO-IMAGE-PIN-INDEX.md"
+    echo "  git add quadlets/ docs/AUTO-IMAGE-PIN-INDEX.md && commit via PR"
+    echo "  ./scripts/prepare-for-reboot.sh → dnf update → reboot"
+    echo "  ./scripts/post-reboot-verify.sh              # verification happens HERE"
+    exit 0
+fi
+
 current_wave=""
 while IFS=$'\t' read -r wv svc digest age tier note; do
     if [ "$wv" != "$current_wave" ]; then

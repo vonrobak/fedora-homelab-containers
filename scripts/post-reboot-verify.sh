@@ -252,4 +252,27 @@ else
     echo "    systemctl --user restart <service>.service"
 fi
 
+# ── Section 8: Manual workload smoke list (L-049 / ADR-049) ──
+#
+# Everything above asserts reachability and process health. None of it asserts that
+# the workload WORKS. On 2026-07-25 vaultwarden 1.36.0 served HTTP 200 on every
+# check while the desktop and browser clients rendered an empty vault — the client
+# SDK could not decode the server's cipher response. No automated check here would
+# have caught it; opening the app would have, in seconds.
+echo ""
+echo "============================================"
+echo -e "  ${BOLD}MANUAL SMOKE LIST${NC} — not optional"
+echo "============================================"
+echo ""
+echo -e "  ${YELLOW}Green checks above mean 'it responded', not 'it works'.${NC}"
+echo "  Exercise one real workload per critical path:"
+echo ""
+echo "    [ ] Vaultwarden  unlock the vault in the desktop app or extension"
+echo "                     and confirm CREDENTIALS LIST (not just login)"
+echo "    [ ] Authelia     complete one SSO login with the YubiKey"
+echo "    [ ] Nextcloud    upload a file and confirm it syncs"
+echo "    [ ] Immich       open the timeline and confirm thumbnails render"
+echo "    [ ] Jellyfin     start playback of one item"
+echo ""
+
 exit $ISSUES
