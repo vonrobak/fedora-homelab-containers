@@ -4,8 +4,9 @@ After=network-online.target reverse_proxy-network.service home_automation-networ
 Wants=home_automation-network.service network-online.target reverse_proxy-network.service
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: stable, resolved 2026-05-23 (index digest, multi-arch)
-Image=ghcr.io/home-assistant/home-assistant@sha256:d4fbec16196d5c8bedf32647f0ca7165f654d92a2e81f35a373508d3226cb867
+# ADR-030 P2: digest-pinned (integrity). tag: stable, resolved 2026-07-25 (index digest, multi-arch)
+# ADR-030 P6: publisher signature verified (2026-07-25)
+Image=ghcr.io/home-assistant/home-assistant@sha256:5a531753cea96444200158fc2b0ac7ccd739291ec50414877b396de6e0bb29b3
 ContainerName=home-assistant
 NoNewPrivileges=true
 HostName=home-assistant

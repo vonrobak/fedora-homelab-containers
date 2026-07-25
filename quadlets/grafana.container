@@ -4,10 +4,10 @@ After=network-online.target monitoring-network.service traefik.service
 Wants=monitoring-network.service network-online.target
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-13 (index digest, multi-arch)
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-25 (index digest, multi-arch)
 # ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = adopt new digest (pin-container-image.sh --adopt), bake, restart.
 # ADR-030 P6: no publisher signature (tracked unsigned)
-Image=docker.io/grafana/grafana@sha256:121a7a9ece6dc10b969f1f96eed64b4f07dfac0d0b8abc070f7cb83bbde86f63
+Image=docker.io/grafana/grafana@sha256:1c1bd67c54c5fcf6e759897852b5a584191bd6796e8d328a5ace457799801261
 ContainerName=grafana
 NoNewPrivileges=true
 HostName=grafana

@@ -4,9 +4,9 @@ After=network-online.target restricted-egress-network.service monitoring-network
 Wants=restricted-egress-network.service monitoring-network.service network-online.target node_exporter.service
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-06-10 (index digest, multi-arch)
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-25 (index digest, multi-arch)
 # ADR-030 P6: no publisher signature (tracked unsigned)
-Image=quay.io/prometheus/prometheus@sha256:69f5241418838263316593f7274a304b095c40bcf22e57272865da91bd60a8ac
+Image=quay.io/prometheus/prometheus@sha256:3c42b892cf723fa54d2f262c37a0e1f80aa8c8ddb1da7b9b0df9455a35a7f893
 ContainerName=prometheus
 NoNewPrivileges=true
 HostName=prometheus

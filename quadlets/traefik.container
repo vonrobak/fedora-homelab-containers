@@ -6,9 +6,10 @@ Wants=network-online.target reverse_proxy-network.service
 Requires=http.socket https.socket
 
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
-# ADR-030 P1/P4: AutoUpdate removed — highest blast-radius (internet-facing reverse proxy), deliberate updates only. Bump = resolve new digest, bake, edit, restart.
-Image=docker.io/library/traefik@sha256:6b9cbca6fac42ab0075f5437d8dc1685cfd188626d8d515839ea94f8b6271c42
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-25 (index digest, multi-arch)
+# ADR-030 P1/P4: AutoUpdate removed — deliberate updates only. Bump = adopt new digest (pin-container-image.sh --adopt), bake, restart.
+# ADR-030 P6: no publisher signature (tracked unsigned)
+Image=docker.io/library/traefik@sha256:652929a140a32d7cafafb13c6cdfab5376cfeff800f51397b87b524501ed02a8
 ContainerName=traefik
 NoNewPrivileges=true
 HostName=traefik
