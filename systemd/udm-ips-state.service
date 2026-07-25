@@ -1,0 +1,17 @@
+[Unit]
+Description=UDM Pro IPS engine/ruleset state -> node_exporter textfile (replaces 168 log lines/week with a gauge)
+
+[Service]
+Type=oneshot
+ExecStart=%h/containers/scripts/udm-ips-state-collector.sh
+TimeoutStartSec=1m
+
+# Reads two log files and writes one small .prom — stay out of the way
+Nice=19
+IOSchedulingClass=idle
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

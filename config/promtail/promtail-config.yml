@@ -187,6 +187,32 @@ scrape_configs:
           program:
           facility:
           priority:
+      # Suppress ubnt-idsips-daemon's two hourly no-op chatter lines (338 of ~16k
+      # lines/week). Both are standing conditions, not events:
+      #
+      #   EVT_GW_UpgradeSuricata  the Suricata v6->v8 engine upgrade retry, which fails
+      #     with INSUFFICIENT_MEMORY exactly 24x/day with zero variance. A toggle of
+      #     Intrusion Prevention on 2026-07-25 forced a live re-check that still failed
+      #     at maximum free headroom (1.73 GiB), so this is not satisfiable on a 4 GB
+      #     UDM Pro and not an incident. The condition now lives in
+      #     udm_ips_engine_upgrade_blocked / udm_ips_engine_version, produced by
+      #     scripts/udm-ips-state-collector.sh, which reads udm.log DIRECTLY and so is
+      #     unaffected by this drop. Never invert that: a Loki-sourced exporter would
+      #     starve the moment this suppression works.
+      #
+      #   AskUpdateRuleset  the hourly "any new signatures?" poll, 168/week, of which
+      #     only 4 produced an actual update. The successful ones log separately as
+      #     "UpdateRuleset done, success" and are deliberately KEPT.
+      #
+      # Deliberately NOT dropped, because they are the high-signal lines this noise was
+      # burying: "detect memory is insufficient for upgrade" (fires only on a real
+      # re-check — once in 7 days), "UpdateRuleset done", the daemon's config dump
+      # (upgrade_suricata_status, carries rule_count + ruleset update_time), and every
+      # CEF Threat event.
+      - drop:
+          source: msg
+          expression: '(EVT_GW_UpgradeSuricata|AskUpdateRuleset event)'
+          drop_counter_reason: udm_idsips_hourly_noop
       - output:
           source: msg
 
