@@ -90,3 +90,52 @@ groups:
           summary: "UDM Pro memory usage critically high"
           description: "UDM Pro memory usage at {{ $value }}% for 15+ minutes. May impact network stability."
           query: "homelab:udm_memory_percent"
+
+      # Alert: IPS signatures have stopped updating
+      #
+      # This is the alert that actually matters about the UDM's IPS, and it was
+      # invisible until scripts/udm-ips-state-collector.sh existed. The engine being
+      # pinned at Suricata v6 does NOT imply stale rules — signatures update
+      # independently and were current as of 2026-07-24 — and conflating the two was
+      # the original misdiagnosis. Rules going stale is the real security regression.
+      #
+      # Threshold: observed cadence is ~4 updates/week with natural gaps up to ~3 days,
+      # so 7d is comfortably outside normal without being lax.
+      #
+      # Deliberately NOT alerting on udm_ips_engine_upgrade_blocked: that condition is
+      # established as unsatisfiable on a 4 GB UDM Pro (a live re-check on 2026-07-25
+      # failed at 1.73 GiB free), so paging on it would rebuild exactly the alarm
+      # fatigue the promtail drop stage removed (L-042).
+      - alert: UDMIPSRulesetStale
+        expr: |
+          (time() - udm_ips_ruleset_update_timestamp_seconds > 7 * 24 * 3600)
+          and on() (time() - udm_ips_state_last_run_timestamp < 3600)
+        for: 30m
+        labels:
+          severity: warning
+          component: security
+          remediation: none
+        annotations:
+          summary: "UDM Pro IPS signatures have not updated in over 7 days"
+          description: "Last IPS ruleset update was {{ $value | humanizeDuration }} ago ({{ with query \"udm_ips_rule_count\" }}{{ . | first | value }}{{ end }} signatures loaded). The IPS is matching against stale rules. Check Settings -> CyberSecure -> Signature Update on the UDM."
+          query: "udm_ips_ruleset_update_timestamp_seconds"
+
+      # Alert: the state collector itself stopped running
+      #
+      # Guards the alert above rather than duplicating it: UDMIPSRulesetStale is gated on
+      # a fresh collector run, so without this alert a dead collector would make ruleset
+      # staleness silently undetectable instead of loudly wrong (L-033 — exporter
+      # liveness is not service liveness, and each needs its own signal).
+      - alert: UDMIPSStateCollectorStale
+        expr: |
+          time() - udm_ips_state_last_run_timestamp > 3600
+          or absent(udm_ips_state_last_run_timestamp)
+        for: 15m
+        labels:
+          severity: warning
+          component: monitoring
+          remediation: none
+        annotations:
+          summary: "UDM IPS state collector has stopped producing metrics"
+          description: "udm-ips-state.timer has not written a fresh .prom in over an hour, so UDMIPSRulesetStale cannot fire. Check: systemctl --user status udm-ips-state.timer udm-ips-state.service"
+          query: "udm_ips_state_last_run_timestamp"

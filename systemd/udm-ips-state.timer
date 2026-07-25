@@ -1,0 +1,9 @@
+[Unit]
+Description=Collect UDM Pro IPS engine/ruleset state every 15 minutes
+
+[Timer]
+OnBootSec=4min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target
