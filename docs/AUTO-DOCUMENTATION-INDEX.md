@@ -1,6 +1,6 @@
 # Documentation Index (Auto-Generated)
 
-**Generated:** 2026-07-20 22:11:55 UTC
+**Generated:** 2026-07-25 00:28:55 UTC
 **Total Documents:** 66
 
 ---
@@ -129,26 +129,25 @@
 
 ## Recently Updated (Last 7 Days)
 
-- 2026-07-14: [2025-10-20-decision-001-rootless-containers.md](00-foundation/decisions/2025-10-20-decision-001-rootless-containers.md)
-- 2026-07-14: [2025-10-25-decision-002-systemd-quadlets-over-compose.md](00-foundation/decisions/2025-10-25-decision-002-systemd-quadlets-over-compose.md)
-- 2026-07-14: [2025-11-13-ADR-009-config-data-directory-strategy.md](00-foundation/decisions/2025-11-13-ADR-009-config-data-directory-strategy.md)
-- 2026-07-14: [2025-12-31-ADR-016-configuration-design-principles.md](00-foundation/decisions/2025-12-31-ADR-016-configuration-design-principles.md)
-- 2026-07-14: [2026-02-04-ADR-018-static-ip-multi-network-services.md](00-foundation/decisions/2026-02-04-ADR-018-static-ip-multi-network-services.md)
-- 2026-07-14: [2026-02-22-ADR-019-filesystem-permission-model.md](00-foundation/decisions/2026-02-22-ADR-019-filesystem-permission-model.md)
-- 2026-07-14: [2026-03-21-ADR-020-daily-external-backups.md](00-foundation/decisions/2026-03-21-ADR-020-daily-external-backups.md)
-- 2026-07-14: [2026-03-28-ADR-021-urd-backup-tool.md](00-foundation/decisions/2026-03-28-ADR-021-urd-backup-tool.md)
-- 2026-07-14: [2026-04-16-ADR-022-traefik-socket-activation.md](00-foundation/decisions/2026-04-16-ADR-022-traefik-socket-activation.md)
-- 2026-07-14: [2026-04-21-ADR-023-monitoring-bind-propagation.md](00-foundation/decisions/2026-04-21-ADR-023-monitoring-bind-propagation.md)
-- 2026-07-14: [2026-04-21-ADR-026-nextcloud-pinned-major-version.md](00-foundation/decisions/2026-04-21-ADR-026-nextcloud-pinned-major-version.md)
-- 2026-07-14: [2026-04-27-ADR-028-podman-secret-store-path-split.md](00-foundation/decisions/2026-04-27-ADR-028-podman-secret-store-path-split.md)
-- 2026-07-14: [2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md](00-foundation/decisions/2026-05-22-ADR-029-three-tier-db-storage-and-dump-backup.md)
-- 2026-07-14: [2026-05-23-ADR-030-container-supply-chain-trust-model.md](00-foundation/decisions/2026-05-23-ADR-030-container-supply-chain-trust-model.md)
-- 2026-07-14: [2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md](00-foundation/decisions/2026-05-25-ADR-031-dns-resolver-first-class-and-ha.md)
-- 2026-07-14: [2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md](00-foundation/decisions/2026-06-05-ADR-032-forgejo-git-over-ssh-loopback.md)
-- 2026-07-14: [2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md](00-foundation/decisions/2026-06-06-ADR-034-forgejo-instance-commit-signing-ssh.md)
-- 2026-07-14: [2026-06-10-ADR-036-bake-policy-and-exception-lane.md](00-foundation/decisions/2026-06-10-ADR-036-bake-policy-and-exception-lane.md)
-- 2026-07-14: [2026-06-12-ADR-038-merge-commit-only-strategy.md](00-foundation/decisions/2026-06-12-ADR-038-merge-commit-only-strategy.md)
-- 2026-07-14: [2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping.md](00-foundation/decisions/2026-06-14-ADR-039-crowdsec-cloud-api-egress-scoping.md)
+- 2026-07-20: [middleware-configuration.md](00-foundation/guides/middleware-configuration.md)
+- 2026-07-20: [quadlets-vs-generated-units-comparison.md](00-foundation/guides/quadlets-vs-generated-units-comparison.md)
+- 2026-07-21: [jellyfin-gpu-acceleration-troubleshooting.md](10-services/guides/jellyfin-gpu-acceleration-troubleshooting.md)
+- 2026-07-21: [pattern-selection-guide.md](10-services/guides/pattern-selection-guide.md)
+- 2026-07-21: [traefik.md](10-services/guides/traefik.md)
+- 2026-07-21: [homelab-architecture.md](20-operations/guides/homelab-architecture.md)
+- 2026-07-21: [DR-001-system-ssd-failure.md](20-operations/runbooks/DR-001-system-ssd-failure.md)
+- 2026-07-21: [DR-002-btrfs-pool-corruption.md](20-operations/runbooks/DR-002-btrfs-pool-corruption.md)
+- 2026-07-21: [DR-003-accidental-deletion.md](20-operations/runbooks/DR-003-accidental-deletion.md)
+- 2026-07-21: [DR-004-total-catastrophe.md](20-operations/runbooks/DR-004-total-catastrophe.md)
+- 2026-07-21: [log-to-metric-implementation.md](40-monitoring-and-documentation/guides/log-to-metric-implementation.md)
+- 2026-07-25: [AUTO-DEPENDENCY-GRAPH.md](AUTO-DEPENDENCY-GRAPH.md)
+- 2026-07-25: [AUTO-DOCUMENTATION-INDEX.md](AUTO-DOCUMENTATION-INDEX.md)
+- 2026-07-25: [AUTO-EGRESS-BASELINE-INDEX.md](AUTO-EGRESS-BASELINE-INDEX.md)
+- 2026-07-25: [AUTO-IMAGE-PIN-INDEX.md](AUTO-IMAGE-PIN-INDEX.md)
+- 2026-07-25: [AUTO-NETWORK-TOPOLOGY.md](AUTO-NETWORK-TOPOLOGY.md)
+- 2026-07-25: [AUTO-SERVICE-CATALOG.md](AUTO-SERVICE-CATALOG.md)
+- 2026-07-21: [CONTRIBUTING.md](CONTRIBUTING.md)
+- 2026-07-21: [README.md](README.md)
 
 ---
 
