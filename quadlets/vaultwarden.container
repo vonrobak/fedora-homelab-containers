@@ -16,8 +16,9 @@ Wants=network-online.target traefik.service
 # CONTAINER CONFIGURATION
 # ═══════════════════════════════════════════════════════════
 [Container]
-# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-05-23 (index digest, multi-arch)
-Image=docker.io/vaultwarden/server@sha256:d626d04934cd1192ad8ced1adb975099fca78cec33ab467d2d3c923cde7f3b0c
+# ADR-030 P2: digest-pinned (integrity). tag: latest, resolved 2026-07-25 (index digest, multi-arch)
+# ADR-030 P6: publisher signature verified (2026-07-25)
+Image=docker.io/vaultwarden/server@sha256:e6443e3d5ed8fcee2204b89ec778d7f24d0173bcc42d1ea34f990304f5f63f51
 ContainerName=vaultwarden
 NoNewPrivileges=true
 # User directive removed - Vaultwarden image uses vaultwarden user (UID 1000) internally
