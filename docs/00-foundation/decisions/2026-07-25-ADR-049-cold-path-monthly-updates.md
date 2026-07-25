@@ -10,8 +10,8 @@ updated: 2026-07-25
 # ADR-049: Cold-Path Monthly Updates with Critical-Tier Live Verification
 
 **Date:** 2026-07-25
-**Status:** Accepted (implementation pending — `adopt-baked.sh` and
-`monthly-update.sh` not yet changed)
+**Status:** Accepted (implemented: `adopt-baked.sh --cold/--live`, `monthly-update.sh`
+cold by default, `post-reboot-verify.sh` smoke list)
 **Amends:** ADR-036 (Bake Policy and Exception Lane) — changes *when* adoption is
 applied and verified, not *what* is adopted. The P3 bake thresholds, the discovery
 verdicts, the JSON contract, and the CVE exception lane are unchanged.
@@ -98,22 +98,29 @@ The halt gate moves earlier and gets cheaper: **a signature failure or a pull
 failure means do not reboot.** Both are fast, deterministic, and cannot be
 manufactured by system load.
 
-### 2. Live path — ADR-035 boot tier A, and urgent single adoptions
+### 2. Live path — the critical tier, and urgent single adoptions
 
-Boot tier A keeps the current adopt → restart → health-verify behaviour, run
-*before* the reboot:
+Three services keep the current adopt → restart → health-verify behaviour, run
+*before* the reboot, in dependency order:
 
-> alertmanager, authelia, forgejo-db, gathio-db, nextcloud-db, nextcloud-redis,
-> postgresql-immich, redis-authelia, redis-immich, traefik
+> **redis-authelia → authelia → traefik**
 
 The criterion is **"can this service's failure obstruct diagnosis or recovery of the
-others?"** — strictly that is traefik and the auth pair, since a broken front door
-removes the means of investigating everything else. Boot tier A is a slight
-over-approximation (it also sweeps in databases, which fail loudly and locally), and
-the over-approximation is accepted: it reuses metadata that already exists in every
-quadlet rather than introducing a bespoke list that will drift, and it errs in the
-conservative direction. Tier A is also cheap to verify — mostly healthchecks with no
-HTTP route and no migration-heavy startup.
+others?"** A broken front door removes the means of investigating everything else,
+and a broken auth backend locks the operator out of the dashboards used to do it.
+Nothing else meets the bar.
+
+ADR-035 boot tier A was considered as a ready-made list and rejected. It also sweeps
+in six databases, which do *not* meet the criterion: a database failure is loud,
+local, and self-announcing — the dependent app is down, the data is intact, and
+recovery is a single reverted pin. Verifying them live buys nothing that the
+post-reboot sweep does not, and each one costs a restart of its dependants. The
+criterion, not the convenience of an existing field, decides membership.
+
+The cost of a bespoke list is that it can drift as the architecture changes. That is
+accepted and made cheap: the list is a single `CRITICAL_TIER` variable in
+`adopt-baked.sh`, overridable from the environment, and its membership rule is
+stated here.
 
 `--live` additionally selects this behaviour for any service when no reboot is
 planned. This is the path the 2026-07-25 vaultwarden fix required and should
@@ -149,30 +156,37 @@ seventeen automated HTTP 200s did not.
 
 **Negative / accepted risks**
 
-- **Attribution weakens.** Roughly 27 non-tier-A digests apply at once. If something
-  is broken after the reboot, the bisect surface is wider than a halted serial batch.
+- **Attribution weakens.** Every non-critical digest applies at once. If something is
+  broken after the reboot, the bisect surface is wider than a halted serial batch.
   Accepted: per-service rollback is a one-line `git revert` of the pin plus a
   restart, failures are rare, and the serial harness's actual hit rate on real
   defects this month was zero.
-- **Non-critical breakage is discovered on a rebooted system.** Accepted, because
-  tier A — the services whose failure would obstruct diagnosis — is still verified
-  live beforehand.
-- **The "catch it in the act" property is lost for tier B/C.** Accepted for the same
-  empirical reason.
+- **Non-critical breakage is discovered on a rebooted system.** Accepted, because the
+  three services whose failure would obstruct diagnosis are still verified live
+  beforehand. A database that comes back broken takes its dependent app with it, but
+  leaves the operator with a working front door, working SSO, and a one-line revert.
+- **The "catch it in the act" property is lost for everything outside the critical
+  tier.** Accepted for the same empirical reason.
+- **`CRITICAL_TIER` is a hand-maintained list and can drift.** Accepted; the
+  membership rule is recorded above, and the list is one overridable variable.
 
 **Rollback**
 
 Unchanged and unaffected: `git revert` the pin commit (or the single quadlet line)
 and restart, with BTRFS snapshots as the second path.
 
-## Implementation notes
+## Implementation
 
-Not yet built. The work is:
-
-- `adopt-baked.sh`: add `--cold` (pin + pull, no restart) and `--live`; make boot
-  tier A automatically live within a cold run; raise or per-service the health
-  timeout on the live path.
-- `monthly-update.sh`: default to cold; keep `--live` for the no-reboot case; move
-  the verification step after the reboot instruction rather than before it.
-- `post-reboot-verify.sh`: confirm it covers the full fleet, and have it print the
-  human smoke list as its closing output.
+- **`adopt-baked.sh`** gained `--cold` and `--live`. `--live` remains the default so
+  direct callers are unaffected. In `--cold` the run is two passes: pin + ensure the
+  digest is pulled for every candidate, then a single `daemon-reload`, then restart
+  and verify only `CRITICAL_TIER` (default `redis-authelia authelia traefik`, in that
+  order). A pull failure halts before anything is committed. `HEALTH_TIMEOUT` default
+  raised 120 → 600 for the live path, so a migration-heavy startup no longer reads as
+  a failure.
+- **`monthly-update.sh`** passes `--cold` by default and accepts `--live` to restore
+  the old whole-fleet behaviour. Its closing text directs the operator to
+  `post-reboot-verify.sh` after the reboot rather than treating the pre-reboot pass
+  as the verification.
+- **`post-reboot-verify.sh`** closes by printing the L-049 smoke list — the manual
+  workload exercises that route-level checks cannot cover.
