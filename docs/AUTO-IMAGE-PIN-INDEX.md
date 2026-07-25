@@ -1,6 +1,6 @@
 # Container Image Pin Index (Auto-Generated)
 
-**Generated:** 2026-07-25 00:28:56 UTC
+**Generated:** 2026-07-25 10:13:02 UTC
 **Source:** `/home/patriark/containers/quadlets` — ADR-030 (Container Supply-Chain Trust Model)
 
 Pins live in each quadlet's `Image=` line (where Podman reads them); this is
@@ -38,35 +38,35 @@ For local builds the `Digest` column shows the **base image** pin (FROM …@sha2
 | cadvisor | no | 🔒 pinned | `gcr.io/cadvisor/cadvisor` | latest | `sha256:3de2bd520312…` | no | — unsigned |
 | crowdsec | yes | 🔒 pinned | `docker.io/crowdsecurity/crowdsec` | latest | `sha256:2f527c9bb8b3…` | no | — unsigned |
 | forgejo-db | no | 🔒 pinned | `docker.io/library/postgres` | 16-alpine | `sha256:57c72fd2a128…` | no | — unsigned |
-| forgejo | no | 🔒 pinned | `codeberg.org/forgejo/forgejo` | 15 | `sha256:55bb42bec9ab…` | no | — unsigned |
-| gathio-db | no | 🔒 pinned | `docker.io/library/mongo` | 7 | `sha256:d5b3ca8c3f3c…` | no | — unsigned |
-| gathio | yes | 🔒 pinned | `ghcr.io/lowercasename/gathio` | latest | `sha256:ff66a8d2cc52…` | no | — unsigned |
-| grafana | yes | 🔒 pinned | `docker.io/grafana/grafana` | latest | `sha256:121a7a9ece6d…` | no | — unsigned |
-| home-assistant | yes | 🔒 pinned | `ghcr.io/home-assistant/home-assistant` | stable | `sha256:d4fbec16196d…` | no | ✓ verified |
+| forgejo | no | 🔒 pinned | `codeberg.org/forgejo/forgejo` | 15 | `sha256:eda2e378442d…` | no | — unsigned |
+| gathio-db | no | 🔒 pinned | `docker.io/library/mongo` | 7 | `sha256:9bdaeb6dac6e…` | no | — unsigned |
+| gathio | yes | 🔒 pinned | `ghcr.io/lowercasename/gathio` | latest | `sha256:40ac5ab0b49c…` | no | — unsigned |
+| grafana | yes | 🔒 pinned | `docker.io/grafana/grafana` | latest | `sha256:1c1bd67c54c5…` | no | — unsigned |
+| home-assistant | yes | 🔒 pinned | `ghcr.io/home-assistant/home-assistant` | stable | `sha256:5a531753cea9…` | no | ✓ verified |
 | immich-ml | no | 🔒 pinned | `ghcr.io/immich-app/immich-machine-learning` | v2.7.5 | `sha256:a2501141440f…` | no | — unsigned |
 | immich-server | yes | 🔒 pinned | `ghcr.io/immich-app/immich-server` | v2.7.5 | `sha256:c15bff75068e…` | no | — unsigned |
 | jellyfin | yes | 🔒 pinned | `docker.io/jellyfin/jellyfin` | latest | `sha256:aefb67e6a7ff…` | no | — unsigned |
-| loki | yes | 🔒 pinned | `docker.io/grafana/loki` | latest | `sha256:70b9f699fc9b…` | no | — unsigned |
-| navidrome | yes | 🔒 pinned | `docker.io/deluan/navidrome` | latest | `sha256:c4b5cb36a790…` | no | — unsigned |
+| loki | yes | 🔒 pinned | `docker.io/grafana/loki` | latest | `sha256:87f0a0676737…` | no | — unsigned |
+| navidrome | yes | 🔒 pinned | `docker.io/deluan/navidrome` | latest | `sha256:9012939114fb…` | no | — unsigned |
 | nextcloud-db | no | 🔒 pinned | `docker.io/library/mariadb` | 11 | `sha256:efb4959ef2c8…` | no | — unsigned |
 | nextcloud-redis | no | 🔒 pinned | `docker.io/library/redis` | 7-alpine | `sha256:6ab0b6e73817…` | no | — unsigned |
-| nextcloud | yes | 🔒 pinned | `docker.io/library/nextcloud` | 33 | `sha256:35170a1c67e7…` | no | — unsigned |
-| node_exporter | no | 🔒 pinned | `quay.io/prometheus/node-exporter` | latest | `sha256:0f422f62c15f…` | no | — unsigned |
+| nextcloud | yes | 🔒 pinned | `docker.io/library/nextcloud` | 33 | `sha256:2e0ba719164b…` | no | — unsigned |
+| node_exporter | no | 🔒 pinned | `quay.io/prometheus/node-exporter` | latest | `sha256:1b4e4438faca…` | no | — unsigned |
 | pihole-exporter | no | 🔒 pinned | `docker.io/ekofr/pihole-exporter` | latest | `sha256:a890cc731a39…` | no | — unsigned |
 | postgres-exporter | no | 🔒 pinned | `quay.io/prometheuscommunity/postgres-exporter` | latest | `sha256:ac5ec343104f…` | no | — unsigned |
 | postgresql-immich | no | 🔒 pinned | `ghcr.io/immich-app/postgres` | 14-vectorchord0.4.3-pgvectors0.2.0 | `sha256:bcf63357191b…` | no | — unsigned |
-| prometheus | no | 🔒 pinned | `quay.io/prometheus/prometheus` | latest | `sha256:69f524141883…` | no | — unsigned |
+| prometheus | no | 🔒 pinned | `quay.io/prometheus/prometheus` | latest | `sha256:3c42b892cf72…` | no | — unsigned |
 | promtail | no | 🔒 pinned | `docker.io/grafana/promtail` | latest | `sha256:6cfa64ec432b…` | no | — unsigned |
 | proton-bridge | yes | 🔨 base-pinned | `localhost/proton-bridge` | 3.23.1 | `sha256:747502f9190e…` | no | n/a (Tier 2) |
-| qbittorrent | yes | 🔒 pinned | `docker.io/linuxserver/qbittorrent` | latest | `sha256:f76c4363cce0…` | no | — unsigned |
-| redis-authelia-exporter | no | 🔒 pinned | `quay.io/oliver006/redis_exporter` | latest | `sha256:2e9795be900d…` | no | — unsigned |
+| qbittorrent | yes | 🔒 pinned | `docker.io/linuxserver/qbittorrent` | latest | `sha256:b024436f8ca6…` | no | — unsigned |
+| redis-authelia-exporter | no | 🔒 pinned | `quay.io/oliver006/redis_exporter` | latest | `sha256:2c8c55c63ce4…` | no | — unsigned |
 | redis-authelia | no | 🔒 pinned | `docker.io/library/redis` | 7-alpine | `sha256:6ab0b6e73817…` | no | — unsigned |
-| redis-immich-exporter | no | 🔒 pinned | `quay.io/oliver006/redis_exporter` | latest | `sha256:2e9795be900d…` | no | — unsigned |
-| redis-immich | no | 🔒 pinned | `docker.io/valkey/valkey` | latest | `sha256:4963247afc4c…` | no | — unsigned |
-| traefik | yes | 🔒 pinned | `docker.io/library/traefik` | latest | `sha256:6b9cbca6fac4…` | no | — unsigned |
-| unifi-syslog | no | 🔒 pinned | `docker.io/linuxserver/syslog-ng` | latest | `sha256:b4ab00e39920…` | no | — unsigned |
-| unpoller | no | 🔒 pinned | `ghcr.io/unpoller/unpoller` | latest | `sha256:9dcccdc931a6…` | no | — unsigned |
-| vaultwarden | yes | 🔒 pinned | `docker.io/vaultwarden/server` | latest | `sha256:d626d04934cd…` | no | ✓ verified |
+| redis-immich-exporter | no | 🔒 pinned | `quay.io/oliver006/redis_exporter` | latest | `sha256:2c8c55c63ce4…` | no | — unsigned |
+| redis-immich | no | 🔒 pinned | `docker.io/valkey/valkey` | latest | `sha256:3acc0687f2a2…` | no | — unsigned |
+| traefik | yes | 🔒 pinned | `docker.io/library/traefik` | latest | `sha256:652929a140a3…` | no | — unsigned |
+| unifi-syslog | no | 🔒 pinned | `docker.io/linuxserver/syslog-ng` | latest | `sha256:f2eeb181908b…` | no | — unsigned |
+| unpoller | no | 🔒 pinned | `ghcr.io/unpoller/unpoller` | latest | `sha256:e84e0fa34275…` | no | — unsigned |
+| vaultwarden | yes | 🔒 pinned | `docker.io/vaultwarden/server` | latest | `sha256:e6443e3d5ed8…` | no | ✓ verified |
 
 ---
 
