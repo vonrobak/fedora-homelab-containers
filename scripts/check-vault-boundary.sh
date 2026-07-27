@@ -7,14 +7,25 @@
 # any staged markdown whose frontmatter declares it internal, no matter how it
 # got staged (copied out of the vault, symlink replaced by a real dir, ...).
 #
-# Exit 0 = clean, exit 1 = at least one staged file is marked internal/secret
-# or references a vault directory by path (ADR-043 link policy / ADR-048).
+# Exit 0 = clean, exit 1 = at least one staged file is marked internal/secret,
+# references a vault directory by path (ADR-043 link policy / ADR-048), or is a
+# generated system view that belongs in the vault (2026-07-27).
 
 set -euo pipefail
 
 FAILED=0
 
 while IFS= read -r file; do
+    # Auto-generated system views are vault-resident (docs/AUTO-*.md are
+    # gitignored symlinks into 95-generated/). They carry live routing and
+    # image-digest posture and were never written for a public reader. This
+    # catches a re-add via `git add -f` or a symlink replaced by a real file —
+    # the frontmatter rule below can't, because generators emit no frontmatter.
+    if [[ "$file" == docs/AUTO-*.md ]]; then
+        echo "  ✗ $file is a generated system view — it lives in the Huldr vault (95-generated/), not the public repo. Regenerate locally; never stage it."
+        FAILED=1
+        continue
+    fi
     [[ "$file" == *.md ]] || continue
     # Read the staged blob, not the worktree file
     staged=$(git show ":$file" 2>/dev/null) || continue
@@ -28,7 +39,7 @@ while IFS= read -r file; do
     # show such a path (boundary docs, faithful code listings) opt out with an
     # <!-- allow-vault-paths --> comment anywhere in the file.
     if ! grep -q 'allow-vault-paths' <<<"$staged" \
-        && grep -qE '9[0-9]-(archive|project-supervisor|plans|journals|reports)/' <<<"$staged"; then
+        && grep -qE '9[0-9]-(archive|generated|project-supervisor|plans|journals|reports)/' <<<"$staged"; then
         echo "  ✗ $file references a private vault directory by path (docs/9x) — drop it or use a name-only mention; add <!-- allow-vault-paths --> only if the path is inside a boundary doc or faithful code listing"
         FAILED=1
     fi

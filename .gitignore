@@ -80,6 +80,16 @@ docs/96-project-supervisor
 docs/97-plans
 docs/98-journals
 
+# Auto-generated system views — untracked 2026-07-27. These are live operational
+# telemetry (running image digests, middleware chains, which routes bypass SSO,
+# per-network container placement, alert thresholds), not documentation written
+# for a reader. Publishing them handed anyone the exact build and routing posture
+# of every service. They remain fully available locally at their original
+# docs/AUTO-*.md paths as SYMLINKS into ~/Huldr/projects/homelab/95-generated/;
+# generators write in place through the symlink, so nothing else changed. No
+# trailing slash — same symlink-matching reason as docs/9x above.
+docs/AUTO-*.md
+
 # CLAUDE.md itself — untracked 2026-07-15 (ADR-044, adopts urd ADR-118 delta 7).
 # A public, mergeable CLAUDE.md is an instruction-injection surface (an external
 # PR that alters it would have its content followed by the next AI session with
