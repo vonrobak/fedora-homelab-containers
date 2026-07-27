@@ -13,8 +13,10 @@
 2. Explore service guides in `*/guides/` subdirectories
 3. Read the ADRs in `*/decisions/` for the *why* behind the architecture
 
-**Live system views (auto-generated daily):**
-[Service Catalog](AUTO-SERVICE-CATALOG.md) · [Network Topology](AUTO-NETWORK-TOPOLOGY.md) · [Dependency Graph](AUTO-DEPENDENCY-GRAPH.md) · [Documentation Index](AUTO-DOCUMENTATION-INDEX.md)
+**Live system views** (service catalog, network topology, dependency graph,
+documentation index, image pin index, egress baseline) are generated daily by
+`scripts/generate-*.sh` but are not published — they are operational telemetry
+of one host. The generators are public; run them against your own system.
 
 ---
 
@@ -40,11 +42,9 @@ docs/
 │   ├── decisions/                      # Security architecture ADRs
 │   └── runbooks/                       # Security incidents
 │
-├── 40-monitoring-and-documentation/    # Observability
-│   ├── guides/                         # Prometheus, Grafana, Loki, SLOs
-│   └── decisions/                      # Monitoring decisions
-│
-└── AUTO-*.md                           # Generated daily from the live system
+└── 40-monitoring-and-documentation/    # Observability
+    ├── guides/                         # Prometheus, Grafana, Loki, SLOs
+    └── decisions/                      # Monitoring decisions
 ```
 
 Internal working notes (journals, plans, reports, archive) live in a private

@@ -122,7 +122,9 @@ if $adopted_any; then
             branch="chore/image-adoption-$(date +%Y%m%d)"
             services="$(git status --porcelain -- quadlets/ | awk '{print $2}' | xargs -rn1 basename | sed 's/\.container$//' | paste -sd', ')"
             git checkout -b "$branch"
-            git add quadlets/ docs/AUTO-IMAGE-PIN-INDEX.md
+            # Pin index is regenerated above but vault-resident/gitignored since
+            # 2026-07-27 — naming it here would abort `git add` on an ignored path.
+            git add quadlets/
             git commit -m "chore(supply-chain): monthly digest adoption — ${services}
 
 Adopted via monthly-update.sh → adopt-baked.sh (ADR-036): bake-gated,

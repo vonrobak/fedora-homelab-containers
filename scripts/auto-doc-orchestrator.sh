@@ -126,7 +126,9 @@ main() {
         log "  - ${DOCS_DIR}/AUTO-IMAGE-PIN-INDEX.md"
         log "  - ${DOCS_DIR}/AUTO-EGRESS-BASELINE-INDEX.md"
         log ""
-        log "You can view these in GitHub - Mermaid diagrams will render automatically."
+        log "These are vault-resident and gitignored (2026-07-27) — local views for"
+        log "the owner and for LLM sessions, not published. Read them at the paths"
+        log "above; open in Obsidian or any Mermaid-aware editor to render diagrams."
         return 0
     else
         error "Some generators failed. Check logs above."

@@ -8,7 +8,7 @@ New here? The documentation is organized as a progression — start broad, then 
 
 1. **[Homelab Architecture](docs/20-operations/guides/homelab-architecture.md)** — the big picture: how the pieces fit together
 2. **[Podman Fundamentals](docs/00-foundation/guides/podman-fundamentals.md)** — rootless containers and quadlets explained
-3. **Auto-generated system views** (regenerated daily): [Service Catalog](docs/AUTO-SERVICE-CATALOG.md) · [Network Topology](docs/AUTO-NETWORK-TOPOLOGY.md) · [Dependency Graph](docs/AUTO-DEPENDENCY-GRAPH.md) · [Documentation Index](docs/AUTO-DOCUMENTATION-INDEX.md)
+3. **[Middleware Configuration](docs/00-foundation/guides/middleware-configuration.md)** — the fail-fast security chain every request passes through
 4. **Architecture Decision Records** (in `docs/*/decisions/`) — the *why* behind every significant choice, including the mistakes and reversals
 
 Want to build something similar? The **[Pattern Selection Guide](docs/10-services/guides/pattern-selection-guide.md)** and quadlet templates in `quadlets/` are the practical starting point — each service is a small, readable systemd unit file you can adapt.
@@ -117,7 +117,7 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for conventions.
 - `30-security/` - Security guides, IR runbooks, CrowdSec field manuals
 - `40-monitoring-and-documentation/` - SLO framework, monitoring stack
 
-Each section carries its own `guides/` and `decisions/` (ADRs). The `AUTO-*.md` files at the docs root are regenerated daily from the live system. Internal working notes (journals, plans, reports) live in a private knowledge vault outside this repository — what you see here is the curated, public-safe layer.
+Each section carries its own `guides/` and `decisions/` (ADRs). Internal working notes (journals, plans, reports) live in a private knowledge vault outside this repository — as do the auto-generated system views (service catalog, network topology, dependency graph, image pin index), which are live telemetry of one specific host rather than documentation written for a reader. The generators that produce them are public in `scripts/generate-*.sh`, so you can build the same views of your own system. What you see here is the curated, public-safe layer.
 
 ## Learning Goals
 

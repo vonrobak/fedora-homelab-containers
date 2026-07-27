@@ -22,11 +22,14 @@ systemctl --user enable --now <unit>.timer   # or .socket, .service
 
 **What it runs:** `~/containers/scripts/auto-doc-orchestrator.sh`
 
-**Generates:**
+**Generates** (local-only — these paths are gitignored symlinks into the private
+knowledge vault as of 2026-07-27; the timer writes through them as before):
 - `docs/AUTO-SERVICE-CATALOG.md` - Running services inventory
 - `docs/AUTO-NETWORK-TOPOLOGY.md` - Network diagrams
 - `docs/AUTO-DEPENDENCY-GRAPH.md` - Service dependencies
 - `docs/AUTO-DOCUMENTATION-INDEX.md` - Complete documentation index
+- `docs/AUTO-IMAGE-PIN-INDEX.md` - Digest pin audit view (ADR-030)
+- `docs/AUTO-EGRESS-BASELINE-INDEX.md` - Egress observatory view (ADR-030 P7)
 
 **Installation:**
 ```bash
