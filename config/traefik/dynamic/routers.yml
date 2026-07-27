@@ -17,8 +17,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit-auth@file         # 10/min burst 5 — brute-force protection on credential POSTs
         - hsts-only@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     authelia-portal:
       rule: "Host(`sso.patriark.org`)"
@@ -29,8 +28,7 @@ http:
         - crowdsec-bouncer@file
         - sso-rate-limit@file          # 30/min avg, burst 100 — sized for parallel module loads
         - hsts-only@file               # HSTS + strip server headers (Authelia sets own CSP)
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Vaultwarden Password Manager (NO Authelia - has own authentication)
     # Split into two routers: strict rate limit on auth endpoints, general on everything else.
@@ -49,8 +47,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit-vaultwarden-auth@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     vaultwarden-sensitive:
       rule: "Host(`vault.patriark.org`) && (PathPrefix(`/api/accounts/password`) || PathPrefix(`/api/accounts/two-factor`) || PathPrefix(`/api/accounts/register`))"
@@ -61,8 +58,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit-vaultwarden-auth@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     vaultwarden-secure:
       rule: "Host(`vault.patriark.org`)"
@@ -73,8 +69,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit-vaultwarden@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Traefik Dashboard
     traefik-dashboard:
@@ -86,8 +81,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit@file
         - authelia@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Jellyfin - Uses native authentication (no Authelia SSO)
     # Media Player clients and web UI both use Jellyfin's built-in auth
@@ -101,8 +95,7 @@ http:
         - rate-limit-public@file
         - compression@file
         - security-headers-jellyfin@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Immich - Uses native authentication (no Authelia SSO)
     # Mobile apps and web UI both use Immich's built-in auth
@@ -120,8 +113,7 @@ http:
         - rate-limit-immich@file       # Custom high-capacity rate limit for photo browsing
         - compression@file             # Compresses API responses (JSON); binary media unaffected
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Nextcloud - Uses native authentication (no Authelia SSO)
     # CalDAV/CardDAV clients and web UI use Nextcloud's built-in auth
@@ -145,8 +137,7 @@ http:
         - rate-limit-nextcloud@file     # High capacity for WebDAV sync (600/min, 3000 burst for PROPFIND tree walks)
         - nextcloud-caldav              # CalDAV/.well-known redirects
         - hsts-only@file                # Add HSTS without conflicting with Nextcloud's CSP
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Grafana Monitoring Dashboard
     grafana-secure:
@@ -158,8 +149,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit@file
         - authelia@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Prometheus - INTERNAL ONLY (router removed 2026-07-17, ADR-045)
     # Unused since fall 2025; Grafana is the UI and queries prometheus over the
@@ -176,8 +166,7 @@ http:
         - crowdsec-bouncer@file
         - rate-limit@file
         - authelia@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Alertmanager - INTERNAL ONLY (accessed via http://alertmanager:9093)
     # Removed public router - Alertmanager is only for internal monitoring stack use
@@ -195,8 +184,7 @@ http:
         - rate-limit@file
         - authelia@file               # Protect event creation interface
         - security-headers-gathio@file  # Relaxed CSP for CDN resources
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Home Assistant - NO Authelia (has own built-in authentication)
     # Mobile app + Web UI work seamlessly without SSO layer
@@ -214,8 +202,7 @@ http:
         - rate-limit-public@file
         # NO authelia@file - HA has robust built-in auth
         - security-headers-ha@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Forgejo - Git forge with native auth
     # NO authelia@file: forward-auth breaks git CLI operations over HTTPS
@@ -229,8 +216,7 @@ http:
         - rate-limit-public@file
         - compression@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Audiobookshelf - Uses native authentication (no Authelia SSO)
     # iOS app (abs) and web UI use Audiobookshelf's built-in auth
@@ -244,8 +230,7 @@ http:
         - rate-limit-public@file
         - compression@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Navidrome - Uses native authentication (no Authelia SSO)
     # Subsonic-compatible clients and web UI use Navidrome's built-in auth
@@ -260,8 +245,7 @@ http:
         - rate-limit-public@file
         - compression@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # qBittorrent - WebUI for torrent management
     # Access restricted by: Authelia SSO + DNS (Pi-hole LAN/VPN only) + no UDM Pro port forward
@@ -277,8 +261,7 @@ http:
         - rate-limit-qbittorrent@file
         - authelia@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
     # Pi-hole DNS resolver admin (ADR-031 D4) — INTERNAL ONLY (enforced by ip-allowlist)
     # Replaces unauthenticated http://192.168.1.69/admin with SSO-gated HTTPS.
@@ -303,8 +286,7 @@ http:
         - ip-allowlist@file
         - authelia@file
         - security-headers@file
-      tls:
-        certResolver: letsencrypt
+      tls: {}
 
   services:
     jellyfin:

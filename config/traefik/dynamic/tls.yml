@@ -7,6 +7,38 @@
 # TLS_CHACHA20_POLY1305_SHA256). The suites below apply to TLS 1.2 only.
 
 tls:
+  # ONE wildcard certificate serves every router (2026-07-27).
+  #
+  # Why: per-host certs publish every service hostname to Certificate
+  # Transparency at issuance — public, permanent, append-only, and actively
+  # mined for exactly this. 21 names had been logged that way, including
+  # vault.patriark.org (the password manager). A wildcard puts only
+  # `patriark.org` + `*.patriark.org` in CT, so new services no longer
+  # enumerate. Already-logged names stay in CT forever; only renaming
+  # erases those (L-102).
+  #
+  # This store is only half the mechanic. The other half is that NO router
+  # in routers.yml may carry its own `certResolver:` — a router that does
+  # gets a per-host cert from ACME and puts that name straight back into CT,
+  # silently. Routers declare a bare `tls: {}` and inherit this default.
+  #
+  # Scope: `*.patriark.org` matches exactly one label. vault.patriark.org is
+  # covered; a.b.patriark.org would NOT be. Keep hostnames single-label.
+  #
+  # Trade-off accepted: one key now covers the whole estate, and a renewal
+  # failure breaks TLS everywhere at once (including LAN access via the
+  # split-horizon Pi-hole view) instead of one service failing loudly first.
+  # The expiry alerts still cover this — they group by `cn`, now one series
+  # instead of ~15.
+  stores:
+    default:
+      defaultGeneratedCert:
+        resolver: letsencrypt
+        domain:
+          main: "patriark.org"
+          sans:
+            - "*.patriark.org"
+
   options:
     default:
       minVersion: VersionTLS12
